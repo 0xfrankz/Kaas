@@ -1,0 +1,31 @@
+{
+    // JS
+    // "eslint.workingDirectories": ["./src"],
+    "eslint.format.enable": true,
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.tabSize": 2,
+    "prettier.singleQuote": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.linkedEditing": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "typescript.format.enable": false,
+    "javascript.format.enable": false,
+    "editor.quickSuggestions": {
+      "strings": "on"
+    },
+    // RUST
+    "rust-analyzer.linkedProjects": [
+      ".\\src-tauri\\Cargo.toml",
+      ".\\src-tauri\\entity\\Cargo.toml",
+      ".\\src-tauri\\migration\\Cargo.toml"
+    ]
+  }
+  
