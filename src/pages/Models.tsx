@@ -37,7 +37,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { LIST_MODELS_KEY, useCreateModel } from '@/lib/hooks';
-import log from '@/lib/logs';
+import log from '@/lib/log';
 import { createModalSchema } from '@/lib/schemas';
 import type { UnsavedModel } from '@/lib/types';
 

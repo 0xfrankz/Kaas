@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import CommonLayout from '@/layouts/CommonLayout';
-import { RQProviders } from '@/lib/providers';
+import { InitializationProviders, RQProviders } from '@/lib/providers';
 import ConversationsPage from '@/pages/Conversations';
 import HomePage from '@/pages/Home';
 import ModelsPage from '@/pages/Models';
@@ -58,7 +58,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <RQProviders>
-      <RouterProvider router={router} />
+      <InitializationProviders>
+        <RouterProvider router={router} />
+      </InitializationProviders>
     </RQProviders>
   </React.StrictMode>
 );

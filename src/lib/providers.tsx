@@ -1,5 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import { useListModels } from './hooks';
+import log from './log';
+import { useAppStateStore } from './store';
 
 export function RQProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -24,5 +28,18 @@ export function InitializationProviders({
 }: {
   children: React.ReactNode;
 }) {
-  return { children };
+  const { models, refreshModels } = useAppStateStore();
+  const { data: modelList, isSuccess, isError } = useListModels();
+
+  // Effects
+  useEffect(() => {
+    if (isSuccess) {
+      refreshModels(modelList);
+    }
+  }, [modelList, isSuccess, isError]);
+  useEffect(() => {
+    log.info(`Models are refreshed! ${JSON.stringify(models)}`);
+  }, [models]);
+
+  return children;
 }

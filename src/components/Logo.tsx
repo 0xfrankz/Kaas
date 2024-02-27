@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import logoImg from '@/assets/images/logo.svg';
 
@@ -11,7 +12,11 @@ export function Logo({ expanded = false }: Props) {
   return (
     <>
       <img src={logoImg} alt="Kaas" width={size} height={size} />
-      {expanded && <span className="my-auto ml-4 font-medium">Kaas</span>}
+      {expanded && (
+        <span className="my-auto ml-4 font-medium">
+          <Link to="/">Kaas</Link>
+        </span>
+      )}
     </>
   );
 }
