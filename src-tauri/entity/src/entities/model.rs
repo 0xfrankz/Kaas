@@ -13,8 +13,14 @@ pub struct Model {
     pub api_key: String,
     pub endpoint: String,
     pub deployment_id: String,
+    pub provider: String,
+    pub is_default: bool,
     #[serde(skip_deserializing)]
-    pub created_at: DateTimeLocal
+    pub created_at: DateTimeLocal,
+    #[serde(skip_deserializing)]
+    pub updated_at: DateTimeLocal,
+    #[serde(skip_deserializing)]
+    pub deleted_at: DateTimeLocal
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

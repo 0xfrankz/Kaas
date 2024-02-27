@@ -1,9 +1,9 @@
 import type { z } from 'zod';
 
-import type { createModalSchema } from './schemas';
+import type { createModelSchema } from './schemas';
 
-export type Model = z.infer<typeof createModalSchema>;
-export type UnsavedModel = z.infer<typeof createModalSchema>;
+export type Model = z.infer<typeof createModelSchema>;
+export type UnsavedModel = z.infer<typeof createModelSchema>;
 
 // Error
 export type CommandError = {

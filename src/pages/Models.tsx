@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 
+import { ModelGrid } from '@/components/ModelGrid';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,27 +39,32 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { LIST_MODELS_KEY, useCreateModel } from '@/lib/hooks';
 import log from '@/lib/log';
-import { createModalSchema } from '@/lib/schemas';
+import { createModelSchema } from '@/lib/schemas';
+import { useAppStateStore } from '@/lib/store';
 import type { UnsavedModel } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
+  const { models } = useAppStateStore();
   const [showModal, setShowModal] = useState(false);
   const { toast } = useToast();
   const form = useForm<UnsavedModel>({
-    resolver: zodResolver(createModalSchema),
+    resolver: zodResolver(createModelSchema),
     defaultValues: {
       apiKey: '',
       endpoint: '',
       deploymentId: '',
+      isDefault: false,
     },
   });
   const queryClient = useQueryClient();
+  const hasModels = models.length > 0;
 
   // Queries
   const createModelMutation = useCreateModel();
 
   // Callbacks
-  const onModalOpenChange = (open: boolean) => {
+  const toggleModal = (open: boolean) => {
     setShowModal(open);
     if (!open) {
       form.reset();
@@ -66,6 +72,8 @@ export default function ModelsPage() {
   };
 
   const onSubmit: SubmitHandler<UnsavedModel> = (formData) => {
+    toggleModal(false);
+    log.info(`Formdata: ${JSON.stringify(formData)}`);
     createModelMutation.mutate(formData, {
       onSuccess(result) {
         log.info(`Model created: ${JSON.stringify(result)}`);
@@ -84,7 +92,7 @@ export default function ModelsPage() {
 
   const renderCreateModelDialog = (provider: string) => {
     return (
-      <Dialog open={showModal} onOpenChange={onModalOpenChange}>
+      <Dialog open={showModal} onOpenChange={toggleModal}>
         <DialogTrigger asChild>
           <Button className="mx-auto w-32 bg-slate-900">
             <PlusIcon className="size-4 text-white" />
@@ -157,6 +165,22 @@ export default function ModelsPage() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="provider"
+                  defaultValue={provider}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="hidden"
+                          value={provider}
+                          name={field.name}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
               <DialogFooter>
                 <DialogClose asChild>
@@ -178,9 +202,25 @@ export default function ModelsPage() {
       <TitleBar title="Models" />
       <div className="flex grow justify-center">
         <div className="w-[1080px] max-w-[1080px]">
-          <div className="mt-48 flex flex-col items-center px-[34px]">
-            <h2 className="text-3xl font-semibold">You have no models yet</h2>
-            <p className="mt-4 text-sm">Add one from below</p>
+          <div
+            className={cn(
+              'flex flex-col px-[34px] min-h-[348px]',
+              hasModels ? 'mt-6' : 'mt-48 items-center'
+            )}
+          >
+            {hasModels ? (
+              <>
+                <h2 className="text-3xl font-semibold">Your Models</h2>
+                <ModelGrid models={models} />
+              </>
+            ) : (
+              <>
+                <h2 className="text-3xl font-semibold">
+                  You have no models yet
+                </h2>
+                <p className="mt-4 text-sm">Add one from below</p>
+              </>
+            )}
           </div>
           <Separator className="mt-36" />
           <div className="px-[34px]">
@@ -193,7 +233,9 @@ export default function ModelsPage() {
                 <CardContent className="pb-2">
                   <p className="text-center">GPT-3.5 and GPT-4</p>
                 </CardContent>
-                <CardFooter>{renderCreateModelDialog('Azure')}</CardFooter>
+                <CardFooter>
+                  {renderCreateModelDialog('Microsoft Azure')}
+                </CardFooter>
               </Card>
             </div>
           </div>
