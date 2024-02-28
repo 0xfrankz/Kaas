@@ -35,7 +35,7 @@ export function ModelGrid({ models }: { models: Model[] }) {
   return (
     <div className="mt-6 grid grid-cols-4 gap-5">
       {models.map((model) => {
-        return <ModelGridItem model={model} />;
+        return <ModelGridItem model={model} key={model.id} />;
       })}
     </div>
   );
