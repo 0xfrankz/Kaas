@@ -6,6 +6,5 @@ export const createModelSchema = z
     endpoint: z.string().min(1, 'Endpoint is required'),
     deploymentId: z.string().min(1, 'Deployment ID is required'),
     provider: z.string(),
-    isDefault: z.boolean().default(false),
   })
   .required();

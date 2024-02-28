@@ -3,6 +3,7 @@ use migration::{Migrator, MigratorTrait};
 use log::{error, info};
 use sqlx::migrate::MigrateDatabase;
 use entity::entities::model::{ Model, ActiveModel, Entity};
+use entity::entities::settings;
 
 type Db = sqlx::sqlite::Sqlite;
 
@@ -57,6 +58,20 @@ impl Repository {
         error!("{}", err);
         "Failed to list models".to_string()
       })?;
+    Ok(result)
+  }
+
+  /**
+   * List all settings
+   */
+  pub async fn list_settings(&self) -> Result<Vec<settings::Model>, String> {
+    let result = settings::Entity::find()
+        .all(&self.connection)
+        .await
+        .map_err(|err| {
+          error!("{}", err);
+          "Failed to list settings".to_string()
+        })?;
     Ok(result)
   }
 }

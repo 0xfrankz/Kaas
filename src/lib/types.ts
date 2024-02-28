@@ -7,6 +7,11 @@ export type Model = UnsavedModel & {
   id: string;
 };
 
+export type Setting = {
+  key: string;
+  value: string;
+};
+
 // Error
 export type CommandError = {
   type: string;

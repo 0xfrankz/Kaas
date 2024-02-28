@@ -54,7 +54,6 @@ export default function ModelsPage() {
       apiKey: '',
       endpoint: '',
       deploymentId: '',
-      isDefault: false,
     },
   });
   const queryClient = useQueryClient();

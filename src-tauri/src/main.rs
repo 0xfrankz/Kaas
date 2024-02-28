@@ -16,6 +16,7 @@ fn main() {
       commands::complete_chat_cmd,
       commands::create_model,
       commands::list_models,
+      commands::list_settings,
     ])
     .plugin(tauri_plugin_log::Builder::default().targets([
       LogTarget::Stdout,

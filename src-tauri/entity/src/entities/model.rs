@@ -14,7 +14,6 @@ pub struct Model {
     pub endpoint: String,
     pub deployment_id: String,
     pub provider: String,
-    pub is_default: bool,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_deserializing)]

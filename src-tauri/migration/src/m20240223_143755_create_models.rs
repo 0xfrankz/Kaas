@@ -8,7 +8,6 @@ enum Model {
     Endpoint,
     DeploymentId,
     Provider,
-    IsDefault,
     CreatedAt,
     UpdatedAt,
     DeletedAt
@@ -36,7 +35,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Model::Endpoint).string().not_null())
                     .col(ColumnDef::new(Model::DeploymentId).string().not_null())
                     .col(ColumnDef::new(Model::Provider).string().not_null())
-                    .col(ColumnDef::new(Model::IsDefault).boolean().default(false))
                     .col(ColumnDef::new(Model::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
                     .col(ColumnDef::new(Model::UpdatedAt).timestamp().null())
                     .col(ColumnDef::new(Model::DeletedAt).timestamp().null())
