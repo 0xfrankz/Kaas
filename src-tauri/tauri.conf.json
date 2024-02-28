@@ -56,10 +56,12 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 810,
+        "minHeight": 540,
+        "minWidth": 960,
         "resizable": true,
         "title": "kaas",
-        "width": 800
+        "width": 1440
       }
     ]
   }
