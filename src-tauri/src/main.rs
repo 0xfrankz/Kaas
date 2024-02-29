@@ -17,6 +17,7 @@ fn main() {
       commands::create_model,
       commands::list_models,
       commands::list_settings,
+      commands::upsert_setting,
     ])
     .plugin(tauri_plugin_log::Builder::default().targets([
       LogTarget::Stdout,

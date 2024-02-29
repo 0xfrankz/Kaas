@@ -37,7 +37,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
-import { LIST_MODELS_KEY, useCreateModel } from '@/lib/hooks';
+import { KEY_SETTING_DEFAULT_MODEL } from '@/lib/constants';
+import { LIST_MODELS_KEY, useCreateModel, useUpsertSetting } from '@/lib/hooks';
 import log from '@/lib/log';
 import { createModelSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
@@ -45,7 +46,7 @@ import type { UnsavedModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
-  const { models } = useAppStateStore();
+  const { models, updateSetting } = useAppStateStore();
   const [showModal, setShowModal] = useState(false);
   const { toast } = useToast();
   const form = useForm<UnsavedModel>({
@@ -61,6 +62,7 @@ export default function ModelsPage() {
 
   // Queries
   const createModelMutation = useCreateModel();
+  const upsertSettingMutation = useUpsertSetting();
 
   // Callbacks
   const toggleModal = (open: boolean) => {
@@ -87,6 +89,21 @@ export default function ModelsPage() {
         });
       },
     });
+  };
+
+  const onDefaultChange = (defaultModelId: number) => {
+    upsertSettingMutation.mutate(
+      {
+        key: KEY_SETTING_DEFAULT_MODEL,
+        value: defaultModelId.toString(),
+      },
+      {
+        onSuccess(result) {
+          log.info(`Setting upserted: ${JSON.stringify(result)}`);
+          updateSetting(result);
+        },
+      }
+    );
   };
 
   const renderCreateModelDialog = (provider: string) => {
@@ -210,7 +227,7 @@ export default function ModelsPage() {
             {hasModels ? (
               <>
                 <h2 className="text-3xl font-semibold">Your Models</h2>
-                <ModelGrid models={models} />
+                <ModelGrid models={models} onDefaultChange={onDefaultChange} />
               </>
             ) : (
               <>

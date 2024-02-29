@@ -1,3 +1,5 @@
+import { KEY_SETTING_DEFAULT_MODEL } from '@/lib/constants';
+import { useAppStateStore } from '@/lib/store';
 import type { Model } from '@/lib/types';
 
 import {
@@ -10,7 +12,20 @@ import {
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 
-function ModelGridItem({ model }: { model: Model }) {
+function ModelGridItem({
+  model,
+  isDefault,
+  onDefaultChange,
+}: {
+  model: Model;
+  isDefault: boolean;
+  onDefaultChange: (defaultModelId: number) => void;
+}) {
+  const onCheckedChange = (checked: boolean) => {
+    if (checked) {
+      onDefaultChange(model.id);
+    }
+  };
   return (
     <Card className="min-h-32 border-2 border-slate-900 shadow-none">
       <CardHeader className="pb-2">
@@ -21,7 +36,13 @@ function ModelGridItem({ model }: { model: Model }) {
       </CardContent>
       <CardFooter>
         <div className="mx-auto flex items-center space-x-2">
-          <Switch id="airplane-mode" />
+          <Switch
+            id="airplane-mode"
+            checked={isDefault}
+            disabled={isDefault}
+            onCheckedChange={onCheckedChange}
+            className="disabled:opacity-100"
+          />
           <Label htmlFor="airplane-mode" className="font-medium">
             Default
           </Label>
@@ -31,11 +52,29 @@ function ModelGridItem({ model }: { model: Model }) {
   );
 }
 
-export function ModelGrid({ models }: { models: Model[] }) {
+export function ModelGrid({
+  models,
+  onDefaultChange,
+}: {
+  models: Model[];
+  onDefaultChange: (defaultModelId: number) => void;
+}) {
+  const { settings } = useAppStateStore();
+  const defaultModelId =
+    parseInt(settings[KEY_SETTING_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
+  console.log(`defaultModelId=${defaultModelId}`);
+
   return (
     <div className="mt-6 grid grid-cols-4 gap-5">
       {models.map((model) => {
-        return <ModelGridItem model={model} key={model.id} />;
+        return (
+          <ModelGridItem
+            model={model}
+            isDefault={model.id === defaultModelId}
+            key={model.id}
+            onDefaultChange={onDefaultChange}
+          />
+        );
       })}
     </div>
   );

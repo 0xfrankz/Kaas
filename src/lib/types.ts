@@ -4,7 +4,7 @@ import type { createModelSchema } from './schemas';
 
 export type UnsavedModel = z.infer<typeof createModelSchema>;
 export type Model = UnsavedModel & {
-  id: string;
+  id: number;
 };
 
 export type Setting = {

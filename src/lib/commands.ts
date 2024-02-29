@@ -16,3 +16,8 @@ export async function invokeListSettings(): Promise<Setting[]> {
   const result = await invoke<Setting[]>('list_settings');
   return result;
 }
+
+export async function invokeUpsertSetting(setting: Setting): Promise<Setting> {
+  const result = await invoke<Setting>('upsert_setting', { setting });
+  return result;
+}

@@ -1,28 +1,17 @@
-use sea_orm::{ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait};
+use sea_orm::{sea_query, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait};
 use migration::{Migrator, MigratorTrait};
 use log::{error, info};
 use sqlx::migrate::MigrateDatabase;
-use entity::entities::model::{ Model, ActiveModel, Entity};
-use entity::entities::settings;
+use entity::entities::models::{ Model, ActiveModel, Entity};
+use entity::entities::settings::{self, Model as Setting};
 
 type Db = sqlx::sqlite::Sqlite;
 
-// static MIGRATOR: Migrator = sqlx::migrate!();
-
 pub struct Repository {
-  // pool: SqlitePool,
   connection: DatabaseConnection,
 }
 
 impl Repository {
-  // pub fn migrate(&self) -> Result<(), String> {
-  //   tauri::async_runtime::block_on(async move {
-  //     MIGRATOR.run(&self.pool).await.map_err(|_| "Failed to migrate database!")?;
-  //     info!("Database migrated");
-  //     Ok(())
-  //   })
-  // }
-
   pub fn migrate(&self) -> Result<(), String> {
     tauri::async_runtime::block_on(async move {
       Migrator::up(&self.connection, None).await.map_err(|_| "Failed to migrate database!")?;
@@ -73,6 +62,23 @@ impl Repository {
           "Failed to list settings".to_string()
         })?;
     Ok(result)
+  }
+
+  pub async fn upsert_settings(&self, setting: Setting) -> Result<Setting, String> {
+    let active_model: settings::ActiveModel = setting.clone().into();
+    let _ = settings::Entity::insert(active_model)
+      .on_conflict(
+        sea_query::OnConflict::column(settings::Column::Key)
+          .update_column(settings::Column::Value)
+          .to_owned()
+      )
+      .exec(&self.connection)
+      .await
+      .map_err(|err| {
+        error!("{}", err);
+        "Failed to upsert setting".to_string()
+      })?;
+    Ok(setting)
   }
 }
 

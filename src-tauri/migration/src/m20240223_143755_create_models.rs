@@ -1,7 +1,7 @@
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveIden)]
-enum Model {
+enum Models {
     Table,
     Id,
     ApiKey,
@@ -22,22 +22,22 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Model::Table)
+                    .table(Models::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Model::Id)
+                        ColumnDef::new(Models::Id)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Model::ApiKey).string().not_null())
-                    .col(ColumnDef::new(Model::Endpoint).string().not_null())
-                    .col(ColumnDef::new(Model::DeploymentId).string().not_null())
-                    .col(ColumnDef::new(Model::Provider).string().not_null())
-                    .col(ColumnDef::new(Model::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(Model::UpdatedAt).timestamp().null())
-                    .col(ColumnDef::new(Model::DeletedAt).timestamp().null())
+                    .col(ColumnDef::new(Models::ApiKey).string().not_null())
+                    .col(ColumnDef::new(Models::Endpoint).string().not_null())
+                    .col(ColumnDef::new(Models::DeploymentId).string().not_null())
+                    .col(ColumnDef::new(Models::Provider).string().not_null())
+                    .col(ColumnDef::new(Models::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
+                    .col(ColumnDef::new(Models::UpdatedAt).timestamp().null())
+                    .col(ColumnDef::new(Models::DeletedAt).timestamp().null())
                     .to_owned(),
             )
             .await
@@ -45,7 +45,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Model::Table).to_owned())
+            .drop_table(Table::drop().table(Models::Table).to_owned())
             .await
     }
 }

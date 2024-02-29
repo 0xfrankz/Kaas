@@ -10,6 +10,11 @@ pub enum CommandError {
   DbError {
     message: String
   },
+  #[error("UnknownError: {message}")]
+  #[allow(dead_code)]
+  UnknownError {
+    message: String
+  },
 }
 
 impl Serialize for CommandError {
@@ -25,6 +30,10 @@ impl Serialize for CommandError {
       },
       CommandError::DbError{message: ref msg} => {
         sv.serialize_entry("type", "DbError")?;
+        sv.serialize_entry("message", msg)?;
+      },
+      CommandError::UnknownError{message: ref msg} => {
+        sv.serialize_entry("type", "UnknownError")?;
         sv.serialize_entry("message", msg)?;
       },
     }
