@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -37,8 +38,9 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { KEY_SETTING_DEFAULT_MODEL, PROVIDER_AZURE } from '@/lib/constants';
-import { useCreateModel, useUpsertSetting } from '@/lib/hooks';
+import { LIST_MODELS_KEY, useCreateModel, useUpsertSetting } from '@/lib/hooks';
 import log from '@/lib/log';
+import { modelFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { SupportedProviders, UnsavedModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -48,8 +50,7 @@ export default function ModelsPage() {
   const [showModal, setShowModal] = useState(false);
   const { toast } = useToast();
   const form = useForm<UnsavedModel>({
-    // resolver: zodResolver(createModelSchema),
-    // resolver: zodResolver(modelFormSchema),
+    resolver: zodResolver(modelFormSchema),
     defaultValues: {
       apiKey: '',
       endpoint: '',
@@ -77,20 +78,20 @@ export default function ModelsPage() {
   const onSubmit: SubmitHandler<UnsavedModel> = (formData) => {
     toggleModal(false);
     log.info(`Formdata: ${JSON.stringify(formData)}`);
-    // createModelMutation.mutate(formData, {
-    //   onSuccess(result) {
-    //     log.info(`Model created: ${JSON.stringify(result)}`);
-    //     queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
-    //   },
-    //   onError(error) {
-    //     log.error(error);
-    //     toast({
-    //       variant: 'destructive',
-    //       title: error.type,
-    //       description: error.message,
-    //     });
-    //   },
-    // });
+    createModelMutation.mutate(formData, {
+      onSuccess(result) {
+        log.info(`Model created: ${JSON.stringify(result)}`);
+        queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
+      },
+      onError(error) {
+        log.error(error);
+        toast({
+          variant: 'destructive',
+          title: error.type,
+          description: error.message,
+        });
+      },
+    });
   };
 
   const onDefaultChange = (defaultModelId: number) => {

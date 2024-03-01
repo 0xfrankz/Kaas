@@ -27,6 +27,9 @@ export type Model<
   id: number;
   provider: TProvider;
   config: TConfig;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
 };
 
 export type UnsavedModel = z.infer<typeof modelFormSchema>;

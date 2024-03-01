@@ -44,3 +44,15 @@ impl Related<super::conversations::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+trait ModelConfig {}
+struct AzureConfig;
+struct OpenAIConfig;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModelInput {
+    pub id: i32,
+    pub provider: String,
+    pub config: Box<dyn ModelConfig>,
+}
