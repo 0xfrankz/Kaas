@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -37,12 +36,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
-import { KEY_SETTING_DEFAULT_MODEL } from '@/lib/constants';
-import { LIST_MODELS_KEY, useCreateModel, useUpsertSetting } from '@/lib/hooks';
+import { KEY_SETTING_DEFAULT_MODEL, PROVIDER_AZURE } from '@/lib/constants';
+import { useCreateModel, useUpsertSetting } from '@/lib/hooks';
 import log from '@/lib/log';
-import { createModelSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
-import type { UnsavedModel } from '@/lib/types';
+import type { SupportedProviders, UnsavedModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
@@ -50,11 +48,15 @@ export default function ModelsPage() {
   const [showModal, setShowModal] = useState(false);
   const { toast } = useToast();
   const form = useForm<UnsavedModel>({
-    resolver: zodResolver(createModelSchema),
+    // resolver: zodResolver(createModelSchema),
+    // resolver: zodResolver(modelFormSchema),
     defaultValues: {
       apiKey: '',
       endpoint: '',
       deploymentId: '',
+      // TODO: this is needed to avoid React's uncontrolled input warning;
+      // this form should be refactored into forms that match providers
+      provider: PROVIDER_AZURE,
     },
   });
   const queryClient = useQueryClient();
@@ -75,20 +77,20 @@ export default function ModelsPage() {
   const onSubmit: SubmitHandler<UnsavedModel> = (formData) => {
     toggleModal(false);
     log.info(`Formdata: ${JSON.stringify(formData)}`);
-    createModelMutation.mutate(formData, {
-      onSuccess(result) {
-        log.info(`Model created: ${JSON.stringify(result)}`);
-        queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
-      },
-      onError(error) {
-        log.error(error);
-        toast({
-          variant: 'destructive',
-          title: error.type,
-          description: error.message,
-        });
-      },
-    });
+    // createModelMutation.mutate(formData, {
+    //   onSuccess(result) {
+    //     log.info(`Model created: ${JSON.stringify(result)}`);
+    //     queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
+    //   },
+    //   onError(error) {
+    //     log.error(error);
+    //     toast({
+    //       variant: 'destructive',
+    //       title: error.type,
+    //       description: error.message,
+    //     });
+    //   },
+    // });
   };
 
   const onDefaultChange = (defaultModelId: number) => {
@@ -106,7 +108,8 @@ export default function ModelsPage() {
     );
   };
 
-  const renderCreateModelDialog = (provider: string) => {
+  const renderCreateModelDialog = (provider: SupportedProviders) => {
+    // form.setValue('provider', provider);
     return (
       <Dialog open={showModal} onOpenChange={toggleModal}>
         <DialogTrigger asChild>
@@ -184,7 +187,6 @@ export default function ModelsPage() {
                 <FormField
                   control={form.control}
                   name="provider"
-                  defaultValue={provider}
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -194,6 +196,9 @@ export default function ModelsPage() {
                           name={field.name}
                         />
                       </FormControl>
+                      <div className="col-span-3 col-start-2">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -250,7 +255,7 @@ export default function ModelsPage() {
                   <p className="text-center">GPT-3.5 and GPT-4</p>
                 </CardContent>
                 <CardFooter>
-                  {renderCreateModelDialog('Microsoft Azure')}
+                  {renderCreateModelDialog(PROVIDER_AZURE)}
                 </CardFooter>
               </Card>
             </div>

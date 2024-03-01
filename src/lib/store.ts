@@ -10,7 +10,7 @@ export type AppState = {
   updateSetting: (setting: Setting) => void;
 };
 
-export const useAppStateStore = create<AppState>((set) => ({
+export const useAppStateStore = create<AppState>()((set) => ({
   models: [],
   settings: {},
   refreshModels: (models: Model[]) => {

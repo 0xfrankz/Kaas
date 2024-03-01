@@ -5,8 +5,9 @@
 
 | Field | Description |
 | -------- | -------- |
-| API Key | The API key for your OpenAI API. |
-| Model | ID of the model to use. |
+| api_key | The API key for your OpenAI API. |
+| model | ID of the model to use. |
+| org_id | Organization used for API requests. |
 
 ### Conversation options
 
