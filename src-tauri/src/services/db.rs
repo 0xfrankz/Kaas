@@ -1,4 +1,4 @@
-use sea_orm::{sea_query, ActiveModelTrait, ActiveValue, Database, DatabaseConnection, EntityTrait};
+use sea_orm::{sea_query, ActiveModelTrait, ActiveValue::{self, Set}, Database, DatabaseConnection, EntityTrait};
 use migration::{Migrator, MigratorTrait};
 use log::{error, info};
 use sqlx::migrate::MigrateDatabase;
@@ -26,6 +26,7 @@ impl Repository {
   pub async fn create_model(&self, model: Model) -> Result<Model, String> {
     let mut active_model: ActiveModel = model.into();
     active_model.id = ActiveValue::NotSet;
+    active_model.created_at = Set(chrono::Local::now());
     let result = active_model.insert(&self.connection)
       .await
       .map_err(|err| {

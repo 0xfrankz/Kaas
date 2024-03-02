@@ -26,6 +26,9 @@
       ".\\src-tauri\\Cargo.toml",
       ".\\src-tauri\\entity\\Cargo.toml",
       ".\\src-tauri\\migration\\Cargo.toml"
-    ]
+    ],
+    "[rust]": {
+      "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    }
   }
   
