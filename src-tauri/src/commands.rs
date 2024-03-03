@@ -1,5 +1,9 @@
-
-use entity::entities::{models::Model, settings::Model as Setting};
+use entity::entities::{
+  models::Model, 
+  settings::Model as Setting, 
+  conversations::Model as Conversation, 
+  messages::Model as Message
+};
 
 use tauri::State;
 
@@ -37,4 +41,14 @@ pub async fn list_settings(repo: State<'_, Repository>) -> CommandResult<Vec<Set
 pub async fn upsert_setting(setting: Setting, repo: State<'_, Repository>) -> CommandResult<Setting> {
   let result = repo.upsert_settings(setting).await.map_err(|message| DbError{message})?;
   Ok(result)
+}
+
+#[tauri::command]
+pub async fn create_conversation() -> CommandResult<Conversation> {
+  todo!();
+}
+
+#[tauri::command]
+pub async fn create_message() -> CommandResult<Message> {
+  todo!();
 }
