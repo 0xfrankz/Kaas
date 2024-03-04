@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom';
 
+import { NewConversationForm } from '@/components/NewConversationForm';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { ModelIcon } from '@/components/ui/icons/ModelIcon';
 import { useAppStateStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
 
 export default function CoversationsPage() {
   const { models } = useAppStateStore();
   const hasModels = models.length > 0;
 
-  const renderNoModelsView = () => {
+  const renderEmptyModels = () => {
     return (
       <>
         <h2 className="text-3xl font-semibold">
@@ -28,19 +28,23 @@ export default function CoversationsPage() {
     );
   };
 
+  const render = () => {
+    return (
+      <>
+        <div className="my-6">
+          <NewConversationForm />
+        </div>
+        <div className="grow bg-slate-100">Rest</div>
+      </>
+    );
+  };
+
   return (
     <>
       <TitleBar title="Conversations" />
       <div className="flex grow justify-center">
-        <div className="w-[1080px] max-w-[1080px]">
-          <div
-            className={cn(
-              'flex flex-col px-[34px] min-h-[348px]',
-              hasModels ? 'mt-6' : 'mt-48 items-center'
-            )}
-          >
-            {hasModels ? <h1>Models</h1> : renderNoModelsView()}
-          </div>
+        <div className="flex w-[1080px] max-w-[1080px] flex-col bg-red-50 px-[34px]">
+          {hasModels ? render() : renderEmptyModels()}
         </div>
       </div>
     </>
