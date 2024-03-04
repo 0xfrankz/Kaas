@@ -226,8 +226,8 @@ export default function ModelsPage() {
         <div className="w-[1080px] max-w-[1080px]">
           <div
             className={cn(
-              'flex flex-col px-[34px] min-h-[348px]',
-              hasModels ? 'mt-6' : 'mt-48 items-center'
+              'flex flex-col px-[34px] min-h-[348px] mt-6',
+              hasModels ? null : 'justify-center items-center'
             )}
           >
             {hasModels ? (
@@ -244,7 +244,7 @@ export default function ModelsPage() {
               </>
             )}
           </div>
-          <Separator className="mt-36" />
+          <Separator />
           <div className="px-[34px]">
             <h2 className="my-6 text-xl font-semibold">Supported Models</h2>
             <div className="grid grid-cols-4 gap-5">

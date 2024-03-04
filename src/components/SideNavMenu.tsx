@@ -1,15 +1,11 @@
-import {
-  BoxModelIcon,
-  ChatBubbleIcon,
-  FileTextIcon,
-  GearIcon,
-} from '@radix-ui/react-icons';
+import { ChatBubbleIcon, FileTextIcon, GearIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
 import { Button } from './ui/button';
+import { ModelIcon } from './ui/icons/ModelIcon';
 
 type MenuProps = {
   expanded: boolean;
@@ -98,7 +94,7 @@ export function SideNavMenu({
       />
       <SideNavMenuItem
         text="Manage Models"
-        icon={<BoxModelIcon className="size-4" />}
+        icon={<ModelIcon className="stroke-slate-900 stroke-1" />}
         expanded={expanded}
         active={pathname === '/models'}
         to="/models"
