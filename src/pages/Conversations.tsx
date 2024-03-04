@@ -31,7 +31,7 @@ export default function CoversationsPage() {
   const render = () => {
     return (
       <>
-        <div className="my-6">
+        <div className="my-12">
           <NewConversationForm />
         </div>
         <div className="grow bg-slate-100">Rest</div>
@@ -43,7 +43,7 @@ export default function CoversationsPage() {
     <>
       <TitleBar title="Conversations" />
       <div className="flex grow justify-center">
-        <div className="flex w-[1080px] max-w-[1080px] flex-col bg-red-50 px-[34px]">
+        <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
           {hasModels ? render() : renderEmptyModels()}
         </div>
       </div>

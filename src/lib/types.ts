@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
 import type { SUPPORTED_PROVIDERS } from './constants';
-import type { modelFormSchema } from './schemas';
+import type { conversationFormSchema, modelFormSchema } from './schemas';
 
 // type OpenAIConfig = {
 //   apiKey: string;
@@ -56,6 +56,8 @@ export type Setting = {
 };
 
 export type SupportedProviders = (typeof SUPPORTED_PROVIDERS)[number];
+
+export type UnsavedConversation = z.infer<typeof conversationFormSchema>;
 
 // Error
 export type CommandError = {

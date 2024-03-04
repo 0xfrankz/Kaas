@@ -28,3 +28,8 @@ export const modelFormSchema = z.discriminatedUnion('provider', [
   openaiModelFormSchema,
   azureModelFormSchema,
 ]);
+
+export const conversationFormSchema = z.object({
+  modelId: z.number(),
+  message: z.string().min(1, 'Message is required'),
+});
