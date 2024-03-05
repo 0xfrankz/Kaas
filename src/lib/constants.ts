@@ -9,3 +9,6 @@ export const PROVIDER_INFO = {
 
 // Setting keys
 export const KEY_SETTING_DEFAULT_MODEL = 'user:default:model';
+
+// Defaults
+export const DEFAULT_DATE_FORMAT = 'MMM D, YYYY';

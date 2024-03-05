@@ -35,14 +35,14 @@ export default function CoversationsPage() {
   const render = () => {
     return (
       <>
-        <div className="my-12">
+        <div className="mt-12">
           <NewConversationForm />
         </div>
-        <div className="flex grow items-center justify-center">
+        <div className="mt-12 flex grow">
           {isSuccess && hasConversations ? (
             <ConversationGrid conversations={conversations} />
           ) : (
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2 className="m-auto text-3xl font-semibold tracking-tight">
               You have no conversations yet
             </h2>
           )}

@@ -24,6 +24,7 @@
     "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "dayjs": "^1.11.10",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.50.1",

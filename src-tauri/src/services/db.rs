@@ -1,12 +1,14 @@
-use entity::entities::conversations::{self, Model as Conversation};
+use entity::entities::conversations::{self, ConversationListItem, Model as Conversation};
+use entity::entities::messages;
 use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
+use sea_orm::{DbBackend, JoinType, QuerySelect, QueryTrait};
 use sea_orm::{
     sea_query, ActiveModelTrait,
     ActiveValue::{self, Set},
-    Database, DatabaseConnection, EntityTrait,
+    Database, DatabaseConnection, EntityTrait, ColumnTrait, RelationTrait
 };
 use sqlx::migrate::MigrateDatabase;
 
@@ -113,15 +115,40 @@ impl Repository {
     /**
      * List all conversations
      */
-    pub async fn list_conversations(&self) -> Result<Vec<Conversation>, String> {
-        let result: Vec<Conversation> = 
-            conversations::Entity::find()
+    pub async fn list_conversations(&self) -> Result<Vec<ConversationListItem>, String> {
+        let s = conversations::Entity::find()
+                .join(
+                    JoinType::LeftJoin,
+                    conversations::Relation::Messages.def()
+                )
+                .column_as(messages::Column::Id.count(), "messages_count")
+                .group_by(conversations::Column::Id)
+                .build(DbBackend::Sqlite)
+                .to_string();
+        log::info!("SQLLL: {}", s);
+        let result = conversations::Entity::find()
+                .join(
+                    JoinType::LeftJoin,
+                    conversations::Relation::Messages.def()
+                )
+                .column_as(messages::Column::Id.count(), "message_count")
+                .group_by(conversations::Column::Id)
+                .into_model::<ConversationListItem>()
                 .all(&self.connection)
                 .await
                 .map_err(|err| {
                     error!("{}", err);
                     "Failed to list conversations".to_string()
                 })?;
+        
+        // let result: Vec<Conversation> = 
+        //     conversations::Entity::find()
+        //         .all(&self.connection)
+        //         .await
+        //         .map_err(|err| {
+        //             error!("{}", err);
+        //             "Failed to list conversations".to_string()
+        //         })?;
         Ok(result)
     }
 }

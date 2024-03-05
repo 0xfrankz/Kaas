@@ -1,9 +1,10 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 
-import { useCreateConversation } from '@/lib/hooks';
+import { LIST_CONVERSATIONS_KEY, useCreateConversation } from '@/lib/hooks';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { UnsavedConversation } from '@/lib/types';
@@ -26,6 +27,7 @@ export function NewConversationForm() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const createConversationMutation = useCreateConversation();
+  const queryClient = useQueryClient();
 
   // Callbacks
   const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
@@ -36,10 +38,11 @@ export function NewConversationForm() {
           // TODO: redirect to conversation page
           // TODO: store first message to state
           console.log('conversation create:', conversation);
+          queryClient.invalidateQueries({ queryKey: LIST_CONVERSATIONS_KEY });
         },
       });
     } else {
-      // inputRef.current?.focus();
+      inputRef.current?.focus();
       toast({
         title: "Input can't be empty",
         description: 'Type something to start a new conversation.',

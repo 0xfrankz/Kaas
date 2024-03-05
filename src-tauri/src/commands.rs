@@ -1,5 +1,5 @@
 use entity::entities::{
-    conversations::Model as Conversation, messages::Model as Message, models::Model,
+    conversations::{ConversationListItem, Model as Conversation}, messages::Model as Message, models::Model,
     settings::Model as Setting,
 };
 
@@ -72,15 +72,17 @@ pub async fn create_conversation(
 }
 
 #[tauri::command]
-pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<Conversation>> {
-    let result: Vec<Conversation> = repo
+pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationListItem>> {
+    let result = repo
         .list_conversations()
         .await
         .map_err(|message| DbError { message })?;
+    log::info!("list_conversations result: {:?}", result);
     Ok(result)
 }
 
 #[tauri::command]
+#[allow(dead_code)]
 pub async fn create_message() -> CommandResult<Message> {
     todo!();
 }
