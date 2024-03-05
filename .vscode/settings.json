@@ -1,14 +1,16 @@
 {
+    "editor.detectIndentation": true,
     // JS
     // "eslint.workingDirectories": ["./src"],
     "eslint.format.enable": true,
     "[javascript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.tabSize": 2
     },
     "[typescript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.tabSize": 2,
     },
-    "editor.tabSize": 2,
     "prettier.singleQuote": true,
     "typescript.tsdk": "node_modules/typescript/lib",
     "editor.codeActionsOnSave": {
@@ -28,7 +30,8 @@
       ".\\src-tauri\\migration\\Cargo.toml"
     ],
     "[rust]": {
-      "editor.defaultFormatter": "rust-lang.rust-analyzer"
+      "editor.defaultFormatter": "rust-lang.rust-analyzer",
+      "editor.tabSize": 4
     }
   }
   
