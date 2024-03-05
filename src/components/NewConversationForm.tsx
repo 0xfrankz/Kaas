@@ -1,7 +1,10 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
+import { useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 
+import { useCreateConversation } from '@/lib/hooks';
+import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { UnsavedConversation } from '@/lib/types';
 
@@ -15,21 +18,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import { useToast } from './ui/use-toast';
 
 export function NewConversationForm() {
   const { models } = useAppStateStore();
-  const form = useForm<UnsavedConversation>({
-    // resolver: zodResolver(conversationFormSchema),
-  });
+  const form = useForm<UnsavedConversation>();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const createConversationMutation = useCreateConversation();
 
   // Callbacks
   const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
-    console.log(formData);
+    const validation = conversationFormSchema.safeParse(formData);
+    if (validation.success) {
+      createConversationMutation.mutate(validation.data, {
+        onSuccess: (conversation) => {
+          // TODO: redirect to conversation page
+          // TODO: store first message to state
+          console.log('conversation create:', conversation);
+        },
+      });
+    } else {
+      // inputRef.current?.focus();
+      toast({
+        title: "Input can't be empty",
+        description: 'Type something to start a new conversation.',
+      });
+    }
   };
 
   return (
     <div className="flex flex-col items-center">
-      <h2 className="text-3xl font-semibold">Start a new conversation</h2>
+      <h2 className="text-3xl font-semibold tracking-tight">
+        Start a new conversation
+      </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="mt-6 box-border flex h-[72px] w-[720px] items-center rounded-2xl border border-slate-300 bg-gray-50">
@@ -38,12 +60,13 @@ export function NewConversationForm() {
               name="message"
               defaultValue=""
               render={({ field }) => (
-                <FormItem className="ml-4">
+                <FormItem className="ml-4 grow">
                   <FormControl>
                     <Input
                       placeholder="Ask anything..."
                       {...field}
-                      className="border-0 px-0 shadow-none focus-visible:ring-0"
+                      className="border-0 px-0"
+                      ref={inputRef}
                     />
                   </FormControl>
                   <FormMessage />
@@ -55,13 +78,13 @@ export function NewConversationForm() {
               name="modelId"
               defaultValue={models[0].id}
               render={({ field }) => (
-                <FormItem className="ml-auto w-40">
+                <FormItem className="ml-4 w-40">
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value.toString()}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white shadow-none focus:ring-0">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>

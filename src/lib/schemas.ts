@@ -30,6 +30,6 @@ export const modelFormSchema = z.discriminatedUnion('provider', [
 ]);
 
 export const conversationFormSchema = z.object({
-  modelId: z.number(),
+  modelId: z.coerce.number(),
   message: z.string().min(1, 'Message is required'),
 });

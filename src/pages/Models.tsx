@@ -232,12 +232,14 @@ export default function ModelsPage() {
           >
             {hasModels ? (
               <>
-                <h2 className="text-3xl font-semibold">Your Models</h2>
+                <h2 className="text-3xl font-semibold tracking-tight">
+                  Your Models
+                </h2>
                 <ModelGrid models={models} onDefaultChange={onDefaultChange} />
               </>
             ) : (
               <>
-                <h2 className="text-3xl font-semibold">
+                <h2 className="text-3xl font-semibold tracking-tight">
                   You have no models yet
                 </h2>
                 <p className="mt-4 text-sm">Add one from below</p>
@@ -246,7 +248,9 @@ export default function ModelsPage() {
           </div>
           <Separator />
           <div className="px-[34px]">
-            <h2 className="my-6 text-xl font-semibold">Supported Models</h2>
+            <h2 className="my-6 text-xl font-semibold tracking-tight">
+              Supported Models
+            </h2>
             <div className="grid grid-cols-4 gap-5">
               <Card className="border-2 border-slate-900 shadow-none">
                 <CardHeader className="pb-2">

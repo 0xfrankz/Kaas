@@ -1,6 +1,14 @@
 import { invoke } from '@tauri-apps/api';
 
-import type { GenericModel, Model, Setting, UnsavedModel } from './types';
+import log from './log';
+import type {
+  Conversation,
+  GenericModel,
+  Model,
+  Setting,
+  UnsavedConversation,
+  UnsavedModel,
+} from './types';
 import { fromGenericModel, toGenericModel } from './types';
 
 export async function invokeCreateModel(model: UnsavedModel): Promise<Model> {
@@ -21,5 +29,24 @@ export async function invokeListSettings(): Promise<Setting[]> {
 
 export async function invokeUpsertSetting(setting: Setting): Promise<Setting> {
   const result = await invoke<Setting>('upsert_setting', { setting });
+  return result;
+}
+
+export async function invokeCreateConversation(
+  conversation: UnsavedConversation
+): Promise<Conversation> {
+  const data: Record<string, string | number> = {
+    modelId: conversation.modelId,
+    subject: conversation.message,
+  };
+  log.info(`create_conversation with data: ${JSON.stringify(data)}`);
+  const result = await invoke<Conversation>('create_conversation', {
+    conversation: data,
+  });
+  return result;
+}
+
+export async function invokeListConversations(): Promise<Conversation[]> {
+  const result = await invoke<Conversation[]>('list_conversations');
   return result;
 }

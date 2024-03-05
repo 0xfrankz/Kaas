@@ -59,6 +59,16 @@ export type SupportedProviders = (typeof SUPPORTED_PROVIDERS)[number];
 
 export type UnsavedConversation = z.infer<typeof conversationFormSchema>;
 
+export type Conversation = {
+  id: number;
+  modelId: number;
+  subject: string;
+  options: string;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+};
+
 // Error
 export type CommandError = {
   type: string;

@@ -26,13 +26,23 @@ function ModelGridItem({
       onDefaultChange(model.id);
     }
   };
+  const getModelName = (m: Model): string => {
+    switch (m.provider) {
+      case 'Azure':
+        return m.deploymentId;
+      case 'OpenAI':
+        return m.model;
+      default:
+        return '';
+    }
+  };
   return (
     <Card className="min-h-32 border-2 border-slate-900 shadow-none">
       <CardHeader className="pb-2">
         <CardTitle className="mx-auto">Microsoft Azure</CardTitle>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-center">{model.deploymentId}</p>
+        <p className="text-center">{getModelName(model)}</p>
       </CardContent>
       <CardFooter>
         <div className="mx-auto flex items-center space-x-2">
@@ -62,7 +72,6 @@ export function ModelGrid({
   const { settings } = useAppStateStore();
   const defaultModelId =
     parseInt(settings[KEY_SETTING_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
-  console.log(`defaultModelId=${defaultModelId}`);
 
   return (
     <div className="mt-6 grid grid-cols-4 gap-5">
