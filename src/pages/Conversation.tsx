@@ -1,16 +1,40 @@
 import { useParams } from 'react-router-dom';
 
-import { parseNumberOrNull } from '@/lib/utils';
+import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
+import { useConversation } from '@/lib/hooks';
+import { errorGuard, parseNumberOrNull } from '@/lib/utils';
 
 type Params = {
   conversationId: string;
 };
 
-export default function ConversationPage() {
+function ConversationPage() {
   const { conversationId } = useParams<Params>();
   const cid = parseNumberOrNull(conversationId);
   if (cid === null) {
-    throw Error('Oops, the required conversation is missing...');
+    throw new AppError(
+      ERROR_TYPE_APP_STATE,
+      `${conversationId} is not a valid number`,
+      `Oops, the conversation with id = ${conversationId} is missing`
+    );
   }
-  return <div>Conversation Page: {conversationId}</div>;
+
+  const {
+    data: conversation,
+    isSuccess,
+    isError,
+    error,
+  } = useConversation(cid);
+
+  if (isError && error) {
+    throw error;
+  }
+
+  return isSuccess && conversation ? (
+    <div>
+      Conversation Page: {conversationId} {conversation.subject}
+    </div>
+  ) : null;
 }
+
+export default errorGuard(<ConversationPage />);

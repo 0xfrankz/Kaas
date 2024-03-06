@@ -14,7 +14,7 @@ function ConversationGridItem({
   conversation: Conversation;
 }) {
   return (
-    <Link to="/conversation/conversation.id">
+    <Link to={`/conversation/${conversation.id}`}>
       <Card className="flex h-52 flex-col text-clip border-2 border-slate-500 bg-clip-border shadow-none">
         <CardHeader className="p-4">
           <div className="flex items-center text-xs">

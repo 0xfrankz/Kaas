@@ -10,6 +10,7 @@ import {
   invokeListSettings,
   invokeUpsertSetting,
 } from './commands';
+import type { AppError } from './error';
 import type {
   CommandError,
   Conversation,
@@ -80,7 +81,7 @@ export function useListConversations(): UseQueryResult<
 
 export function useConversation(
   conversationId: number
-): UseQueryResult<Conversation, CommandError> {
+): UseQueryResult<Conversation, AppError> {
   return useQuery({
     queryKey: [...DETAIL_CONVERSATION_KEY, conversationId],
     queryFn: () => invokeGetConversation(conversationId),
