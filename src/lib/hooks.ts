@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   invokeCreateConversation,
   invokeCreateModel,
+  invokeGetConversation,
   invokeListConversations,
   invokeListModels,
   invokeListSettings,
@@ -21,6 +22,7 @@ import type {
 export const LIST_MODELS_KEY = ['list-models'];
 export const LIST_SETTINGS_KEY = ['list-settings'];
 export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
+export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
 
 export function useCreateModel(): UseMutationResult<
   Model,
@@ -73,5 +75,14 @@ export function useListConversations(): UseQueryResult<
   return useQuery({
     queryKey: LIST_CONVERSATIONS_KEY,
     queryFn: invokeListConversations,
+  });
+}
+
+export function useConversation(
+  conversationId: number
+): UseQueryResult<Conversation, CommandError> {
+  return useQuery({
+    queryKey: [...DETAIL_CONVERSATION_KEY, conversationId],
+    queryFn: () => invokeGetConversation(conversationId),
   });
 }

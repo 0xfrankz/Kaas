@@ -51,3 +51,9 @@ export async function invokeListConversations(): Promise<Conversation[]> {
   log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);
   return result;
 }
+
+export async function invokeGetConversation(
+  conversationId: number
+): Promise<Conversation | null> {
+  return null;
+}
