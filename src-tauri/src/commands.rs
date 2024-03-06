@@ -86,6 +86,14 @@ pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Ve
 }
 
 #[tauri::command]
+pub async fn get_conversation(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ConversationListItem> {
+    let now = Instant::now();
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::get_conversation]: {:.2?}", elapsed);
+    Err(CommandError::UnknownError { message: "Not implemented".to_string() })
+}
+
+#[tauri::command]
 #[allow(dead_code)]
 pub async fn create_message() -> CommandResult<Message> {
     todo!();

@@ -85,5 +85,6 @@ export function useConversation(
   return useQuery({
     queryKey: [...DETAIL_CONVERSATION_KEY, conversationId],
     queryFn: () => invokeGetConversation(conversationId),
+    retry: false,
   });
 }

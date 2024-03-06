@@ -64,7 +64,7 @@ export async function invokeGetConversation(
       new AppError(
         err.type,
         err.message,
-        `Oops, the conversation with id = ${conversationId} is missing...`
+        `Oops, the conversation with id = ${conversationId} is missing`
       )
     );
   });
