@@ -53,6 +53,7 @@ impl Related<super::models::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Clone, Debug, FromQueryResult, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ConversationListItem {
     pub id: i32,
     pub model_id: i32,
@@ -62,4 +63,5 @@ pub struct ConversationListItem {
     pub updated_at: Option<DateTimeLocal>,
     pub deleted_at: Option<DateTimeLocal>,
     pub message_count: Option<i32>,
+    pub model_provider: Option<String>,
 }

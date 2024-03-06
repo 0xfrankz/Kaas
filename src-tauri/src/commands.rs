@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation}, messages::Model as Message, models::Model,
     settings::Model as Setting,
@@ -73,11 +75,13 @@ pub async fn create_conversation(
 
 #[tauri::command]
 pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationListItem>> {
+    let now = Instant::now();
     let result = repo
         .list_conversations()
         .await
         .map_err(|message| DbError { message })?;
-    log::info!("list_conversations result: {:?}", result);
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::list_conversations]: {:.2?}", elapsed);
     Ok(result)
 }
 

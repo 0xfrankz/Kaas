@@ -18,17 +18,19 @@ function ConversationGridItem({
         <div className="flex items-center text-xs">
           <CalendarIcon className="size-4" />
           <span className="ml-1">
-            {dayjs(conversation.createdAt).format(DEFAULT_DATE_FORMAT)}
+            {conversation.createdAt
+              ? dayjs(conversation.createdAt).format(DEFAULT_DATE_FORMAT)
+              : 'Unknown'}
           </span>
           <ChatBubbleIcon className="ml-auto size-4" />
-          <span className="ml-1">12</span>
+          <span className="ml-1">{conversation.messageCount}</span>
         </div>
       </CardHeader>
-      <CardContent className="grow bg-blue-100 px-4 py-0">
+      <CardContent className="grow px-4 py-0">
         <p className="">{conversation.subject}</p>
       </CardContent>
       <CardFooter className="p-4">
-        <Badge className="bg-slate-500">badge</Badge>
+        <Badge className="bg-slate-500">{conversation.modelProvider}</Badge>
       </CardFooter>
     </Card>
   );
@@ -43,7 +45,7 @@ export function ConversationGrid({
       <h2 className="text-3xl font-semibold tracking-tight">
         {conversations.length} conversations
       </h2>
-      <div className="mt-6 grid grid-cols-3 gap-[26px] bg-red-50">
+      <div className="mt-6 grid grid-cols-3 gap-[26px]">
         {conversations.map((conversation) => {
           return (
             <ConversationGridItem

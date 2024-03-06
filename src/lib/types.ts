@@ -67,6 +67,8 @@ export type Conversation = {
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
+  messageCount?: number;
+  modelProvider?: string;
 };
 
 // Error

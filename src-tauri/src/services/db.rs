@@ -121,6 +121,11 @@ impl Repository {
                     JoinType::LeftJoin,
                     conversations::Relation::Messages.def()
                 )
+                .join(
+                    JoinType::InnerJoin,
+                    conversations::Relation::Models.def()
+                )
+                .column(models::Column::Provider)
                 .column_as(messages::Column::Id.count(), "messages_count")
                 .group_by(conversations::Column::Id)
                 .build(DbBackend::Sqlite)
@@ -131,6 +136,11 @@ impl Repository {
                     JoinType::LeftJoin,
                     conversations::Relation::Messages.def()
                 )
+                .join(
+                    JoinType::InnerJoin,
+                    conversations::Relation::Models.def()
+                )
+                .column_as(models::Column::Provider, "model_provider")
                 .column_as(messages::Column::Id.count(), "message_count")
                 .group_by(conversations::Column::Id)
                 .into_model::<ConversationListItem>()
@@ -140,15 +150,6 @@ impl Repository {
                     error!("{}", err);
                     "Failed to list conversations".to_string()
                 })?;
-        
-        // let result: Vec<Conversation> = 
-        //     conversations::Entity::find()
-        //         .all(&self.connection)
-        //         .await
-        //         .map_err(|err| {
-        //             error!("{}", err);
-        //             "Failed to list conversations".to_string()
-        //         })?;
         Ok(result)
     }
 }
