@@ -58,7 +58,7 @@ export function InitializationProvider({
   return children;
 }
 
-export function ConversationsProvider({
+export function ConversationsContextProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -67,10 +67,12 @@ export function ConversationsProvider({
   const conversationContext = useMemo<TConversationsContext>(() => {
     return {
       conversations: isSuccess ? conversations : [],
+      get: (id: number) =>
+        conversations?.find((conversation) => conversation.id === id),
     };
   }, [conversations, isSuccess]);
 
-  log.info('ConversationsProvider rendered!');
+  log.info('ConversationsContextProvider rendered!');
 
   return (
     <ConversationsContext.Provider value={conversationContext}>

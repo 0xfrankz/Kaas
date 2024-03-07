@@ -1,21 +1,22 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useContext } from 'react';
 
 import {
   invokeCreateConversation,
   invokeCreateModel,
-  invokeGetConversation,
   invokeListConversations,
   invokeListModels,
   invokeListSettings,
   invokeUpsertSetting,
 } from './commands';
-import type { AppError } from './error';
+import { ConversationsContext } from './contexts';
 import type {
   CommandError,
   Conversation,
   Model,
   Setting,
+  TConversationsContext,
   UnsavedConversation,
   UnsavedModel,
 } from './types';
@@ -79,12 +80,14 @@ export function useListConversations(): UseQueryResult<
   });
 }
 
-export function useConversation(
-  conversationId: number
-): UseQueryResult<Conversation, AppError> {
-  return useQuery({
-    queryKey: [...DETAIL_CONVERSATION_KEY, conversationId],
-    queryFn: () => invokeGetConversation(conversationId),
-    retry: false,
-  });
+// Context hooks
+export function useConversationsContext(): TConversationsContext {
+  const context = useContext(ConversationsContext);
+  if (context === undefined) {
+    throw new Error(
+      'useConversationsContext must be used within a ConversationsContextProvider'
+    );
+  }
+
+  return context;
 }

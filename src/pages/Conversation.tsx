@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
-import { useConversation } from '@/lib/hooks';
+import { useConversationsContext } from '@/lib/hooks';
 import { errorGuard, parseNumberOrNull } from '@/lib/utils';
 
 type Params = {
@@ -10,6 +10,7 @@ type Params = {
 
 function ConversationPage() {
   const { conversationId } = useParams<Params>();
+  const { get: getConversation } = useConversationsContext();
   const cid = parseNumberOrNull(conversationId);
   if (cid === null) {
     throw new AppError(
@@ -18,19 +19,9 @@ function ConversationPage() {
       `Oops, the conversation with id = ${conversationId} is missing`
     );
   }
+  const conversation = getConversation(cid);
 
-  const {
-    data: conversation,
-    isSuccess,
-    isError,
-    error,
-  } = useConversation(cid);
-
-  if (isError && error) {
-    throw error;
-  }
-
-  return isSuccess && conversation ? (
+  return conversation ? (
     <div>
       Conversation Page: {conversationId} {conversation.subject}
     </div>

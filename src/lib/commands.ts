@@ -1,9 +1,7 @@
 import { invoke } from '@tauri-apps/api';
 
-import { AppError } from './error';
 import log from './log';
 import type {
-  CommandError,
   Conversation,
   GenericModel,
   Model,
@@ -51,23 +49,5 @@ export async function invokeCreateConversation(
 export async function invokeListConversations(): Promise<Conversation[]> {
   const result = await invoke<Conversation[]>('list_conversations');
   log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);
-  return result;
-}
-
-export async function invokeGetConversation(
-  conversationId: number
-): Promise<Conversation> {
-  const result = await invoke<Conversation>('get_conversation', {
-    conversationId,
-  }).catch((err: CommandError) => {
-    return Promise.reject(
-      new AppError(
-        err.type,
-        err.message,
-        `Oops, the conversation with id = ${conversationId} is missing`
-      )
-    );
-  });
-
   return result;
 }

@@ -5,14 +5,14 @@ import { NewConversationForm } from '@/components/NewConversationForm';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { ModelIcon } from '@/components/ui/icons/ModelIcon';
-import { useListConversations } from '@/lib/hooks';
+import { useConversationsContext } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 
 export default function CoversationsPage() {
   const { models } = useAppStateStore();
-  const { data: conversations, isSuccess } = useListConversations();
+  const { conversations } = useConversationsContext();
   const hasModels = models.length > 0;
-  const hasConversations = conversations && conversations.length > 0;
+  const hasConversations = conversations.length > 0;
 
   const renderEmptyModels = () => {
     return (
@@ -39,7 +39,7 @@ export default function CoversationsPage() {
           <NewConversationForm />
         </div>
         <div className="mt-12 flex grow">
-          {isSuccess && hasConversations ? (
+          {hasConversations ? (
             <ConversationGrid conversations={conversations} />
           ) : (
             <h2 className="m-auto text-3xl font-semibold tracking-tight">

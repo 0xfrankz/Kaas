@@ -74,6 +74,7 @@ export type Conversation = {
 // Contexts
 export type TConversationsContext = {
   conversations: Conversation[];
+  get: (id: number) => Conversation | undefined;
 };
 
 // Errors

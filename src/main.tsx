@@ -5,7 +5,11 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 
 import CommonLayout from '@/layouts/CommonLayout';
-import { InitializationProvider, RQProvider } from '@/lib/providers';
+import {
+  ConversationsContextProvider,
+  InitializationProvider,
+  RQProvider,
+} from '@/lib/providers';
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
 import ModelsPage from '@/pages/Models';
@@ -33,7 +37,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'conversations',
-        element: <Outlet />,
+        element: (
+          <ConversationsContextProvider>
+            <Outlet />
+          </ConversationsContextProvider>
+        ),
         children: [
           {
             index: true,
