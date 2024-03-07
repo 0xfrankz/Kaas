@@ -1,5 +1,5 @@
 use entity::entities::conversations::{self, ConversationListItem, Model as Conversation};
-use entity::entities::messages;
+use entity::entities::messages::{self, Model as Message};
 use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
@@ -151,6 +151,13 @@ impl Repository {
                     "Failed to list conversations".to_string()
                 })?;
         Ok(result)
+    }
+
+    /**
+     * Insert a new message
+     */
+    pub async fn create_message(&self, message: Message) -> Result<Message, String> {
+        todo!();
     }
 }
 

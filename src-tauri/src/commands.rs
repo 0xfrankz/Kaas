@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use entity::entities::{
-    conversations::{ConversationListItem, Model as Conversation}, messages::Model as Message, models::Model,
+    conversations::{ConversationListItem, Model as Conversation, NewConversation}, messages::Model as Message, models::Model,
     settings::Model as Setting,
 };
 
@@ -63,13 +63,28 @@ pub async fn upsert_setting(
 
 #[tauri::command]
 pub async fn create_conversation(
-    conversation: Conversation,
+    new_conversation: NewConversation,
     repo: State<'_, Repository>,
 ) -> CommandResult<Conversation> {
+    // Create conversation, throw error when fail
+    let conversation = Conversation {
+        model_id: new_conversation.model_id,
+        subject: new_conversation.message.clone(),
+        ..Default::default()
+    };
     let result: Conversation = repo
         .create_conversation(conversation)
         .await
         .map_err(|message| DbError { message })?;
+
+    // Create message, fail silently
+    let message = Message {
+        conversation_id: result.id,
+        content: new_conversation.message,
+        ..Default::default()
+    };
+    let _ = repo.create_message(message).await;
+
     Ok(result)
 }
 

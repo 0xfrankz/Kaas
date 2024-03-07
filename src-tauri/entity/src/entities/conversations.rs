@@ -3,7 +3,7 @@
 use sea_orm::{entity::prelude::*, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
+#[derive(Clone, Default, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
 #[sea_orm(table_name = "conversations")]
 #[serde(rename_all = "camelCase")]
 pub struct Model {
@@ -64,4 +64,11 @@ pub struct ConversationListItem {
     pub deleted_at: Option<DateTimeLocal>,
     pub message_count: Option<i32>,
     pub model_provider: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewConversation {
+    pub model_id: i32,
+    pub message: String,
 }
