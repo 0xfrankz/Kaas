@@ -1,11 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { useListModels, useListSettings } from './hooks';
+import { ConversationsContext } from './contexts';
+import { useListConversations, useListModels, useListSettings } from './hooks';
 import log from './log';
 import { useAppStateStore } from './store';
+import type { TConversationsContext } from './types';
 
-export function RQProviders({ children }: { children: React.ReactNode }) {
+export function RQProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
     return new QueryClient({
       defaultOptions: {
@@ -23,7 +25,7 @@ export function RQProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function InitializationProviders({
+export function InitializationProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -54,4 +56,25 @@ export function InitializationProviders({
   }, [models]);
 
   return children;
+}
+
+export function ConversationsProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { data: conversations, isSuccess } = useListConversations();
+  const conversationContext = useMemo<TConversationsContext>(() => {
+    return {
+      conversations: isSuccess ? conversations : [],
+    };
+  }, [conversations, isSuccess]);
+
+  log.info('ConversationsProvider rendered!');
+
+  return (
+    <ConversationsContext.Provider value={conversationContext}>
+      {children}
+    </ConversationsContext.Provider>
+  );
 }

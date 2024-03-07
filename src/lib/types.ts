@@ -71,7 +71,12 @@ export type Conversation = {
   modelProvider?: string;
 };
 
-// Error
+// Contexts
+export type TConversationsContext = {
+  conversations: Conversation[];
+};
+
+// Errors
 export type CommandError = {
   type: string;
   message: string;

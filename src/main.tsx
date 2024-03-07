@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 
 import CommonLayout from '@/layouts/CommonLayout';
-import { InitializationProviders, RQProviders } from '@/lib/providers';
+import { InitializationProvider, RQProvider } from '@/lib/providers';
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
 import ModelsPage from '@/pages/Models';
@@ -33,11 +33,17 @@ const router = createBrowserRouter([
       },
       {
         path: 'conversations',
-        element: <ConversationsPage />,
-      },
-      {
-        path: 'conversation/:conversationId',
-        element: <ConversationPage />,
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <ConversationsPage />,
+          },
+          {
+            path: ':conversationId',
+            element: <ConversationPage />,
+          },
+        ],
       },
       {
         path: 'templates',
@@ -53,10 +59,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <RQProviders>
-      <InitializationProviders>
+    <RQProvider>
+      <InitializationProvider>
         <RouterProvider router={router} />
-      </InitializationProviders>
-    </RQProviders>
+      </InitializationProvider>
+    </RQProvider>
   </React.StrictMode>
 );
