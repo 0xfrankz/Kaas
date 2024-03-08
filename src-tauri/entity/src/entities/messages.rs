@@ -3,9 +3,30 @@
 use sea_orm::entity::prelude::*;
 
 pub enum Roles {
-    User = 0,
-    Bot = 1,
-    System = 2,
+    User,
+    Bot,
+    System,
+}
+
+impl Into<i32> for Roles {
+    fn into(self) -> i32 {
+        match self {
+            Roles::User => 0,
+            Roles::Bot => 1,
+            Roles::System => 2,
+        }
+    }
+}
+
+impl From<i32> for Roles {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => Roles::User,
+            1 => Roles::Bot,
+            2 => Roles::System,
+            _ => panic!("Invalid role"),
+        }
+    }
 }
 
 #[derive(Clone, Default, Debug, PartialEq, DeriveEntityModel, Eq)]
@@ -16,8 +37,8 @@ pub struct Model {
     pub conversation_id: i32,
     pub role: i32,
     pub content: String,
-    pub created_at: String,
-    pub deleted_at: Option<String>,
+    pub created_at: DateTimeLocal,
+    pub deleted_at: Option<DateTimeLocal>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

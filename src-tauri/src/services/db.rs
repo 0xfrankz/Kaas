@@ -1,14 +1,21 @@
-use entity::entities::conversations::{self, ConversationListItem, Model as Conversation};
-use entity::entities::messages::{self, Model as Message};
+
+use entity::entities::conversations::{self, ConversationListItem, Model as Conversation, ActiveModel as ActiveConversation};
+use entity::entities::messages::{self, Model as Message, ActiveModel as ActiveMessage};
 use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{DbBackend, JoinType, QuerySelect, QueryTrait};
+use sea_orm::{DbErr, JoinType, QuerySelect};
 use sea_orm::{
-    sea_query, ActiveModelTrait,
+    sea_query, 
+    ActiveModelTrait,
     ActiveValue::{self, Set},
-    Database, DatabaseConnection, EntityTrait, ColumnTrait, RelationTrait
+    Database, 
+    DatabaseConnection, 
+    EntityTrait, 
+    ColumnTrait, 
+    RelationTrait,
+    TransactionTrait
 };
 use sqlx::migrate::MigrateDatabase;
 
@@ -96,11 +103,12 @@ impl Repository {
     /**
      * Insert a new conversation
      */
+    #[allow(dead_code)]
     pub async fn create_conversation(
         &self,
         conversation: Conversation,
     ) -> Result<Conversation, String> {
-        let mut active_model: conversations::ActiveModel = conversation.clone().into();
+        let mut active_model: ActiveConversation = conversation.clone().into();
         active_model.id = ActiveValue::NotSet;
         // TODO: options should be set to default values of current model
         active_model.options = Set("".to_owned());
@@ -112,25 +120,42 @@ impl Repository {
         Ok(result)
     }
 
+    pub async fn create_conversation_with_message(&self, conversation: Conversation, message: Message) -> Result<(Conversation, Message), String> {
+        let result = self.connection.transaction::<_, (Conversation, Message), DbErr>(|txn| {
+            Box::pin(async move {
+                let mut c_am: ActiveConversation = conversation.into();
+                c_am.id = ActiveValue::NotSet;
+                c_am.options = Set("".to_owned());
+                c_am.created_at = Set(chrono::Local::now());
+
+                let c_m: Conversation = c_am
+                    .insert(txn)
+                    .await?;
+                
+                let mut m_am: ActiveMessage = message.into();
+                m_am.id = ActiveValue::NotSet;
+                m_am.conversation_id = Set(c_m.id);
+                m_am.created_at = Set(chrono::Local::now());
+
+                let m_m: Message = m_am
+                    .insert(txn)
+                    .await?;
+                
+                Ok((c_m, m_m))
+            })
+        })
+        .await
+        .map_err(|err| {
+            error!("Failed to create conversation with message: {}", err);
+            err.to_string()
+        })?;
+        Ok(result)
+    }
+
     /**
      * List all conversations
      */
     pub async fn list_conversations(&self) -> Result<Vec<ConversationListItem>, String> {
-        let s = conversations::Entity::find()
-                .join(
-                    JoinType::LeftJoin,
-                    conversations::Relation::Messages.def()
-                )
-                .join(
-                    JoinType::InnerJoin,
-                    conversations::Relation::Models.def()
-                )
-                .column(models::Column::Provider)
-                .column_as(messages::Column::Id.count(), "messages_count")
-                .group_by(conversations::Column::Id)
-                .build(DbBackend::Sqlite)
-                .to_string();
-        log::info!("SQLLL: {}", s);
         let result = conversations::Entity::find()
                 .join(
                     JoinType::LeftJoin,
@@ -156,8 +181,9 @@ impl Repository {
     /**
      * Insert a new message
      */
-    pub async fn create_message(&self, message: Message) -> Result<Message, String> {
-        todo!();
+    #[allow(dead_code)]
+    pub async fn create_message(&self, _: Message) -> Result<Message, String> {
+        Err("not implemented".to_owned())
     }
 }
 
