@@ -4,7 +4,9 @@ import log from './log';
 import type {
   Conversation,
   GenericModel,
+  Message,
   Model,
+  NewMessage,
   Setting,
   UnsavedConversation,
   UnsavedModel,
@@ -47,5 +49,19 @@ export async function invokeCreateConversation(
 export async function invokeListConversations(): Promise<Conversation[]> {
   const result = await invoke<Conversation[]>('list_conversations');
   log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);
+  return result;
+}
+
+export async function invokeListMessages(
+  conversationId: number
+): Promise<Message[]> {
+  const result = await invoke<Message[]>('list_messages', { conversationId });
+  return result;
+}
+
+export async function invokeCreateMessage(
+  message: NewMessage
+): Promise<Message> {
+  const result = await invoke<Message>('create_message', { message });
   return result;
 }

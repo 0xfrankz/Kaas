@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 import { LIST_CONVERSATIONS_KEY, useCreateConversation } from '@/lib/hooks';
 import { conversationFormSchema } from '@/lib/schemas';
@@ -28,6 +29,7 @@ export function NewConversationForm() {
   const { toast } = useToast();
   const createConversationMutation = useCreateConversation();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Callbacks
   const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
@@ -35,10 +37,8 @@ export function NewConversationForm() {
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {
         onSuccess: (conversation) => {
-          // TODO: redirect to conversation page
-          // TODO: store first message to state
-          console.log('conversation create:', conversation);
           queryClient.invalidateQueries({ queryKey: LIST_CONVERSATIONS_KEY });
+          navigate(`/conversations/${conversation.id}`);
         },
       });
     } else {

@@ -20,6 +20,8 @@ fn main() {
       commands::upsert_setting,
       commands::create_conversation,
       commands::list_conversations,
+      commands::create_message,
+      commands::list_messages
     ])
     .plugin(tauri_plugin_log::Builder::default().targets([
       LogTarget::Stdout,

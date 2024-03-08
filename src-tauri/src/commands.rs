@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation}, 
-    messages::{self, Model as Message}, 
+    messages::{self, Model as Message, NewMessage}, 
     models::Model,
     settings::Model as Setting,
 };
@@ -100,7 +100,25 @@ pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Ve
 }
 
 #[tauri::command]
-#[allow(dead_code)]
-pub async fn create_message() -> CommandResult<Message> {
-    todo!();
+pub async fn create_message(message: NewMessage, repo: State<'_, Repository>) -> CommandResult<Message> {
+    let now = Instant::now();
+    let result = repo
+        .create_message(message)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::create_message]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<Message>> {
+    let now = Instant::now();
+    let result = repo
+        .list_messages(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::list_messages]: {:.2?}", elapsed);
+    Ok(result)
 }

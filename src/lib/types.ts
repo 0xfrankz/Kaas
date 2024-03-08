@@ -71,6 +71,18 @@ export type Conversation = {
   modelProvider?: string;
 };
 
+export type NewMessage = {
+  conversationId: number;
+  role: number;
+  content: string;
+};
+
+export type Message = NewMessage & {
+  id: number;
+  createdAt: string;
+  deletedAt?: string;
+};
+
 // Contexts
 export type TConversationsContext = {
   conversations: Conversation[];

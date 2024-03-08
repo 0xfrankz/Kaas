@@ -1,6 +1,6 @@
 
 use entity::entities::conversations::{self, ConversationListItem, Model as Conversation, ActiveModel as ActiveConversation};
-use entity::entities::messages::{self, Model as Message, ActiveModel as ActiveMessage};
+use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, NewMessage};
 use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
@@ -182,8 +182,16 @@ impl Repository {
      * Insert a new message
      */
     #[allow(dead_code)]
-    pub async fn create_message(&self, _: Message) -> Result<Message, String> {
+    pub async fn create_message(&self, _: NewMessage) -> Result<Message, String> {
         Err("not implemented".to_owned())
+    }
+
+    /**
+     * List all messages of a conversation
+     */
+    #[allow(dead_code)]
+    pub async fn list_messages(&self, _: i32) -> Result<Vec<Message>, String> {
+        Ok(vec![])
     }
 }
 
