@@ -5,7 +5,7 @@ use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{DbErr, JoinType, QuerySelect};
+use sea_orm::{DbErr, JoinType, QueryFilter, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -189,9 +189,18 @@ impl Repository {
     /**
      * List all messages of a conversation
      */
-    #[allow(dead_code)]
-    pub async fn list_messages(&self, _: i32) -> Result<Vec<Message>, String> {
-        Ok(vec![])
+    pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<Message>, String> {
+        // Retrieve all Messages from DB with conversation_id
+        let result= messages::Entity::find()
+            .filter(messages::Column::ConversationId.eq(conversation_id))
+            .all(&self.connection)
+            .await
+            .unwrap();
+            // .map_err(|err| {
+            //     error!("{}", err);
+            //     format!("Failed to list messages of conversation with id = {}", conversation_id)
+            // })?;
+        Ok(result)
     }
 }
 

@@ -1,7 +1,9 @@
 import { useParams } from 'react-router-dom';
 
+import Chat from '@/components/Chat';
+import { ConversationHistory } from '@/components/ConversationHistory';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
-import { useConversationsContext } from '@/lib/hooks';
+import { useConversationsContext, useListMessages } from '@/lib/hooks';
 import { errorGuard, parseNumberOrNull } from '@/lib/utils';
 
 type Params = {
@@ -20,10 +22,15 @@ function ConversationPage() {
     );
   }
   const conversation = getConversation(cid);
+  const { data: messages, isSuccess } = useListMessages(cid);
 
+  const renderMessages = () => {
+    return messages && messages.length ? <Chat /> : <div>No messages</div>;
+  };
   return conversation ? (
-    <div>
-      Conversation Page: {conversationId} {conversation.subject}
+    <div className="flex bg-yellow-50">
+      <ConversationHistory activeConversationId={cid} />
+      {isSuccess ? renderMessages() : <div>loading...</div>}
     </div>
   ) : null;
 }
