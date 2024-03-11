@@ -4,6 +4,8 @@ import Chat from '@/components/Chat';
 import { ConversationHistory } from '@/components/ConversationHistory';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useConversationsContext, useListMessages } from '@/lib/hooks';
+import log from '@/lib/log';
+import type { Conversation } from '@/lib/types';
 import { errorGuard, parseNumberOrNull } from '@/lib/utils';
 
 type Params = {
@@ -11,6 +13,7 @@ type Params = {
 };
 
 function ConversationPage() {
+  log.info('ConversationPage rendered!');
   const { conversationId } = useParams<Params>();
   const { get: getConversation } = useConversationsContext();
   const cid = parseNumberOrNull(conversationId);
@@ -25,12 +28,16 @@ function ConversationPage() {
   const { data: messages, isSuccess } = useListMessages(cid);
 
   const renderMessages = () => {
-    return messages && messages.length ? <Chat /> : <div>No messages</div>;
+    return messages && messages.length ? (
+      <Chat conversation={conversation as Conversation} />
+    ) : (
+      <div>No messages</div>
+    );
   };
   return conversation ? (
-    <div className="flex bg-yellow-50">
+    <div className="flex grow">
       <ConversationHistory activeConversationId={cid} />
-      {isSuccess ? renderMessages() : <div>loading...</div>}
+      {isSuccess ? renderMessages() : null}
     </div>
   ) : null;
 }

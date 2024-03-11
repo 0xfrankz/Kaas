@@ -24,7 +24,7 @@ export function SideNav({ fixed = false }: Props) {
       {renderPlaceHolder()}
       <div
         className={cn(
-          'fixed top-0 left-0 h-full flex flex-col box-border border-r border-gray-300 z-1000 bg-white/80 backdrop-blur',
+          'fixed top-0 left-0 h-full flex flex-col box-border border-r border-gray-200 z-1000 bg-white/80 backdrop-blur',
           hovering ? 'w-80' : 'w-16'
         )}
         ref={ref}

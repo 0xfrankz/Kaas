@@ -1,4 +1,4 @@
-import { ChatBubbleIcon, FileTextIcon, GearIcon } from '@radix-ui/react-icons';
+import { ArchiveIcon, FileTextIcon, GearIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -37,9 +37,9 @@ function SideNavMenuItem({
   return (
     <Button
       className={cn(
-        'flex text-base font-bold mx-auto rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start bg-white hover:bg-gray-200 text-slate-900 shadow-none',
+        'flex text-base font-bold mx-auto rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start bg-white hover:bg-gray-50 text-slate-900 shadow-none',
         expanded ? 'w-72' : 'w-12',
-        active ? 'bg-[#F9FFB8]' : '',
+        active ? 'bg-[#F9FFB8] hover:bg-[#F9FFB8]' : '',
         extraClassName
       )}
       title={text}
@@ -72,7 +72,7 @@ export function SideNavMenu({
     >
       <SideNavMenuItem
         text="Conversations"
-        icon={<ChatBubbleIcon className="size-4" />}
+        icon={<ArchiveIcon className="size-4" />}
         expanded={expanded}
         active={pathname === '/conversations'}
         to="/conversations"
