@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 
 import Chat from '@/components/Chat';
 import { ConversationHistory } from '@/components/ConversationHistory';
+import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useConversationsContext, useListMessages } from '@/lib/hooks';
 import log from '@/lib/log';
@@ -17,29 +18,33 @@ function ConversationPage() {
   const { conversationId } = useParams<Params>();
   const { get: getConversation } = useConversationsContext();
   const cid = parseNumberOrNull(conversationId);
-  if (cid === null) {
+  const conversation = cid ? getConversation(cid) : null;
+  if (cid === null || conversation === null) {
     throw new AppError(
       ERROR_TYPE_APP_STATE,
       `${conversationId} is not a valid number`,
       `Oops, the conversation with id = ${conversationId} is missing`
     );
   }
-  const conversation = getConversation(cid);
   const { data: messages, isSuccess } = useListMessages(cid);
 
   const renderMessages = () => {
     return messages && messages.length ? (
       <Chat conversation={conversation as Conversation} />
     ) : (
+      // TODO: handle the corner case of no message in a conversation
+      // maybe when user manually deletes all messages?
       <div>No messages</div>
     );
   };
-  return conversation ? (
-    <div className="flex grow">
-      <ConversationHistory activeConversationId={cid} />
-      {isSuccess ? renderMessages() : null}
-    </div>
-  ) : null;
+  return (
+    <TwoColumns.Root>
+      <TwoColumns.Left>
+        <ConversationHistory activeConversationId={cid} />
+      </TwoColumns.Left>
+      <TwoColumns.Right>{isSuccess ? renderMessages() : null}</TwoColumns.Right>
+    </TwoColumns.Root>
+  );
 }
 
 export default errorGuard(<ConversationPage />);

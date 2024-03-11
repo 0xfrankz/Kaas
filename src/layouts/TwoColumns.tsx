@@ -7,32 +7,24 @@ const Root = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    className={cn('flex flex-col size-full', className)}
-    ref={ref}
-    {...props}
-  />
+  <div className={cn('flex size-full', className)} ref={ref} {...props} />
 ));
-Root.displayName = 'TopMainLayout.Root';
+Root.displayName = 'TwoColumns.Root';
 
-const Top = React.forwardRef<
+const Left = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    className={cn('box-border h-16 w-full', className)}
-    ref={ref}
-    {...props}
-  />
+  <div className={cn('h-full w-fit', className)} ref={ref} {...props} />
 ));
-Top.displayName = 'TopMainLayout.Top';
+Left.displayName = 'TwoColumns.Left';
 
-const Main = React.forwardRef<
+const Right = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div className={cn('grow', className)} ref={ref} {...props} />
 ));
-Main.displayName = 'TopMainLayout.Main';
+Right.displayName = 'TwoColumns.Right';
 
-export default { Root, Top, Main };
+export default { Root, Left, Right };

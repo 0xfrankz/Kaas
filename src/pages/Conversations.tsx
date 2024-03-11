@@ -5,6 +5,7 @@ import { NewConversationForm } from '@/components/NewConversationForm';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { ModelIcon } from '@/components/ui/icons/ModelIcon';
+import TwoRows from '@/layouts/TwoRows';
 import { useConversationsContext } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 
@@ -52,13 +53,17 @@ export default function CoversationsPage() {
   };
 
   return (
-    <>
-      <TitleBar title="Conversations" />
-      <div className="flex grow justify-center">
-        <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
-          {hasModels ? render() : renderEmptyModels()}
+    <TwoRows.Root>
+      <TwoRows.Top>
+        <TitleBar title="Conversations" />
+      </TwoRows.Top>
+      <TwoRows.Bottom>
+        <div className="flex grow justify-center">
+          <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
+            {hasModels ? render() : renderEmptyModels()}
+          </div>
         </div>
-      </div>
-    </>
+      </TwoRows.Bottom>
+    </TwoRows.Root>
   );
 }
