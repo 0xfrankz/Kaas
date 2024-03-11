@@ -1,18 +1,32 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import TwoRows from '@/layouts/TwoRows';
-import { LIST_CONVERSATIONS_KEY } from '@/lib/hooks';
-import log from '@/lib/log';
+import { LIST_CONVERSATIONS_KEY, useListMessages } from '@/lib/hooks';
 import type { Conversation } from '@/lib/types';
 
 import { TitleBar } from './TitleBar';
+import { Button } from './ui/button';
 
 type Props = {
   conversation: Conversation;
 };
 
 export default function Chat({ conversation }: Props) {
-  log.info('Chat rendered!');
+  // Queries
+  const { data: messages, isSuccess } = useListMessages(conversation.id);
+
+  // Render functions
+  const renderMessages = () => {
+    if (messages) {
+      return messages.map((message) => (
+        <li key={message.id}>{message.content}</li>
+      ));
+    }
+    // TODO: handle the corner case of no message in a conversation
+    // maybe when user manually deletes all messages?
+    return <div>No messages</div>;
+  };
+
   const queryClient = useQueryClient();
   return (
     <TwoRows.Root>
@@ -21,14 +35,9 @@ export default function Chat({ conversation }: Props) {
       </TwoRows.Top>
       <TwoRows.Bottom>
         <ul>
-          <li>Message 1</li>
-          <li>Message 2</li>
-          <li>Message 3</li>
-          <li>Message 4</li>
-          <li>Message 5</li>
+          {isSuccess ? renderMessages() : null}
           <li>
-            <button
-              type="button"
+            <Button
               onClick={() => {
                 queryClient.invalidateQueries({
                   queryKey: LIST_CONVERSATIONS_KEY,
@@ -36,7 +45,7 @@ export default function Chat({ conversation }: Props) {
               }}
             >
               Test
-            </button>
+            </Button>
           </li>
         </ul>
       </TwoRows.Bottom>

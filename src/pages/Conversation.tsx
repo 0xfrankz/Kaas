@@ -4,7 +4,7 @@ import Chat from '@/components/Chat';
 import { ConversationHistory } from '@/components/ConversationHistory';
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
-import { useConversationsContext, useListMessages } from '@/lib/hooks';
+import { useConversationsContext } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation } from '@/lib/types';
 import { errorGuard, parseNumberOrNull } from '@/lib/utils';
@@ -26,23 +26,15 @@ function ConversationPage() {
       `Oops, the conversation with id = ${conversationId} is missing`
     );
   }
-  const { data: messages, isSuccess } = useListMessages(cid);
 
-  const renderMessages = () => {
-    return messages && messages.length ? (
-      <Chat conversation={conversation as Conversation} />
-    ) : (
-      // TODO: handle the corner case of no message in a conversation
-      // maybe when user manually deletes all messages?
-      <div>No messages</div>
-    );
-  };
   return (
     <TwoColumns.Root>
       <TwoColumns.Left>
         <ConversationHistory activeConversationId={cid} />
       </TwoColumns.Left>
-      <TwoColumns.Right>{isSuccess ? renderMessages() : null}</TwoColumns.Right>
+      <TwoColumns.Right>
+        <Chat conversation={conversation as Conversation} />
+      </TwoColumns.Right>
     </TwoColumns.Root>
   );
 }
