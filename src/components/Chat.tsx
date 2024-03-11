@@ -1,11 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { TopNavLayout } from '@/layouts/TopNavLayout';
+import TopMainLayout from '@/layouts/TopMainLayout';
 import { LIST_CONVERSATIONS_KEY } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation } from '@/lib/types';
-
-import { TitleBar } from './TitleBar';
 
 type Props = {
   conversation: Conversation;
@@ -16,9 +14,16 @@ export default function Chat({ conversation }: Props) {
   const queryClient = useQueryClient();
   return (
     <div className="grow">
-      <TopNavLayout>
-        <TitleBar title={conversation.subject} />
-        <div className="flex grow justify-center">
+      <TopMainLayout.Root>
+        <TopMainLayout.Top>
+          {/* <TitleBar title={conversation.subject} /> */}
+          <div className="flex size-full items-center justify-center border-b border-gray-300 bg-white">
+            <h1 className="h-fit text-lg font-semibold">
+              {conversation.subject}
+            </h1>
+          </div>
+        </TopMainLayout.Top>
+        <TopMainLayout.Main>
           <ul>
             <li>Message 1</li>
             <li>Message 2</li>
@@ -38,8 +43,8 @@ export default function Chat({ conversation }: Props) {
               </button>
             </li>
           </ul>
-        </div>
-      </TopNavLayout>
+        </TopMainLayout.Main>
+      </TopMainLayout.Root>
     </div>
   );
 }
