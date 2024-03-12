@@ -2,6 +2,7 @@ import TwoRows from '@/layouts/TwoRows';
 import type { Conversation } from '@/lib/types';
 
 import { ChatMessageList } from './ChatMessageList';
+import { ChatPromptInput } from './ChatPromptInput';
 import { TitleBar } from './TitleBar';
 
 type Props = {
@@ -15,21 +16,14 @@ export default function Chat({ conversation }: Props) {
         <TitleBar title={conversation.subject} />
       </TwoRows.Top>
       <TwoRows.Bottom>
-        <ChatMessageList conversationId={conversation.id} />
-        {/* <ul>
-          {isSuccess ? renderMessages() : null}
-          <li>
-            <Button
-              onClick={() => {
-                queryClient.invalidateQueries({
-                  queryKey: LIST_CONVERSATIONS_KEY,
-                });
-              }}
-            >
-              Test
-            </Button>
-          </li>
-        </ul> */}
+        <div className="flex size-full flex-col items-center bg-slate-50">
+          <div className="w-[640px] grow">
+            <ChatMessageList conversationId={conversation.id} />
+          </div>
+          <div className="w-[640px]">
+            <ChatPromptInput />
+          </div>
+        </div>
       </TwoRows.Bottom>
     </TwoRows.Root>
   );

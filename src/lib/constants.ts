@@ -7,6 +7,11 @@ export const PROVIDER_INFO = {
   [PROVIDER_AZURE]: 'Microsoft Azure',
 };
 
+// Message types
+export const MESSAGE_USER = 0;
+export const MESSAGE_BOT = 1;
+export const MESSAGE_SYSTEM = 2;
+
 // Setting keys
 export const KEY_SETTING_DEFAULT_MODEL = 'user:default:model';
 

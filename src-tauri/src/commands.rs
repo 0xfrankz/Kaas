@@ -75,7 +75,7 @@ pub async fn create_conversation(
         ..Default::default()
     };
     let message = Message {
-        role: messages::Roles::from(1).into(),
+        role: messages::Roles::from(0).into(), // first messge must be User message
         content: new_conversation.message,
         ..Default::default()
     };
