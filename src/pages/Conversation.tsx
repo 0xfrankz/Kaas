@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 
-import Chat from '@/components/Chat';
+import ChatSection from '@/components/ChatSection';
 import { ConversationHistory } from '@/components/ConversationHistory';
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
@@ -33,7 +33,7 @@ function ConversationPage() {
         <ConversationHistory activeConversationId={cid} />
       </TwoColumns.Left>
       <TwoColumns.Right>
-        <Chat conversation={conversation as Conversation} />
+        <ChatSection conversation={conversation as Conversation} />
       </TwoColumns.Right>
     </TwoColumns.Root>
   );
