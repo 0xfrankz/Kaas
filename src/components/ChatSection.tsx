@@ -9,7 +9,7 @@ type Props = {
   conversation: Conversation;
 };
 
-export default function Chat({ conversation }: Props) {
+export default function ChatSection({ conversation }: Props) {
   return (
     <TwoRows>
       <TwoRows.Top>
