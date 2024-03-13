@@ -11,7 +11,7 @@ type Props = {
 
 export default function Chat({ conversation }: Props) {
   return (
-    <TwoRows.Root>
+    <TwoRows>
       <TwoRows.Top>
         <TitleBar title={conversation.subject} />
       </TwoRows.Top>
@@ -25,6 +25,6 @@ export default function Chat({ conversation }: Props) {
           </div>
         </div>
       </TwoRows.Bottom>
-    </TwoRows.Root>
+    </TwoRows>
   );
 }

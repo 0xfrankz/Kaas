@@ -3,13 +3,13 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-const Root = React.forwardRef<
+const TwoColumns = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div className={cn('flex size-full', className)} ref={ref} {...props} />
 ));
-Root.displayName = 'TwoColumns.Root';
+TwoColumns.displayName = 'TwoColumns';
 
 const Left = React.forwardRef<
   HTMLDivElement,
@@ -27,4 +27,4 @@ const Right = React.forwardRef<
 ));
 Right.displayName = 'TwoColumns.Right';
 
-export default { Root, Left, Right };
+export default Object.assign(TwoColumns, { Left, Right });

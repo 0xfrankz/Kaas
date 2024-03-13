@@ -28,14 +28,14 @@ function ConversationPage() {
   }
 
   return (
-    <TwoColumns.Root>
+    <TwoColumns>
       <TwoColumns.Left>
         <ConversationHistory activeConversationId={cid} />
       </TwoColumns.Left>
       <TwoColumns.Right>
         <ChatSection conversation={conversation as Conversation} />
       </TwoColumns.Right>
-    </TwoColumns.Root>
+    </TwoColumns>
   );
 }
 

@@ -3,7 +3,7 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-const Root = React.forwardRef<
+const TwoRows = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -13,7 +13,7 @@ const Root = React.forwardRef<
     {...props}
   />
 ));
-Root.displayName = 'TwoRows.Root';
+TwoRows.displayName = 'TwoRows';
 
 const Top = React.forwardRef<
   HTMLDivElement,
@@ -31,4 +31,4 @@ const Bottom = React.forwardRef<
 ));
 Bottom.displayName = 'TwoRows.Bottom';
 
-export default { Root, Top, Bottom };
+export default Object.assign(TwoRows, { Top, Bottom });

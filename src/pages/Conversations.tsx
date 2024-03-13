@@ -53,7 +53,7 @@ export default function CoversationsPage() {
   };
 
   return (
-    <TwoRows.Root>
+    <TwoRows>
       <TwoRows.Top>
         <TitleBar title="Conversations" />
       </TwoRows.Top>
@@ -64,6 +64,6 @@ export default function CoversationsPage() {
           </div>
         </div>
       </TwoRows.Bottom>
-    </TwoRows.Root>
+    </TwoRows>
   );
 }

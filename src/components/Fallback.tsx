@@ -20,8 +20,10 @@ export function Fallback({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <div className="flex grow flex-col items-center justify-center">
       <CrossCircledIcon className="size-20 text-red-500" />
-      <div className="mt-6 text-lg">{errMsg}</div>
-      {errReason && <div className="mt-2 text-sm">{errReason}</div>}
+      <div className="mt-6 max-w-[640px] text-lg">{errMsg}</div>
+      {errReason && (
+        <div className="mt-2 max-w-[640px] text-sm">{errReason}</div>
+      )}
       <Button
         className="mt-6"
         onClick={() => {

@@ -219,7 +219,7 @@ export default function ModelsPage() {
   };
 
   return (
-    <TwoRows.Root>
+    <TwoRows>
       <TwoRows.Top>
         <TitleBar title="Models" />
       </TwoRows.Top>
@@ -273,6 +273,6 @@ export default function ModelsPage() {
           </div>
         </div>
       </TwoRows.Bottom>
-    </TwoRows.Root>
+    </TwoRows>
   );
 }
