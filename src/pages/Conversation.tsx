@@ -19,12 +19,16 @@ function ConversationPage() {
   const { get: getConversation } = useConversationsContext();
   const cid = parseNumberOrNull(conversationId);
   const conversation = cid ? getConversation(cid) : null;
-  if (cid === null || conversation === null) {
+  if (cid === null) {
     throw new AppError(
       ERROR_TYPE_APP_STATE,
       `${conversationId} is not a valid number`,
       `Oops, the conversation with id = ${conversationId} is missing`
     );
+  }
+  if (!conversation) {
+    // parent context is not ready
+    return null;
   }
 
   return (
