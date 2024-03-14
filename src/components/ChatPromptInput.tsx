@@ -6,6 +6,7 @@ import { Textarea } from './ui/textarea';
 const HEIGHT_LIMIT = 20 * 20;
 
 export function ChatPromptInput() {
+  // const [showScrollbar, setShowScrollbar] = useState(false);
   // const [lines, setLines] = useState(1);
   // const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -22,35 +23,34 @@ export function ChatPromptInput() {
 
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const ta = e.target as HTMLTextAreaElement;
-    ta.style.height = 'inherit';
-    // ta.style.overflowY = 'hidden'; // set overflowY hidden to get scrollHeight without scrollBar
+    // set overflowY to hidden and height to fit-content
+    // so we can get a correct scrollHeight
+    ta.style.overflowY = 'hidden';
+    ta.style.height = 'fit-content';
     const { scrollHeight } = ta;
-    console.log(`scrollHeight = ${scrollHeight}`);
     if (scrollHeight > HEIGHT_LIMIT) {
       // Enable scroll when height limitation is reached
-      ta.style.height = `${HEIGHT_LIMIT}px`;
       ta.style.overflowY = 'scroll';
+      ta.style.height = `${HEIGHT_LIMIT}px`;
     } else {
+      // set overflowY back to hidden when height limitation is not reached
+      ta.style.overflowY = 'hidden';
       // Set height to scrollHeight
       ta.style.height = `${scrollHeight}px`;
     }
   };
 
   return (
-    <div className="mb-4 flex min-h-16 w-auto items-center border-b-2 border-slate-500 text-sm">
-      <div className="grow">
+    <div className="mb-4 flex min-h-16 w-auto items-end border-b-2 border-slate-500 text-sm">
+      <div className="mb-5 grow">
         <Textarea
-          // ref={ref}
           placeholder="How can I help?"
-          className="resize-none overflow-y-hidden border-0 px-0"
+          className="resize-none overflow-y-scroll border-0 px-2"
           rows={1}
           onChange={onChange}
-          // style={{ height: `${lines * 20}px` }}
-          // value={prompt}
-          // onChange={(e) => setPrompt(e.target.value)}
         />
       </div>
-      <Button>
+      <Button className="mb-5">
         <PaperPlaneIcon />
       </Button>
     </div>
