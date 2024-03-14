@@ -21,7 +21,7 @@ export default function ChatSection({ conversation }: Props) {
             <ChatMessageList conversationId={conversation.id} />
           </div>
           <div className="w-[640px]">
-            <ChatPromptInput />
+            <ChatPromptInput conversationId={conversation.id} />
           </div>
         </div>
       </TwoRows.Bottom>

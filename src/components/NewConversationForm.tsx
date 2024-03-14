@@ -5,7 +5,10 @@ import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { LIST_CONVERSATIONS_KEY, useCreateConversationMutation } from '@/lib/hooks';
+import {
+  LIST_CONVERSATIONS_KEY,
+  useCreateConversationMutation,
+} from '@/lib/hooks';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { UnsavedConversation } from '@/lib/types';

@@ -1,5 +1,5 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 
 import {
@@ -102,21 +102,8 @@ export function useCreateMessageMutation(): UseMutationResult<
   CommandError,
   NewMessage
 > {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: invokeCreateMessage,
-    onSuccess(data, variables) {
-      queryClient.setQueriesData(
-        {
-          queryKey: [
-            ...LIST_MESSAGES_KEY,
-            { conversationId: variables.conversationId },
-          ],
-        },
-        data
-      );
-    },
   });
 }
 

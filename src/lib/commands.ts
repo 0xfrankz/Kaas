@@ -62,6 +62,7 @@ export async function invokeListMessages(
 export async function invokeCreateMessage(
   message: NewMessage
 ): Promise<Message> {
+  log.info(`[FE]invokeCreateMessage data: ${JSON.stringify(message)}`);
   const result = await invoke<Message>('create_message', { message });
   return result;
 }

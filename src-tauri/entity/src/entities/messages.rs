@@ -64,6 +64,7 @@ impl Related<super::conversations::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(DeriveIntoActiveModel, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NewMessage {
     pub conversation_id: i32,
     pub role: i32,

@@ -5,7 +5,7 @@ use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{DbErr, JoinType, QueryFilter, QuerySelect};
+use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -45,7 +45,7 @@ impl Repository {
         active_model.created_at = Set(chrono::Local::now());
         let result = active_model.insert(&self.connection).await.map_err(|err| {
             error!("{}", err);
-            "Failed to insert model".to_string()
+            "Failed to create model".to_string()
         })?;
         Ok(result)
     }
@@ -115,7 +115,7 @@ impl Repository {
         active_model.created_at = Set(chrono::Local::now());
         let result: Conversation = active_model.insert(&self.connection).await.map_err(|err| {
             error!("{}", err);
-            "Failed to insert conversation".to_owned()
+            "Failed to create conversation".to_owned()
         })?;
         Ok(result)
     }
@@ -182,8 +182,17 @@ impl Repository {
      * Insert a new message
      */
     #[allow(dead_code)]
-    pub async fn create_message(&self, _: NewMessage) -> Result<Message, String> {
-        Err("not implemented".to_owned())
+    pub async fn create_message(&self, new_message: NewMessage) -> Result<Message, String> {
+        let mut active_model = new_message.into_active_model();
+        active_model.created_at  = Set(chrono::Local::now());
+        let result = active_model
+            .insert(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to create new message".to_string()
+            })?;
+        Ok(result)
     }
 
     /**

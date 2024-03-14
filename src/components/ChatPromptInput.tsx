@@ -1,29 +1,31 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+
+import { MESSAGE_USER } from '@/lib/constants';
+import { LIST_MESSAGES_KEY, useCreateMessageMutation } from '@/lib/hooks';
+import type { Message } from '@/lib/types';
 
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 
 const HEIGHT_LIMIT = 20 * 20;
 
-export function ChatPromptInput() {
-  // const [showScrollbar, setShowScrollbar] = useState(false);
-  // const [lines, setLines] = useState(1);
-  // const ref = useRef<HTMLTextAreaElement>(null);
+type Props = {
+  conversationId: number;
+};
 
-  // useEffect(() => {
-  //   if (ref.current) {
-  //     const taScrollHeight = ref.current.scrollHeight;
-  //     console.log(`taScrollHeight = ${taScrollHeight}`);
-  //     const currentLines = Math.ceil(taScrollHeight / LINE_HEIGHT);
-  //     if (currentLines !== lines) {
-  //       setLines(currentLines);
-  //     }
-  //   }
-  // }, [prompt]);
+export function ChatPromptInput({ conversationId }: Props) {
+  const [prompt, setPrompt] = useState('');
+  const queryClient = useQueryClient();
+  const createMsgMutation = useCreateMessageMutation();
 
+  // Callbacks
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // Update state
+    setPrompt(e.target.value);
     const ta = e.target as HTMLTextAreaElement;
-    // set overflowY to hidden and height to fit-content
+    // Set overflowY to hidden and height to fit-content
     // so we can get a correct scrollHeight
     ta.style.overflowY = 'hidden';
     ta.style.height = 'fit-content';
@@ -40,18 +42,39 @@ export function ChatPromptInput() {
     }
   };
 
+  const onClick = () => {
+    createMsgMutation.mutate(
+      {
+        conversationId,
+        role: MESSAGE_USER,
+        content: prompt,
+      },
+      {
+        onSuccess(message) {
+          // Update cache
+          queryClient.setQueryData<Message[]>(
+            [...LIST_MESSAGES_KEY, { conversationId }],
+            (messages) => (messages ? [...messages, message] : [message])
+          );
+        },
+      }
+    );
+    setPrompt('');
+  };
+
   return (
     <div className="mb-4 flex min-h-16 w-auto items-end border-b-2 border-slate-500 text-sm">
       <div className="mb-5 grow">
         <Textarea
           placeholder="How can I help?"
-          className="resize-none overflow-y-scroll border-0 px-2"
+          className="resize-none overflow-y-hidden border-0 px-2"
           rows={1}
           onChange={onChange}
+          value={prompt}
         />
       </div>
       <Button className="mb-5">
-        <PaperPlaneIcon />
+        <PaperPlaneIcon onClick={onClick} />
       </Button>
     </div>
   );
