@@ -3,7 +3,7 @@ import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 
-const LINE_HEIGHT = 20;
+const HEIGHT_LIMIT = 20 * 20;
 
 export function ChatPromptInput() {
   // const [lines, setLines] = useState(1);
@@ -22,11 +22,18 @@ export function ChatPromptInput() {
 
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const ta = e.target as HTMLTextAreaElement;
-    console.log(`scrollHeight = ${ta.scrollHeight}`);
     ta.style.height = 'inherit';
-    ta.style.height = `${ta.scrollHeight}px`;
-    // In case you have a limitation
-    // e.target.style.height = `${Math.min(e.target.scrollHeight, limit)}px`;
+    // ta.style.overflowY = 'hidden'; // set overflowY hidden to get scrollHeight without scrollBar
+    const { scrollHeight } = ta;
+    console.log(`scrollHeight = ${scrollHeight}`);
+    if (scrollHeight > HEIGHT_LIMIT) {
+      // Enable scroll when height limitation is reached
+      ta.style.height = `${HEIGHT_LIMIT}px`;
+      ta.style.overflowY = 'scroll';
+    } else {
+      // Set height to scrollHeight
+      ta.style.height = `${scrollHeight}px`;
+    }
   };
 
   return (
@@ -35,7 +42,7 @@ export function ChatPromptInput() {
         <Textarea
           // ref={ref}
           placeholder="How can I help?"
-          className="resize-none border-0 px-0"
+          className="resize-none overflow-y-hidden border-0 px-0"
           rows={1}
           onChange={onChange}
           // style={{ height: `${lines * 20}px` }}
