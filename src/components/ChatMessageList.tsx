@@ -1,5 +1,5 @@
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
-import { useListMessages } from '@/lib/hooks';
+import { useListMessagesQuery } from '@/lib/hooks';
 
 import ChatMessage from './ChatMessage';
 
@@ -9,7 +9,7 @@ type Props = {
 
 export function ChatMessageList({ conversationId }: Props) {
   // Queries
-  const { data: messages, isSuccess } = useListMessages(conversationId);
+  const { data: messages, isSuccess } = useListMessagesQuery(conversationId);
 
   // Render functions
   const renderMessages = () => {

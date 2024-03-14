@@ -31,7 +31,7 @@ export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
 
-export function useCreateModel(): UseMutationResult<
+export function useCreateModelMutation(): UseMutationResult<
   Model,
   CommandError,
   UnsavedModel
@@ -41,21 +41,24 @@ export function useCreateModel(): UseMutationResult<
   });
 }
 
-export function useListModels(): UseQueryResult<Model[], CommandError> {
+export function useListModelsQuery(): UseQueryResult<Model[], CommandError> {
   return useQuery({
     queryKey: LIST_MODELS_KEY,
     queryFn: invokeListModels,
   });
 }
 
-export function useListSettings(): UseQueryResult<Setting[], CommandError> {
+export function useListSettingsQuery(): UseQueryResult<
+  Setting[],
+  CommandError
+> {
   return useQuery({
     queryKey: LIST_SETTINGS_KEY,
     queryFn: invokeListSettings,
   });
 }
 
-export function useUpsertSetting(): UseMutationResult<
+export function useUpsertSettingMutation(): UseMutationResult<
   Setting,
   CommandError,
   Setting
@@ -65,7 +68,7 @@ export function useUpsertSetting(): UseMutationResult<
   });
 }
 
-export function useCreateConversation(): UseMutationResult<
+export function useCreateConversationMutation(): UseMutationResult<
   Conversation,
   CommandError,
   UnsavedConversation
@@ -75,7 +78,7 @@ export function useCreateConversation(): UseMutationResult<
   });
 }
 
-export function useListConversations(): UseQueryResult<
+export function useListConversationsQuery(): UseQueryResult<
   Conversation[],
   CommandError
 > {
@@ -85,7 +88,7 @@ export function useListConversations(): UseQueryResult<
   });
 }
 
-export function useListMessages(
+export function useListMessagesQuery(
   conversationId: number
 ): UseQueryResult<Message[], CommandError> {
   return useQuery({
@@ -94,7 +97,7 @@ export function useListMessages(
   });
 }
 
-export function useCreateMessage(): UseMutationResult<
+export function useCreateMessageMutation(): UseMutationResult<
   Message,
   CommandError,
   NewMessage

@@ -2,7 +2,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { ConversationsContext } from './contexts';
-import { useListConversations, useListModels, useListSettings } from './hooks';
+import {
+  useListConversationsQuery,
+  useListModelsQuery,
+  useListSettingsQuery,
+} from './hooks';
 import log from './log';
 import { useAppStateStore } from './store';
 import type { TConversationsContext } from './types';
@@ -31,12 +35,12 @@ export function InitializationProvider({
   children: React.ReactNode;
 }) {
   const { models, settings, refreshModels, setSettings } = useAppStateStore();
-  const { data: modelList, isSuccess, isError } = useListModels();
+  const { data: modelList, isSuccess, isError } = useListModelsQuery();
   const {
     data: settingList,
     isSuccess: isSettingsSuccess,
     isError: isSettingsError,
-  } = useListSettings();
+  } = useListSettingsQuery();
 
   // Effects
   useEffect(() => {
@@ -63,7 +67,7 @@ export function ConversationsContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: conversations, isSuccess } = useListConversations();
+  const { data: conversations, isSuccess } = useListConversationsQuery();
   const conversationContext = useMemo<TConversationsContext>(() => {
     return {
       conversations: isSuccess ? conversations : [],

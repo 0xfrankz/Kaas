@@ -5,7 +5,7 @@ import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { LIST_CONVERSATIONS_KEY, useCreateConversation } from '@/lib/hooks';
+import { LIST_CONVERSATIONS_KEY, useCreateConversationMutation } from '@/lib/hooks';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { UnsavedConversation } from '@/lib/types';
@@ -27,7 +27,7 @@ export function NewConversationForm() {
   const form = useForm<UnsavedConversation>();
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const createConversationMutation = useCreateConversation();
+  const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 

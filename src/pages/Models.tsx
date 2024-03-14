@@ -39,7 +39,11 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import TwoRows from '@/layouts/TwoRows';
 import { KEY_SETTING_DEFAULT_MODEL, PROVIDER_AZURE } from '@/lib/constants';
-import { LIST_MODELS_KEY, useCreateModel, useUpsertSetting } from '@/lib/hooks';
+import {
+  LIST_MODELS_KEY,
+  useCreateModelMutation,
+  useUpsertSettingMutation,
+} from '@/lib/hooks';
 import log from '@/lib/log';
 import { modelFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
@@ -65,8 +69,8 @@ export default function ModelsPage() {
   const hasModels = models.length > 0;
 
   // Queries
-  const createModelMutation = useCreateModel();
-  const upsertSettingMutation = useUpsertSetting();
+  const createModelMutation = useCreateModelMutation();
+  const upsertSettingMutation = useUpsertSettingMutation();
 
   // Callbacks
   const toggleModal = (open: boolean) => {
