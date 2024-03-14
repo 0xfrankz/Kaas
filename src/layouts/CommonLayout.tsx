@@ -11,11 +11,11 @@ export default function CommonLayout({
 }) {
   return (
     <div className="flex min-h-screen font-inter">
-      <SideNav />
       <ErrorBoundary FallbackComponent={Fallback}>
+        <SideNav />
         <main className="flex min-h-screen grow flex-col">{children}</main>
+        <Toaster />
       </ErrorBoundary>
-      <Toaster />
     </div>
   );
 }

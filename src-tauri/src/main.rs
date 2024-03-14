@@ -7,6 +7,7 @@ mod services;
 mod init;
 mod errors;
 
+use log::LevelFilter;
 use tauri::Manager;
 use tauri_plugin_log::LogTarget;
 
@@ -24,9 +25,12 @@ fn main() {
       commands::list_messages
     ])
     .plugin(tauri_plugin_log::Builder::default().targets([
-      LogTarget::Stdout,
-      LogTarget::Webview,
-    ]).build())
+        LogTarget::Stdout,
+        LogTarget::Webview,
+      ])
+      .level(LevelFilter::Debug)
+      .build()
+    )
     .setup(|app| {
       // Open dev tools in debug builds
       #[cfg(debug_assertions)]

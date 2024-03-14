@@ -22,6 +22,7 @@ export function ChatPromptInput() {
 
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const ta = e.target as HTMLTextAreaElement;
+    console.log(`scrollHeight = ${ta.scrollHeight}`);
     ta.style.height = 'inherit';
     ta.style.height = `${ta.scrollHeight}px`;
     // In case you have a limitation

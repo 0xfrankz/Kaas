@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { ConversationsContext } from './contexts';
+import { AppError, ERROR_TYPE_APP_STATE } from './error';
 import {
   useListConversationsQuery,
   useListModelsQuery,
@@ -16,8 +17,6 @@ export function RQProvider({ children }: { children: React.ReactNode }) {
     return new QueryClient({
       defaultOptions: {
         queries: {
-          // With SSR, we usually want to set some default staleTime
-          // above 0 to avoid refetching immediately on the client
           staleTime: 60 * 1000,
         },
       },
@@ -34,32 +33,50 @@ export function InitializationProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const [initialized, setInitialized] = useState(false);
   const { models, settings, refreshModels, setSettings } = useAppStateStore();
-  const { data: modelList, isSuccess, isError } = useListModelsQuery();
+  const {
+    data: modelList,
+    isSuccess: isModelsSuccess,
+    isError: isModelsError,
+    error: modelsError,
+  } = useListModelsQuery();
   const {
     data: settingList,
     isSuccess: isSettingsSuccess,
     isError: isSettingsError,
+    error: settingsError,
   } = useListSettingsQuery();
 
-  // Effects
   useEffect(() => {
-    if (isSuccess) {
+    if (isModelsSuccess && isSettingsSuccess) {
       refreshModels(modelList);
-    }
-  }, [modelList, isSuccess, isError]);
-
-  useEffect(() => {
-    if (isSettingsSuccess) {
       setSettings(settingList);
+      setInitialized(true);
+      log.info('App successfully initialized');
     }
-  }, [settingList, isSettingsSuccess, isSettingsError]);
+  }, [isModelsSuccess, isSettingsSuccess, modelList, settingList]);
 
-  useEffect(() => {
-    log.info(`Models are refreshed! ${JSON.stringify(models)}`);
-  }, [models]);
-
-  return children;
+  if (initialized) {
+    // Successfully initialized
+    return children;
+  }
+  if (isModelsError) {
+    throw new AppError(
+      ERROR_TYPE_APP_STATE,
+      modelsError.message,
+      'Failed to initiate models!'
+    );
+  }
+  if (isSettingsError) {
+    throw new AppError(
+      ERROR_TYPE_APP_STATE,
+      settingsError.message,
+      'Failed to initiate settings!'
+    );
+  }
+  // Loading
+  return null;
 }
 
 export function ConversationsContextProvider({
@@ -67,16 +84,28 @@ export function ConversationsContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: conversations, isSuccess } = useListConversationsQuery();
+  const {
+    data: conversations,
+    isSuccess,
+    isError,
+    error,
+  } = useListConversationsQuery();
   const conversationContext = useMemo<TConversationsContext>(() => {
     return {
       conversations: isSuccess ? conversations : [],
+      isLoading: !isSuccess,
       get: (id: number) =>
         conversations?.find((conversation) => conversation.id === id),
     };
   }, [conversations, isSuccess]);
 
-  log.info('ConversationsContextProvider rendered!');
+  if (isError) {
+    throw new AppError(
+      ERROR_TYPE_APP_STATE,
+      error.message,
+      'Failed to load conversations!'
+    );
+  }
 
   return (
     <ConversationsContext.Provider value={conversationContext}>

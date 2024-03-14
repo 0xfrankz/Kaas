@@ -19,19 +19,19 @@ export function ChatMessageList({ conversationId }: Props) {
           switch (message.role) {
             case MESSAGE_USER:
               return (
-                <li>
+                <li key={message.id}>
                   <ChatMessage.User key={message.id} message={message} />
                 </li>
               );
             case MESSAGE_BOT:
               return (
-                <li>
+                <li key={message.id}>
                   <ChatMessage.Bot key={message.id} message={message} />
                 </li>
               );
             default:
               return (
-                <li>
+                <li key={message.id}>
                   <ChatMessage.System key={message.id} message={message} />
                 </li>
               );

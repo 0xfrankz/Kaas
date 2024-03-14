@@ -2,6 +2,7 @@ import './styles.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ErrorBoundary } from 'react-error-boundary';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 
 import CommonLayout from '@/layouts/CommonLayout';
@@ -16,6 +17,7 @@ import ModelsPage from '@/pages/Models';
 import SettingsPage from '@/pages/Settings';
 import TemplatesPage from '@/pages/Templates';
 
+import { GlobalFallback } from './components/GlobalFallback';
 import HomePage from './pages/Home';
 
 const router = createBrowserRouter([
@@ -67,10 +69,12 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <RQProvider>
-      <InitializationProvider>
-        <RouterProvider router={router} />
-      </InitializationProvider>
-    </RQProvider>
+    <ErrorBoundary FallbackComponent={GlobalFallback}>
+      <RQProvider>
+        <InitializationProvider>
+          <RouterProvider router={router} />
+        </InitializationProvider>
+      </RQProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

@@ -86,6 +86,7 @@ export type Message = NewMessage & {
 // Contexts
 export type TConversationsContext = {
   conversations: Conversation[];
+  isLoading: boolean;
   get: (id: number) => Conversation | undefined;
 };
 

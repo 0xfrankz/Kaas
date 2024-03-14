@@ -11,7 +11,7 @@ import { useAppStateStore } from '@/lib/store';
 
 export default function CoversationsPage() {
   const { models } = useAppStateStore();
-  const { conversations } = useConversationsContext();
+  const { conversations, isLoading } = useConversationsContext();
   const hasModels = models.length > 0;
   const hasConversations = conversations.length > 0;
 
@@ -51,6 +51,11 @@ export default function CoversationsPage() {
       </>
     );
   };
+
+  if (isLoading) {
+    // TODO: handle loading state
+    return null;
+  }
 
   return (
     <TwoRows>
