@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{sync::{Arc, Mutex}, time::Instant};
 
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation}, 
@@ -121,4 +121,32 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::list_messages]: {:.2?}", elapsed);
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn call_bot(user_message: Message, window: tauri::Window) -> CommandResult<String> {
+    let now = Instant::now();
+    log::info!("Calling bot with message = {}", user_message.content);
+    tokio::spawn(async move {
+        let stop = Arc::new(Mutex::new(false));
+        let stop_clone = stop.clone();
+        window.listen("stop-bot", move |_| {
+            *stop_clone.lock().unwrap() = true;
+        });
+        for _ in 1..10 {
+            if *stop.lock().unwrap() {
+                log::info!("Breaking from thread");
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+            // emit a download progress event to all listeners registed in the webview
+            match window.emit("bot-reply", "hello ") {
+                Err(err) => log::error!("Error when receiving bot's replay: {}", err),
+                _ => {}
+            }
+          }
+    });
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
+    Ok("OK".to_owned())
 }

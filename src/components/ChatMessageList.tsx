@@ -1,15 +1,29 @@
+import { useEffect } from 'react';
+
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import { useListMessagesQuery } from '@/lib/hooks';
+import type { Message } from '@/lib/types';
 
 import ChatMessage from './ChatMessage';
 
 type Props = {
   conversationId: number;
+  onNewUserMessage: (message: Message) => void;
 };
 
-export function ChatMessageList({ conversationId }: Props) {
+export function ChatMessageList({ conversationId, onNewUserMessage }: Props) {
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversationId);
+
+  // Effects
+  useEffect(() => {
+    if (isSuccess && messages?.length > 0) {
+      const lastMsg = messages.at(-1);
+      if (lastMsg?.role === MESSAGE_USER) {
+        onNewUserMessage(lastMsg);
+      }
+    }
+  }, [isSuccess, messages]);
 
   // Render functions
   const renderMessages = () => {

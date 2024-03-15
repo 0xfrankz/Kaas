@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 
 import {
+  invokeCallBot,
   invokeCreateConversation,
   invokeCreateMessage,
   invokeCreateModel,
@@ -104,6 +105,16 @@ export function useCreateMessageMutation(): UseMutationResult<
 > {
   return useMutation({
     mutationFn: invokeCreateMessage,
+  });
+}
+
+export function useCallBotMutation(): UseMutationResult<
+  void,
+  CommandError,
+  Message
+> {
+  return useMutation({
+    mutationFn: invokeCallBot,
   });
 }
 

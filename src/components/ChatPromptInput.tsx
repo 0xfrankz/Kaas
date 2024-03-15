@@ -73,8 +73,8 @@ export function ChatPromptInput({ conversationId }: Props) {
           value={prompt}
         />
       </div>
-      <Button className="mb-5">
-        <PaperPlaneIcon onClick={onClick} />
+      <Button className="mb-5" onClick={onClick}>
+        <PaperPlaneIcon />
       </Button>
     </div>
   );

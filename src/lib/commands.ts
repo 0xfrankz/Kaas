@@ -62,7 +62,12 @@ export async function invokeListMessages(
 export async function invokeCreateMessage(
   message: NewMessage
 ): Promise<Message> {
-  log.info(`[FE]invokeCreateMessage data: ${JSON.stringify(message)}`);
   const result = await invoke<Message>('create_message', { message });
   return result;
+}
+
+export async function invokeCallBot(userMessage: Message) {
+  await log.info(`Invoking call_bot with data: ${JSON.stringify(userMessage)}`);
+  const result = await invoke<void>('call_bot', { userMessage });
+  await log.info(`call_bot returned with result: ${result}`);
 }

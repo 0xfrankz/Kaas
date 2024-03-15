@@ -22,7 +22,8 @@ fn main() {
       commands::create_conversation,
       commands::list_conversations,
       commands::create_message,
-      commands::list_messages
+      commands::list_messages,
+      commands::call_bot,
     ])
     .plugin(tauri_plugin_log::Builder::default().targets([
         LogTarget::Stdout,

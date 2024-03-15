@@ -13,7 +13,7 @@ function isCommandError(err: any): err is CommandError {
 
 export async function info(message: string, options?: LogOptions) {
   const detach = await attachConsole();
-  logInfo(message, options);
+  await logInfo(message, options);
   detach();
 }
 
@@ -31,7 +31,7 @@ export async function error(
   }
 
   const detach = await attachConsole();
-  logError(errMsg, options);
+  await logError(errMsg, options);
   detach();
 }
 
