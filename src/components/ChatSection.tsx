@@ -21,8 +21,6 @@ export function ChatSection({ conversation }: Props) {
   const listenerRef = useRef<UnlistenFn>();
   const [activeBotMessage, setActiveBotMessage] = useState('');
 
-  console.log(`ChatSection: receiving = ${receiving}`);
-
   const bindListener = async () => {
     listenerRef.current = await listen<string>('bot-reply', (event) => {
       setActiveBotMessage((state) => {
@@ -51,6 +49,9 @@ export function ChatSection({ conversation }: Props) {
         // Turn on receiving mark
         setReceiving(true);
         setActiveBotMessage('');
+      },
+      onError: async (error) => {
+        await log.error(`Bot call failed: ${error.message}`);
       },
     });
   };

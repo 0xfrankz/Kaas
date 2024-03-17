@@ -1,6 +1,6 @@
 
 use entity::entities::conversations::{self, ConversationListItem, Model as Conversation, ActiveModel as ActiveConversation};
-use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, NewMessage};
+use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
 use entity::entities::models::{self, Model};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
@@ -17,6 +17,7 @@ use sea_orm::{
     RelationTrait,
     TransactionTrait
 };
+use sea_orm::entity::ModelTrait;
 use sqlx::migrate::MigrateDatabase;
 
 type Db = sqlx::sqlite::Sqlite;
@@ -204,11 +205,25 @@ impl Repository {
             .filter(messages::Column::ConversationId.eq(conversation_id))
             .all(&self.connection)
             .await
-            .unwrap();
-            // .map_err(|err| {
-            //     error!("{}", err);
-            //     format!("Failed to list messages of conversation with id = {}", conversation_id)
-            // })?;
+            // .unwrap();
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to list messages of conversation with id = {}", conversation_id)
+            })?;
+        Ok(result)
+    }
+
+    pub async fn get_model_of_message(&self, message: &Message) -> Result<Model, String> {
+        let result = message
+            .find_linked(MessageToModel)
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed get model of message with id = {}", message.id)
+            })?
+            .ok_or(format!("Failed to get model of message with id = {}", message.id))?;
+
         Ok(result)
     }
 }

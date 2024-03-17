@@ -15,7 +15,6 @@ export function ChatMessageList({ conversationId, onNewUserMessage }: Props) {
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversationId);
 
-  // Effects
   useEffect(() => {
     if (isSuccess && messages?.length > 0) {
       const lastMsg = messages.at(-1);

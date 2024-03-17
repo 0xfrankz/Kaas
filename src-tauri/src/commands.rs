@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Mutex}, time::Instant};
+use std::{sync::{atomic::{AtomicBool, Ordering}, Arc, Mutex}, time::Instant};
 
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation}, 
@@ -18,7 +18,7 @@ type CommandResult<T = ()> = Result<T, CommandError>;
 
 #[tauri::command]
 pub async fn complete_chat_cmd() -> CommandResult<String> {
-    let text = api::complete_chat()
+    let text = api::_complete_chat()
         .await
         .map_err(|message| ApiError { message })?;
     Ok(text)
@@ -124,29 +124,41 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn call_bot(user_message: Message, window: tauri::Window) -> CommandResult<String> {
+pub async fn call_bot(user_message: Message, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<String> {
     let now = Instant::now();
-    log::info!("Calling bot with message = {}", user_message.content);
-    tokio::spawn(async move {
-        let stop = Arc::new(Mutex::new(false));
-        let stop_clone = stop.clone();
-        window.listen("stop-bot", move |_| {
-            *stop_clone.lock().unwrap() = true;
-        });
-        for _ in 1..10 {
-            if *stop.lock().unwrap() {
-                log::info!("Breaking from thread");
-                break;
-            }
-            std::thread::sleep(std::time::Duration::from_millis(1000));
-            // emit a download progress event to all listeners registed in the webview
-            match window.emit("bot-reply", "hello ") {
-                Err(err) => log::error!("Error when receiving bot's replay: {}", err),
-                _ => {}
-            }
-          }
-    });
+    let model = repo
+        .get_model_of_message(&user_message)
+        .await
+        .map_err(|message| DbError { message })?;
+    log::info!("Calling bot with message = {} and model = {:?}", user_message.content, model);
+    let result = api::complete_chat(user_message.clone(), model.clone())
+        .await
+        .map_err(|message| ApiError { message })?;   
+    // Retrieve model
+    // Send request in a new thread
+    // tokio::spawn(async move {
+    //     let stop = Arc::new(AtomicBool::new(false));
+    //     let stop_clone = Arc::clone(&stop);
+    //     // Bind listener for cancel events
+    //     let handler = window.listen("stop-bot", move |_| {
+    //         stop_clone.store(true, Ordering::Release);
+    //     });
+    //     for _ in 1..10 {
+    //         if stop.load(Ordering::Acquire) {
+    //             log::info!("Breaking from thread");
+    //             break;
+    //         }
+    //         std::thread::sleep(std::time::Duration::from_millis(1000));
+    //         // emit a download progress event to all listeners registed in the webview
+    //         match window.emit("bot-reply", "hello ") {
+    //             Err(err) => log::error!("Error when receiving bot's replay: {}", err),
+    //             _ => {}
+    //         }
+    //       }
+    //     // Unbind listener for cancel events before thread ends
+    //     window.unlisten(handler);
+    // });
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
-    Ok("OK".to_owned())
+    Ok(result)
 }

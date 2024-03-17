@@ -21,6 +21,7 @@ const azureModelFormSchema = z.object({
   provider: z.literal(PROVIDER_AZURE),
   apiKey: z.string().min(1, 'API Key is required'),
   endpoint: z.string().min(1, 'Endpoint is required'),
+  apiVersion: z.string().min(1, 'API version is required'),
   deploymentId: z.string().min(1, 'Deployment ID is required'),
 });
 

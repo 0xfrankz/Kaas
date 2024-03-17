@@ -59,6 +59,7 @@ export default function ModelsPage() {
     defaultValues: {
       apiKey: '',
       endpoint: '',
+      apiVersion: '',
       deploymentId: '',
       // TODO: this is needed to avoid React's uncontrolled input warning;
       // this form should be refactored into forms that match providers
@@ -165,6 +166,24 @@ export default function ModelsPage() {
                         <FormMessage />
                         <FormDescription>
                           This is the endpoint of your Azure API.
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="apiVersion"
+                  render={({ field }) => (
+                    <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                      <FormLabel className="text-right">API Version</FormLabel>
+                      <FormControl>
+                        <Input className="col-span-3" {...field} />
+                      </FormControl>
+                      <div className="col-span-3 col-start-2">
+                        <FormMessage />
+                        <FormDescription>
+                          This is the version of your Azure API.
                         </FormDescription>
                       </div>
                     </FormItem>
