@@ -7,6 +7,7 @@ import { useCallBotMutation } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
 
+import ChatMessage from './ChatMessage';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { TitleBar } from './TitleBar';
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function ChatSection({ conversation }: Props) {
+  const [botLoading, setBotLoading] = useState(false);
   const [receiving, setReceiving] = useState(false);
   const callBotMutation = useCallBotMutation();
   const listenerRef = useRef<UnlistenFn>();
@@ -41,19 +43,20 @@ export function ChatSection({ conversation }: Props) {
   // Callbacks
   const onNewUserMessage = async (message: Message) => {
     await log.info(`New user message received: ${message.content}`);
+    setBotLoading(true);
     // call bot
-    callBotMutation.mutate(message, {
-      onSuccess: async () => {
-        await log.info(`Called bot with message: ${message.content}`);
-        callBotMutation.reset();
-        // Turn on receiving mark
-        setReceiving(true);
-        setActiveBotMessage('');
-      },
-      onError: async (error) => {
-        await log.error(`Bot call failed: ${error.message}`);
-      },
-    });
+    // callBotMutation.mutate(message, {
+    //   onSuccess: async () => {
+    //     await log.info(`Called bot with message: ${message.content}`);
+    //     callBotMutation.reset();
+    //     // Turn on listener when in stream mode
+    //     // setReceiving(true);
+    //     // setActiveBotMessage('');
+    //   },
+    //   onError: async (error) => {
+    //     await log.error(`Bot call failed: ${error.message}`);
+    //   },
+    // });
   };
 
   const onUnmount = async () => {
@@ -79,21 +82,27 @@ export function ChatSection({ conversation }: Props) {
   }, [conversation]);
 
   return (
-    <TwoRows>
+    <TwoRows className="max-h-screen">
       <TwoRows.Top>
         <TitleBar title={conversation.subject} />
       </TwoRows.Top>
-      <TwoRows.Bottom>
+      <TwoRows.Bottom className="overflow-hidden">
         <div className="flex size-full flex-col items-center bg-slate-50">
-          <div className="w-[640px] grow">
-            <ChatMessageList
-              conversationId={conversation.id}
-              onNewUserMessage={onNewUserMessage}
-            />
+          <div className="w-full grow overflow-hidden">
+            <div className="flex h-full flex-col items-center overflow-y-auto">
+              <div className="w-[640px]">
+                <ChatMessageList
+                  conversationId={conversation.id}
+                  onNewUserMessage={onNewUserMessage}
+                />
+                {botLoading && <ChatMessage.BotLoading />}
+              </div>
+            </div>
           </div>
-          <span>{activeBotMessage}</span>
-          <div className="w-[640px]">
-            <ChatPromptInput conversationId={conversation.id} />
+          <div className="mt-4 flex w-full justify-center">
+            <div className="w-[640px]">
+              <ChatPromptInput conversationId={conversation.id} />
+            </div>
           </div>
         </div>
       </TwoRows.Bottom>

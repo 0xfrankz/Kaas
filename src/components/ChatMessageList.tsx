@@ -57,7 +57,7 @@ export function ChatMessageList({ conversationId, onNewUserMessage }: Props) {
       <h2>No messages</h2>
     );
 
-    return <div className="h-full w-auto">{inner}</div>;
+    return <div className="w-auto">{inner}</div>;
   };
 
   return isSuccess ? renderMessages() : null;
