@@ -1,9 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
 import { useEffect, useRef, useState } from 'react';
 
 import TwoRows from '@/layouts/TwoRows';
-import { useCallBotMutation } from '@/lib/hooks';
+import { LIST_MESSAGES_KEY, useCallBotMutation } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
 
@@ -22,6 +23,7 @@ export function ChatSection({ conversation }: Props) {
   const callBotMutation = useCallBotMutation();
   const listenerRef = useRef<UnlistenFn>();
   const [activeBotMessage, setActiveBotMessage] = useState('');
+  const queryClient = useQueryClient();
 
   const bindListener = async () => {
     listenerRef.current = await listen<string>('bot-reply', (event) => {
@@ -45,18 +47,22 @@ export function ChatSection({ conversation }: Props) {
     await log.info(`New user message received: ${message.content}`);
     setBotLoading(true);
     // call bot
-    // callBotMutation.mutate(message, {
-    //   onSuccess: async () => {
-    //     await log.info(`Called bot with message: ${message.content}`);
-    //     callBotMutation.reset();
-    //     // Turn on listener when in stream mode
-    //     // setReceiving(true);
-    //     // setActiveBotMessage('');
-    //   },
-    //   onError: async (error) => {
-    //     await log.error(`Bot call failed: ${error.message}`);
-    //   },
-    // });
+    callBotMutation.mutate(message, {
+      onSuccess: async (botMessage) => {
+        await log.info(`Called bot with message: ${message.content}`);
+        callBotMutation.reset();
+        // Update cache
+        queryClient.setQueryData<Message[]>(
+          [...LIST_MESSAGES_KEY, { conversationId: conversation.id }],
+          (messages) => (messages ? [...messages, botMessage] : [botMessage])
+        );
+        // Stop loading
+        setBotLoading(false);
+      },
+      onError: async (error) => {
+        await log.error(`Bot call failed: ${error.message}`);
+      },
+    });
   };
 
   const onUnmount = async () => {

@@ -66,8 +66,7 @@ export async function invokeCreateMessage(
   return result;
 }
 
-export async function invokeCallBot(userMessage: Message) {
-  await log.info(`Invoking call_bot with data: ${JSON.stringify(userMessage)}`);
-  const result = await invoke<void>('call_bot', { userMessage });
-  await log.info(`call_bot returned with result: ${result}`);
+export async function invokeCallBot(userMessage: Message): Promise<Message> {
+  const result = await invoke<Message>('call_bot', { userMessage });
+  return result;
 }

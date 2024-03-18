@@ -124,17 +124,27 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn call_bot(user_message: Message, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<String> {
+pub async fn call_bot(user_message: Message, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<Message> {
     let now = Instant::now();
+    // Retrieve model
     let model = repo
         .get_model_of_message(&user_message)
         .await
         .map_err(|message| DbError { message })?;
     log::info!("Calling bot with message = {} and model = {:?}", user_message.content, model);
-    let result = api::complete_chat(user_message.clone(), model.clone())
+    let reply = api::complete_chat(user_message.clone(), model.clone())
         .await
         .map_err(|message| ApiError { message })?;   
-    // Retrieve model
+    // Store bot's reply
+    let bot_message = NewMessage {
+        conversation_id: user_message.conversation_id,
+        role: messages::Roles::from(1).into(), // bot's message
+        content: reply,
+    };
+    let result = repo
+        .create_message(bot_message)
+        .await
+        .map_err(|message| DbError { message })?;
     // Send request in a new thread
     // tokio::spawn(async move {
     //     let stop = Arc::new(AtomicBool::new(false));

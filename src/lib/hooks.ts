@@ -109,7 +109,7 @@ export function useCreateMessageMutation(): UseMutationResult<
 }
 
 export function useCallBotMutation(): UseMutationResult<
-  void,
+  Message,
   CommandError,
   Message
 > {
