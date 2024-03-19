@@ -3,6 +3,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
 import { useEffect, useRef, useState } from 'react';
 
+import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
 import { LIST_MESSAGES_KEY, useCallBotMutation } from '@/lib/hooks';
 import log from '@/lib/log';
@@ -92,23 +93,19 @@ export function ChatSection({ conversation }: Props) {
       <TwoRows.Top>
         <TitleBar title={conversation.subject} />
       </TwoRows.Top>
-      <TwoRows.Bottom className="overflow-hidden">
-        <div className="flex size-full flex-col items-center bg-slate-50">
-          <div className="w-full grow overflow-hidden">
-            <div className="flex h-full flex-col items-center overflow-y-auto">
-              <div className="w-[640px]">
-                <ChatMessageList
-                  conversationId={conversation.id}
-                  onNewUserMessage={onNewUserMessage}
-                />
-                {botLoading && <ChatMessage.BotLoading />}
-              </div>
-            </div>
+      <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-slate-50">
+        <ScrollArea className="w-full grow">
+          <div className="mx-auto w-[640px] pb-4">
+            <ChatMessageList
+              conversationId={conversation.id}
+              onNewUserMessage={onNewUserMessage}
+            />
+            {botLoading && <ChatMessage.BotLoading />}
           </div>
-          <div className="mt-4 flex w-full justify-center">
-            <div className="w-[640px]">
-              <ChatPromptInput conversationId={conversation.id} />
-            </div>
+        </ScrollArea>
+        <div className="mt-4 w-full">
+          <div className="mx-auto w-[640px]">
+            <ChatPromptInput conversationId={conversation.id} />
           </div>
         </div>
       </TwoRows.Bottom>
