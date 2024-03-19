@@ -129,7 +129,7 @@ const System = ({ message }: MessageProps) => {
 
 const BotLoading = () => {
   return (
-    <div className="box-border flex w-auto flex-col justify-start rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div className="box-border flex w-auto flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow">
       <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
       <LoadingIcon className="mt-2 h-6 self-start" />
     </div>
