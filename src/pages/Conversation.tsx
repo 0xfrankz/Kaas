@@ -1,7 +1,17 @@
+import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { useParams } from 'react-router-dom';
 
 import { ChatSection } from '@/components/ChatSection';
 import { ConversationHistory } from '@/components/ConversationHistory';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useConversationsContext } from '@/lib/hooks';
@@ -36,11 +46,30 @@ function ConversationPage() {
       <TwoColumns.Left>
         <ConversationHistory activeConversationId={cid} />
       </TwoColumns.Left>
-      <TwoColumns.Right>
+      <TwoColumns.Right className="relative">
         <ChatSection
           conversation={conversation as Conversation}
           key={conversation.id}
         />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="absolute bottom-[38px] right-10 size-9 rounded-full p-0 shadow"
+            >
+              <MixerHorizontalIcon className="size-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Change options of this conversation</DialogTitle>
+              <DialogDescription>
+                Altering the options can yield unpredictable behaviors and even
+                errors. Make sure you know what you are changing.
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </TwoColumns.Right>
     </TwoColumns>
   );
