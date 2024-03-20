@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
 use async_openai::{
-    config::AzureConfig, types::{
+    config::{AzureConfig, Config}, types::{
         ChatCompletionRequestUserMessageArgs, ChatCompletionResponseFormat, CreateChatCompletionRequestArgs, Stop
     }, Client
 };
-use entity::entities::messages::Model as Message;
+use entity::entities::{messages::Model as Message, models::Providers};
 use entity::entities::models::Model;
 use serde::Deserialize;
+
+use crate::services::llm::utils::{model_to_azure_client, model_to_openai_client};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -96,12 +98,18 @@ pub async fn _complete_chat() -> Result<String, String> {
 }
 
 pub async fn complete_chat(message: Message, model: Model) -> Result<String, String> {
-    let config_json: RawAzureConfig = serde_json::from_str(&model.config)
-        .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
-    let config: AzureConfig = config_json.into();
+    match model.provider.as_str().into() {
+        Providers::Azure => {
+            let client = model_to_azure_client(&model)?;
+            return complete_chat_with_client(message, client).await;
+        },
+        _ => {
+            Err("Complete chat with OpenAI not implemented yet".to_owned())
+        }
+    }
+}
 
-    let client = Client::with_config(config);
-    
+async fn complete_chat_with_client<C: Config>(message: Message, client: Client<C>) -> Result<String, String> {
     // TODO: set options of request
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(200_u16)
@@ -115,7 +123,7 @@ pub async fn complete_chat(message: Message, model: Model) -> Result<String, Str
         .build()
         .map_err(|_| String::from("Failed to build Azure chat completion request"))?;
 
-    log::info!("Calling API with: message = {:?}, model = {:?}, client = {:?}, request = {:?}", message, model, client, request);
+    log::info!("Calling API with: message = {:?}, request = {:?}", message, request);
     let response = client
         .chat()
         .create(request)

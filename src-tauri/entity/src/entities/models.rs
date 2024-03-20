@@ -3,6 +3,44 @@ use async_openai::{config::Config, Client};
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
+pub enum Providers {
+    Azure,
+    OpenAI,
+    Unknown
+}
+
+impl From<&str> for Providers {
+    fn from(value: &str) -> Self {
+        match value {
+            "Azure" => Providers::Azure,
+            "OpenAI" => Providers::OpenAI,
+            _ => Providers::Unknown
+        }
+    }
+}
+
+impl From<String> for Providers {
+    fn from(value: String) -> Self {
+        Providers::from(value.as_str())
+    }
+}
+
+impl From<&String> for Providers {
+    fn from(value: &String) -> Self {
+        Providers::from(value.as_str())
+    }
+}
+
+impl Into<String> for Providers {
+    fn into(self) -> String {
+        match self {
+            Providers::Azure => "Azure".to_owned(),
+            Providers::OpenAI => "OpenAI".to_owned(),
+            _ => "Unknown".to_owned()
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
 #[sea_orm(table_name = "models")]
 #[serde(rename_all = "camelCase")]

@@ -11,14 +11,14 @@ use tauri::State;
 
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
-    services::{api, db::Repository},
+    services::{llm::webservices as ws, db::Repository},
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
 
 #[tauri::command]
 pub async fn complete_chat_cmd() -> CommandResult<String> {
-    let text = api::_complete_chat()
+    let text = ws::_complete_chat()
         .await
         .map_err(|message| ApiError { message })?;
     Ok(text)
@@ -124,7 +124,7 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn call_bot(user_message: Message, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn call_bot(user_message: Message, _window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<Message> {
     let now = Instant::now();
     // Retrieve model
     let model = repo
@@ -132,7 +132,7 @@ pub async fn call_bot(user_message: Message, window: tauri::Window, repo: State<
         .await
         .map_err(|message| DbError { message })?;
     log::info!("Calling bot with message = {} and model = {:?}", user_message.content, model);
-    let reply = api::complete_chat(user_message.clone(), model.clone())
+    let reply = ws::complete_chat(user_message.clone(), model.clone())
         .await
         .map_err(|message| ApiError { message })?;   
     // Store bot's reply
