@@ -74,6 +74,7 @@ function ConversationPage() {
               </DialogDescription>
             </DialogHeader>
             <AzureOptionsForm
+              id="optionsForm"
               ref={formRef}
               onFormSubmit={(formData) => {
                 console.log('AzureOptionsForm: ', formData);
@@ -83,13 +84,7 @@ function ConversationPage() {
               <DialogClose asChild>
                 <Button variant="secondary">Cancel</Button>
               </DialogClose>
-              <Button
-                onClick={() => {
-                  formRef.current?.submit();
-                }}
-              >
-                Save
-              </Button>
+              <Button form="optionsForm">Save</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
