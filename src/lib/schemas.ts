@@ -31,20 +31,14 @@ export const modelFormSchema = z.discriminatedUnion('provider', [
 ]);
 
 export const azureChatOptionsFormSchema = z.object({
+  frequencyPenalty: z.number().optional().default(0),
   maxTokens: z.number().int().optional().default(16),
+  n: z.number().int().optional().default(1),
+  presencePenalty: z.number().optional().default(0),
+  stream: z.boolean().optional().default(false),
   temperature: z.number().optional().default(1),
   topP: z.number().optional().default(1),
-  // logitBias: z.record(z.number()).optional(),
   user: z.string().optional(),
-  // n: z.number().int().optional().default(1),
-  stream: z.boolean().optional().default(false),
-  logprobs: z.number().optional(),
-  suffix: z.string().optional(),
-  echo: z.boolean().optional().default(false),
-  // stop: z.union([z.string(), z.array(z.string())]).optional(),
-  presencePenalty: z.number().optional().default(0),
-  frequencyPenalty: z.number().optional().default(0),
-  // bestOf: z.number().int().optional().default(1),
 });
 
 export const conversationFormSchema = z.object({

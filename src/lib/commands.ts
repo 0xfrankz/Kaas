@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api';
 
 import log from './log';
 import type {
+  AzureChatOptions,
   Conversation,
   GenericModel,
   Message,
@@ -68,5 +69,14 @@ export async function invokeCreateMessage(
 
 export async function invokeCallBot(userMessage: Message): Promise<Message> {
   const result = await invoke<Message>('call_bot', { userMessage });
+  return result;
+}
+
+export async function invokeUpdateConversationOptions(
+  options: AzureChatOptions
+): Promise<AzureChatOptions> {
+  const result = await invoke<AzureChatOptions>('update_conversation_options', {
+    options,
+  });
   return result;
 }

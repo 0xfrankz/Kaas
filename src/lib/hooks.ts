@@ -11,10 +11,12 @@ import {
   invokeListMessages,
   invokeListModels,
   invokeListSettings,
+  invokeUpdateConversationOptions,
   invokeUpsertSetting,
 } from './commands';
 import { ConversationsContext } from './contexts';
 import type {
+  AzureChatOptions,
   CommandError,
   Conversation,
   Message,
@@ -115,6 +117,16 @@ export function useCallBotMutation(): UseMutationResult<
 > {
   return useMutation({
     mutationFn: invokeCallBot,
+  });
+}
+
+export function useUpdateConversationOptionsMutation(): UseMutationResult<
+  AzureChatOptions,
+  CommandError,
+  AzureChatOptions
+> {
+  return useMutation({
+    mutationFn: invokeUpdateConversationOptions,
   });
 }
 

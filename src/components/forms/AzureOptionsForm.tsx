@@ -15,45 +15,161 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
+import { Switch } from '../ui/switch';
 
-type AzureOptionsFormInnerProps = {
+type AzureOptionsFormInnerProps = Omit<
+  HTMLAttributes<HTMLFormElement>,
+  'onSubmit'
+> & {
   onFormSubmit: (formData: AzureChatOptions) => void;
 };
 
 function AzureOptionsFormInner(
-  {
-    onFormSubmit,
-    ...props
-  }: HTMLAttributes<HTMLFormElement> & AzureOptionsFormInnerProps,
+  { onFormSubmit, ...props }: AzureOptionsFormInnerProps,
   ref: ForwardedRef<HTMLFormElement>
 ) {
   const form = useForm<AzureChatOptions>({
     resolver: zodResolver(azureChatOptionsFormSchema),
     defaultValues: {
-      maxTokens: 16,
-      temperature: 1,
-      user: '',
-      stream: false,
-      logprobs: undefined,
-      suffix: undefined,
-      echo: false,
-      presencePenalty: 0,
       frequencyPenalty: 0,
+      maxTokens: 16,
+      n: 1,
+      presencePenalty: 0,
+      stream: false,
+      temperature: 1,
+      topP: 1,
+      user: '',
     },
   });
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} ref={ref} {...props}>
-        <div className="grid gap-4 py-8">
+        <div className="grid grid-cols-2 gap-4 py-8">
+          <FormField
+            control={form.control}
+            name="frequencyPenalty"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">
+                  Frequency Penalty
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-2" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="maxTokens"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">Max Tokens</FormLabel>
+                <FormLabel className="col-span-2 text-right">
+                  Max Tokens
+                </FormLabel>
                 <FormControl>
-                  <Input className="col-span-3" {...field} />
+                  <Input className="col-span-2" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="n"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">N</FormLabel>
+                <FormControl>
+                  <Input className="col-span-2" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="presencePenalty"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">
+                  Presence Penalty
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-2" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="stream"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">Stream</FormLabel>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="temperature"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">
+                  Temperature
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-2" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="topP"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">Top P</FormLabel>
+                <FormControl>
+                  <Input className="col-span-2" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="user"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="col-span-2 text-right">User</FormLabel>
+                <FormControl>
+                  <Input className="col-span-2" {...field} />
                 </FormControl>
                 <div className="col-start-2 col-end-4">
                   <FormMessage />
@@ -69,5 +185,5 @@ function AzureOptionsFormInner(
 
 export const AzureOptionsForm = forwardRef<
   HTMLFormElement,
-  HTMLAttributes<HTMLFormElement> & AzureOptionsFormInnerProps
+  AzureOptionsFormInnerProps
 >(AzureOptionsFormInner);

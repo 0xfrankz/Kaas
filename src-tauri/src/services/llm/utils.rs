@@ -1,8 +1,6 @@
 use async_openai::{
-    config::{AzureConfig, Config, OpenAIConfig},
-    types::{
-        ChatCompletionRequestUserMessageArgs, ChatCompletionResponseFormat, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, Stop
-    },
+    config::{AzureConfig, OpenAIConfig},
+    types::CreateChatCompletionRequest,
     Client,
 };
 use entity::entities::{conversations::Model as Conversation, models::{Model, Providers}};

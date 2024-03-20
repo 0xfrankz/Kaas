@@ -65,7 +65,7 @@ function ConversationPage() {
               <MixerHorizontalIcon className="size-4" />
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-xl">
             <DialogHeader>
               <DialogTitle>Change options of this conversation</DialogTitle>
               <DialogDescription>
