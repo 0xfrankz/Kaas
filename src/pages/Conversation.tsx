@@ -1,13 +1,17 @@
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
+import { useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ChatSection } from '@/components/ChatSection';
 import { ConversationHistory } from '@/components/ConversationHistory';
+import { AzureOptionsForm } from '@/components/forms/AzureOptionsForm';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -26,6 +30,7 @@ type Params = {
 function ConversationPage() {
   log.info('ConversationPage rendered!');
   const { conversationId } = useParams<Params>();
+  const formRef = useRef<HTMLFormElement>(null);
   const { get: getConversation } = useConversationsContext();
   const cid = parseNumberOrNull(conversationId);
   const conversation = cid ? getConversation(cid) : null;
@@ -68,6 +73,24 @@ function ConversationPage() {
                 errors. Make sure you know what you are changing.
               </DialogDescription>
             </DialogHeader>
+            <AzureOptionsForm
+              ref={formRef}
+              onFormSubmit={(formData) => {
+                console.log('AzureOptionsForm: ', formData);
+              }}
+            />
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="secondary">Cancel</Button>
+              </DialogClose>
+              <Button
+                onClick={() => {
+                  formRef.current?.submit();
+                }}
+              >
+                Save
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </TwoColumns.Right>

@@ -1,7 +1,11 @@
 import type { z } from 'zod';
 
 import type { SUPPORTED_PROVIDERS } from './constants';
-import type { conversationFormSchema, modelFormSchema } from './schemas';
+import type {
+  azureChatOptionsFormSchema,
+  conversationFormSchema,
+  modelFormSchema,
+} from './schemas';
 
 // type OpenAIConfig = {
 //   apiKey: string;
@@ -82,6 +86,8 @@ export type Message = NewMessage & {
   createdAt: string;
   deletedAt?: string;
 };
+
+export type AzureChatOptions = z.infer<typeof azureChatOptionsFormSchema>;
 
 // Contexts
 export type TConversationsContext = {
