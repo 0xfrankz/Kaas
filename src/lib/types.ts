@@ -102,6 +102,11 @@ export type CommandError = {
   message: string;
 };
 
+// Imperative handlers
+export type FormHandler = {
+  reset: () => void;
+};
+
 // Functions
 export function toGenericModel(model: UnsavedModel): GenericUnsavedModel {
   const { provider, ...config } = model;

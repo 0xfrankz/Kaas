@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ForwardedRef, HTMLAttributes } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { azureChatOptionsFormSchema } from '@/lib/schemas';
-import type { AzureChatOptions } from '@/lib/types';
+import type { AzureChatOptions, FormHandler } from '@/lib/types';
 
 import {
   Form,
@@ -26,7 +26,7 @@ type AzureOptionsFormInnerProps = Omit<
 
 function AzureOptionsFormInner(
   { onFormSubmit, ...props }: AzureOptionsFormInnerProps,
-  ref: ForwardedRef<HTMLFormElement>
+  ref: ForwardedRef<FormHandler>
 ) {
   const form = useForm<AzureChatOptions>({
     resolver: zodResolver(azureChatOptionsFormSchema),
@@ -42,9 +42,20 @@ function AzureOptionsFormInner(
     },
   });
 
+  // Hooks
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        reset: () => form.reset(),
+      };
+    },
+    [form]
+  );
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} ref={ref} {...props}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} {...props}>
         <div className="grid grid-cols-2 gap-4 py-8">
           <FormField
             control={form.control}
@@ -184,6 +195,6 @@ function AzureOptionsFormInner(
 }
 
 export const AzureOptionsForm = forwardRef<
-  HTMLFormElement,
+  FormHandler,
   AzureOptionsFormInnerProps
 >(AzureOptionsFormInner);
