@@ -3,8 +3,10 @@ import type { z } from 'zod';
 import type { SUPPORTED_PROVIDERS } from './constants';
 import type {
   azureChatOptionsFormSchema,
+  chatOptionsFormSchema,
   conversationFormSchema,
   modelFormSchema,
+  openAIChatOptionsFormSchema,
 } from './schemas';
 
 // type OpenAIConfig = {
@@ -88,6 +90,12 @@ export type Message = NewMessage & {
 };
 
 export type AzureChatOptions = z.infer<typeof azureChatOptionsFormSchema>;
+export type OpenAIChatOptions = z.infer<typeof openAIChatOptionsFormSchema>;
+export type ChatOptions = z.infer<typeof chatOptionsFormSchema>;
+export type GenericChatOptions = {
+  provider: string;
+  options: string;
+};
 
 // Contexts
 export type TConversationsContext = {
@@ -122,5 +130,15 @@ export function fromGenericModel(model: GenericModel): Model {
   return {
     ...configObj,
     ...rest,
+  };
+}
+
+export function fromGenericChatOptions(
+  options: GenericChatOptions
+): ChatOptions {
+  const { provider, options: optionsStr } = options;
+  return {
+    provider,
+    ...JSON.parse(optionsStr),
   };
 }

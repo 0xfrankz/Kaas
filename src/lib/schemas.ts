@@ -11,7 +11,7 @@ import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
 //   })
 //   .required();
 
-const openaiModelFormSchema = z.object({
+const openAIModelFormSchema = z.object({
   provider: z.literal(PROVIDER_OPENAI),
   apiKey: z.string().min(1, 'API Key is required'),
   model: z.string().min(1, 'Model is required'),
@@ -26,11 +26,12 @@ const azureModelFormSchema = z.object({
 });
 
 export const modelFormSchema = z.discriminatedUnion('provider', [
-  openaiModelFormSchema,
+  openAIModelFormSchema,
   azureModelFormSchema,
 ]);
 
 export const azureChatOptionsFormSchema = z.object({
+  provider: z.literal(PROVIDER_AZURE),
   frequencyPenalty: z.number().optional().default(0),
   maxTokens: z.number().int().optional().default(16),
   n: z.number().int().optional().default(1),
@@ -43,6 +44,16 @@ export const azureChatOptionsFormSchema = z.object({
     .optional()
     .transform((v) => (v === '' ? undefined : v)),
 });
+
+export const openAIChatOptionsFormSchema = z.object({
+  provider: z.literal(PROVIDER_OPENAI),
+  frequencyPenalty: z.number().optional().default(0),
+});
+
+export const chatOptionsFormSchema = z.discriminatedUnion('provider', [
+  openAIChatOptionsFormSchema,
+  azureChatOptionsFormSchema,
+]);
 
 export const conversationFormSchema = z.object({
   modelId: z.coerce.number(),

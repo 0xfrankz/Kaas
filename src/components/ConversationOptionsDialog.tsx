@@ -1,7 +1,7 @@
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
 
-import { useUpdateConversationOptionsMutation } from '@/lib/hooks';
+import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
 import type { AzureChatOptions, Conversation } from '@/lib/types';
 
 import { AzureOptionsForm } from './forms/AzureOptionsForm';
@@ -26,12 +26,14 @@ type Props = {
 export function ConversationOptionsDialog({ className, conversation }: Props) {
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const updateConversationOptionsMutation =
-    useUpdateConversationOptionsMutation();
+  const updateOptionsMutation = useUpdateOptionsMutation();
+  const getOptionsQuery = useGetOptionsQuery(conversation.id);
   const { toast } = useToast();
 
+  // TODO: use getOptionsQuery to get conversation options
+
   const onFormSubmit = (formData: AzureChatOptions) => {
-    updateConversationOptionsMutation.mutate(
+    updateOptionsMutation.mutate(
       {
         conversationId: conversation.id,
         options: formData,

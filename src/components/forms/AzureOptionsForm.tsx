@@ -3,6 +3,7 @@ import type { ForwardedRef, HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { PROVIDER_AZURE } from '@/lib/constants';
 import { azureChatOptionsFormSchema } from '@/lib/schemas';
 import type { AzureChatOptions, FormHandler } from '@/lib/types';
 
@@ -31,6 +32,7 @@ function AzureOptionsFormInner(
   const form = useForm<AzureChatOptions>({
     resolver: zodResolver(azureChatOptionsFormSchema),
     defaultValues: {
+      provider: PROVIDER_AZURE,
       frequencyPenalty: 0,
       maxTokens: 16,
       n: 1,
@@ -183,6 +185,20 @@ function AzureOptionsFormInner(
                   <Input className="col-span-2" {...field} />
                 </FormControl>
                 <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="provider"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="hidden" {...field} />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
                   <FormMessage />
                 </div>
               </FormItem>

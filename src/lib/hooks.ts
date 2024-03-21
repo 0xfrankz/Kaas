@@ -7,6 +7,7 @@ import {
   invokeCreateConversation,
   invokeCreateMessage,
   invokeCreateModel,
+  invokeGetOptions,
   invokeListConversations,
   invokeListMessages,
   invokeListModels,
@@ -32,6 +33,7 @@ export const LIST_MODELS_KEY = ['list-models'];
 export const LIST_SETTINGS_KEY = ['list-settings'];
 export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
+export const OPTIONS_CONVERSATION_KEY = ['options-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
 
 export function useCreateModelMutation(): UseMutationResult<
@@ -91,6 +93,15 @@ export function useListConversationsQuery(): UseQueryResult<
   });
 }
 
+export function useGetOptionsQuery(
+  conversationId: number
+): UseQueryResult<AzureChatOptions, CommandError> {
+  return useQuery({
+    queryKey: [...OPTIONS_CONVERSATION_KEY, { conversationId }],
+    queryFn: () => invokeGetOptions(conversationId),
+  });
+}
+
 export function useListMessagesQuery(
   conversationId: number
 ): UseQueryResult<Message[], CommandError> {
@@ -120,7 +131,7 @@ export function useCallBotMutation(): UseMutationResult<
   });
 }
 
-export function useUpdateConversationOptionsMutation(): UseMutationResult<
+export function useUpdateOptionsMutation(): UseMutationResult<
   void,
   CommandError,
   { conversationId: number; options: AzureChatOptions }

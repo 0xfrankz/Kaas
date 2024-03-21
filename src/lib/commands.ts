@@ -3,7 +3,9 @@ import { invoke } from '@tauri-apps/api';
 import log from './log';
 import type {
   AzureChatOptions,
+  ChatOptions,
   Conversation,
+  GenericChatOptions,
   GenericModel,
   Message,
   Model,
@@ -12,7 +14,11 @@ import type {
   UnsavedConversation,
   UnsavedModel,
 } from './types';
-import { fromGenericModel, toGenericModel } from './types';
+import {
+  fromGenericChatOptions,
+  fromGenericModel,
+  toGenericModel,
+} from './types';
 
 export async function invokeCreateModel(model: UnsavedModel): Promise<Model> {
   const genericModel = toGenericModel(model);
@@ -53,6 +59,15 @@ export async function invokeListConversations(): Promise<Conversation[]> {
   return result;
 }
 
+export async function invokeGetOptions(
+  conversationId: number
+): Promise<ChatOptions> {
+  const result = await invoke<GenericChatOptions>('get_options', {
+    conversationId,
+  });
+  return fromGenericChatOptions(result);
+}
+
 export async function invokeListMessages(
   conversationId: number
 ): Promise<Message[]> {
@@ -79,8 +94,10 @@ export async function invokeUpdateConversationOptions({
   conversationId: number;
   options: AzureChatOptions;
 }) {
+  // Omni the Provider field
+  const { provider: ignored, ...rest } = options;
   await invoke<AzureChatOptions>('update_conversation_options', {
     conversationId,
-    options: JSON.stringify(options),
+    options: JSON.stringify(rest),
   });
 }
