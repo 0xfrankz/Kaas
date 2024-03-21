@@ -121,9 +121,9 @@ export function useCallBotMutation(): UseMutationResult<
 }
 
 export function useUpdateConversationOptionsMutation(): UseMutationResult<
-  AzureChatOptions,
+  void,
   CommandError,
-  AzureChatOptions
+  { conversationId: number; options: AzureChatOptions }
 > {
   return useMutation({
     mutationFn: invokeUpdateConversationOptions,

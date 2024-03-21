@@ -172,3 +172,9 @@ pub async fn call_bot(user_message: Message, _window: tauri::Window, repo: State
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
     Ok(result)
 }
+
+#[tauri::command]
+pub async fn update_conversation_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<()> {
+    log::info!("conversation_id = {}, options = {}", conversation_id, options);
+    Ok(())
+}

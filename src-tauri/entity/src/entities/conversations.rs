@@ -72,3 +72,29 @@ pub struct NewConversation {
     pub model_id: i32,
     pub message: String,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AzureOptions {
+    // pub best_of: Option<i32>, // async-openai currently doesn't support this
+    // pub echo: Option<bool>, // async-openai currently doesn't support this
+    pub frequency_penalty: Option<f32>, // min: -2.0, max: 2.0, default: 0
+    // pub function_call: Option<ChatCompletionFunctionCall>,
+    // pub functions: Option<Vec<ChatCompletionFunctions>>,
+    // pub logit_bias: Option<HashMap<String, serde_json::Value>>, // default: null
+    // pub logprobs: Option<i32>, // Azure seems to have a different definition from OpenAI's. async-openai currently doesn't support the Azure version
+    pub max_tokens: Option<u16>,
+    pub n: Option<u8>, // min:1, max: 128, default: 1
+    pub presence_penalty: Option<f32>, // min: -2.0, max: 2.0, default 0
+    // pub response_format: Option<ChatCompletionResponseFormat>, // to be implemented
+    // pub seed: Option<i64>, // not supported by Azure
+    // pub stop: Option<Stop>, // to be implemented
+    pub stream: Option<bool>,
+    // pub suffix: Option<String>, // async-openai currently doesn't support this
+    pub temperature: Option<f32>, // min: 0, max: 2, default: 1,
+    // pub tools: Option<Vec<ChatCompletionTool>>,
+    // pub tool_choice: Option<ChatCompletionToolChoiceOption>,
+    // pub top_logprobs: Option<u8>,
+    pub top_p: Option<f32>, // min: 0, max: 1, default: 1
+    pub user: Option<String>,
+}

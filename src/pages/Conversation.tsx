@@ -18,9 +18,12 @@ import {
 } from '@/components/ui/dialog';
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
-import { useConversationsContext } from '@/lib/hooks';
+import {
+  useConversationsContext,
+  useUpdateConversationOptionsMutation,
+} from '@/lib/hooks';
 import log from '@/lib/log';
-import type { Conversation } from '@/lib/types';
+import type { AzureChatOptions, Conversation } from '@/lib/types';
 import { errorGuard, parseNumberOrNull } from '@/lib/utils';
 
 type Params = {
@@ -32,6 +35,8 @@ function ConversationPage() {
   const { conversationId } = useParams<Params>();
   const formRef = useRef<HTMLFormElement>(null);
   const { get: getConversation } = useConversationsContext();
+  const updateConversationOptionsMutation =
+    useUpdateConversationOptionsMutation();
   const cid = parseNumberOrNull(conversationId);
   const conversation = cid ? getConversation(cid) : null;
   if (cid === null) {
@@ -45,6 +50,13 @@ function ConversationPage() {
     // parent context is not ready
     return null;
   }
+
+  const onFormSubmit = (formData: AzureChatOptions) => {
+    updateConversationOptionsMutation.mutate({
+      conversationId: cid,
+      options: formData,
+    });
+  };
 
   return (
     <TwoColumns>
@@ -76,9 +88,7 @@ function ConversationPage() {
             <AzureOptionsForm
               id="optionsForm"
               ref={formRef}
-              onFormSubmit={(formData) => {
-                console.log('AzureOptionsForm: ', formData);
-              }}
+              onFormSubmit={onFormSubmit}
             />
             <DialogFooter>
               <DialogClose asChild>

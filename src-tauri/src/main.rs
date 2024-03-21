@@ -21,6 +21,7 @@ fn main() {
       commands::upsert_setting,
       commands::create_conversation,
       commands::list_conversations,
+      commands::update_conversation_options,
       commands::create_message,
       commands::list_messages,
       commands::call_bot,

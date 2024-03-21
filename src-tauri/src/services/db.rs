@@ -180,9 +180,15 @@ impl Repository {
     }
 
     /**
+     * Update options of a conversation
+     */
+    pub async fn update_conversation_options(&self, conversation_id: i32, options: String) -> Result<(), String> {
+        Ok(())
+    }
+
+    /**
      * Insert a new message
      */
-    #[allow(dead_code)]
     pub async fn create_message(&self, new_message: NewMessage) -> Result<Message, String> {
         let mut active_model = new_message.into_active_model();
         active_model.created_at  = Set(chrono::Local::now());

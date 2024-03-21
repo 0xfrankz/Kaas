@@ -72,11 +72,15 @@ export async function invokeCallBot(userMessage: Message): Promise<Message> {
   return result;
 }
 
-export async function invokeUpdateConversationOptions(
-  options: AzureChatOptions
-): Promise<AzureChatOptions> {
-  const result = await invoke<AzureChatOptions>('update_conversation_options', {
-    options,
+export async function invokeUpdateConversationOptions({
+  conversationId,
+  options,
+}: {
+  conversationId: number;
+  options: AzureChatOptions;
+}) {
+  await invoke<AzureChatOptions>('update_conversation_options', {
+    conversationId,
+    options: JSON.stringify(options),
   });
-  return result;
 }

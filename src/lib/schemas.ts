@@ -38,7 +38,10 @@ export const azureChatOptionsFormSchema = z.object({
   stream: z.boolean().optional().default(false),
   temperature: z.number().optional().default(1),
   topP: z.number().optional().default(1),
-  user: z.string().optional(),
+  user: z
+    .string()
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
 });
 
 export const conversationFormSchema = z.object({
