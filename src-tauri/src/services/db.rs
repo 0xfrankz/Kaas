@@ -1,10 +1,11 @@
 
-use entity::entities::conversations::{self, ConversationListItem, Model as Conversation, ActiveModel as ActiveConversation};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, ProviderOptions};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
-use entity::entities::models::{self, Model};
+use entity::entities::models::{self, Model, Providers};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
+use sea_orm::ActiveValue::NotSet;
 use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QuerySelect};
 use sea_orm::{
     sea_query, 
@@ -67,6 +68,21 @@ impl Repository {
     }
 
     /**
+     * Get a model by id
+     */
+    pub async fn get_model(&self, model_id: i32) -> Result<Model, String> {
+        let result = models::Entity::find_by_id(model_id)
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to get model".to_string()
+            })?
+            .ok_or(format!("Model with id {} doesn't exist", model_id))?;
+        Ok(result)
+    }
+
+    /**
      * List all settings
      */
     pub async fn list_settings(&self) -> Result<Vec<settings::Model>, String> {
@@ -104,15 +120,23 @@ impl Repository {
     /**
      * Insert a new conversation
      */
-    #[allow(dead_code)]
     pub async fn create_conversation(
         &self,
         conversation: Conversation,
     ) -> Result<Conversation, String> {
+        let model = self.get_model(conversation.model_id).await?;
         let mut active_model: ActiveConversation = conversation.clone().into();
         active_model.id = ActiveValue::NotSet;
-        // TODO: options should be set to default values of current model
-        active_model.options = Set("".to_owned());
+        match model.provider.into() {
+            Providers::Azure => {
+                let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
+                active_model.options = Set(options_str);
+            }
+            _ => {
+                active_model.options = Set(String::default());
+            }
+        }
+        
         active_model.created_at = Set(chrono::Local::now());
         let result: Conversation = active_model.insert(&self.connection).await.map_err(|err| {
             error!("{}", err);
@@ -122,11 +146,23 @@ impl Repository {
     }
 
     pub async fn create_conversation_with_message(&self, conversation: Conversation, message: Message) -> Result<(Conversation, Message), String> {
+        let model = self
+                .get_model(conversation.model_id)
+                .await?;
         let result = self.connection.transaction::<_, (Conversation, Message), DbErr>(|txn| {
             Box::pin(async move {
+                
                 let mut c_am: ActiveConversation = conversation.into();
                 c_am.id = ActiveValue::NotSet;
-                c_am.options = Set("".to_owned());
+                match model.provider.into() {
+                    Providers::Azure => {
+                        let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
+                        c_am.options = Set(options_str);
+                    }
+                    _ => {
+                        c_am.options = Set(String::default());
+                    }
+                }
                 c_am.created_at = Set(chrono::Local::now());
 
                 let c_m: Conversation = c_am
@@ -179,11 +215,88 @@ impl Repository {
         Ok(result)
     }
 
+    pub async fn get_conversation_options(&self, conversation_id: i32) -> Result<ProviderOptions, String> {
+        let result = conversations::Entity::find_by_id(conversation_id)
+                .select_only()
+                .column(conversations::Column::Options)
+                .join(
+                    JoinType::InnerJoin, 
+                    conversations::Relation::Models.def()
+                )
+                .column(models::Column::Provider)
+                .into_model::<ProviderOptions>()
+                .one(&self.connection)
+                .await
+                .map_err(|err| {
+                    error!("{}", err);
+                    format!("Failed to get options of conversation with id = {}", conversation_id)
+                })?
+                .ok_or(
+                    format!(
+                        "Cannot retrieve options of conversation with id = {}", 
+                        conversation_id
+                    )
+                )?;
+        Ok(result)
+    }
+
     /**
      * Update options of a conversation
      */
-    pub async fn update_conversation_options(&self, conversation_id: i32, options: String) -> Result<(), String> {
-        Ok(())
+    pub async fn update_conversation_options(&self, conversation_id: i32, options: String) -> Result<ProviderOptions, String> {
+        // Get conversation model
+        let conversation = conversations::Entity::find_by_id(conversation_id)
+                .one(&self.connection)
+                .await
+                .map_err(|err| { 
+                    error!("{}", err);
+                    format!("Failed to find conversation with id = {}", conversation_id)
+                })?
+                .ok_or(
+                    format!(
+                        "Conversation with id {} doesn't exist", 
+                        conversation_id
+                    )
+                )?;
+        // Convert to active model
+        let model_id = conversation.model_id;
+        let mut c_am: conversations::ActiveModel = conversation.into();
+        // Get provider string
+        let provider: String = models::Entity::find_by_id(model_id)
+                .select_only()
+                .column(models::Column::Provider)
+                .into_tuple()
+                .one(&self.connection)
+                .await
+                .map_err(|_| format!("Failed to get provider of conversation with id = {}", conversation_id))?
+                .unwrap_or(Providers::Unknown.into());
+        // Validate & set options string of active model
+        let options_str;
+        match provider.clone().into() {
+            Providers::Azure => {
+                // Deserialize & serialize the options as validation
+                let azure_options: AzureOptions = serde_json::from_str(&options)
+                    .unwrap_or_else(|err| {
+                        // record error and return default
+                        error!("{}", err);
+                        AzureOptions::default()
+                    });
+                options_str = serde_json::to_string(&azure_options).unwrap_or(String::default()); // Unwrapping should never fail here?
+                c_am.options = Set(options_str.clone());
+            }
+            _ => {
+                options_str = String::default();
+                c_am.options = Set(options_str.clone());
+            }
+        }
+        // Update DB
+        c_am.update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to update options of conversation with id = {}", conversation_id)
+            })?;
+        Ok(ProviderOptions { provider, options: options_str })
     }
 
     /**

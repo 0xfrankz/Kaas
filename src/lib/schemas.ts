@@ -30,29 +30,29 @@ export const modelFormSchema = z.discriminatedUnion('provider', [
   azureModelFormSchema,
 ]);
 
-export const azureChatOptionsFormSchema = z.object({
+export const azureOptionsFormSchema = z.object({
   provider: z.literal(PROVIDER_AZURE),
-  frequencyPenalty: z.number().optional().default(0),
-  maxTokens: z.number().int().optional().default(16),
-  n: z.number().int().optional().default(1),
-  presencePenalty: z.number().optional().default(0),
+  frequencyPenalty: z.coerce.number().optional().default(0),
+  maxTokens: z.coerce.number().int().optional().default(16),
+  n: z.coerce.number().int().optional().default(1),
+  presencePenalty: z.coerce.number().optional().default(0),
   stream: z.boolean().optional().default(false),
-  temperature: z.number().optional().default(1),
-  topP: z.number().optional().default(1),
+  temperature: z.coerce.number().optional().default(1),
+  topP: z.coerce.number().optional().default(1),
   user: z
     .string()
     .optional()
     .transform((v) => (v === '' ? undefined : v)),
 });
 
-export const openAIChatOptionsFormSchema = z.object({
+export const openAIOptionsFormSchema = z.object({
   provider: z.literal(PROVIDER_OPENAI),
   frequencyPenalty: z.number().optional().default(0),
 });
 
-export const chatOptionsFormSchema = z.discriminatedUnion('provider', [
-  openAIChatOptionsFormSchema,
-  azureChatOptionsFormSchema,
+export const optionsFormSchema = z.discriminatedUnion('provider', [
+  openAIOptionsFormSchema,
+  azureOptionsFormSchema,
 ]);
 
 export const conversationFormSchema = z.object({

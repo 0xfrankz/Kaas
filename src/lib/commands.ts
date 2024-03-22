@@ -2,14 +2,14 @@ import { invoke } from '@tauri-apps/api';
 
 import log from './log';
 import type {
-  AzureChatOptions,
-  ChatOptions,
+  AzureOptions,
   Conversation,
-  GenericChatOptions,
   GenericModel,
   Message,
   Model,
   NewMessage,
+  Options,
+  ProviderOptions,
   Setting,
   UnsavedConversation,
   UnsavedModel,
@@ -61,11 +61,28 @@ export async function invokeListConversations(): Promise<Conversation[]> {
 
 export async function invokeGetOptions(
   conversationId: number
-): Promise<ChatOptions> {
-  const result = await invoke<GenericChatOptions>('get_options', {
+): Promise<Options> {
+  const result = await invoke<ProviderOptions>('get_options', {
     conversationId,
   });
+  console.log('invokeGetOptions:', result);
   return fromGenericChatOptions(result);
+}
+
+export async function invokeUpdateOptions({
+  conversationId,
+  options,
+}: {
+  conversationId: number;
+  options: AzureOptions;
+}) {
+  // Omni the Provider field
+  const { provider: ignored, ...rest } = options;
+  console.log('invokeUpdateOptions:', JSON.stringify(rest));
+  await invoke<ProviderOptions>('update_options', {
+    conversationId,
+    options: JSON.stringify(rest),
+  });
 }
 
 export async function invokeListMessages(
@@ -85,19 +102,4 @@ export async function invokeCreateMessage(
 export async function invokeCallBot(userMessage: Message): Promise<Message> {
   const result = await invoke<Message>('call_bot', { userMessage });
   return result;
-}
-
-export async function invokeUpdateConversationOptions({
-  conversationId,
-  options,
-}: {
-  conversationId: number;
-  options: AzureChatOptions;
-}) {
-  // Omni the Provider field
-  const { provider: ignored, ...rest } = options;
-  await invoke<AzureChatOptions>('update_conversation_options', {
-    conversationId,
-    options: JSON.stringify(rest),
-  });
 }

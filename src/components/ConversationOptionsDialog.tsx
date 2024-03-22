@@ -1,8 +1,10 @@
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
+import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
-import type { AzureChatOptions, Conversation } from '@/lib/types';
+import type { AzureOptions, Conversation } from '@/lib/types';
 
 import { AzureOptionsForm } from './forms/AzureOptionsForm';
 import { Button } from './ui/button';
@@ -27,12 +29,23 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const updateOptionsMutation = useUpdateOptionsMutation();
-  const getOptionsQuery = useGetOptionsQuery(conversation.id);
+  const {
+    key: queryKey,
+    query: { data: options, isSuccess, isError, error },
+  } = useGetOptionsQuery(conversation.id);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // TODO: use getOptionsQuery to get conversation options
+  if (isError && error) {
+    throw new AppError(
+      ERROR_TYPE_APP_STATE,
+      error.message,
+      'Failed to load conversation options!'
+    );
+  }
 
-  const onFormSubmit = (formData: AzureChatOptions) => {
+  // Callbacks
+  const onFormSubmit = (formData: AzureOptions) => {
     updateOptionsMutation.mutate(
       {
         conversationId: conversation.id,
@@ -40,6 +53,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
       },
       {
         onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey });
           toast({
             title: 'Success',
             description: 'Options of this conversation has been updated',
@@ -60,7 +74,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
     );
   };
 
-  return (
+  return isSuccess && options ? (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className={className}>
@@ -79,6 +93,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
           id="optionsForm"
           ref={formRef}
           onFormSubmit={onFormSubmit}
+          defaultValues={options}
         />
         <DialogFooter>
           <DialogClose asChild>
@@ -88,5 +103,5 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  ) : null;
 }

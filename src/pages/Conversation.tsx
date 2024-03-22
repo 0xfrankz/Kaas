@@ -30,6 +30,8 @@ function ConversationPage() {
     return null;
   }
 
+  console.log('ConversationPage');
+
   return (
     <TwoColumns>
       <TwoColumns.Left>

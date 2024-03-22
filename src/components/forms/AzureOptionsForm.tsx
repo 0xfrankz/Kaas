@@ -3,9 +3,8 @@ import type { ForwardedRef, HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { PROVIDER_AZURE } from '@/lib/constants';
-import { azureChatOptionsFormSchema } from '@/lib/schemas';
-import type { AzureChatOptions, FormHandler } from '@/lib/types';
+import { azureOptionsFormSchema } from '@/lib/schemas';
+import type { AzureOptions, FormHandler } from '@/lib/types';
 
 import {
   Form,
@@ -22,25 +21,19 @@ type AzureOptionsFormInnerProps = Omit<
   HTMLAttributes<HTMLFormElement>,
   'onSubmit'
 > & {
-  onFormSubmit: (formData: AzureChatOptions) => void;
+  onFormSubmit: (formData: AzureOptions) => void;
+  defaultValues: AzureOptions;
 };
 
 function AzureOptionsFormInner(
-  { onFormSubmit, ...props }: AzureOptionsFormInnerProps,
+  { onFormSubmit, defaultValues, ...props }: AzureOptionsFormInnerProps,
   ref: ForwardedRef<FormHandler>
 ) {
-  const form = useForm<AzureChatOptions>({
-    resolver: zodResolver(azureChatOptionsFormSchema),
+  const form = useForm<AzureOptions>({
+    resolver: zodResolver(azureOptionsFormSchema),
     defaultValues: {
-      provider: PROVIDER_AZURE,
-      frequencyPenalty: 0,
-      maxTokens: 16,
-      n: 1,
-      presencePenalty: 0,
-      stream: false,
-      temperature: 1,
-      topP: 1,
-      user: '',
+      user: '', // default user to empty to avoid React's Uncontrolled Input warning
+      ...defaultValues,
     },
   });
 

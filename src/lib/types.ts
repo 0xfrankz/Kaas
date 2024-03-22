@@ -2,11 +2,11 @@ import type { z } from 'zod';
 
 import type { SUPPORTED_PROVIDERS } from './constants';
 import type {
-  azureChatOptionsFormSchema,
-  chatOptionsFormSchema,
+  azureOptionsFormSchema,
   conversationFormSchema,
   modelFormSchema,
-  openAIChatOptionsFormSchema,
+  openAIOptionsFormSchema,
+  optionsFormSchema,
 } from './schemas';
 
 // type OpenAIConfig = {
@@ -89,10 +89,10 @@ export type Message = NewMessage & {
   deletedAt?: string;
 };
 
-export type AzureChatOptions = z.infer<typeof azureChatOptionsFormSchema>;
-export type OpenAIChatOptions = z.infer<typeof openAIChatOptionsFormSchema>;
-export type ChatOptions = z.infer<typeof chatOptionsFormSchema>;
-export type GenericChatOptions = {
+export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
+export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
+export type Options = z.infer<typeof optionsFormSchema>;
+export type ProviderOptions = {
   provider: string;
   options: string;
 };
@@ -133,9 +133,7 @@ export function fromGenericModel(model: GenericModel): Model {
   };
 }
 
-export function fromGenericChatOptions(
-  options: GenericChatOptions
-): ChatOptions {
+export function fromGenericChatOptions(options: ProviderOptions): Options {
   const { provider, options: optionsStr } = options;
   return {
     provider,

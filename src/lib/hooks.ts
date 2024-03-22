@@ -1,4 +1,8 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type {
+  QueryKey,
+  UseMutationResult,
+  UseQueryResult,
+} from '@tanstack/react-query';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 
@@ -12,12 +16,12 @@ import {
   invokeListMessages,
   invokeListModels,
   invokeListSettings,
-  invokeUpdateConversationOptions,
+  invokeUpdateOptions,
   invokeUpsertSetting,
 } from './commands';
 import { ConversationsContext } from './contexts';
 import type {
-  AzureChatOptions,
+  AzureOptions,
   CommandError,
   Conversation,
   Message,
@@ -93,13 +97,19 @@ export function useListConversationsQuery(): UseQueryResult<
   });
 }
 
-export function useGetOptionsQuery(
-  conversationId: number
-): UseQueryResult<AzureChatOptions, CommandError> {
-  return useQuery({
-    queryKey: [...OPTIONS_CONVERSATION_KEY, { conversationId }],
-    queryFn: () => invokeGetOptions(conversationId),
-  });
+export function useGetOptionsQuery(conversationId: number): {
+  key: QueryKey;
+  query: UseQueryResult<AzureOptions, CommandError>;
+} {
+  const key = [...OPTIONS_CONVERSATION_KEY, { conversationId }];
+  return {
+    key,
+    query: useQuery({
+      queryKey: key,
+      queryFn: () => invokeGetOptions(conversationId),
+      retry: false,
+    }),
+  };
 }
 
 export function useListMessagesQuery(
@@ -134,10 +144,10 @@ export function useCallBotMutation(): UseMutationResult<
 export function useUpdateOptionsMutation(): UseMutationResult<
   void,
   CommandError,
-  { conversationId: number; options: AzureChatOptions }
+  { conversationId: number; options: AzureOptions }
 > {
   return useMutation({
-    mutationFn: invokeUpdateConversationOptions,
+    mutationFn: invokeUpdateOptions,
   });
 }
 

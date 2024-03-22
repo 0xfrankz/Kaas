@@ -1,7 +1,7 @@
 use std::{sync::{atomic::{AtomicBool, Ordering}, Arc, Mutex}, time::Instant};
 
 use entity::entities::{
-    conversations::{ConversationListItem, Model as Conversation, NewConversation}, 
+    conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions}, 
     messages::{self, Model as Message, NewMessage}, 
     models::Model,
     settings::Model as Setting,
@@ -174,7 +174,25 @@ pub async fn call_bot(user_message: Message, _window: tauri::Window, repo: State
 }
 
 #[tauri::command]
-pub async fn update_conversation_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<()> {
-    log::info!("conversation_id = {}, options = {}", conversation_id, options);
-    Ok(())
+pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
+    let now = Instant::now();
+    let result = repo
+        .get_conversation_options(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::get_options]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
+    let now = Instant::now();
+    let result = repo
+        .update_conversation_options(conversation_id, options)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_options]: {:.2?}", elapsed);
+    Ok(result)
 }

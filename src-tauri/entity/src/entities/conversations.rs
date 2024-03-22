@@ -73,28 +73,62 @@ pub struct NewConversation {
     pub message: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, FromQueryResult, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProviderOptions {
+    pub provider: String,
+    pub options: String
+}
+
+pub trait Options {}
+
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AzureOptions {
     // pub best_of: Option<i32>, // async-openai currently doesn't support this
     // pub echo: Option<bool>, // async-openai currently doesn't support this
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency_penalty: Option<f32>, // min: -2.0, max: 2.0, default: 0
     // pub function_call: Option<ChatCompletionFunctionCall>,
     // pub functions: Option<Vec<ChatCompletionFunctions>>,
     // pub logit_bias: Option<HashMap<String, serde_json::Value>>, // default: null
     // pub logprobs: Option<i32>, // Azure seems to have a different definition from OpenAI's. async-openai currently doesn't support the Azure version
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tokens: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub n: Option<u8>, // min:1, max: 128, default: 1
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub presence_penalty: Option<f32>, // min: -2.0, max: 2.0, default 0
     // pub response_format: Option<ChatCompletionResponseFormat>, // to be implemented
     // pub seed: Option<i64>, // not supported by Azure
     // pub stop: Option<Stop>, // to be implemented
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
     // pub suffix: Option<String>, // async-openai currently doesn't support this
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>, // min: 0, max: 2, default: 1,
     // pub tools: Option<Vec<ChatCompletionTool>>,
     // pub tool_choice: Option<ChatCompletionToolChoiceOption>,
     // pub top_logprobs: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>, // min: 0, max: 1, default: 1
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
+}
+
+impl Options for AzureOptions {}
+
+impl Default for AzureOptions{
+    fn default() -> Self {
+        AzureOptions {
+            frequency_penalty: Some(0.0),
+            max_tokens: Some(16),
+            n: Some(1),
+            presence_penalty: Some(0.0),
+            stream: Some(false),
+            temperature: Some(1.0),
+            top_p: Some(1.0),
+            user: None,
+        }
+    }
 }
