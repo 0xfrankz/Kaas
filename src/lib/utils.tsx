@@ -5,6 +5,19 @@ import { z } from 'zod';
 
 import { Fallback } from '@/components/Fallback';
 
+export function debounce<T>(
+  callback: (args: T) => void,
+  wait: number
+): (args: T) => void {
+  let timeoutId: number;
+  return (args) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      callback(args);
+    }, wait);
+  };
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

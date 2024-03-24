@@ -12,6 +12,7 @@ import type { Conversation, Message } from '@/lib/types';
 import ChatMessage from './ChatMessage';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
+import { ScrollBottom } from './ScrollBottom';
 import { TitleBar } from './TitleBar';
 
 type Props = {
@@ -23,6 +24,7 @@ export function ChatSection({ conversation }: Props) {
   const [receiving, setReceiving] = useState(false);
   const callBotMutation = useCallBotMutation();
   const listenerRef = useRef<UnlistenFn>();
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [activeBotMessage, setActiveBotMessage] = useState('');
   const queryClient = useQueryClient();
 
@@ -94,7 +96,7 @@ export function ChatSection({ conversation }: Props) {
         <TitleBar title={conversation.subject} />
       </TwoRows.Top>
       <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-slate-50">
-        <ScrollArea className="w-full grow">
+        <ScrollArea className="w-full grow" viewportRef={viewportRef}>
           <div className="mx-auto w-[640px] pb-4">
             <ChatMessageList
               conversationId={conversation.id}
@@ -102,6 +104,7 @@ export function ChatSection({ conversation }: Props) {
             />
             {botLoading && <ChatMessage.BotLoading />}
           </div>
+          <ScrollBottom scrollContainerRef={viewportRef} />
         </ScrollArea>
         <div className="mt-4 w-full">
           <div className="mx-auto w-[640px]">
