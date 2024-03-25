@@ -167,16 +167,27 @@ const Anchor = forwardRef<HTMLDivElement, AnchorAttributesProps>(
   )
 );
 
-export function useScrollToAnchor(
+type UseScrollToBottomResult = {
+  Anchor: (props: AnchorAttributesProps) => React.JSX.Element;
+  scrollToBottom: () => void;
+};
+
+/**
+ * Hook used to automatically scroll to container's bottom
+ * @param containerRef Ref to the scrolling container element
+ * @param isSticky Whether the container should be automatically scrolled to bottom; will be false if user scrolls up from bottom manually
+ * @returns
+ */
+export function useScrollToBottom(
   containerRef: React.RefObject<HTMLDivElement>,
   isSticky: boolean = true
-) {
+): UseScrollToBottomResult {
   const [sticky, setSticky] = useState(isSticky);
   const bottomScrollTopRef = useRef<number>(0);
   const anchorRef = useRef<HTMLDivElement>(null);
 
   // Imperative function to scroll to anchor
-  const scrollToAnchor = useCallback(() => {
+  const scrollToBottom = useCallback(() => {
     if (anchorRef.current) {
       anchorRef.current.scrollIntoView({
         behavior: 'smooth',
@@ -190,40 +201,33 @@ export function useScrollToAnchor(
   const observer = useMemo(() => {
     return new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          // when anchor enters viewport
-          if (entry.isIntersecting) {
-            console.log(
-              `case 1; current=${containerRef.current?.scrollTop}, last=${bottomScrollTopRef.current}, height=${containerRef.current?.scrollHeight}`,
-              containerRef.current
-            );
-            if (isSticky) {
+        if (isSticky) {
+          entries.forEach((entry) => {
+            // when anchor enters viewport
+            if (entry.isIntersecting) {
               setSticky(true);
               bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
+            } else if (
+              containerRef.current?.scrollTop &&
+              containerRef.current.scrollTop < bottomScrollTopRef.current &&
+              isSticky
+            ) {
+              // element exits viewport and user scrolled up
+              setSticky(false);
+            } else {
+              // element exits viewport and user didn't scroll up
+              // up initialization, this branch will auto scroll to bottom
+              // by using a short delay, js can get the write position to scroll to
+              setTimeout(() => {
+                if (sticky) {
+                  scrollToBottom();
+                  bottomScrollTopRef.current =
+                    containerRef.current?.scrollTop ?? 0;
+                }
+              }, 100);
             }
-          } else if (
-            containerRef.current?.scrollTop &&
-            containerRef.current.scrollTop < bottomScrollTopRef.current &&
-            isSticky
-          ) {
-            // element exits viewport and user scrolled up
-            console.log(
-              `case 2; current=${containerRef.current?.scrollTop}, last=${bottomScrollTopRef.current}, height=${containerRef.current?.scrollHeight}`
-            );
-            setSticky(false);
-          } else if (sticky) {
-            console.log(
-              `case 3; current=${containerRef.current?.scrollTop}, last=${bottomScrollTopRef.current}, height=${containerRef.current?.scrollHeight}`
-            );
-            // element exits viewport and user didn't scroll up
-            // up initialization, this branch will auto scroll to bottom
-            // by using a short delay, js can get the write position to scroll to
-            setTimeout(() => {
-              scrollToAnchor();
-              bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
-            });
-          }
-        });
+          });
+        }
       },
       {
         root: null, // 相对于哪个元素开始监视，null表示文档视口
@@ -256,7 +260,7 @@ export function useScrollToAnchor(
   }, []);
 
   return {
-    scrollToAnchor,
+    scrollToBottom,
     Anchor: anchorEl,
   };
 }
