@@ -1,15 +1,15 @@
-use std::collections::HashMap;
-
 use async_openai::{
     config::{AzureConfig, Config}, types::{
-        ChatCompletionRequestUserMessageArgs, ChatCompletionResponseFormat, CreateChatCompletionRequestArgs, Stop
+        ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs
     }, Client
 };
-use entity::entities::{messages::Model as Message, models::Providers};
+use entity::entities::{conversations::ProviderOptions, messages::Model as Message, models::{ProviderConfig, Providers}};
 use entity::entities::models::Model;
 use serde::Deserialize;
 
-use crate::services::llm::utils::{model_to_azure_client, model_to_openai_client};
+use crate::services::llm::utils::{model_to_azure_client, config_to_azure_client};
+
+use super::utils::message_and_options_to_request;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -85,7 +85,43 @@ pub async fn complete_chat(message: Message, model: Model) -> Result<String, Str
     }
 }
 
+pub async fn complete_chat_with_options_and_config(message: Message, options: ProviderOptions, config: ProviderConfig) -> Result<String, String> {
+    let client;
+    let request;
+    match config.provider.as_str().into() {
+        Providers::Azure => {
+            client = config_to_azure_client(&config)?;
+            // return complete_chat_with_client(message, client).await;
+        },
+        _ => {
+            return Err("Complete chat with OpenAI not implemented yet".to_owned());
+        }
+    }
+    request = message_and_options_to_request(&vec![message], &options)?;
+
+    let response = client
+        .chat()
+        .create(request)
+        .await
+        .map_err(|_| String::from("Failed to get Azure chat completion response"))?;
+
+    let choice = response
+        .choices
+        .first()
+        .ok_or("Api returned empty choices".to_string())?;
+
+    let message = choice
+        .message
+        .content
+        .as_ref()
+        .ok_or("Api returned empty message".to_string())?
+        .to_string();
+
+    Ok(message)
+}
+
 async fn complete_chat_with_client<C: Config>(message: Message, client: Client<C>) -> Result<String, String> {
+    // Using default options
     // TODO: set options of request
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(200_u16)

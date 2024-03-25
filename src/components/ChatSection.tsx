@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
-import { LIST_MESSAGES_KEY, useCallBotMutation } from '@/lib/hooks';
+import {
+  LIST_MESSAGES_KEY,
+  useCallBothWithConversationMutation,
+} from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
 
@@ -14,6 +17,7 @@ import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ScrollBottom } from './ScrollBottom';
 import { TitleBar } from './TitleBar';
+import { useToast } from './ui/use-toast';
 
 type Props = {
   conversation: Conversation;
@@ -22,11 +26,12 @@ type Props = {
 export function ChatSection({ conversation }: Props) {
   const [botLoading, setBotLoading] = useState(false);
   const [receiving, setReceiving] = useState(false);
-  const callBotMutation = useCallBotMutation();
+  const callBotMutation = useCallBothWithConversationMutation();
   const listenerRef = useRef<UnlistenFn>();
   const viewportRef = useRef<HTMLDivElement>(null);
   const [activeBotMessage, setActiveBotMessage] = useState('');
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const bindListener = async () => {
     listenerRef.current = await listen<string>('bot-reply', (event) => {
@@ -50,9 +55,8 @@ export function ChatSection({ conversation }: Props) {
     await log.info(`New user message received: ${message.content}`);
     setBotLoading(true);
     // call bot
-    callBotMutation.mutate(message, {
+    callBotMutation.mutate(conversation.id, {
       onSuccess: async (botMessage) => {
-        await log.info(`Called bot with message: ${message.content}`);
         callBotMutation.reset();
         // Update cache
         queryClient.setQueryData<Message[]>(
@@ -63,7 +67,13 @@ export function ChatSection({ conversation }: Props) {
         setBotLoading(false);
       },
       onError: async (error) => {
-        await log.error(`Bot call failed: ${error.message}`);
+        const errMsg = `Bot call failed: ${error.message}`;
+        await log.error(errMsg);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: errMsg,
+        });
       },
     });
   };

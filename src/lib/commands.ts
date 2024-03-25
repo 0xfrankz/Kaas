@@ -103,3 +103,12 @@ export async function invokeCallBot(userMessage: Message): Promise<Message> {
   const result = await invoke<Message>('call_bot', { userMessage });
   return result;
 }
+
+export async function invokeCallBotWithConversation(
+  conversationId: number
+): Promise<Message> {
+  const result = await invoke<Message>('call_bot_with_conversation', {
+    conversationId,
+  });
+  return result;
+}

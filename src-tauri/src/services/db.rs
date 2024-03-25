@@ -1,12 +1,12 @@
 
 use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, ProviderOptions};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
-use entity::entities::models::{self, Model, Providers};
+use entity::entities::models::{self, Model, ProviderConfig, Providers};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::ActiveValue::NotSet;
-use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QuerySelect};
+use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QueryOrder, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -215,6 +215,9 @@ impl Repository {
         Ok(result)
     }
 
+    /**
+     * Get model provider and requeset options of a conversation
+     */
     pub async fn get_conversation_options(&self, conversation_id: i32) -> Result<ProviderOptions, String> {
         let result = conversations::Entity::find_by_id(conversation_id)
                 .select_only()
@@ -240,6 +243,33 @@ impl Repository {
         Ok(result)
     }
 
+    /**
+     * Get model provider and config of a conversation
+     */
+    pub async fn get_conversation_config(&self, conversation_id: i32) -> Result<ProviderConfig, String> {
+        let result = conversations::Entity::find_by_id(conversation_id)
+            .select_only()
+            .join(
+                JoinType::InnerJoin, 
+                conversations::Relation::Models.def()
+            )
+            .column(models::Column::Provider)
+            .column(models::Column::Config)
+            .into_model::<ProviderConfig>()
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to get model config of conversation with id = {}", conversation_id)
+            })?
+            .ok_or(
+                format!(
+                    "Cannot retrieve model config of conversation with id = {}", 
+                    conversation_id
+                )
+            )?;
+        Ok(result)
+    }
     /**
      * Update options of a conversation
      */
@@ -297,6 +327,23 @@ impl Repository {
                 format!("Failed to update options of conversation with id = {}", conversation_id)
             })?;
         Ok(ProviderOptions { provider, options: options_str })
+    }
+
+    /**
+     * Get the last message of a conversation
+     */
+    pub async fn get_last_message(&self, conversation_id: i32) -> Result<Message, String> {
+        let last_message = messages::Entity::find()
+            .filter(messages::Column::ConversationId.eq(conversation_id))
+            .order_by_desc(messages::Column::CreatedAt)
+            .one(&self.connection)
+            .await
+            .map_err(|err| { 
+                error!("{}", err);
+                format!("Failed to find last message with conversation id = {}", conversation_id)
+            })?
+            .ok_or(format!("Message with conversation id = {} doesn't exist", conversation_id))?;
+        Ok(last_message)
     }
 
     /**

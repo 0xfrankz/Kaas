@@ -2,7 +2,7 @@ use std::{sync::{atomic::{AtomicBool, Ordering}, Arc, Mutex}, time::Instant};
 
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions}, 
-    messages::{self, Model as Message, NewMessage}, 
+    messages::{self, Model as Message, NewMessage, Roles}, 
     models::Model,
     settings::Model as Setting,
 };
@@ -10,7 +10,7 @@ use entity::entities::{
 use tauri::State;
 
 use crate::{
-    errors::CommandError::{self, ApiError, DbError},
+    errors::CommandError::{self, ApiError, DbError, StateError},
     services::{llm::webservices as ws, db::Repository},
 };
 
@@ -168,6 +168,55 @@ pub async fn call_bot(user_message: Message, _window: tauri::Window, repo: State
     //     // Unbind listener for cancel events before thread ends
     //     window.unlisten(handler);
     // });
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn call_bot_with_conversation(conversation_id: i32, _window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<Message> {
+    let now = Instant::now();
+    // Retrieve message, options and config
+    let last_message = repo
+        .get_last_message(conversation_id)
+        .await
+        .map_err(|message| DbError { message })
+        .and_then(|message| {
+            // Error if the last message is not from user
+            if message.role != Into::<i32>::into(Roles::User) {
+                return Err(StateError { 
+                    message: format!(
+                        "The last message of conversation with id = {} is not from user", 
+                        conversation_id
+                    )
+                });
+            } else {
+                return Ok(message);
+            }
+        })?;
+    let options = repo
+        .get_conversation_options(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let config = repo
+        .get_conversation_config(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    // Invoke bot's API
+    log::info!("Calling bot with message = {:?}, options ={:?} and config = {:?}", last_message, options, config);
+    let reply = ws::complete_chat_with_options_and_config(last_message.clone(), options, config)
+        .await
+        .map_err(|message| ApiError { message })?;   
+    // Store bot's reply
+    let bot_message = NewMessage {
+        conversation_id: last_message.conversation_id,
+        role: messages::Roles::from(1).into(), // bot's message
+        content: reply,
+    };
+    let result = repo
+        .create_message(bot_message)
+        .await
+        .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
     Ok(result)
