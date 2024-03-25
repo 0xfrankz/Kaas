@@ -9,9 +9,14 @@ import ChatMessage from './ChatMessage';
 type Props = {
   conversationId: number;
   onNewUserMessage: (message: Message) => void;
+  children?: React.ReactNode;
 };
 
-export function ChatMessageList({ conversationId, onNewUserMessage }: Props) {
+export function ChatMessageList({
+  conversationId,
+  onNewUserMessage,
+  children,
+}: Props) {
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversationId);
 
@@ -27,30 +32,33 @@ export function ChatMessageList({ conversationId, onNewUserMessage }: Props) {
   // Render functions
   const renderMessages = () => {
     const inner = messages ? (
-      <ul className="box-border pt-6">
-        {messages.map((message) => {
-          switch (message.role) {
-            case MESSAGE_USER:
-              return (
-                <li key={message.id}>
-                  <ChatMessage.User key={message.id} message={message} />
-                </li>
-              );
-            case MESSAGE_BOT:
-              return (
-                <li key={message.id}>
-                  <ChatMessage.Bot key={message.id} message={message} />
-                </li>
-              );
-            default:
-              return (
-                <li key={message.id}>
-                  <ChatMessage.System key={message.id} message={message} />
-                </li>
-              );
-          }
-        })}
-      </ul>
+      <>
+        <ul className="box-border pt-6">
+          {messages.map((message) => {
+            switch (message.role) {
+              case MESSAGE_USER:
+                return (
+                  <li key={message.id}>
+                    <ChatMessage.User key={message.id} message={message} />
+                  </li>
+                );
+              case MESSAGE_BOT:
+                return (
+                  <li key={message.id}>
+                    <ChatMessage.Bot key={message.id} message={message} />
+                  </li>
+                );
+              default:
+                return (
+                  <li key={message.id}>
+                    <ChatMessage.System key={message.id} message={message} />
+                  </li>
+                );
+            }
+          })}
+        </ul>
+        {children}
+      </>
     ) : (
       // TODO: handle the corner case of no message in a conversation
       // maybe when user manually deletes all messages?

@@ -3,7 +3,7 @@ use async_openai::{
     types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, Role},
     Client,
 };
-use entity::entities::{conversations::ProviderOptions, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
+use entity::entities::{conversations::{AzureOptions, ProviderOptions}, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -90,22 +90,33 @@ pub fn config_to_openai_client(config: &ProviderConfig) -> Result<Client<OpenAIC
 }
 
 pub fn message_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions) -> Result<CreateChatCompletionRequest, String> {
-    let mut request_builder = CreateChatCompletionRequestArgs::default();
+    // let mut request_builder = CreateChatCompletionRequestArgs::default();
+    let request: CreateChatCompletionRequest;
     // set messages
     let req_messages: Vec<ChatCompletionRequestMessage> = messages.iter().map(message_to_request_message).collect();
-    request_builder.messages(req_messages);
+    // request_builder.messages(req_messages);
     // set options
     match options.provider.as_str().into() {
         Providers::Azure => {
-            todo!();
+            let options: AzureOptions = serde_json::from_str(&options.options)
+                .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+            request = CreateChatCompletionRequest {
+                messages: req_messages,
+                frequency_penalty: options.frequency_penalty,
+                max_tokens: options.max_tokens,
+                n: options.n,
+                presence_penalty: options.presence_penalty,
+                // stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                user: options.user,
+                ..Default::default()
+            };
         },
         _ => {
             todo!();
         }
     }
-    let request = request_builder
-        .build()
-        .map_err(|_| String::from("Failed to build Azure chat completion request"))?;
     Ok(request)
 }
 

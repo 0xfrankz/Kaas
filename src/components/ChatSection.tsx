@@ -111,10 +111,11 @@ export function ChatSection({ conversation }: Props) {
             <ChatMessageList
               conversationId={conversation.id}
               onNewUserMessage={onNewUserMessage}
-            />
-            {botLoading && <ChatMessage.BotLoading />}
+            >
+              {botLoading && <ChatMessage.BotLoading />}
+              <ScrollBottom scrollContainerRef={viewportRef} />
+            </ChatMessageList>
           </div>
-          <ScrollBottom scrollContainerRef={viewportRef} />
         </ScrollArea>
         <div className="mt-4 w-full">
           <div className="mx-auto w-[640px]">
