@@ -216,24 +216,15 @@ export function useScrollToBottom(
           entries.forEach((entry) => {
             // when anchor enters viewport
             if (entry.isIntersecting) {
-              console.log(
-                `case 1: ${containerRef.current?.scrollTop}, ${bottomScrollTopRef.current}, ${containerRef.current?.scrollHeight}`
-              );
               setSticky(true);
               bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
             } else if (
               containerRef.current?.scrollTop &&
               containerRef.current.scrollTop < bottomScrollTopRef.current
             ) {
-              console.log(
-                `case 2: ${containerRef.current?.scrollTop}, ${bottomScrollTopRef.current}, ${containerRef.current?.scrollHeight}`
-              );
               // element exits viewport and user scrolled up
               setSticky(false);
             } else {
-              console.log(
-                `case 3: ${containerRef.current?.scrollTop}, ${bottomScrollTopRef.current}, ${containerRef.current?.scrollHeight}`
-              );
               // element exits viewport and user didn't scroll up
               // up initialization, this branch will auto scroll to bottom
               // by using a short delay, js can get the write position to scroll to

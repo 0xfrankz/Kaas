@@ -1,6 +1,6 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef } from 'react';
 
 import { MESSAGE_USER } from '@/lib/constants';
 import { LIST_MESSAGES_KEY, useCreateMessageMutation } from '@/lib/hooks';
@@ -8,6 +8,7 @@ import type { Message } from '@/lib/types';
 
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { useToast } from './ui/use-toast';
 
 const HEIGHT_LIMIT = 20 * 20;
 
@@ -16,14 +17,13 @@ type Props = {
 };
 
 export function ChatPromptInput({ conversationId }: Props) {
-  const [prompt, setPrompt] = useState('');
+  const promptRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const createMsgMutation = useCreateMessageMutation();
+  const { toast } = useToast();
 
   // Callbacks
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // Update state
-    setPrompt(e.target.value);
     const ta = e.target as HTMLTextAreaElement;
     // Set overflowY to hidden and height to fit-content
     // so we can get a correct scrollHeight
@@ -43,23 +43,34 @@ export function ChatPromptInput({ conversationId }: Props) {
   };
 
   const onClick = () => {
-    createMsgMutation.mutate(
-      {
-        conversationId,
-        role: MESSAGE_USER,
-        content: prompt,
-      },
-      {
-        onSuccess(message) {
-          // Update cache
-          queryClient.setQueryData<Message[]>(
-            [...LIST_MESSAGES_KEY, { conversationId }],
-            (messages) => (messages ? [...messages, message] : [message])
-          );
+    const promptStr = promptRef.current?.value ?? '';
+    if (promptStr.trim().length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'You prompt is blank',
+        description: 'Blank prompt is a waste of your tokens quota.',
+      });
+    } else {
+      createMsgMutation.mutate(
+        {
+          conversationId,
+          role: MESSAGE_USER,
+          content: promptStr,
         },
+        {
+          onSuccess(message) {
+            // Update cache
+            queryClient.setQueryData<Message[]>(
+              [...LIST_MESSAGES_KEY, { conversationId }],
+              (messages) => (messages ? [...messages, message] : [message])
+            );
+          },
+        }
+      );
+      if (promptRef.current) {
+        promptRef.current.value = '';
       }
-    );
-    setPrompt('');
+    }
   };
 
   return (
@@ -70,7 +81,7 @@ export function ChatPromptInput({ conversationId }: Props) {
           className="resize-none overflow-y-hidden border-0 px-2"
           rows={1}
           onChange={onChange}
-          value={prompt}
+          ref={promptRef}
         />
       </div>
       <Button className="mb-5" onClick={onClick}>
