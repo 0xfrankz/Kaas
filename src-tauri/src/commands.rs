@@ -218,8 +218,97 @@ pub async fn call_bot_with_conversation(conversation_id: i32, _window: tauri::Wi
         .await
         .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
-    log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
+    log::info!("[Timer][commands::call_bot_with_conversation]: {:.2?}", elapsed);
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn call_bot_new(conversation_id: i32, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
+    let now = Instant::now();
+    // Retrieve message, options and config
+    let last_message = repo
+        .get_last_message(conversation_id)
+        .await
+        .map_err(|message| DbError { message })
+        .and_then(|message| {
+            // Error if the last message is not from user
+            if message.role != Into::<i32>::into(Roles::User) {
+                return Err(StateError { 
+                    message: format!(
+                        "The last message of conversation with id = {} is not from user", 
+                        conversation_id
+                    )
+                });
+            } else {
+                return Ok(message);
+            }
+        })?;
+    let options = repo
+        .get_conversation_options(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let config = repo
+        .get_conversation_config(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    // Send request in a new thread
+    tokio::spawn(async move {
+        // start receiving in frontend
+        match window.emit("bot-reply", "[[START]]") {
+            Err(err) => {
+                log::error!("Error when starting bot's replay: {}", err);
+                // retry
+                let _ = window.emit("bot-reply", "[[START]]");
+            },
+            _ => {}
+        }
+        let stop = Arc::new(AtomicBool::new(false));
+        let stop_clone = Arc::clone(&stop);
+        // Bind listener for cancel events
+        let handler = window.listen("stop-bot", move |_| {
+            stop_clone.store(true, Ordering::Release);
+        });
+        // Invoke bot's API
+        log::info!("Calling bot with message = {:?}, options ={:?} and config = {:?}", last_message, options, config);
+        let result = ws::complete_chat_with_options_and_config(last_message.clone(), options, config)
+            .await;
+        match result {
+            Ok(reply) => {
+                match window.emit("bot-reply", reply.clone()) {
+                    Err(err) => {
+                        log::error!("Error when receiving bot's replay: {}", err);
+                        // retry
+                        let _ = window.emit("bot-reply", reply.clone());
+                    },
+                    _ => {}
+                }
+                match window.emit("bot-reply", "[[DONE]]") {
+                    Err(err) => {
+                        log::error!("Error when finishing bot's replay: {}", err);
+                        // retry
+                        let _ = window.emit("bot-reply", "[[DONE]]");
+                    },
+                    _ => {}
+                }
+            },
+            Err(msg) => {
+                let err_reply = format!("[[ERROR]]{}", msg);
+                match window.emit("bot-reply", err_reply.clone()) {
+                    Err(err) => {
+                        log::error!("Error when calling bot: {}", err);
+                        // retry
+                        let _ = window.emit("bot-reply", err_reply.clone());
+                    },
+                    _ => {}
+                }
+            }
+        }
+        // Unbind listener for cancel events before thread ends
+        window.unlisten(handler);
+    });
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::call_bot_new]: {:.2?}", elapsed);
+    Ok(())
 }
 
 #[tauri::command]

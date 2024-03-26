@@ -12,6 +12,11 @@ export const MESSAGE_USER = 0;
 export const MESSAGE_BOT = 1;
 export const MESSAGE_SYSTEM = 2;
 
+// Stream keywords
+export const STREAM_START = '[[START]]';
+export const STREAM_DONE = '[[DONE]]';
+export const STREAM_ERROR = '[[ERROR]]';
+
 // Setting keys
 export const KEY_SETTING_DEFAULT_MODEL = 'user:default:model';
 

@@ -17,6 +17,7 @@ import {
 
 import {
   invokeCallBot,
+  invokeCallBotNew,
   invokeCallBotWithConversation,
   invokeCreateConversation,
   invokeCreateMessage,
@@ -151,13 +152,19 @@ export function useCallBotMutation(): UseMutationResult<
   });
 }
 
-export function useCallBothWithConversationMutation(): UseMutationResult<
+export function useCallBotWithConversationMutation(): UseMutationResult<
   Message,
   CommandError,
   number
 > {
   return useMutation({
     mutationFn: invokeCallBotWithConversation,
+  });
+}
+
+export function useCallBotNew(): UseMutationResult<void, CommandError, number> {
+  return useMutation({
+    mutationFn: invokeCallBotNew,
   });
 }
 

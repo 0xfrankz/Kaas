@@ -65,7 +65,6 @@ export async function invokeGetOptions(
   const result = await invoke<ProviderOptions>('get_options', {
     conversationId,
   });
-  console.log('invokeGetOptions:', result);
   return fromGenericChatOptions(result);
 }
 
@@ -111,4 +110,10 @@ export async function invokeCallBotWithConversation(
     conversationId,
   });
   return result;
+}
+
+export async function invokeCallBotNew(conversationId: number): Promise<void> {
+  await invoke<Message>('call_bot_new', {
+    conversationId,
+  });
 }

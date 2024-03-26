@@ -1,18 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import type { UnlistenFn } from '@tauri-apps/api/event';
-import { emit, listen } from '@tauri-apps/api/event';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
-import {
-  LIST_MESSAGES_KEY,
-  useCallBothWithConversationMutation,
-} from '@/lib/hooks';
+import { useCallBotNew } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
 
-import ChatMessage from './ChatMessage';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ScrollBottom } from './ScrollBottom';
@@ -26,45 +20,20 @@ type Props = {
 export function ChatSection({ conversation }: Props) {
   const [botLoading, setBotLoading] = useState(false);
   const [receiving, setReceiving] = useState(false);
-  const callBotMutation = useCallBothWithConversationMutation();
-  const listenerRef = useRef<UnlistenFn>();
+  const callBotMutation = useCallBotNew();
   const viewportRef = useRef<HTMLDivElement>(null);
-  const [activeBotMessage, setActiveBotMessage] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const bindListener = async () => {
-    listenerRef.current = await listen<string>('bot-reply', (event) => {
-      setActiveBotMessage((state) => {
-        return `${state}${event.payload}`;
-      });
-    });
-    await log.info('Listener is bound');
-  };
-
-  const unbindListener = async () => {
-    if (listenerRef.current) {
-      listenerRef.current();
-      listenerRef.current = undefined;
-      await log.info('Listener is unbound');
-    }
-  };
-
   // Callbacks
-  const onNewUserMessage = async (message: Message) => {
-    await log.info(`New user message received: ${message.content}`);
+  const onNewUserMessage = async (_message: Message) => {
     setBotLoading(true);
     // call bot
     callBotMutation.mutate(conversation.id, {
-      onSuccess: async (botMessage) => {
+      onSuccess: async () => {
         callBotMutation.reset();
-        // Update cache
-        queryClient.setQueryData<Message[]>(
-          [...LIST_MESSAGES_KEY, { conversationId: conversation.id }],
-          (messages) => (messages ? [...messages, botMessage] : [botMessage])
-        );
-        // Stop loading
-        setBotLoading(false);
+        // start receiving replies from backend
+        setReceiving(true);
       },
       onError: async (error) => {
         const errMsg = `Bot call failed: ${error.message}`;
@@ -78,28 +47,6 @@ export function ChatSection({ conversation }: Props) {
     });
   };
 
-  const onUnmount = async () => {
-    await unbindListener();
-    await emit('stop-bot');
-  };
-
-  // Effects
-  useEffect(() => {
-    if (receiving) {
-      // Bind listener to receive server events
-      bindListener();
-    } else {
-      // When all parts are received, unbind listener
-      unbindListener();
-    }
-  }, [receiving]);
-
-  useEffect(() => {
-    return () => {
-      onUnmount();
-    };
-  }, [conversation]);
-
   return (
     <TwoRows className="max-h-screen">
       <TwoRows.Top>
@@ -112,7 +59,8 @@ export function ChatSection({ conversation }: Props) {
               conversationId={conversation.id}
               onNewUserMessage={onNewUserMessage}
             >
-              {botLoading && <ChatMessage.BotLoading />}
+              {/* {botLoading && <ChatMessage.BotLoading />} */}
+              {/* {activeBotMessage} */}
               <ScrollBottom scrollContainerRef={viewportRef} />
             </ChatMessageList>
           </div>

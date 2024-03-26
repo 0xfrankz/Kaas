@@ -4,6 +4,7 @@ import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import { useListMessagesQuery } from '@/lib/hooks';
 import type { Message } from '@/lib/types';
 
+import { BotMessageReceiver } from './BotMessageReceiver';
 import ChatMessage from './ChatMessage';
 
 type Props = {
@@ -57,6 +58,7 @@ export function ChatMessageList({
             }
           })}
         </ul>
+        <BotMessageReceiver />
         {children}
       </>
     ) : (
