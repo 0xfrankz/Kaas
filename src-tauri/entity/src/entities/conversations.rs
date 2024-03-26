@@ -132,3 +132,7 @@ impl Default for AzureOptions{
         }
     }
 }
+
+pub struct OpenAIOptions;
+
+impl Options for OpenAIOptions {}

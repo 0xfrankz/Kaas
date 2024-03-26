@@ -60,7 +60,7 @@ export function BotMessageReceiver() {
 
   const render = () => {
     return activeBotMessage.length > 0 ? (
-      <div>{activeBotMessage}</div>
+      <ChatMessage.BotReceiving message={activeBotMessage} />
     ) : (
       <ChatMessage.BotLoading />
     );

@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
-import { useCallBotNew } from '@/lib/hooks';
+import { useCallBot } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
 
@@ -20,7 +20,7 @@ type Props = {
 export function ChatSection({ conversation }: Props) {
   const [botLoading, setBotLoading] = useState(false);
   const [receiving, setReceiving] = useState(false);
-  const callBotMutation = useCallBotNew();
+  const callBotMutation = useCallBot();
   const viewportRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();

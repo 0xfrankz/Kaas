@@ -98,22 +98,8 @@ export async function invokeCreateMessage(
   return result;
 }
 
-export async function invokeCallBot(userMessage: Message): Promise<Message> {
-  const result = await invoke<Message>('call_bot', { userMessage });
-  return result;
-}
-
-export async function invokeCallBotWithConversation(
-  conversationId: number
-): Promise<Message> {
-  const result = await invoke<Message>('call_bot_with_conversation', {
-    conversationId,
-  });
-  return result;
-}
-
-export async function invokeCallBotNew(conversationId: number): Promise<void> {
-  await invoke<Message>('call_bot_new', {
+export async function invokeCallBot(conversationId: number): Promise<void> {
+  await invoke<Message>('call_bot', {
     conversationId,
   });
 }

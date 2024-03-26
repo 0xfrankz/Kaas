@@ -3,7 +3,7 @@ use async_openai::{
     types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, Role},
     Client,
 };
-use entity::entities::{conversations::{AzureOptions, ProviderOptions}, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
+use entity::entities::{conversations::{AzureOptions, OpenAIOptions, Options, ProviderOptions}, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -106,7 +106,7 @@ pub fn message_and_options_to_request(messages: &Vec<Message>, options: &Provide
                 max_tokens: options.max_tokens,
                 n: options.n,
                 presence_penalty: options.presence_penalty,
-                // stream: options.stream,
+                stream: options.stream,
                 temperature: options.temperature,
                 top_p: options.top_p,
                 user: options.user,
@@ -153,3 +153,20 @@ fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage
         }
     }
 }
+
+pub fn is_stream_enabled(options: &ProviderOptions) -> bool {
+    match options.provider.as_str().into() {
+        Providers::Azure => {
+            if let Ok(azure_options) = serde_json::from_str::<AzureOptions>(&options.options) {
+                return azure_options.stream.unwrap_or(false);
+            } else {
+                return false;
+            }
+            
+        },
+        _ => {
+            return false;
+        }
+    }
+}
+

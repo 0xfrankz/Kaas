@@ -119,6 +119,15 @@ const Bot = ({ message }: MessageProps) => {
   );
 };
 
+const BotReceiving = ({ message }: { message: string }) => {
+  return (
+    <div className="box-border flex w-auto flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow">
+      <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
+      <Content content={message} rightAlign={false} />
+    </div>
+  );
+};
+
 const System = ({ message }: MessageProps) => {
   return (
     <div className="bg-gray-100">
@@ -141,4 +150,5 @@ export default {
   Bot,
   System,
   BotLoading,
+  BotReceiving,
 };

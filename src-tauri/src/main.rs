@@ -14,7 +14,6 @@ use tauri_plugin_log::LogTarget;
 fn main() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
-      commands::complete_chat_cmd,
       commands::create_model,
       commands::list_models,
       commands::list_settings,
@@ -25,9 +24,7 @@ fn main() {
       commands::update_options,
       commands::create_message,
       commands::list_messages,
-      commands::call_bot,
-      commands::call_bot_with_conversation,
-      commands::call_bot_new
+      commands::call_bot
     ])
     .plugin(tauri_plugin_log::Builder::default().targets([
         LogTarget::Stdout,
