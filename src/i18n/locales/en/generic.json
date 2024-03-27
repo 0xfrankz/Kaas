@@ -1,0 +1,13 @@
+{
+    "kaas": "KAAS!",
+    "nav": {
+        "home": "Home",
+        "conversations": "Conversations",
+        "templates": "Templates",
+        "models": "Models",
+        "settings": "Settings"
+    },
+    "label": {
+        "select-language": "Select a language"
+    }
+}

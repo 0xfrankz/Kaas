@@ -1,5 +1,6 @@
 import { ArchiveIcon, FileTextIcon, GearIcon } from '@radix-ui/react-icons';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
@@ -62,6 +63,7 @@ export function SideNavMenu({
   // onSettingsClick,
 }: MenuProps) {
   const { pathname } = useLocation();
+  const { t } = useTranslation('generic');
 
   return (
     <ul
@@ -71,49 +73,33 @@ export function SideNavMenu({
       )}
     >
       <SideNavMenuItem
-        text="Conversations"
+        text={t('nav.conversations')}
         icon={<ArchiveIcon className="size-4" />}
         expanded={expanded}
         active={pathname === '/conversations'}
         to="/conversations"
-        // onClick={() => {
-        //   setActiveIndex(0);
-        //   onConversationClick();
-        // }}
       />
       <SideNavMenuItem
-        text="Manage templates"
+        text={t('nav.templates')}
         icon={<FileTextIcon className="size-4" />}
         expanded={expanded}
         active={pathname === '/templates'}
         to="/templates"
-        // onClick={() => {
-        //   setActiveIndex(1);
-        //   onTemplatesClick();
-        // }}
       />
       <SideNavMenuItem
-        text="Manage Models"
+        text={t('nav.models')}
         icon={<ModelIcon className="stroke-slate-900 stroke-1" />}
         expanded={expanded}
         active={pathname === '/models'}
         to="/models"
-        // onClick={() => {
-        //   setActiveIndex(2);
-        //   onModelsClick();
-        // }}
       />
       <SideNavMenuItem
-        text="Settings"
+        text={t('nav.settings')}
         icon={<GearIcon className="size-4" />}
         expanded={expanded}
         active={pathname === '/settings'}
         className="mt-auto"
         to="/settings"
-        // onClick={() => {
-        //   setActiveIndex(3);
-        //   onSettingsClick();
-        // }}
       />
     </ul>
   );

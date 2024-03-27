@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -33,6 +34,7 @@ export function NewConversationForm() {
   const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useTranslation(['page-conversations']);
 
   // Callbacks
   const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
@@ -56,7 +58,7 @@ export function NewConversationForm() {
   return (
     <div className="flex flex-col items-center">
       <h2 className="text-3xl font-semibold tracking-tight">
-        Start a new conversation
+        {t('page-conversations:labels.start-new')}
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ConversationGrid } from '@/components/ConversationGrid';
@@ -12,6 +13,7 @@ import { useAppStateStore } from '@/lib/store';
 export default function CoversationsPage() {
   const { models } = useAppStateStore();
   const { conversations, isLoading } = useConversationsContext();
+  const { t } = useTranslation(['page-conversations']);
   const hasModels = models.length > 0;
   const hasConversations = conversations.length > 0;
 
@@ -60,7 +62,7 @@ export default function CoversationsPage() {
   return (
     <TwoRows>
       <TwoRows.Top>
-        <TitleBar title="Conversations" />
+        <TitleBar title={t('page-conversations:title')} />
       </TwoRows.Top>
       <TwoRows.Bottom>
         <div className="flex grow justify-center">

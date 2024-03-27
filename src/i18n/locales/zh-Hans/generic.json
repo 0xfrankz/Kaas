@@ -1,0 +1,10 @@
+{
+    "kaas": "咔嚓!",
+    "nav": {
+        "home": "首页",
+        "conversations": "对话",
+        "templates": "模板",
+        "models": "模型",
+        "settings": "设置"
+    }
+}
