@@ -52,12 +52,12 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
         options: formData,
       },
       {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey });
+        onSuccess: async () => {
           toast({
             title: 'Success',
             description: 'Options of this conversation has been updated',
           });
+          return queryClient.invalidateQueries({ queryKey });
         },
         onError: (e) => {
           toast({

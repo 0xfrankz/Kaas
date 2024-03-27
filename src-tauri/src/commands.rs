@@ -193,6 +193,14 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
                             }
                         }
                     }
+                    match window.emit("bot-reply", "[[DONE]]") {
+                        Err(err) => {
+                            log::error!("Error when sending event: {}", err);
+                            // retry
+                            let _ = window.emit("bot-reply", "[[DONE]]");
+                        },
+                        _ => {}
+                    }
                 },
                 Err(message) => {
                     match window.emit("bot-reply", message.clone()) {

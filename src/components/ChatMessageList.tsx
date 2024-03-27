@@ -1,25 +1,71 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
-import { useListMessagesQuery } from '@/lib/hooks';
+import {
+  LIST_MESSAGES_KEY,
+  useCallBot,
+  useCreateMessageMutation,
+  useListMessagesQuery,
+} from '@/lib/hooks';
+import log from '@/lib/log';
 import type { Message } from '@/lib/types';
 
 import { BotMessageReceiver } from './BotMessageReceiver';
 import ChatMessage from './ChatMessage';
+import { useToast } from './ui/use-toast';
 
 type Props = {
   conversationId: number;
-  onNewUserMessage: (message: Message) => void;
   children?: React.ReactNode;
 };
 
-export function ChatMessageList({
-  conversationId,
-  onNewUserMessage,
-  children,
-}: Props) {
+export function ChatMessageList({ conversationId, children }: Props) {
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversationId);
+  const createMsgMutation = useCreateMessageMutation();
+  const callBotMutation = useCallBot();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Callbacks
+  const onNewUserMessage = async (_message: Message) => {
+    // call bot
+    callBotMutation.mutate(conversationId, {
+      onSuccess: async () => {
+        callBotMutation.reset();
+      },
+      onError: async (error) => {
+        const errMsg = `Bot call failed: ${error.message}`;
+        await log.error(errMsg);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: errMsg,
+        });
+      },
+    });
+  };
+
+  const onNewBotMessage = (msg: string) => {
+    console.log('onNewBotMessage:', msg);
+    createMsgMutation.mutate(
+      {
+        conversationId,
+        role: MESSAGE_BOT,
+        content: msg,
+      },
+      {
+        onSuccess(message) {
+          // Update cache
+          queryClient.setQueryData<Message[]>(
+            [...LIST_MESSAGES_KEY, { conversationId }],
+            (msgList) => (msgList ? [...msgList, message] : [message])
+          );
+        },
+      }
+    );
+  };
 
   useEffect(() => {
     if (isSuccess && messages?.length > 0) {
@@ -58,7 +104,7 @@ export function ChatMessageList({
             }
           })}
         </ul>
-        <BotMessageReceiver />
+        <BotMessageReceiver onMessageReceived={onNewBotMessage} />
         {children}
       </>
     ) : (

@@ -41,9 +41,11 @@ export function NewConversationForm() {
     const validation = conversationFormSchema.safeParse(formData);
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {
-        onSuccess: (conversation) => {
-          queryClient.invalidateQueries({ queryKey: LIST_CONVERSATIONS_KEY });
+        onSuccess: async (conversation) => {
           navigate(`/conversations/${conversation.id}`);
+          return queryClient.invalidateQueries({
+            queryKey: LIST_CONVERSATIONS_KEY,
+          });
         },
       });
     } else {

@@ -8,7 +8,11 @@ import log from '@/lib/log';
 import ChatMessage from './ChatMessage';
 import { useToast } from './ui/use-toast';
 
-export function BotMessageReceiver() {
+type Props = {
+  onMessageReceived: (message: string) => void;
+};
+
+export function BotMessageReceiver({ onMessageReceived }: Props) {
   const [receiving, setReceiving] = useState(false);
   const [activeBotMessage, setActiveBotMessage] = useState('');
   const listenerRef = useRef<UnlistenFn>();
@@ -22,7 +26,7 @@ export function BotMessageReceiver() {
           setReceiving(true);
           break;
         case nextMsg === STREAM_DONE:
-          // setReceiving(false);
+          setReceiving(false);
           break;
         case nextMsg.startsWith(STREAM_ERROR):
           toast({
@@ -57,6 +61,13 @@ export function BotMessageReceiver() {
       emit('stop-bot');
     };
   }, []);
+
+  useEffect(() => {
+    if (!receiving && activeBotMessage.length > 0) {
+      onMessageReceived(activeBotMessage);
+      setActiveBotMessage('');
+    }
+  }, [activeBotMessage, receiving]);
 
   const render = () => {
     return activeBotMessage.length > 0 ? (

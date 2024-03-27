@@ -85,11 +85,11 @@ export default function ModelsPage() {
     toggleModal(false);
     log.info(`Formdata: ${JSON.stringify(formData)}`);
     createModelMutation.mutate(formData, {
-      onSuccess(result) {
+      onSuccess: async (result) => {
         log.info(`Model created: ${JSON.stringify(result)}`);
-        queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
+        return queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
       },
-      onError(error) {
+      onError: (error) => {
         log.error(error);
         toast({
           variant: 'destructive',

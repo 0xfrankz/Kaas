@@ -10,7 +10,7 @@ import TwoRows from '@/layouts/TwoRows';
 import { useConversationsContext } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 
-export default function CoversationsPage() {
+export default function ConversationsPage() {
   const { models } = useAppStateStore();
   const { conversations, isLoading } = useConversationsContext();
   const { t } = useTranslation(['page-conversations']);
