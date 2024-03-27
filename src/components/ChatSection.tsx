@@ -24,9 +24,8 @@ export function ChatSection({ conversation }: Props) {
       <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-slate-50">
         <ScrollArea className="w-full grow" viewportRef={viewportRef}>
           <div className="mx-auto w-[640px] pb-4">
-            <ChatMessageList conversationId={conversation.id}>
-              <ScrollBottom scrollContainerRef={viewportRef} />
-            </ChatMessageList>
+            <ChatMessageList conversationId={conversation.id} />
+            <ScrollBottom scrollContainerRef={viewportRef} />
           </div>
         </ScrollArea>
         <div className="mt-4 w-full">

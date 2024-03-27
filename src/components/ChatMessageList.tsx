@@ -17,10 +17,9 @@ import { useToast } from './ui/use-toast';
 
 type Props = {
   conversationId: number;
-  children?: React.ReactNode;
 };
 
-export function ChatMessageList({ conversationId, children }: Props) {
+export function ChatMessageList({ conversationId }: Props) {
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversationId);
   const createMsgMutation = useCreateMessageMutation();
@@ -105,7 +104,6 @@ export function ChatMessageList({ conversationId, children }: Props) {
           })}
         </ul>
         <BotMessageReceiver onMessageReceived={onNewBotMessage} />
-        {children}
       </>
     ) : (
       // TODO: handle the corner case of no message in a conversation
