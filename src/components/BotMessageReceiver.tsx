@@ -2,7 +2,12 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
 import { useEffect, useRef, useState } from 'react';
 
-import { STREAM_DONE, STREAM_ERROR, STREAM_START } from '@/lib/constants';
+import {
+  STREAM_DONE,
+  STREAM_ERROR,
+  STREAM_START,
+  STREAM_STOPPED,
+} from '@/lib/constants';
 import log from '@/lib/log';
 
 import ChatMessage from './ChatMessage';
@@ -14,19 +19,33 @@ type Props = {
 
 export function BotMessageReceiver({ onMessageReceived }: Props) {
   const [receiving, setReceiving] = useState(false);
+  const acceptingRef = useRef<boolean>(false);
   const [activeBotMessage, setActiveBotMessage] = useState('');
   const listenerRef = useRef<UnlistenFn>();
   const { toast } = useToast();
+
+  const startStreaming = () => {
+    setReceiving(true);
+    acceptingRef.current = true;
+  };
+
+  const endStreaming = () => {
+    setReceiving(false);
+    acceptingRef.current = false;
+  };
 
   const bindListener = async () => {
     listenerRef.current = await listen<string>('bot-reply', (event) => {
       const nextMsg = event.payload;
       switch (true) {
         case nextMsg === STREAM_START:
-          setReceiving(true);
+          startStreaming();
           break;
         case nextMsg === STREAM_DONE:
-          setReceiving(false);
+          endStreaming();
+          break;
+        case nextMsg === STREAM_STOPPED:
+          endStreaming();
           break;
         case nextMsg.startsWith(STREAM_ERROR):
           toast({
@@ -34,12 +53,14 @@ export function BotMessageReceiver({ onMessageReceived }: Props) {
             title: 'Bot Error',
             description: nextMsg.split(STREAM_ERROR).at(-1),
           });
-          setReceiving(false);
+          endStreaming();
           break;
         default:
-          setActiveBotMessage((state) => {
-            return `${state}${nextMsg}`;
-          });
+          if (acceptingRef.current) {
+            setActiveBotMessage((state) => {
+              return `${state}${nextMsg}`;
+            });
+          }
           break;
       }
     });
@@ -55,9 +76,13 @@ export function BotMessageReceiver({ onMessageReceived }: Props) {
   };
 
   useEffect(() => {
+    // stop bot when entering the page
+    // in case it was left running before
+    emit('stop-bot');
     bindListener();
     return () => {
       unbindListener();
+      // stop bot when leaving the page
       emit('stop-bot');
     };
   }, []);

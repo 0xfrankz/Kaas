@@ -16,6 +16,7 @@ export const MESSAGE_SYSTEM = 2;
 export const STREAM_START = '[[START]]';
 export const STREAM_DONE = '[[DONE]]';
 export const STREAM_ERROR = '[[ERROR]]';
+export const STREAM_STOPPED = '[[STOPPED]]';
 
 // Setting keys
 export const KEY_SETTING_DEFAULT_MODEL = 'user:default:model';

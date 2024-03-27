@@ -172,6 +172,18 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             match stream_result {
                 Ok(mut stream) => {
                     while let Some(result) = stream.next().await {
+                        if stop.load(Ordering::Acquire) {
+                            log::info!("Streaming stopped!");
+                            match window.emit("bot-reply", "[[STOPPED]]") {
+                                Err(err) => {
+                                    log::error!("Error when sending event: {}", err);
+                                    // retry
+                                    let _ = window.emit("bot-reply", "[[STOPPED]]");
+                                },
+                                _ => {}
+                            }
+                            break;
+                        }
                         match result {
                             Ok(response) => {
                                 response.choices.iter().for_each(|chat_choice| {
@@ -190,24 +202,27 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
                                     },
                                     _ => {}
                                 }
+                                break;
                             }
                         }
                     }
-                    match window.emit("bot-reply", "[[DONE]]") {
-                        Err(err) => {
-                            log::error!("Error when sending event: {}", err);
-                            // retry
-                            let _ = window.emit("bot-reply", "[[DONE]]");
-                        },
-                        _ => {}
+                    if !stop.load(Ordering::Acquire) {
+                        match window.emit("bot-reply", "[[DONE]]") {
+                            Err(err) => {
+                                log::error!("Error when sending event: {}", err);
+                                // retry
+                                let _ = window.emit("bot-reply", "[[DONE]]");
+                            },
+                            _ => {}
+                        }
                     }
                 },
-                Err(message) => {
-                    match window.emit("bot-reply", message.clone()) {
+                Err(msg) => {
+                    match window.emit("bot-reply", format!("[[ERROR]]{}", msg)) {
                         Err(err) => {
                             log::error!("Error when sending event: {}", err);
                             // retry
-                            let _ = window.emit("bot-reply", message.clone());
+                            let _ = window.emit("bot-reply", format!("[[ERROR]]{}", msg));
                         },
                         _ => {}
                     }
