@@ -1,5 +1,7 @@
 import { Pencil1Icon, PersonIcon } from '@radix-ui/react-icons';
 import { createContext, useContext, useMemo, useState } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import type { Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -75,11 +77,11 @@ const Content = ({ content, rightAlign = false }: ContentProps) => {
   return (
     <div
       className={cn(
-        'mt-2 text-sm text-slate-900 flex',
-        rightAlign ? 'justify-end' : 'justify-start'
+        'mt-2 prose prose-sm prose-slate',
+        rightAlign ? 'text-right' : 'text-left'
       )}
     >
-      {content}
+      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
     </div>
   );
 };
