@@ -2,7 +2,7 @@ import './styles.css';
 import '@/i18n';
 
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
@@ -27,7 +27,9 @@ const router = createBrowserRouter([
     path: '/',
     element: (
       <CommonLayout>
-        <Outlet />
+        <Suspense fallback={<div />}>
+          <Outlet />
+        </Suspense>
       </CommonLayout>
     ),
     children: [
