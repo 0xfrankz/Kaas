@@ -1,6 +1,7 @@
 import type { LogOptions } from 'tauri-plugin-log-api';
 import {
   attachConsole,
+  debug as logDebug,
   error as logError,
   info as logInfo,
 } from 'tauri-plugin-log-api';
@@ -14,6 +15,12 @@ function isCommandError(err: any): err is CommandError {
 export async function info(message: string, options?: LogOptions) {
   const detach = await attachConsole();
   await logInfo(message, options);
+  detach();
+}
+
+export async function debug(message: string, options?: LogOptions) {
+  const detach = await attachConsole();
+  await logDebug(message, options);
   detach();
 }
 
@@ -38,4 +45,5 @@ export async function error(
 export default {
   info,
   error,
+  debug,
 };
