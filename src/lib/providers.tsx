@@ -53,7 +53,7 @@ export function InitializationProvider({
       refreshModels(modelList);
       setSettings(settingList);
       setInitialized(true);
-      log.info('App successfully initialized');
+      log.debug('App successfully initialized');
     }
   }, [isModelsSuccess, isSettingsSuccess, modelList, settingList]);
 

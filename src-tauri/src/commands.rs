@@ -148,15 +148,6 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         .map_err(|message| DbError { message })?;
     // Send request in a new thread
     tokio::spawn(async move {
-        // start receiving in frontend
-        match window.emit("bot-reply", "[[START]]") {
-            Err(err) => {
-                log::error!("Error when sending event: {}", err);
-                // retry
-                let _ = window.emit("bot-reply", "[[START]]");
-            },
-            _ => {}
-        }
         let stop = Arc::new(AtomicBool::new(false));
         let stop_clone = Arc::clone(&stop);
         // Bind listener for cancel events
@@ -171,6 +162,16 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             let stream_result = ws::complete_chat_stream(last_message.clone(), options, config).await;
             match stream_result {
                 Ok(mut stream) => {
+                    log::info!("Streaming started!");
+                    // start receiving in frontend
+                    match window.emit("bot-reply", "[[START]]") {
+                        Err(err) => {
+                            log::error!("Error when sending event: {}", err);
+                            // retry
+                            let _ = window.emit("bot-reply", "[[START]]");
+                        },
+                        _ => {}
+                    }
                     while let Some(result) = stream.next().await {
                         if stop.load(Ordering::Acquire) {
                             log::info!("Streaming stopped!");
@@ -269,7 +270,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         window.unlisten(handler);
     });
     let elapsed = now.elapsed();
-    log::info!("[Timer][commands::call_bot_new]: {:.2?}", elapsed);
+    log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
     Ok(())
 }
 

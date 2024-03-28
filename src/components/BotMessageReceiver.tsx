@@ -8,16 +8,16 @@ import {
   STREAM_START,
   STREAM_STOPPED,
 } from '@/lib/constants';
-import log from '@/lib/log';
 
 import ChatMessage from './ChatMessage';
 import { useToast } from './ui/use-toast';
 
 type Props = {
+  onReady: () => void;
   onMessageReceived: (message: string) => void;
 };
 
-export function BotMessageReceiver({ onMessageReceived }: Props) {
+export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
   const [receiving, setReceiving] = useState(false);
   const acceptingRef = useRef<boolean>(false);
   const [activeBotMessage, setActiveBotMessage] = useState('');
@@ -64,26 +64,33 @@ export function BotMessageReceiver({ onMessageReceived }: Props) {
           break;
       }
     });
-    await log.info('Listener is bound');
   };
 
   const unbindListener = async () => {
     if (listenerRef.current) {
       listenerRef.current();
       listenerRef.current = undefined;
-      await log.info('Listener is unbound');
     }
   };
 
-  useEffect(() => {
+  const mount = async () => {
     // stop bot when entering the page
     // in case it was left running before
-    emit('stop-bot');
-    bindListener();
+    await emit('stop-bot');
+    await bindListener();
+    onReady();
+  };
+
+  const unmount = async () => {
+    // stop bot when leaving the page
+    await emit('stop-bot');
+    unbindListener();
+  };
+
+  useEffect(() => {
+    mount();
     return () => {
-      unbindListener();
-      // stop bot when leaving the page
-      emit('stop-bot');
+      unmount();
     };
   }, []);
 
