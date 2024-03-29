@@ -32,7 +32,7 @@ fn main() {
                 .targets([LogTarget::Stdout, LogTarget::Webview])
                 .format(move |out, message, record| {
                     out.finish(format_args!(
-                        "{}[{}][{}] {}",
+                        "[{}][{}][{}] {}",
                         Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
                         record.level(),
                         record.target(),
@@ -40,13 +40,13 @@ fn main() {
                     ))
                 })
                 .level(LevelFilter::Debug)
-                .with_colors(ColoredLevelConfig {
-                    error: Color::Red,
-                    warn: Color::Yellow,
-                    debug: Color::Green,
-                    info: Color::White,
-                    trace: Color::White,
-                })
+                // .with_colors(ColoredLevelConfig {
+                //     error: Color::Red,
+                //     warn: Color::Yellow,
+                //     debug: Color::Green,
+                //     info: Color::White,
+                //     trace: Color::White,
+                // })
                 .build(),
         )
         .setup(|app| {

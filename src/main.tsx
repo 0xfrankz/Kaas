@@ -2,10 +2,17 @@ import './styles.css';
 import '@/i18n';
 
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { AnimatePresence } from 'framer-motion';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
+  useLocation,
+  useOutlet,
+} from 'react-router-dom';
 
 import CommonLayout from '@/layouts/CommonLayout';
 import {
@@ -22,13 +29,24 @@ import TemplatesPage from '@/pages/Templates';
 import { GlobalFallback } from './components/GlobalFallback';
 import HomePage from './pages/Home';
 
+const AnimatedOutlet = (): React.JSX.Element => {
+  const location = useLocation();
+  const element = useOutlet();
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {element && React.cloneElement(element, { key: location.pathname })}
+    </AnimatePresence>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: '/',
     element: (
       <CommonLayout>
-        <Suspense fallback={<div />}>
-          <Outlet />
+        <Suspense fallback={null}>
+          <AnimatedOutlet />
         </Suspense>
       </CommonLayout>
     ),

@@ -1,3 +1,5 @@
+import { motion, useIsPresent } from 'framer-motion';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -16,6 +18,12 @@ export default function ConversationsPage() {
   const { t } = useTranslation(['page-conversations']);
   const hasModels = models.length > 0;
   const hasConversations = conversations.length > 0;
+
+  const isPresent = useIsPresent();
+
+  useEffect(() => {
+    if (!isPresent) console.log('Conversations has been removed!');
+  }, [isPresent]);
 
   const renderEmptyModels = () => {
     return (
@@ -60,17 +68,29 @@ export default function ConversationsPage() {
   }
 
   return (
-    <TwoRows>
-      <TwoRows.Top>
-        <TitleBar title={t('page-conversations:title')} />
-      </TwoRows.Top>
-      <TwoRows.Bottom>
-        <div className="flex grow justify-center">
-          <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
-            {hasModels ? render() : renderEmptyModels()}
+    <motion.main
+      className="flex min-h-screen grow flex-col bg-white"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.2, type: 'tween' },
+      }}
+      exit={{ opacity: 0, transition: { duration: 0.1, type: 'tween' } }}
+      key="conversations"
+    >
+      <TwoRows>
+        <TwoRows.Top>
+          <TitleBar title={t('page-conversations:title')} />
+        </TwoRows.Top>
+        <TwoRows.Bottom>
+          <div className="flex grow justify-center">
+            <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
+              {hasModels ? render() : renderEmptyModels()}
+            </div>
           </div>
-        </div>
-      </TwoRows.Bottom>
-    </TwoRows>
+        </TwoRows.Bottom>
+      </TwoRows>
+    </motion.main>
   );
 }

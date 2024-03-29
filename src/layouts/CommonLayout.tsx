@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { Fallback } from '@/components/Fallback';
@@ -9,11 +10,12 @@ export default function CommonLayout({
 }: {
   children: React.ReactNode;
 }) {
+  console.log('CommonLayout render');
   return (
-    <div className="flex min-h-screen font-inter">
+    <div className="relative flex min-h-screen overflow-hidden font-inter">
       <ErrorBoundary FallbackComponent={Fallback}>
         <SideNav />
-        <main className="flex min-h-screen grow flex-col">{children}</main>
+        {children}
         <Toaster />
       </ErrorBoundary>
     </div>
