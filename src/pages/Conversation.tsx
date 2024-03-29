@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 
+import { SlideLeftTransition } from '@/components/animation/SlideLeftTransition';
 import { ChatSection } from '@/components/ChatSection';
 import { ConversationHistory } from '@/components/ConversationHistory';
 import { ConversationOptionsDialog } from '@/components/ConversationOptionsDialog';
@@ -33,21 +34,23 @@ function ConversationPage() {
   console.log('ConversationPage');
 
   return (
-    <TwoColumns>
-      <TwoColumns.Left>
-        <ConversationHistory activeConversationId={cid} />
-      </TwoColumns.Left>
-      <TwoColumns.Right className="relative">
-        <ChatSection
-          conversation={conversation as Conversation}
-          key={conversation.id}
-        />
-        <ConversationOptionsDialog
-          conversation={conversation}
-          className="absolute bottom-[38px] right-10 size-9 rounded-full p-0 shadow"
-        />
-      </TwoColumns.Right>
-    </TwoColumns>
+    <SlideLeftTransition motionKey={`conversation-${conversation.id}`}>
+      <TwoColumns>
+        <TwoColumns.Left>
+          <ConversationHistory activeConversationId={cid} />
+        </TwoColumns.Left>
+        <TwoColumns.Right className="relative">
+          <ChatSection
+            conversation={conversation as Conversation}
+            key={conversation.id}
+          />
+          <ConversationOptionsDialog
+            conversation={conversation}
+            className="absolute bottom-[38px] right-10 size-9 rounded-full p-0 shadow"
+          />
+        </TwoColumns.Right>
+      </TwoColumns>
+    </SlideLeftTransition>
   );
 }
 

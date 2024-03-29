@@ -1,8 +1,7 @@
-import { motion, useIsPresent } from 'framer-motion';
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { ConversationGrid } from '@/components/ConversationGrid';
 import { NewConversationForm } from '@/components/NewConversationForm';
 import { TitleBar } from '@/components/TitleBar';
@@ -18,12 +17,6 @@ export default function ConversationsPage() {
   const { t } = useTranslation(['page-conversations']);
   const hasModels = models.length > 0;
   const hasConversations = conversations.length > 0;
-
-  const isPresent = useIsPresent();
-
-  useEffect(() => {
-    if (!isPresent) console.log('Conversations has been removed!');
-  }, [isPresent]);
 
   const renderEmptyModels = () => {
     return (
@@ -63,22 +56,11 @@ export default function ConversationsPage() {
   };
 
   if (isLoading) {
-    // TODO: handle loading state
     return null;
   }
 
   return (
-    <motion.main
-      className="flex min-h-screen grow flex-col bg-white"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.2, type: 'tween' },
-      }}
-      exit={{ opacity: 0, transition: { duration: 0.1, type: 'tween' } }}
-      key="conversations"
-    >
+    <SlideUpTransition motionKey="conversations">
       <TwoRows>
         <TwoRows.Top>
           <TitleBar title={t('page-conversations:title')} />
@@ -91,6 +73,6 @@ export default function ConversationsPage() {
           </div>
         </TwoRows.Bottom>
       </TwoRows>
-    </motion.main>
+    </SlideUpTransition>
   );
 }

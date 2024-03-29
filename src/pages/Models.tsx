@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 
+import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { ModelGrid } from '@/components/ModelGrid';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
@@ -242,60 +243,62 @@ export default function ModelsPage() {
   };
 
   return (
-    <TwoRows>
-      <TwoRows.Top>
-        <TitleBar title="Models" />
-      </TwoRows.Top>
-      <TwoRows.Bottom>
-        <div className="flex size-full justify-center">
-          <div className="w-[1080px] max-w-[1080px]">
-            <div
-              className={cn(
-                'flex flex-col px-[34px] min-h-[348px] mt-6',
-                hasModels ? null : 'justify-center items-center'
-              )}
-            >
-              {hasModels ? (
-                <>
-                  <h2 className="text-3xl font-semibold tracking-tight">
-                    Your Models
-                  </h2>
-                  <ModelGrid
-                    models={models}
-                    onDefaultChange={onDefaultChange}
-                  />
-                </>
-              ) : (
-                <>
-                  <h2 className="text-3xl font-semibold tracking-tight">
-                    You have no models yet
-                  </h2>
-                  <p className="mt-4 text-sm">Add one from below</p>
-                </>
-              )}
-            </div>
-            <Separator />
-            <div className="px-[34px]">
-              <h2 className="my-6 text-xl font-semibold tracking-tight">
-                Supported Models
-              </h2>
-              <div className="grid grid-cols-4 gap-5">
-                <Card className="border-2 border-slate-900 shadow-none">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="mx-auto">Microsoft Azure</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <p className="text-center">GPT-3.5 and GPT-4</p>
-                  </CardContent>
-                  <CardFooter>
-                    {renderCreateModelDialog(PROVIDER_AZURE)}
-                  </CardFooter>
-                </Card>
+    <SlideUpTransition motionKey="models">
+      <TwoRows>
+        <TwoRows.Top>
+          <TitleBar title="Models" />
+        </TwoRows.Top>
+        <TwoRows.Bottom>
+          <div className="flex size-full justify-center">
+            <div className="w-[1080px] max-w-[1080px]">
+              <div
+                className={cn(
+                  'flex flex-col px-[34px] min-h-[348px] mt-6',
+                  hasModels ? null : 'justify-center items-center'
+                )}
+              >
+                {hasModels ? (
+                  <>
+                    <h2 className="text-3xl font-semibold tracking-tight">
+                      Your Models
+                    </h2>
+                    <ModelGrid
+                      models={models}
+                      onDefaultChange={onDefaultChange}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-3xl font-semibold tracking-tight">
+                      You have no models yet
+                    </h2>
+                    <p className="mt-4 text-sm">Add one from below</p>
+                  </>
+                )}
+              </div>
+              <Separator />
+              <div className="px-[34px]">
+                <h2 className="my-6 text-xl font-semibold tracking-tight">
+                  Supported Models
+                </h2>
+                <div className="grid grid-cols-4 gap-5">
+                  <Card className="border-2 border-slate-900 shadow-none">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="mx-auto">Microsoft Azure</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <p className="text-center">GPT-3.5 and GPT-4</p>
+                    </CardContent>
+                    <CardFooter>
+                      {renderCreateModelDialog(PROVIDER_AZURE)}
+                    </CardFooter>
+                  </Card>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </TwoRows.Bottom>
-    </TwoRows>
+        </TwoRows.Bottom>
+      </TwoRows>
+    </SlideUpTransition>
   );
 }
