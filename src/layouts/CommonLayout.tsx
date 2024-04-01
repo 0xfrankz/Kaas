@@ -10,7 +10,6 @@ export default function CommonLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log('CommonLayout render');
   return (
     <div className="relative flex min-h-screen overflow-hidden font-inter">
       <ErrorBoundary FallbackComponent={Fallback}>

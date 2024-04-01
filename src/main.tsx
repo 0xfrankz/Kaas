@@ -27,6 +27,7 @@ import SettingsPage from '@/pages/Settings';
 import TemplatesPage from '@/pages/Templates';
 
 import { GlobalFallback } from './components/GlobalFallback';
+import { PageSkeleton } from './components/placeholders/WholePage';
 import HomePage from './pages/Home';
 
 const AnimatedOutlet = (): React.JSX.Element => {
@@ -45,9 +46,7 @@ const router = createBrowserRouter([
     path: '/',
     element: (
       <CommonLayout>
-        <Suspense fallback={null}>
-          <AnimatedOutlet />
-        </Suspense>
+        <AnimatedOutlet />
       </CommonLayout>
     ),
     children: [
@@ -93,9 +92,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
   <ErrorBoundary FallbackComponent={GlobalFallback}>
     <RQProvider>
-      <InitializationProvider>
-        <RouterProvider router={router} />
-      </InitializationProvider>
+      <Suspense fallback={<PageSkeleton />}>
+        <InitializationProvider>
+          <RouterProvider router={router} />
+        </InitializationProvider>
+      </Suspense>
       <ReactQueryDevtools initialIsOpen={false} />
     </RQProvider>
   </ErrorBoundary>
