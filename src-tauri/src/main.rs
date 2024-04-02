@@ -13,6 +13,13 @@ use tauri::Manager;
 use tauri_plugin_log::{fern::colors::{Color, ColoredLevelConfig}, LogTarget};
 
 fn main() {
+    let colors = ColoredLevelConfig {
+        error: Color::Red,
+        warn: Color::Yellow,
+        debug: Color::Green,
+        info: Color::White,
+        trace: Color::White,
+    };
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::create_model,
@@ -30,23 +37,16 @@ fn main() {
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::Stdout, LogTarget::Webview])
+                .level(LevelFilter::Debug)
                 .format(move |out, message, record| {
                     out.finish(format_args!(
                         "[{}][{}][{}] {}",
                         Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
-                        record.level(),
+                        colors.color(record.level()),
                         record.target(),
                         message
                     ))
                 })
-                .level(LevelFilter::Debug)
-                // .with_colors(ColoredLevelConfig {
-                //     error: Color::Red,
-                //     warn: Color::Yellow,
-                //     debug: Color::Green,
-                //     info: Color::White,
-                //     trace: Color::White,
-                // })
                 .build(),
         )
         .setup(|app| {
