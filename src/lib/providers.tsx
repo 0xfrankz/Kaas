@@ -34,7 +34,7 @@ export function InitializationProvider({
   children: React.ReactNode;
 }) {
   const [initialized, setInitialized] = useState(false);
-  const { models, settings, refreshModels, setSettings } = useAppStateStore();
+  const { refreshModels, setSettings } = useAppStateStore();
   const {
     data: modelList,
     isSuccess: isModelsSuccess,

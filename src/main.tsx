@@ -89,16 +89,16 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  // <React.StrictMode>
-  <ErrorBoundary FallbackComponent={GlobalFallback}>
-    <RQProvider>
-      <Suspense fallback={<PageSkeleton />}>
-        <InitializationProvider>
-          <RouterProvider router={router} />
-        </InitializationProvider>
-      </Suspense>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </RQProvider>
-  </ErrorBoundary>
-  // </React.StrictMode>
+  <React.StrictMode>
+    <ErrorBoundary FallbackComponent={GlobalFallback}>
+      <RQProvider>
+        <Suspense fallback={<PageSkeleton />}>
+          <InitializationProvider>
+            <RouterProvider router={router} />
+          </InitializationProvider>
+        </Suspense>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </RQProvider>
+    </ErrorBoundary>
+  </React.StrictMode>
 );

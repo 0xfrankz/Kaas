@@ -1,4 +1,4 @@
-import { KEY_SETTING_DEFAULT_MODEL } from '@/lib/constants';
+import { SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
 import type { Model } from '@/lib/types';
 
@@ -71,7 +71,7 @@ export function ModelGrid({
 }) {
   const { settings } = useAppStateStore();
   const defaultModelId =
-    parseInt(settings[KEY_SETTING_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
+    parseInt(settings[SETTING_USER_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
 
   return (
     <div className="mt-6 grid grid-cols-4 gap-5">

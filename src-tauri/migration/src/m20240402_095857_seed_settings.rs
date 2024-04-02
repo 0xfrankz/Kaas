@@ -9,7 +9,8 @@ impl MigrationTrait for Migration {
         let insert = Query::insert()
             .into_table(Settings::Table)
             .columns([Settings::Key, Settings::Value])
-            .values_panic(["K".into(), "V".into()])
+            .values_panic(["display:language".into(), "en".into()])
+            .values_panic(["display:darkmode".into(), "system".into()])
             .to_owned();
 
         manager.exec_stmt(insert).await?;
@@ -20,9 +21,6 @@ impl MigrationTrait for Migration {
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let delete = Query::delete()
             .from_table(Settings::Table)
-            .cond_where(
-                Expr::col(Settings::Key).eq("K".to_owned())
-            )
             .to_owned();
 
         manager.exec_stmt(delete).await?;

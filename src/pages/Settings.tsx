@@ -15,10 +15,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import TwoRows from '@/layouts/TwoRows';
+import {
+  SETTING_DISPLAY_DARKMODE,
+  SETTING_DISPLAY_LANGUAGE,
+  SETTING_MODELS_CONTENT_LENGTH,
+  SETTING_MODELS_MAX_TOKENS,
+  SETTING_PROFILE_NAME,
+} from '@/lib/constants';
+import { useAppStateStore } from '@/lib/store';
 
 function SettingLanguage() {
   const { t, i18n } = useTranslation(['generic', 'page-settings']);
   const languageRef = useRef<string>(i18n.language);
+  const { settings } = useAppStateStore();
 
   const onLanguageChange = () => {
     i18n.changeLanguage(languageRef.current);
@@ -28,7 +37,7 @@ function SettingLanguage() {
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="language">{t('page-settings:label:language')}</Label>
       <Select
-        defaultValue={languageRef.current}
+        defaultValue={settings[SETTING_DISPLAY_LANGUAGE]}
         onValueChange={(v) => {
           languageRef.current = v;
         }}
@@ -56,11 +65,12 @@ function SettingLanguage() {
 
 function SettingDarkmode() {
   const { t } = useTranslation(['generic', 'page-settings']);
+  const { settings } = useAppStateStore();
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="darkmode">{t('page-settings:label:darkmode')}</Label>
-      <Select defaultValue="system">
+      <Select defaultValue={settings[SETTING_DISPLAY_DARKMODE]}>
         <div className="mt-2 flex justify-between">
           <SelectTrigger className="w-52" id="darkmode">
             <SelectValue />
@@ -81,12 +91,18 @@ function SettingDarkmode() {
 
 function SettingName() {
   const { t } = useTranslation(['generic', 'page-settings']);
+  const { settings } = useAppStateStore();
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="name">{t('page-settings:label:name')}</Label>
       <div className="mt-2 flex justify-between">
-        <Input className="w-52" id="name" placeholder="ME" />
+        <Input
+          className="w-52"
+          id="name"
+          placeholder="ME"
+          defaultValue={settings[SETTING_PROFILE_NAME]}
+        />
         <Button>{t('generic:button:save')}</Button>
       </div>
       <span className="mt-2 text-xs text-slate-400">
@@ -98,6 +114,7 @@ function SettingName() {
 
 function SettingContextLength() {
   const { t } = useTranslation(['generic', 'page-settings']);
+  const { settings } = useAppStateStore();
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
@@ -105,7 +122,12 @@ function SettingContextLength() {
         {t('page-settings:label:context-length')}
       </Label>
       <div className="mt-2 flex justify-between">
-        <Input className="w-52" id="context-length" placeholder="10" />
+        <Input
+          className="w-52"
+          id="context-length"
+          placeholder="10"
+          defaultValue={settings[SETTING_MODELS_CONTENT_LENGTH]}
+        />
         <Button>{t('generic:button:save')}</Button>
       </div>
       <span className="mt-2 text-xs text-slate-400">
@@ -117,12 +139,18 @@ function SettingContextLength() {
 
 function SettingMaxTokens() {
   const { t } = useTranslation(['generic', 'page-settings']);
+  const { settings } = useAppStateStore();
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
       <div className="mt-2 flex justify-between">
-        <Input className="w-52" id="max-tokens" placeholder="256" />
+        <Input
+          className="w-52"
+          id="max-tokens"
+          placeholder="256"
+          defaultValue={settings[SETTING_MODELS_MAX_TOKENS]}
+        />
         <Button>{t('generic:button:save')}</Button>
       </div>
       <span className="mt-2 text-xs text-slate-400">

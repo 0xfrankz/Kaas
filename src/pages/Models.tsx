@@ -39,7 +39,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import TwoRows from '@/layouts/TwoRows';
-import { KEY_SETTING_DEFAULT_MODEL, PROVIDER_AZURE } from '@/lib/constants';
+import { PROVIDER_AZURE, SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
 import {
   LIST_MODELS_KEY,
   useCreateModelMutation,
@@ -104,7 +104,7 @@ export default function ModelsPage() {
   const onDefaultChange = (defaultModelId: number) => {
     upsertSettingMutation.mutate(
       {
-        key: KEY_SETTING_DEFAULT_MODEL,
+        key: SETTING_USER_DEFAULT_MODEL,
         value: defaultModelId.toString(),
       },
       {

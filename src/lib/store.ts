@@ -22,7 +22,7 @@ export const useAppStateStore = create<AppState>()((set) => ({
       settings.forEach((setting) => {
         result[setting.key] = setting.value;
       });
-      return result;
+      return { settings: result };
     });
   },
   updateSetting: (setting: Setting) =>
