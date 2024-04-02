@@ -1,3 +1,22 @@
 {
-    "title": "Settings"
+    "title": "Settings",
+    "label": {
+        "display": "Display",
+        "profile": "Profile",
+        "models": "Models",
+        "language": "Language",
+        "darkmode": "Darkmode",
+        "name": "Name",
+        "name-desc": "Will be shown in conversations.",
+        "context-length": "Default context length",
+        "context-length-desc": "Number of previous messages included  in each model request. Can be overridden by conversation’s options.",
+        "max-tokens": "Default max tokens",
+        "max-tokens-desc": "Number of previous messages included  in each model request. Can be overridden by conversation’s options."
+    },
+    "select": {
+        "language": "Select a language",
+        "on": "ON",
+        "off": "OFF",
+        "system": "Follow system"
+    }
 }

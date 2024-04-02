@@ -55,13 +55,7 @@ function SideNavMenuItem({
   );
 }
 
-export function SideNavMenu({
-  expanded = false,
-  // onConversationClick,
-  // onTemplatesClick,
-  // onModelsClick,
-  // onSettingsClick,
-}: MenuProps) {
+export function SideNavMenu({ expanded = false }: MenuProps) {
   const { pathname } = useLocation();
   const { t } = useTranslation('generic');
 

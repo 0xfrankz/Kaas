@@ -29,7 +29,7 @@ ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
-    viewportRef: React.RefObject<HTMLDivElement>;
+    viewportRef?: React.RefObject<HTMLDivElement>;
   }
 >(({ className, viewportRef, children, ...props }, ref) => (
   <ScrollAreaPrimitive.Root

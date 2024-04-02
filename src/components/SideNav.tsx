@@ -20,7 +20,7 @@ export function SideNav() {
       {renderPlaceHolder()}
       <div
         className={cn(
-          'absolute top-0 left-0 h-full flex flex-col box-border border-r border-gray-200 z-50 bg-white/80 backdrop-blur',
+          'absolute top-0 left-0 h-screen flex flex-col box-border border-r border-gray-200 z-50 bg-white/80 backdrop-blur',
           hovering ? 'w-80' : 'w-16'
         )}
         ref={ref}
@@ -28,13 +28,7 @@ export function SideNav() {
         <div className={cn('flex items-center', hovering ? 'm-6' : 'm-4')}>
           <Logo expanded={hovering} />
         </div>
-        <SideNavMenu
-          expanded={hovering}
-          // onConversationClick={() => {}}
-          // onTemplatesClick={() => {}}
-          // onModelsClick={() => {}}
-          // onSettingsClick={() => {}}
-        />
+        <SideNavMenu expanded={hovering} />
       </div>
     </div>
   );

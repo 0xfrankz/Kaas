@@ -8,6 +8,9 @@
         "settings": "Settings"
     },
     "label": {
-        "select-language": "Select a language"
+        "save": "Save"
+    },
+    "button": {
+        "save": "Save"
     }
 }
