@@ -1,9 +1,9 @@
 import { Suspense, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { TitleBar } from '@/components/TitleBar';
-import { ToastController } from '@/components/ToastController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,25 +26,24 @@ import {
 import { useUpsertSettingMutation } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
-import type { ToastHandler } from '@/lib/types';
 
-function useUpsertSetting(onSuccess: () => void = () => {}) {
+function useUpsertSetting(
+  successMsg: string,
+  failureMsg: string,
+  onSuccess: () => void = () => {}
+) {
   const upsertSettingMutation = useUpsertSettingMutation({
     onSuccess: () => {
       // callback
       onSuccess();
       // toast
-      // toast({ title: successMsg });
+      toast.success(successMsg);
       // update settings
     },
     onError: async (error, variables) => {
       const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
       await log.error(errMsg);
-      // toast({
-      //   variant: 'destructive',
-      //   title: errorMsg,
-      //   description: error.message,
-      // });
+      toast.error(failureMsg);
     },
   });
 
@@ -54,20 +53,16 @@ function useUpsertSetting(onSuccess: () => void = () => {}) {
 function SettingLanguage() {
   const { t, i18n } = useTranslation(['generic', 'page-settings']);
   const languageRef = useRef<string>(i18n.language);
-  const toastRef = useRef<ToastHandler>(null);
   const languageSetting = useAppStateStore(
     (state) => state.settings[SETTING_DISPLAY_LANGUAGE]
   );
   const updater = useUpsertSetting(
-    // t('page-settings:message:change-language-success'),
-    // t('page-settings:message:change-language-failure'),
+    t('page-settings:message:change-language-success'),
+    t('page-settings:message:change-language-failure'),
     () => {
       // apply new language
-      // i18n.changeLanguage(languageRef.current);
-      toastRef.current?.showToast(
-        'default',
-        t('page-settings:message:change-language-success')
-      );
+      i18n.changeLanguage(languageRef.current);
+      // update settings
     }
   );
 
@@ -91,7 +86,7 @@ function SettingLanguage() {
       >
         <div className="mt-2 flex justify-between">
           <SelectTrigger className="w-52" id="language">
-            <SelectValue placeholder={t('page-settings:select:language')} />
+            <SelectValue />
           </SelectTrigger>
           <Button
             onClick={() => {
@@ -106,7 +101,6 @@ function SettingLanguage() {
           <SelectItem value="zh-Hans">Simplified Chinese</SelectItem>
         </SelectContent>
       </Select>
-      <ToastController ref={toastRef} />
     </div>
   );
 }
@@ -116,25 +110,45 @@ function SettingDarkmode() {
   const darkmodeSetting = useAppStateStore(
     (state) => state.settings[SETTING_DISPLAY_DARKMODE]
   );
+  const darkmodeRef = useRef<string>(darkmodeSetting);
   const updater = useUpsertSetting(
-    // t('page-settings:message:change-language-success'),
-    // t('page-settings:message:change-language-failure'),
+    t('page-settings:message:change-language-success'),
+    t('page-settings:message:change-language-failure'),
     () => {
       // apply dark/light mode
+      // update settings
     }
   );
 
   console.log('SettingDarkmode');
 
+  const onSaveClick = () => {
+    updater({
+      key: SETTING_DISPLAY_DARKMODE,
+      value: darkmodeRef.current,
+    });
+  };
+
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="darkmode">{t('page-settings:label:darkmode')}</Label>
-      <Select defaultValue={darkmodeSetting}>
+      <Select
+        defaultValue={darkmodeSetting}
+        onValueChange={(v) => {
+          darkmodeRef.current = v;
+        }}
+      >
         <div className="mt-2 flex justify-between">
           <SelectTrigger className="w-52" id="darkmode">
             <SelectValue />
           </SelectTrigger>
-          <Button>{t('generic:button:save')}</Button>
+          <Button
+            onClick={() => {
+              onSaveClick();
+            }}
+          >
+            {t('generic:button:save')}
+          </Button>
         </div>
         <SelectContent>
           <SelectItem value="on">{t('page-settings:select:on')}</SelectItem>

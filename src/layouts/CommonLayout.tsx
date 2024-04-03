@@ -3,7 +3,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { Fallback } from '@/components/Fallback';
 import { SideNav } from '@/components/SideNav';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function CommonLayout({
   children,
