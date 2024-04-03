@@ -115,6 +115,14 @@ export type FormHandler = {
   reset: () => void;
 };
 
+export type ToastHandler = {
+  showToast: (
+    variant: 'default' | 'destructive' | null | undefined,
+    title: string,
+    description?: string
+  ) => void;
+};
+
 // Functions
 export function toGenericModel(model: UnsavedModel): GenericUnsavedModel {
   const { provider, ...config } = model;

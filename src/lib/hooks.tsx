@@ -1,5 +1,6 @@
 import type {
   QueryKey,
+  UseMutationOptions,
   UseMutationResult,
   UseQueryResult,
 } from '@tanstack/react-query';
@@ -76,13 +77,15 @@ export function useListSettingsQuery(): UseQueryResult<
   });
 }
 
-export function useUpsertSettingMutation(): UseMutationResult<
-  Setting,
-  CommandError,
-  Setting
-> {
+export function useUpsertSettingMutation(
+  options: Omit<
+    UseMutationOptions<Setting, CommandError, Setting>,
+    'mutationFn'
+  >
+) {
   return useMutation({
     mutationFn: invokeUpsertSetting,
+    ...options,
   });
 }
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { TitleBar } from '@/components/TitleBar';
+import { ToastController } from '@/components/ToastController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,22 +23,68 @@ import {
   SETTING_MODELS_MAX_TOKENS,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
+import { useUpsertSettingMutation } from '@/lib/hooks';
+import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
+import type { ToastHandler } from '@/lib/types';
+
+function useUpsertSetting(onSuccess: () => void = () => {}) {
+  const upsertSettingMutation = useUpsertSettingMutation({
+    onSuccess: () => {
+      // callback
+      onSuccess();
+      // toast
+      // toast({ title: successMsg });
+      // update settings
+    },
+    onError: async (error, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
+      await log.error(errMsg);
+      // toast({
+      //   variant: 'destructive',
+      //   title: errorMsg,
+      //   description: error.message,
+      // });
+    },
+  });
+
+  return upsertSettingMutation.mutate;
+}
 
 function SettingLanguage() {
   const { t, i18n } = useTranslation(['generic', 'page-settings']);
   const languageRef = useRef<string>(i18n.language);
-  const { settings } = useAppStateStore();
+  const toastRef = useRef<ToastHandler>(null);
+  const languageSetting = useAppStateStore(
+    (state) => state.settings[SETTING_DISPLAY_LANGUAGE]
+  );
+  const updater = useUpsertSetting(
+    // t('page-settings:message:change-language-success'),
+    // t('page-settings:message:change-language-failure'),
+    () => {
+      // apply new language
+      // i18n.changeLanguage(languageRef.current);
+      toastRef.current?.showToast(
+        'default',
+        t('page-settings:message:change-language-success')
+      );
+    }
+  );
 
-  const onLanguageChange = () => {
-    i18n.changeLanguage(languageRef.current);
+  console.log('SettingLanguage', 'languageSetting', languageSetting);
+
+  const onSaveClick = () => {
+    updater({
+      key: SETTING_DISPLAY_LANGUAGE,
+      value: languageRef.current,
+    });
   };
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="language">{t('page-settings:label:language')}</Label>
       <Select
-        defaultValue={settings[SETTING_DISPLAY_LANGUAGE]}
+        defaultValue={languageSetting}
         onValueChange={(v) => {
           languageRef.current = v;
         }}
@@ -48,7 +95,7 @@ function SettingLanguage() {
           </SelectTrigger>
           <Button
             onClick={() => {
-              onLanguageChange();
+              onSaveClick();
             }}
           >
             {t('generic:button:save')}
@@ -59,18 +106,30 @@ function SettingLanguage() {
           <SelectItem value="zh-Hans">Simplified Chinese</SelectItem>
         </SelectContent>
       </Select>
+      <ToastController ref={toastRef} />
     </div>
   );
 }
 
 function SettingDarkmode() {
   const { t } = useTranslation(['generic', 'page-settings']);
-  const { settings } = useAppStateStore();
+  const darkmodeSetting = useAppStateStore(
+    (state) => state.settings[SETTING_DISPLAY_DARKMODE]
+  );
+  const updater = useUpsertSetting(
+    // t('page-settings:message:change-language-success'),
+    // t('page-settings:message:change-language-failure'),
+    () => {
+      // apply dark/light mode
+    }
+  );
+
+  console.log('SettingDarkmode');
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="darkmode">{t('page-settings:label:darkmode')}</Label>
-      <Select defaultValue={settings[SETTING_DISPLAY_DARKMODE]}>
+      <Select defaultValue={darkmodeSetting}>
         <div className="mt-2 flex justify-between">
           <SelectTrigger className="w-52" id="darkmode">
             <SelectValue />
@@ -92,6 +151,8 @@ function SettingDarkmode() {
 function SettingName() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { settings } = useAppStateStore();
+
+  console.log('SettingName');
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
@@ -115,6 +176,8 @@ function SettingName() {
 function SettingContextLength() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { settings } = useAppStateStore();
+
+  console.log('SettingContextLength');
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
@@ -141,6 +204,8 @@ function SettingMaxTokens() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { settings } = useAppStateStore();
 
+  console.log('SettingMaxTokens');
+
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
@@ -163,6 +228,8 @@ function SettingMaxTokens() {
 function SettingGroupDisplay() {
   const { t } = useTranslation(['generic', 'page-settings']);
 
+  console.log('SettingGroupDisplay');
+
   return (
     <div className="flex flex-col">
       <span className="mb-1 text-sm font-semibold">
@@ -177,6 +244,8 @@ function SettingGroupDisplay() {
 function SettingGroupProfile() {
   const { t } = useTranslation(['generic', 'page-settings']);
 
+  console.log('SettingGroupProfile');
+
   return (
     <div className="mt-6 flex flex-col">
       <span className="mb-1 text-sm font-semibold">
@@ -189,6 +258,8 @@ function SettingGroupProfile() {
 
 function SettingGroupModels() {
   const { t } = useTranslation(['generic', 'page-settings']);
+
+  console.log('SettingGroupModels');
 
   return (
     <div className="mt-6 flex flex-col">

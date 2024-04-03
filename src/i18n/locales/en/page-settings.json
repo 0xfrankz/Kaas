@@ -18,5 +18,9 @@
         "on": "ON",
         "off": "OFF",
         "system": "Follow system"
+    },
+    "message": {
+        "change-language-success": "Language changed",
+        "change-language-failure": "Failed to change language"
     }
 }
