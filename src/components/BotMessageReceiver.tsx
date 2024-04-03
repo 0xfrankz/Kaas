@@ -1,6 +1,7 @@
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import {
   STREAM_DONE,
@@ -10,7 +11,6 @@ import {
 } from '@/lib/constants';
 
 import ChatMessage from './ChatMessage';
-import { useToast } from './ui/use-toast';
 
 type Props = {
   onReady: () => void;
@@ -22,7 +22,6 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
   const acceptingRef = useRef<boolean>(false);
   const [activeBotMessage, setActiveBotMessage] = useState('');
   const listenerRef = useRef<UnlistenFn>();
-  const { toast } = useToast();
 
   const startStreaming = () => {
     setReceiving(true);
@@ -48,11 +47,7 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
           endStreaming();
           break;
         case nextMsg.startsWith(STREAM_ERROR):
-          toast({
-            variant: 'destructive',
-            title: 'Bot Error',
-            description: nextMsg.split(STREAM_ERROR).at(-1),
-          });
+          toast.error(`Bot Error: ${nextMsg.split(STREAM_ERROR).at(-1)}`);
           endStreaming();
           break;
         default:

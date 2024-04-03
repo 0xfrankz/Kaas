@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { ModelGrid } from '@/components/ModelGrid';
@@ -37,7 +38,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast';
 import TwoRows from '@/layouts/TwoRows';
 import { PROVIDER_AZURE, SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
 import {
@@ -54,7 +54,6 @@ import { cn } from '@/lib/utils';
 export default function ModelsPage() {
   const { models, updateSetting } = useAppStateStore();
   const [showModal, setShowModal] = useState(false);
-  const { toast } = useToast();
   const form = useForm<UnsavedModel>({
     resolver: zodResolver(modelFormSchema),
     defaultValues: {
@@ -92,11 +91,7 @@ export default function ModelsPage() {
       },
       onError: (error) => {
         log.error(error);
-        toast({
-          variant: 'destructive',
-          title: error.type,
-          description: error.message,
-        });
+        toast.error(`${error.type}: ${error.message}`);
       },
     });
   };

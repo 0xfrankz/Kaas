@@ -1,6 +1,7 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
+import { toast } from 'sonner';
 
 import { MESSAGE_USER } from '@/lib/constants';
 import { LIST_MESSAGES_KEY, useCreateMessageMutation } from '@/lib/hooks';
@@ -8,7 +9,6 @@ import type { Message } from '@/lib/types';
 
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { useToast } from './ui/use-toast';
 
 const HEIGHT_LIMIT = 20 * 20;
 
@@ -20,7 +20,6 @@ export function ChatPromptInput({ conversationId }: Props) {
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const createMsgMutation = useCreateMessageMutation();
-  const { toast } = useToast();
 
   // Callbacks
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -45,11 +44,9 @@ export function ChatPromptInput({ conversationId }: Props) {
   const onClick = () => {
     const promptStr = promptRef.current?.value ?? '';
     if (promptStr.trim().length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'You prompt is blank',
-        description: 'Blank prompt is a waste of your tokens quota.',
-      });
+      toast.error(
+        'You prompt is blank. Blank prompt is a waste of your tokens quota.'
+      );
     } else {
       createMsgMutation.mutate(
         {

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
@@ -18,7 +19,6 @@ import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ScrollBottom } from './ScrollBottom';
 import { TitleBar } from './TitleBar';
-import { useToast } from './ui/use-toast';
 
 type Props = {
   conversation: Conversation;
@@ -27,7 +27,6 @@ type Props = {
 export function ChatSection({ conversation }: Props) {
   const [listenerReady, setListenerReady] = useState(false); // mark to make sure listener is ready before calling bot
   const viewportRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
@@ -45,11 +44,7 @@ export function ChatSection({ conversation }: Props) {
       onError: async (error) => {
         const errMsg = `Bot call failed: ${error.message}`;
         await log.error(errMsg);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: errMsg,
-        });
+        toast.error(errMsg);
       },
     });
   };

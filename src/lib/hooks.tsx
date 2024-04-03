@@ -78,7 +78,7 @@ export function useListSettingsQuery(): UseQueryResult<
 }
 
 export function useUpsertSettingMutation(
-  options: Omit<
+  options?: Omit<
     UseMutationOptions<Setting, CommandError, Setting>,
     'mutationFn'
   >

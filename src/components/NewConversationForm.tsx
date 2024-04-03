@@ -5,6 +5,7 @@ import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import {
   LIST_CONVERSATIONS_KEY,
@@ -24,13 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import { useToast } from './ui/use-toast';
 
 export function NewConversationForm() {
   const { models } = useAppStateStore();
   const form = useForm<UnsavedConversation>();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -50,10 +49,9 @@ export function NewConversationForm() {
       });
     } else {
       inputRef.current?.focus();
-      toast({
-        title: "Input can't be empty",
-        description: 'Type something to start a new conversation.',
-      });
+      toast.warning(
+        "Input can't be empty. Type something to start a new conversation."
+      );
     }
   };
 

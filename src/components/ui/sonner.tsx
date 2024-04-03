@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import { useTheme } from 'next-themes';
 import { Toaster as Sonner } from 'sonner';
 

@@ -1,6 +1,7 @@
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
@@ -18,7 +19,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
-import { useToast } from './ui/use-toast';
 
 type Props = {
   className?: string;
@@ -34,7 +34,6 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
     query: { data: options, isSuccess, isError, error },
   } = useGetOptionsQuery(conversation.id);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   if (isError && error) {
     throw new AppError(
@@ -53,18 +52,11 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
       },
       {
         onSuccess: async () => {
-          toast({
-            title: 'Success',
-            description: 'Options of this conversation has been updated',
-          });
+          toast.success('Options are successfully saved');
           return queryClient.invalidateQueries({ queryKey });
         },
         onError: (e) => {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: e.message,
-          });
+          toast.error(e.message);
         },
         onSettled: () => {
           setOpen(false);
