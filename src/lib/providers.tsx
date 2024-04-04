@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
+import { SETTING_DISPLAY_LANGUAGE } from './constants';
 import { ConversationsContext } from './contexts';
 import { AppError, ERROR_TYPE_APP_STATE } from './error';
 import {
@@ -34,6 +36,7 @@ export function InitializationProvider({
   children: React.ReactNode;
 }) {
   const [initialized, setInitialized] = useState(false);
+  const { i18n } = useTranslation();
   const { refreshModels, setSettings } = useAppStateStore();
   const {
     data: modelList,
@@ -52,6 +55,13 @@ export function InitializationProvider({
     if (isModelsSuccess && isSettingsSuccess) {
       refreshModels(modelList);
       setSettings(settingList);
+      // apply language setting
+      const language = settingList.find(
+        (s) => s.key === SETTING_DISPLAY_LANGUAGE
+      )?.value;
+      if (language !== i18n.language) {
+        i18n.changeLanguage(language);
+      }
       setInitialized(true);
       log.debug('App successfully initialized');
     }

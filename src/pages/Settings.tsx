@@ -53,9 +53,10 @@ function useUpsertSetting(
 function SettingLanguage() {
   const { t, i18n } = useTranslation(['generic', 'page-settings']);
   const languageRef = useRef<string>(i18n.language);
-  const languageSetting = useAppStateStore(
-    (state) => state.settings[SETTING_DISPLAY_LANGUAGE]
-  );
+  const [languageSetting, updateSetting] = useAppStateStore((state) => [
+    state.settings[SETTING_DISPLAY_LANGUAGE],
+    state.updateSetting,
+  ]);
   const updater = useUpsertSetting(
     t('page-settings:message:change-language-success'),
     t('page-settings:message:change-language-failure'),
@@ -63,6 +64,10 @@ function SettingLanguage() {
       // apply new language
       i18n.changeLanguage(languageRef.current);
       // update settings
+      updateSetting({
+        key: SETTING_DISPLAY_LANGUAGE,
+        value: languageRef.current,
+      });
     }
   );
 
