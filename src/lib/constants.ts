@@ -21,7 +21,7 @@ export const STREAM_STOPPED = '[[STOPPED]]';
 // Setting keys
 export const SETTING_USER_DEFAULT_MODEL = 'user:default_model';
 export const SETTING_DISPLAY_LANGUAGE = 'display:language';
-export const SETTING_DISPLAY_DARKMODE = 'display:darkmode';
+export const SETTING_DISPLAY_THEME = 'display:darkmode';
 export const SETTING_PROFILE_NAME = 'profile:name';
 export const SETTING_MODELS_CONTENT_LENGTH = 'models:context_length';
 export const SETTING_MODELS_MAX_TOKENS = 'models:max_tokens';

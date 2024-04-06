@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useTheme } from 'next-themes';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SETTING_DISPLAY_LANGUAGE } from './constants';
+import { SETTING_DISPLAY_LANGUAGE, SETTING_DISPLAY_THEME } from './constants';
 import { ConversationsContext } from './contexts';
 import { AppError, ERROR_TYPE_APP_STATE } from './error';
 import {
@@ -37,6 +38,7 @@ export function InitializationProvider({
 }) {
   const [initialized, setInitialized] = useState(false);
   const { i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
   const { refreshModels, setSettings } = useAppStateStore();
   const {
     data: modelList,
@@ -62,6 +64,14 @@ export function InitializationProvider({
       if (language !== i18n.language) {
         i18n.changeLanguage(language);
       }
+      // apply theme setting
+      const themeSetting = settingList.find(
+        (s) => s.key === SETTING_DISPLAY_THEME
+      )?.value as string;
+      if (themeSetting !== theme) {
+        setTheme(themeSetting);
+      }
+
       setInitialized(true);
       log.debug('App successfully initialized');
     }

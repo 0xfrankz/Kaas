@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes';
 import { Suspense, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -17,8 +18,8 @@ import {
 } from '@/components/ui/select';
 import TwoRows from '@/layouts/TwoRows';
 import {
-  SETTING_DISPLAY_DARKMODE,
   SETTING_DISPLAY_LANGUAGE,
+  SETTING_DISPLAY_THEME,
   SETTING_MODELS_CONTENT_LENGTH,
   SETTING_MODELS_MAX_TOKENS,
   SETTING_PROFILE_NAME,
@@ -110,41 +111,50 @@ function SettingLanguage() {
   );
 }
 
-function SettingDarkmode() {
+function SettingTheme() {
   const { t } = useTranslation(['generic', 'page-settings']);
-  const darkmodeSetting = useAppStateStore(
-    (state) => state.settings[SETTING_DISPLAY_DARKMODE]
-  );
-  const darkmodeRef = useRef<string>(darkmodeSetting);
+  const { theme, setTheme } = useTheme();
+  const [themeSetting, updateSetting] = useAppStateStore((state) => [
+    state.settings[SETTING_DISPLAY_THEME],
+    state.updateSetting,
+  ]);
+  const themeRef = useRef<string>(themeSetting);
   const updater = useUpsertSetting(
     t('page-settings:message:change-language-success'),
     t('page-settings:message:change-language-failure'),
     () => {
       // apply dark/light mode
+      if (themeRef.current !== theme) {
+        setTheme(themeRef.current);
+      }
       // update settings
+      updateSetting({
+        key: SETTING_DISPLAY_THEME,
+        value: themeRef.current,
+      });
     }
   );
 
-  console.log('SettingDarkmode');
+  console.log('SettingTheme', 'themeSetting', themeSetting);
 
   const onSaveClick = () => {
     updater({
-      key: SETTING_DISPLAY_DARKMODE,
-      value: darkmodeRef.current,
+      key: SETTING_DISPLAY_THEME,
+      value: themeRef.current,
     });
   };
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
-      <Label htmlFor="darkmode">{t('page-settings:label:darkmode')}</Label>
+      <Label htmlFor="theme">{t('page-settings:label:theme')}</Label>
       <Select
-        defaultValue={darkmodeSetting}
+        defaultValue={themeSetting}
         onValueChange={(v) => {
-          darkmodeRef.current = v;
+          themeRef.current = v;
         }}
       >
         <div className="mt-2 flex justify-between">
-          <SelectTrigger className="w-52" id="darkmode">
+          <SelectTrigger className="w-52" id="theme">
             <SelectValue />
           </SelectTrigger>
           <Button
@@ -156,8 +166,12 @@ function SettingDarkmode() {
           </Button>
         </div>
         <SelectContent>
-          <SelectItem value="on">{t('page-settings:select:on')}</SelectItem>
-          <SelectItem value="off">{t('page-settings:select:off')}</SelectItem>
+          <SelectItem value="dark">
+            {t('page-settings:select:dark-theme')}
+          </SelectItem>
+          <SelectItem value="light">
+            {t('page-settings:select:light-theme')}
+          </SelectItem>
           <SelectItem value="system">
             {t('page-settings:select:system')}
           </SelectItem>
@@ -255,7 +269,7 @@ function SettingGroupDisplay() {
         {t('page-settings:label:display')}
       </span>
       <SettingLanguage />
-      <SettingDarkmode />
+      <SettingTheme />
     </div>
   );
 }
@@ -305,7 +319,7 @@ export default function SettingsPage() {
             <PageTitle />
           </Suspense>
         </TwoRows.Top>
-        <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-slate-100">
+        <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-slate-100 dark:bg-black">
           <ScrollArea className="w-full grow">
             <div className="mx-auto flex w-[480px] flex-col justify-center py-12">
               <Suspense fallback={null}>

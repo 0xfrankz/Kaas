@@ -3,6 +3,7 @@ import '@/i18n';
 
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AnimatePresence } from 'framer-motion';
+import { ThemeProvider } from 'next-themes';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -92,11 +93,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ErrorBoundary FallbackComponent={GlobalFallback}>
       <RQProvider>
-        <Suspense fallback={<PageSkeleton />}>
-          <InitializationProvider>
-            <RouterProvider router={router} />
-          </InitializationProvider>
-        </Suspense>
+        <ThemeProvider defaultTheme="system" attribute="class">
+          <Suspense fallback={<PageSkeleton />}>
+            <InitializationProvider>
+              <RouterProvider router={router} />
+            </InitializationProvider>
+          </Suspense>
+        </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </RQProvider>
     </ErrorBoundary>

@@ -5,7 +5,7 @@
         "profile": "Profile",
         "models": "Models",
         "language": "Language",
-        "darkmode": "Darkmode",
+        "theme": "Theme",
         "name": "Name",
         "name-desc": "Will be shown in conversations.",
         "context-length": "Default context length",
@@ -14,8 +14,8 @@
         "max-tokens-desc": "Number of previous messages included  in each model request. Can be overridden by conversation’s options."
     },
     "select": {
-        "on": "ON",
-        "off": "OFF",
+        "dark-theme": "Dark Mode",
+        "light-theme": "Light Mode",
         "system": "Follow system"
     },
     "message": {
