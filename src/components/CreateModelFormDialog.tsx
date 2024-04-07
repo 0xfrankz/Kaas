@@ -1,23 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
-import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
-import { CreateModelFormDialog } from '@/components/CreateModelFormDialog';
-import { ModelGrid } from '@/components/ModelGrid';
-import { TitleBar } from '@/components/TitleBar';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { modelFormSchema } from '@/lib/schemas';
+import type { SupportedProviders, UnsavedModel } from '@/lib/types';
+
+import { Button } from './ui/button';
 import {
   Dialog,
   DialogClose,
@@ -27,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from './ui/dialog';
 import {
   Form,
   FormControl,
@@ -36,28 +25,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import TwoRows from '@/layouts/TwoRows';
-import {
-  PROVIDER_AZURE,
-  SETTING_USER_DEFAULT_MODEL,
-  SUPPORTED_PROVIDERS,
-} from '@/lib/constants';
-import {
-  LIST_MODELS_KEY,
-  useCreateModelMutation,
-  useUpsertSettingMutation,
-} from '@/lib/hooks';
-import log from '@/lib/log';
-import { modelFormSchema } from '@/lib/schemas';
-import { useAppStateStore } from '@/lib/store';
-import type { SupportedProviders, UnsavedModel } from '@/lib/types';
-import { cn } from '@/lib/utils';
+} from './ui/form';
+import { Input } from './ui/input';
 
-export default function ModelsPage() {
-  const { models, updateSetting } = useAppStateStore();
+type Props = {
+  provider: SupportedProviders;
+  onSubmit: (model: UnsavedModel) => void;
+};
+
+export function CreateModelFormDialog({ provider, onSubmit }: Props) {
   const [showModal, setShowModal] = useState(false);
   const form = useForm<UnsavedModel>({
     resolver: zodResolver(modelFormSchema),
@@ -66,17 +42,9 @@ export default function ModelsPage() {
       endpoint: '',
       apiVersion: '',
       deploymentId: '',
-      // TODO: this is needed to avoid React's uncontrolled input warning;
-      // this form should be refactored into forms that match providers
-      provider: PROVIDER_AZURE,
+      provider,
     },
   });
-  const queryClient = useQueryClient();
-  const hasModels = models.length > 0;
-
-  // Queries
-  const createModelMutation = useCreateModelMutation();
-  const upsertSettingMutation = useUpsertSettingMutation();
 
   // Callbacks
   const toggleModal = (open: boolean) => {
@@ -86,37 +54,7 @@ export default function ModelsPage() {
     }
   };
 
-  const onSubmit: SubmitHandler<UnsavedModel> = (formData) => {
-    toggleModal(false);
-    log.info(`Formdata: ${JSON.stringify(formData)}`);
-    createModelMutation.mutate(formData, {
-      onSuccess: async (result) => {
-        log.info(`Model created: ${JSON.stringify(result)}`);
-        return queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
-      },
-      onError: (error) => {
-        log.error(error);
-        toast.error(`${error.type}: ${error.message}`);
-      },
-    });
-  };
-
-  const onDefaultChange = (defaultModelId: number) => {
-    upsertSettingMutation.mutate(
-      {
-        key: SETTING_USER_DEFAULT_MODEL,
-        value: defaultModelId.toString(),
-      },
-      {
-        onSuccess(result) {
-          log.info(`Setting upserted: ${JSON.stringify(result)}`);
-          updateSetting(result);
-        },
-      }
-    );
-  };
-
-  const renderCreateModelDialog = (provider: SupportedProviders) => {
+  const render = () => {
     // form.setValue('provider', provider);
     return (
       <Dialog open={showModal} onOpenChange={toggleModal}>
@@ -242,68 +180,5 @@ export default function ModelsPage() {
     );
   };
 
-  return (
-    <SlideUpTransition motionKey="models">
-      <TwoRows>
-        <TwoRows.Top>
-          <TitleBar title="Models" />
-        </TwoRows.Top>
-        <TwoRows.Bottom>
-          <div className="flex size-full justify-center">
-            <div className="w-[1080px] max-w-[1080px]">
-              <div
-                className={cn(
-                  'flex flex-col px-[34px] min-h-[348px] mt-6',
-                  hasModels ? null : 'justify-center items-center'
-                )}
-              >
-                {hasModels ? (
-                  <>
-                    <h2 className="text-3xl font-semibold tracking-tight">
-                      Your Models
-                    </h2>
-                    <ModelGrid
-                      models={models}
-                      onDefaultChange={onDefaultChange}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-3xl font-semibold tracking-tight">
-                      You have no models yet
-                    </h2>
-                    <p className="mt-4 text-sm">Add one from below</p>
-                  </>
-                )}
-              </div>
-              <Separator />
-              <div className="px-[34px]">
-                <h2 className="my-6 text-xl font-semibold tracking-tight">
-                  Supported Models
-                </h2>
-                <div className="grid grid-cols-4 gap-5">
-                  {SUPPORTED_PROVIDERS.map((provider) => (
-                    <Card className="border-2 border-slate-900 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="mx-auto">{provider}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <p className="text-center">GPT-3.5 and GPT-4</p>
-                      </CardContent>
-                      <CardFooter>
-                        <CreateModelFormDialog
-                          provider={provider}
-                          onSubmit={onSubmit}
-                        />
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </TwoRows.Bottom>
-      </TwoRows>
-    </SlideUpTransition>
-  );
+  return render();
 }
