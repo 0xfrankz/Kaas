@@ -12,5 +12,9 @@
     },
     "button": {
         "save": "Save"
+    },
+    "select": {
+        "language-en": "English",
+        "language-zh-Hans": "Simplified Chinese"
     }
 }

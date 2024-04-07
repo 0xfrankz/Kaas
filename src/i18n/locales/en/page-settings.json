@@ -9,9 +9,9 @@
         "name": "Name",
         "name-desc": "Will be shown in conversations.",
         "context-length": "Default context length",
-        "context-length-desc": "Number of previous messages included  in each model request. Can be overridden by conversation’s options.",
+        "context-length-desc": "Number of previous messages included  in each model request. Can be overridden by conversation's options.",
         "max-tokens": "Default max tokens",
-        "max-tokens-desc": "Number of previous messages included  in each model request. Can be overridden by conversation’s options."
+        "max-tokens-desc": "Number of previous messages included  in each model request. Can be overridden by conversation's options."
     },
     "select": {
         "dark-theme": "Dark Mode",
@@ -19,7 +19,7 @@
         "system": "Follow system"
     },
     "message": {
-        "change-language-success": "Language changed",
-        "change-language-failure": "Failed to change language"
+        "change-setting-success": "{{setting}} has been changed",
+        "change-setting-failure": "Failed to change {{setting}}"
     }
 }

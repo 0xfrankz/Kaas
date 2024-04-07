@@ -58,9 +58,14 @@ function SettingLanguage() {
     state.settings[SETTING_DISPLAY_LANGUAGE],
     state.updateSetting,
   ]);
+  const languageLabel = t('page-settings:label:language');
   const updater = useUpsertSetting(
-    t('page-settings:message:change-language-success'),
-    t('page-settings:message:change-language-failure'),
+    t('page-settings:message:change-setting-success', {
+      setting: languageLabel,
+    }),
+    t('page-settings:message:change-setting-failure', {
+      setting: languageLabel,
+    }),
     () => {
       // apply new language
       i18n.changeLanguage(languageRef.current);
@@ -83,7 +88,7 @@ function SettingLanguage() {
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
-      <Label htmlFor="language">{t('page-settings:label:language')}</Label>
+      <Label htmlFor="language">{languageLabel}</Label>
       <Select
         defaultValue={languageSetting}
         onValueChange={(v) => {
@@ -103,8 +108,10 @@ function SettingLanguage() {
           </Button>
         </div>
         <SelectContent>
-          <SelectItem value="en">English</SelectItem>
-          <SelectItem value="zh-Hans">Simplified Chinese</SelectItem>
+          <SelectItem value="en">{t('generic:select:language-en')}</SelectItem>
+          <SelectItem value="zh-Hans">
+            {t('generic:select:language-zh-Hans')}
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -119,9 +126,10 @@ function SettingTheme() {
     state.updateSetting,
   ]);
   const themeRef = useRef<string>(themeSetting);
+  const themeLabel = t('page-settings:label:theme');
   const updater = useUpsertSetting(
-    t('page-settings:message:change-language-success'),
-    t('page-settings:message:change-language-failure'),
+    t('page-settings:message:change-setting-success', { setting: themeLabel }),
+    t('page-settings:message:change-setting-failure', { setting: themeLabel }),
     () => {
       // apply dark/light mode
       if (themeRef.current !== theme) {
@@ -146,7 +154,7 @@ function SettingTheme() {
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
-      <Label htmlFor="theme">{t('page-settings:label:theme')}</Label>
+      <Label htmlFor="theme">{themeLabel}</Label>
       <Select
         defaultValue={themeSetting}
         onValueChange={(v) => {
