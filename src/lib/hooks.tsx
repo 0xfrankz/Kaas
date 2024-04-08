@@ -37,10 +37,10 @@ import type {
   Message,
   Model,
   NewMessage,
+  NewModel,
   Setting,
   TConversationsContext,
   UnsavedConversation,
-  UnsavedModel,
 } from './types';
 
 export const LIST_MODELS_KEY = ['list-models'];
@@ -53,7 +53,7 @@ export const LIST_MESSAGES_KEY = ['list-messages'];
 export function useCreateModelMutation(): UseMutationResult<
   Model,
   CommandError,
-  UnsavedModel
+  NewModel
 > {
   return useMutation({
     mutationFn: invokeCreateModel,

@@ -7,14 +7,19 @@
         "models": "Models",
         "settings": "Settings"
     },
-    "label": {
-        "save": "Save"
-    },
     "button": {
         "save": "Save"
     },
     "select": {
         "language-en": "English",
         "language-zh-Hans": "Simplified Chinese"
+    },
+    "model": {
+        "Azure": "Microsoft Azure",
+        "OpenAI": "OpenAI"
+    },
+    "text": {
+        "model-form-title": "Create new $t(generic:model:{{provider}}) model",
+        "model-form-description": "Fill in your $t(generic:model:{{provider}})'s API information. You can find more information here."
     }
 }

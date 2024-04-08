@@ -8,11 +8,11 @@ import type {
   Message,
   Model,
   NewMessage,
+  NewModel,
   Options,
   ProviderOptions,
   Setting,
   UnsavedConversation,
-  UnsavedModel,
 } from './types';
 import {
   fromGenericChatOptions,
@@ -20,7 +20,7 @@ import {
   toGenericModel,
 } from './types';
 
-export async function invokeCreateModel(model: UnsavedModel): Promise<Model> {
+export async function invokeCreateModel(model: NewModel): Promise<Model> {
   const genericModel = toGenericModel(model);
   const result = await invoke<Model>('create_model', { model: genericModel });
   return result;

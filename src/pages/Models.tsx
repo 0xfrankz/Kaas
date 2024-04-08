@@ -1,16 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { PlusIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
-import { CreateModelFormDialog } from '@/components/CreateModelFormDialog';
+import ModelFormDialog from '@/components/ModelFormDialog';
 import { ModelGrid } from '@/components/ModelGrid';
 import { TitleBar } from '@/components/TitleBar';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -18,30 +14,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import TwoRows from '@/layouts/TwoRows';
 import {
-  PROVIDER_AZURE,
   SETTING_USER_DEFAULT_MODEL,
   SUPPORTED_PROVIDERS,
 } from '@/lib/constants';
@@ -51,26 +26,13 @@ import {
   useUpsertSettingMutation,
 } from '@/lib/hooks';
 import log from '@/lib/log';
-import { modelFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
-import type { SupportedProviders, UnsavedModel } from '@/lib/types';
+import type { NewModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
+  const { t } = useTranslation(['generic', 'page-models']);
   const { models, updateSetting } = useAppStateStore();
-  const [showModal, setShowModal] = useState(false);
-  const form = useForm<UnsavedModel>({
-    resolver: zodResolver(modelFormSchema),
-    defaultValues: {
-      apiKey: '',
-      endpoint: '',
-      apiVersion: '',
-      deploymentId: '',
-      // TODO: this is needed to avoid React's uncontrolled input warning;
-      // this form should be refactored into forms that match providers
-      provider: PROVIDER_AZURE,
-    },
-  });
   const queryClient = useQueryClient();
   const hasModels = models.length > 0;
 
@@ -79,15 +41,7 @@ export default function ModelsPage() {
   const upsertSettingMutation = useUpsertSettingMutation();
 
   // Callbacks
-  const toggleModal = (open: boolean) => {
-    setShowModal(open);
-    if (!open) {
-      form.reset();
-    }
-  };
-
-  const onSubmit: SubmitHandler<UnsavedModel> = (formData) => {
-    toggleModal(false);
+  const onSubmit: SubmitHandler<NewModel> = (formData) => {
     log.info(`Formdata: ${JSON.stringify(formData)}`);
     createModelMutation.mutate(formData, {
       onSuccess: async (result) => {
@@ -116,137 +70,11 @@ export default function ModelsPage() {
     );
   };
 
-  const renderCreateModelDialog = (provider: SupportedProviders) => {
-    // form.setValue('provider', provider);
-    return (
-      <Dialog open={showModal} onOpenChange={toggleModal}>
-        <DialogTrigger asChild>
-          <Button className="mx-auto w-32 bg-slate-900">
-            <PlusIcon className="size-4 text-white" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <DialogHeader>
-                <DialogTitle>Create a {provider} model</DialogTitle>
-                <DialogDescription>
-                  Fill in your {provider}&apos;s API information. You can find
-                  more information here.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-8">
-                <FormField
-                  control={form.control}
-                  name="apiKey"
-                  render={({ field }) => (
-                    <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                      <FormLabel className="text-right">API Key</FormLabel>
-                      <FormControl>
-                        <Input className="col-span-3" {...field} />
-                      </FormControl>
-                      <div className="col-start-2 col-end-4">
-                        <FormMessage />
-                        <FormDescription>
-                          This is the key for your Azure API.
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endpoint"
-                  render={({ field }) => (
-                    <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                      <FormLabel className="text-right">Endpoint</FormLabel>
-                      <FormControl>
-                        <Input className="col-span-3" {...field} />
-                      </FormControl>
-                      <div className="col-span-3 col-start-2">
-                        <FormMessage />
-                        <FormDescription>
-                          This is the endpoint of your Azure API.
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="apiVersion"
-                  render={({ field }) => (
-                    <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                      <FormLabel className="text-right">API Version</FormLabel>
-                      <FormControl>
-                        <Input className="col-span-3" {...field} />
-                      </FormControl>
-                      <div className="col-span-3 col-start-2">
-                        <FormMessage />
-                        <FormDescription>
-                          This is the version of your Azure API.
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="deploymentId"
-                  render={({ field }) => (
-                    <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                      <FormLabel className="text-right">
-                        Deployment ID
-                      </FormLabel>
-                      <FormControl>
-                        <Input className="col-span-3" {...field} />
-                      </FormControl>
-                      <div className="col-span-3 col-start-2">
-                        <FormMessage />
-                        <FormDescription>
-                          This is the deployment name of your Azure API.
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="provider"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="hidden"
-                          value={provider}
-                          name={field.name}
-                        />
-                      </FormControl>
-                      <div className="col-span-3 col-start-2">
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="secondary">Cancel</Button>
-                </DialogClose>
-                <Button type="submit">Save</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    );
-  };
-
   return (
     <SlideUpTransition motionKey="models">
       <TwoRows>
         <TwoRows.Top>
-          <TitleBar title="Models" />
+          <TitleBar title={t('page-models:title')} />
         </TwoRows.Top>
         <TwoRows.Bottom>
           <div className="flex size-full justify-center">
@@ -260,7 +88,7 @@ export default function ModelsPage() {
                 {hasModels ? (
                   <>
                     <h2 className="text-3xl font-semibold tracking-tight">
-                      Your Models
+                      {t('page-models:section:your-models')}
                     </h2>
                     <ModelGrid
                       models={models}
@@ -270,30 +98,35 @@ export default function ModelsPage() {
                 ) : (
                   <>
                     <h2 className="text-3xl font-semibold tracking-tight">
-                      You have no models yet
+                      {t('page-models:text:no-model')}
                     </h2>
-                    <p className="mt-4 text-sm">Add one from below</p>
+                    <p className="mt-4 text-sm">
+                      {t('page-models:text:add-model')}
+                    </p>
                   </>
                 )}
               </div>
               <Separator />
               <div className="px-[34px]">
                 <h2 className="my-6 text-xl font-semibold tracking-tight">
-                  Supported Models
+                  {t('page-models:section:supported-models')}
                 </h2>
                 <div className="grid grid-cols-4 gap-5">
                   {SUPPORTED_PROVIDERS.map((provider) => (
                     <Card className="border-2 border-slate-900 shadow-none">
                       <CardHeader className="pb-2">
-                        <CardTitle className="mx-auto">{provider}</CardTitle>
+                        <CardTitle className="mx-auto">
+                          {t(`generic:model:${provider}`)}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="pb-2">
                         <p className="text-center">GPT-3.5 and GPT-4</p>
                       </CardContent>
                       <CardFooter>
-                        <CreateModelFormDialog
+                        <ModelFormDialog.New
                           provider={provider}
                           onSubmit={onSubmit}
+                          key={`${provider}-form-dialog`}
                         />
                       </CardFooter>
                     </Card>

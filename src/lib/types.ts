@@ -4,7 +4,10 @@ import type { SUPPORTED_PROVIDERS } from './constants';
 import type {
   azureOptionsFormSchema,
   conversationFormSchema,
-  modelFormSchema,
+  editAzureModelFormSchema,
+  editOpenAIModelFormSchema,
+  newAzureModelFormSchema,
+  newOpenAIModelFormSchema,
   openAIOptionsFormSchema,
   optionsFormSchema,
 } from './schemas';
@@ -37,10 +40,14 @@ import type {
 //   updatedAt?: string;
 //   deletedAt?: string;
 // };
+export type NewAzureModel = z.infer<typeof newAzureModelFormSchema>;
+export type AzureModel = z.infer<typeof editAzureModelFormSchema>;
+export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;
+export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
 
-export type UnsavedModel = z.infer<typeof modelFormSchema>;
+export type NewModel = NewAzureModel | NewOpenAIModel;
 
-export type GenericUnsavedModel = {
+export type GenericNewModel = {
   provider: string;
   config: string;
 };
@@ -52,9 +59,9 @@ type SavedModelAttrs = {
   deletedAt?: string;
 };
 
-export type Model = UnsavedModel & SavedModelAttrs;
+export type Model = NewModel & SavedModelAttrs;
 
-export type GenericModel = GenericUnsavedModel & SavedModelAttrs;
+export type GenericModel = GenericNewModel & SavedModelAttrs;
 
 export type Setting = {
   key: string;
@@ -115,16 +122,12 @@ export type FormHandler = {
   reset: () => void;
 };
 
-export type ToastHandler = {
-  showToast: (
-    variant: 'default' | 'destructive' | null | undefined,
-    title: string,
-    description?: string
-  ) => void;
+export type ModelFormHandler = {
+  reset: () => void;
 };
 
 // Functions
-export function toGenericModel(model: UnsavedModel): GenericUnsavedModel {
+export function toGenericModel(model: NewModel): GenericNewModel {
   const { provider, ...config } = model;
   return {
     provider,

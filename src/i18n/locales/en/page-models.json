@@ -1,0 +1,11 @@
+{
+    "title": "Models",
+    "section": {
+        "your-models": "Your Models",
+        "supported-models": "Supported Models"
+    },
+    "text": {
+        "no-model": "You have no models yet",
+        "add-model": "Add one from below"
+    }
+}

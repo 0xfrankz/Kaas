@@ -11,13 +11,13 @@ import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
 //   })
 //   .required();
 
-const openAIModelFormSchema = z.object({
+export const newOpenAIModelFormSchema = z.object({
   provider: z.literal(PROVIDER_OPENAI),
   apiKey: z.string().min(1, 'API Key is required'),
   model: z.string().min(1, 'Model is required'),
 });
 
-const azureModelFormSchema = z.object({
+export const newAzureModelFormSchema = z.object({
   provider: z.literal(PROVIDER_AZURE),
   apiKey: z.string().min(1, 'API Key is required'),
   endpoint: z.string().min(1, 'Endpoint is required'),
@@ -25,10 +25,13 @@ const azureModelFormSchema = z.object({
   deploymentId: z.string().min(1, 'Deployment ID is required'),
 });
 
-export const modelFormSchema = z.discriminatedUnion('provider', [
-  openAIModelFormSchema,
-  azureModelFormSchema,
-]);
+export const editAzureModelFormSchema = newAzureModelFormSchema.extend({
+  id: z.number(),
+});
+
+export const editOpenAIModelFormSchema = newOpenAIModelFormSchema.extend({
+  id: z.number(),
+});
 
 export const azureOptionsFormSchema = z.object({
   provider: z.literal(PROVIDER_AZURE),
