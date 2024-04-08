@@ -1,4 +1,10 @@
-import { SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
+import { useTranslation } from 'react-i18next';
+
+import {
+  PROVIDER_AZURE,
+  PROVIDER_OPENAI,
+  SETTING_USER_DEFAULT_MODEL,
+} from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
 import type { Model } from '@/lib/types';
 
@@ -21,6 +27,7 @@ function ModelGridItem({
   isDefault: boolean;
   onDefaultChange: (defaultModelId: number) => void;
 }) {
+  const { t } = useTranslation();
   const onCheckedChange = (checked: boolean) => {
     if (checked) {
       onDefaultChange(model.id);
@@ -28,9 +35,9 @@ function ModelGridItem({
   };
   const getModelName = (m: Model): string => {
     switch (m.provider) {
-      case 'Azure':
+      case PROVIDER_AZURE:
         return m.deploymentId;
-      case 'OpenAI':
+      case PROVIDER_OPENAI:
         return m.model;
       default:
         return '';
@@ -39,7 +46,9 @@ function ModelGridItem({
   return (
     <Card className="min-h-32 border-2 border-slate-900 shadow-none">
       <CardHeader className="pb-2">
-        <CardTitle className="mx-auto">Microsoft Azure</CardTitle>
+        <CardTitle className="mx-auto">
+          {t(`generic:model:${model.provider}`)}
+        </CardTitle>
       </CardHeader>
       <CardContent className="pb-2">
         <p className="text-center">{getModelName(model)}</p>
@@ -54,7 +63,7 @@ function ModelGridItem({
             className="disabled:opacity-100"
           />
           <Label htmlFor="airplane-mode" className="font-medium">
-            Default
+            {t('generic:label:default')}
           </Label>
         </div>
       </CardFooter>

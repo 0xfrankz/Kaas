@@ -34,6 +34,7 @@ import type {
   AzureOptions,
   CommandError,
   Conversation,
+  GenericModel,
   Message,
   Model,
   NewMessage,
@@ -51,7 +52,7 @@ export const OPTIONS_CONVERSATION_KEY = ['options-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
 
 export function useCreateModelMutation(): UseMutationResult<
-  Model,
+  GenericModel,
   CommandError,
   NewModel
 > {

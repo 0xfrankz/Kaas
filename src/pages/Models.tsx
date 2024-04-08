@@ -113,7 +113,10 @@ export default function ModelsPage() {
                 </h2>
                 <div className="grid grid-cols-4 gap-5">
                   {SUPPORTED_PROVIDERS.map((provider) => (
-                    <Card className="border-2 border-slate-900 shadow-none">
+                    <Card
+                      className="border-2 border-slate-900 shadow-none"
+                      key={`${provider}-model-card`}
+                    >
                       <CardHeader className="pb-2">
                         <CardTitle className="mx-auto">
                           {t(`generic:model:${provider}`)}
@@ -126,7 +129,6 @@ export default function ModelsPage() {
                         <ModelFormDialog.New
                           provider={provider}
                           onSubmit={onSubmit}
-                          key={`${provider}-form-dialog`}
                         />
                       </CardFooter>
                     </Card>

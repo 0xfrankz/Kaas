@@ -3,13 +3,16 @@ import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { PROVIDER_AZURE } from '@/lib/constants';
-import { newAzureModelFormSchema } from '@/lib/schemas';
+import {
+  newAzureModelFormSchema,
+  newOpenAIModelFormSchema,
+} from '@/lib/schemas';
 import type {
   Model,
   ModelFormHandler,
   NewAzureModel,
   NewModel,
+  NewOpenAIModel,
 } from '@/lib/types';
 
 import { Button } from './ui/button';
@@ -146,7 +149,103 @@ const NewAzureModelForm = forwardRef<
                 <FormControl>
                   <Input
                     type="hidden"
-                    value={PROVIDER_AZURE}
+                    value={model.provider}
+                    name={field.name}
+                  />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button type="submit">Save</Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+});
+
+const NewOpenAIModelForm = forwardRef<
+  ModelFormHandler,
+  FormProps<NewOpenAIModel>
+>(({ model, onSubmit }, ref) => {
+  const form = useForm<NewOpenAIModel>({
+    resolver: zodResolver(newOpenAIModelFormSchema),
+    defaultValues: model,
+  });
+  const { t } = useTranslation(['generic']);
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      form.reset();
+    },
+  }));
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <DialogHeader>
+          <DialogTitle>
+            {t('generic:text:model-form-title', { provider: model.provider })}
+          </DialogTitle>
+          <DialogDescription>
+            {t('generic:text:model-form-description', {
+              provider: model.provider,
+            })}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-8">
+          <FormField
+            control={form.control}
+            name="apiKey"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">API Key</FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                  <FormDescription>
+                    This is the key for your OpenAI API.
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="model"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">Model</FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
+                  <FormMessage />
+                  <FormDescription>
+                    This is the model of your OpenAI API.
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="provider"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type="hidden"
+                    value={model.provider}
                     name={field.name}
                   />
                 </FormControl>
@@ -171,5 +270,8 @@ const NewAzureModelForm = forwardRef<
 export default {
   Azure: {
     New: NewAzureModelForm,
+  },
+  OpenAI: {
+    New: NewOpenAIModelForm,
   },
 };

@@ -7,6 +7,7 @@ import type {
   ModelFormHandler,
   NewAzureModel,
   NewModel,
+  NewOpenAIModel,
   SupportedProviders,
 } from '@/lib/types';
 
@@ -44,8 +45,18 @@ function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
   const renderForm = () => {
     switch (provider) {
       case PROVIDER_OPENAI:
-        // TODO: add openai form
-        return null;
+        return (
+          <ModelForm.OpenAI.New
+            model={
+              {
+                provider: PROVIDER_OPENAI,
+                apiKey: '',
+                model: '',
+              } as NewOpenAIModel
+            }
+            onSubmit={onFormSubmit}
+          />
+        );
       default:
         return (
           <ModelForm.Azure.New

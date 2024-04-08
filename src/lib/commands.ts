@@ -20,9 +20,13 @@ import {
   toGenericModel,
 } from './types';
 
-export async function invokeCreateModel(model: NewModel): Promise<Model> {
+export async function invokeCreateModel(
+  model: NewModel
+): Promise<GenericModel> {
   const genericModel = toGenericModel(model);
-  const result = await invoke<Model>('create_model', { model: genericModel });
+  const result = await invoke<GenericModel>('create_model', {
+    model: genericModel,
+  });
   return result;
 }
 
