@@ -1,6 +1,6 @@
 use async_openai::{
     config::{AzureConfig, Config, OpenAIConfig}, types::{
-        ChatCompletionRequestUserMessageArgs, ChatCompletionResponseStream, CreateChatCompletionRequestArgs
+        ChatCompletionRequestUserMessageArgs, ChatCompletionResponseStream, CreateChatCompletionRequest, CreateChatCompletionRequestArgs
     }, Client
 };
 use entity::entities::{conversations::ProviderOptions, messages::Model as Message, models::{ProviderConfig, Providers}};
@@ -59,14 +59,18 @@ pub async fn complete_chat(message: Message, options: ProviderOptions, config: P
                 .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
             let config: AzureConfig = config_json.into();
             let client = Client::with_config(config);
-            complete_chat_with_client(message, options, client).await
+            let request = message_and_options_to_request(&vec![message], &options)?;
+            execute_chat_complete_request(client, request).await
         },
         Providers::OpenAI => {
             let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
                 .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+            let model = config_json.model.clone();
             let config: OpenAIConfig = config_json.into();
             let client = Client::with_config(config);
-            complete_chat_with_client(message, options, client).await
+            let mut request = message_and_options_to_request(&vec![message], &options)?;
+            request.model = model;
+            execute_chat_complete_request(client, request).await
         }
         _ => {
             return Err(format!("Complete chat with {} not implemented yet", config.provider));
@@ -74,14 +78,12 @@ pub async fn complete_chat(message: Message, options: ProviderOptions, config: P
     }
 }
 
-async fn complete_chat_with_client<C: Config>(message: Message, options: ProviderOptions, client: Client<C>) -> Result<String, String> {
-    let request = message_and_options_to_request(&vec![message], &options)?;
-
+async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: CreateChatCompletionRequest) -> Result<String, String> {
     let response = client
         .chat()
         .create(request)
         .await
-        .map_err(|_| String::from("Failed to get Azure chat completion response"))?;
+        .map_err(|_| String::from("Failed to get chat completion response"))?;
 
     let choice = response
         .choices
@@ -99,21 +101,29 @@ async fn complete_chat_with_client<C: Config>(message: Message, options: Provide
 }
 
 pub async fn complete_chat_stream(message: Message, options: ProviderOptions, config: ProviderConfig) -> Result<ChatCompletionResponseStream, String> {
-    let client;
-    let request;
     match config.provider.as_str().into() {
         Providers::Azure => {
             let config_json: RawAzureConfig = serde_json::from_str(&config.config)
                 .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
             let config: AzureConfig = config_json.into();
-            client = Client::with_config(config);
+            let client = Client::with_config(config);
+            let request = message_and_options_to_request(&vec![message], &options)?;
+            let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+            return Ok(stream);
         },
+        Providers::OpenAI => {
+            let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
+                .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+            let model = config_json.model.clone();
+            let config: OpenAIConfig = config_json.into();
+            let client = Client::with_config(config);
+            let mut request = message_and_options_to_request(&vec![message], &options)?;
+            request.model = model;
+            let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+            return Ok(stream);
+        }
         _ => {
             return Err("Complete chat with OpenAI not implemented yet".to_owned());
         }
     }
-    request = message_and_options_to_request(&vec![message], &options)?;
-
-    let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
-    Ok(stream)
 }
