@@ -22,6 +22,7 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
   const acceptingRef = useRef<boolean>(false);
   const [activeBotMessage, setActiveBotMessage] = useState('');
   const listenerRef = useRef<UnlistenFn>();
+  const mountedRef = useRef(false);
 
   const startStreaming = () => {
     setReceiving(true);
@@ -33,9 +34,17 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
     acceptingRef.current = false;
   };
 
+  const unbindListener = () => {
+    if (listenerRef.current) {
+      listenerRef.current();
+      listenerRef.current = undefined;
+    }
+  };
+
   const bindListener = async () => {
     listenerRef.current = await listen<string>('bot-reply', (event) => {
       const nextMsg = event.payload;
+      console.log(`Listener received: ${nextMsg}`);
       switch (true) {
         case nextMsg === STREAM_START:
           startStreaming();
@@ -61,13 +70,6 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
     });
   };
 
-  const unbindListener = async () => {
-    if (listenerRef.current) {
-      listenerRef.current();
-      listenerRef.current = undefined;
-    }
-  };
-
   const mount = async () => {
     // stop bot when entering the page
     // in case it was left running before
@@ -76,17 +78,19 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
     onReady();
   };
 
-  const unmount = async () => {
-    // stop bot when leaving the page
-    await emit('stop-bot');
+  const unmount = () => {
     unbindListener();
+    // stop bot when leaving the page
+    emit('stop-bot');
   };
 
   useEffect(() => {
-    mount();
-    return () => {
-      unmount();
-    };
+    if (!mountedRef.current) {
+      // when not mounted
+      mount();
+      mountedRef.current = true; // avoid binding listener twice in strict mode
+    }
+    return unmount;
   }, []);
 
   useEffect(() => {
