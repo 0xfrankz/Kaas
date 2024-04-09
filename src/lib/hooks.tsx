@@ -39,6 +39,7 @@ import type {
   Model,
   NewMessage,
   NewModel,
+  Options,
   Setting,
   TConversationsContext,
   UnsavedConversation,
@@ -112,7 +113,7 @@ export function useListConversationsQuery(): UseQueryResult<
 
 export function useGetOptionsQuery(conversationId: number): {
   key: QueryKey;
-  query: UseQueryResult<AzureOptions, CommandError>;
+  query: UseQueryResult<Options, CommandError>;
 } {
   const key = [...OPTIONS_CONVERSATION_KEY, { conversationId }];
   return {

@@ -133,6 +133,40 @@ impl Default for AzureOptions{
     }
 }
 
-pub struct OpenAIOptions;
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenAIOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frequency_penalty: Option<f32>, // min: -2.0, max: 2.0, default: 0
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub n: Option<u8>, // min:1, max: 128, default: 1
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub presence_penalty: Option<f32>, // min: -2.0, max: 2.0, default 0
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>, // min: 0, max: 2, default: 1,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_p: Option<f32>, // min: 0, max: 1, default: 1
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<String>,
+}
 
 impl Options for OpenAIOptions {}
+
+impl Default for OpenAIOptions{
+    fn default() -> Self {
+        OpenAIOptions {
+            frequency_penalty: Some(0.0),
+            max_tokens: Some(16),
+            n: Some(1),
+            presence_penalty: Some(0.0),
+            stream: Some(false),
+            temperature: Some(1.0),
+            top_p: Some(1.0),
+            user: None,
+        }
+    }
+}

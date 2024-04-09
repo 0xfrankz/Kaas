@@ -6,88 +6,63 @@ use async_openai::{
 use entity::entities::{conversations::{AzureOptions, OpenAIOptions, Options, ProviderOptions}, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RawAzureConfig {
-    api_key: String,
-    endpoint: String,
-    api_version: String,
-    deployment_id: String,
-}
+// /**
+//  * Convert a Model entity to async_openai's Azure Client
+//  */
+// pub fn model_to_azure_client(model: &Model) -> Result<Client<AzureConfig>, String> {
+//     match model.provider.as_str().into() {
+//         Providers::Azure => {
+//             let config_json: RawAzureConfig = serde_json::from_str(&model.config)
+//                 .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
+//             let config: AzureConfig = config_json.into();
+//             let client = Client::with_config(config);
+//             return Ok(client);
+//         },
+//         _ => {
+//             Err("Model is not an Azure model".to_owned())
+//         }
+//     }
+// }
 
-impl Into<AzureConfig> for RawAzureConfig {
-    fn into(self) -> AzureConfig {
-        AzureConfig::new()
-            .with_api_base(self.endpoint)
-            .with_api_version(self.api_version)
-            .with_deployment_id(self.deployment_id)
-            .with_api_key(self.api_key)
-    }
-}
+// /**
+//  * Convert a Model entity to async_openai's OpenAI Client
+//  */
+// pub fn model_to_openai_client(model: &Model) -> Result<Client<OpenAIConfig>, String> {
+//     match model.provider.as_str().into() {
+//         Providers::OpenAI => {
+//             let config_json: RawOpenAIConfig = serde_json::from_str(&model.config)
+//                 .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
+//             let config: OpenAIConfig = config_json.into();
+//             let client = Client::with_config(config);
+//             return Ok(client);
+//         },
+//         _ => {
+//             return Err("Model is not an OpenAI model".to_owned());
+//         }
+//     }
+// }
 
-/**
- * Convert a Model entity to async_openai's Azure Client
- */
-pub fn model_to_azure_client(model: &Model) -> Result<Client<AzureConfig>, String> {
-    match model.provider.as_str().into() {
-        Providers::Azure => {
-            let config_json: RawAzureConfig = serde_json::from_str(&model.config)
-                .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
-            let config: AzureConfig = config_json.into();
-            let client = Client::with_config(config);
-            return Ok(client);
-        },
-        _ => {
-            Err("Model is not an Azure model".to_owned())
-        }
-    }
-}
+// /**
+//  * Convert a ProviderConfig to async_openai's Azure Client
+//  */
+// pub fn config_to_azure_client(config: &ProviderConfig) -> Result<Client<AzureConfig>, String> {
+//     let config_json: RawAzureConfig = serde_json::from_str(&config.config)
+//         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+//     let config: AzureConfig = config_json.into();
+//     let client = Client::with_config(config);
+//     return Ok(client);
+// }
 
-/**
- * Convert a Model entity to async_openai's OpenAI Client
- */
-pub fn model_to_openai_client(model: &Model) -> Result<Client<OpenAIConfig>, String> {
-    match model.provider.as_str().into() {
-        Providers::OpenAI => {
-            return Ok(Client::new());
-        },
-        _ => {
-            return Err("Model is not an OpenAI model".to_owned());
-        }
-    }
-}
-
-/**
- * Convert a ProviderConfig to async_openai's Azure Client
- */
-pub fn config_to_azure_client(config: &ProviderConfig) -> Result<Client<AzureConfig>, String> {
-    match config.provider.as_str().into() {
-        Providers::Azure => {
-            let config_json: RawAzureConfig = serde_json::from_str(&config.config)
-                .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-            let config: AzureConfig = config_json.into();
-            let client = Client::with_config(config);
-            return Ok(client);
-        },
-        _ => {
-            Err("Model is not an Azure model".to_owned())
-        }
-    }
-}
-
-/**
- * Convert a Model entity to async_openai's OpenAI Client
- */
-pub fn config_to_openai_client(config: &ProviderConfig) -> Result<Client<OpenAIConfig>, String> {
-    match config.provider.as_str().into() {
-        Providers::OpenAI => {
-            return Ok(Client::new());
-        },
-        _ => {
-            return Err("Model is not an OpenAI model".to_owned());
-        }
-    }
-}
+// /**
+//  * Convert a Model entity to async_openai's OpenAI Client
+//  */
+// pub fn config_to_openai_client(config: &ProviderConfig) -> Result<Client<OpenAIConfig>, String> {
+//     let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
+//         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+//     let config: OpenAIConfig = config_json.into();
+//     let client = Client::with_config(config);
+//     return Ok(client);
+// }
 
 pub fn message_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
@@ -114,7 +89,20 @@ pub fn message_and_options_to_request(messages: &Vec<Message>, options: &Provide
             };
         },
         _ => {
-            todo!();
+            let options: OpenAIOptions = serde_json::from_str(&options.options)
+                .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+            request = CreateChatCompletionRequest {
+                messages: req_messages,
+                frequency_penalty: options.frequency_penalty,
+                max_tokens: options.max_tokens,
+                n: options.n,
+                presence_penalty: options.presence_penalty,
+                stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                user: options.user,
+                ..Default::default()
+            };
         }
     }
     Ok(request)

@@ -3,8 +3,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { PROVIDER_OPENAI } from '@/lib/constants';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
+import { useAppStateStore } from '@/lib/store';
 import type { AzureOptions, Conversation } from '@/lib/types';
 
 import { AzureOptionsForm } from './forms/AzureOptionsForm';
@@ -34,6 +36,17 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
     query: { data: options, isSuccess, isError, error },
   } = useGetOptionsQuery(conversation.id);
   const queryClient = useQueryClient();
+  const model = useAppStateStore((state) =>
+    state.models.find((m) => m.id === conversation.modelId)
+  );
+
+  if (!model) {
+    throw new AppError(
+      ERROR_TYPE_APP_STATE,
+      'Unknown',
+      'Cannot find model for this conversation!'
+    );
+  }
 
   if (isError && error) {
     throw new AppError(
@@ -66,6 +79,22 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
     );
   };
 
+  const renderForm = () => {
+    switch (model.provider) {
+      case PROVIDER_OPENAI:
+        return null;
+      default:
+        return (
+          <AzureOptionsForm
+            id="optionsForm"
+            ref={formRef}
+            onFormSubmit={onFormSubmit}
+            defaultValues={options as AzureOptions}
+          />
+        );
+    }
+  };
+
   return isSuccess && options ? (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -81,12 +110,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
             errors. Make sure you know what you are changing.
           </DialogDescription>
         </DialogHeader>
-        <AzureOptionsForm
-          id="optionsForm"
-          ref={formRef}
-          onFormSubmit={onFormSubmit}
-          defaultValues={options}
-        />
+        {renderForm()}
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="secondary">Cancel</Button>

@@ -231,6 +231,15 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             }
         } else {
             // handle non-stream response
+            // start receiving in frontend
+            match window.emit("bot-reply", "[[START]]") {
+                Err(err) => {
+                    log::error!("Error when sending event: {}", err);
+                    // retry
+                    let _ = window.emit("bot-reply", "[[START]]");
+                },
+                _ => {}
+            }
             let result = ws::complete_chat(last_message.clone(), options, config)
                 .await;
             match result {

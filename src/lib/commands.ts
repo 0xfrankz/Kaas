@@ -48,9 +48,6 @@ export async function invokeUpsertSetting(setting: Setting): Promise<Setting> {
 export async function invokeCreateConversation(
   newConversation: UnsavedConversation
 ): Promise<Conversation> {
-  log.info(
-    `[FE]invokeCreateConversation data: ${JSON.stringify(newConversation)}`
-  );
   const result = await invoke<Conversation>('create_conversation', {
     newConversation,
   });

@@ -1,13 +1,11 @@
 use async_openai::{
-    config::{AzureConfig, Config}, types::{
+    config::{AzureConfig, Config, OpenAIConfig}, types::{
         ChatCompletionRequestUserMessageArgs, ChatCompletionResponseStream, CreateChatCompletionRequestArgs
     }, Client
 };
 use entity::entities::{conversations::ProviderOptions, messages::Model as Message, models::{ProviderConfig, Providers}};
 use entity::entities::models::Model;
 use serde::Deserialize;
-
-use crate::services::llm::utils::{model_to_azure_client, config_to_azure_client};
 
 use super::utils::message_and_options_to_request;
 
@@ -27,22 +25,57 @@ impl Into<AzureConfig> for RawAzureConfig {
             .with_api_version(self.api_version)
             .with_deployment_id(self.deployment_id)
             .with_api_key(self.api_key)
-        
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RawOpenAIConfig {
+    api_key: String,
+    model: String,
+    api_base: Option<String>,
+    org_id: Option<String>,
+}
+
+impl Into<OpenAIConfig> for RawOpenAIConfig {
+    fn into(self) -> OpenAIConfig {
+        let mut config = OpenAIConfig::new()
+            .with_api_key(self.api_key);
+        if let Some(api_base) = self.api_base {
+            config = config.with_api_base(api_base);
+        }
+        if let Some(org_id) = self.org_id {
+            config = config.with_org_id(org_id);
+        }
+
+        return config;
     }
 }
 
 pub async fn complete_chat(message: Message, options: ProviderOptions, config: ProviderConfig) -> Result<String, String> {
-    let client;
-    let request;
     match config.provider.as_str().into() {
         Providers::Azure => {
-            client = config_to_azure_client(&config)?;
+            let config_json: RawAzureConfig = serde_json::from_str(&config.config)
+                .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+            let config: AzureConfig = config_json.into();
+            let client = Client::with_config(config);
+            complete_chat_with_client(message, options, client).await
         },
+        Providers::OpenAI => {
+            let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
+                .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+            let config: OpenAIConfig = config_json.into();
+            let client = Client::with_config(config);
+            complete_chat_with_client(message, options, client).await
+        }
         _ => {
-            return Err("Complete chat with OpenAI not implemented yet".to_owned());
+            return Err(format!("Complete chat with {} not implemented yet", config.provider));
         }
     }
-    request = message_and_options_to_request(&vec![message], &options)?;
+}
+
+async fn complete_chat_with_client<C: Config>(message: Message, options: ProviderOptions, client: Client<C>) -> Result<String, String> {
+    let request = message_and_options_to_request(&vec![message], &options)?;
 
     let response = client
         .chat()
@@ -70,7 +103,10 @@ pub async fn complete_chat_stream(message: Message, options: ProviderOptions, co
     let request;
     match config.provider.as_str().into() {
         Providers::Azure => {
-            client = config_to_azure_client(&config)?;
+            let config_json: RawAzureConfig = serde_json::from_str(&config.config)
+                .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+            let config: AzureConfig = config_json.into();
+            client = Client::with_config(config);
         },
         _ => {
             return Err("Complete chat with OpenAI not implemented yet".to_owned());

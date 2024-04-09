@@ -1,5 +1,5 @@
 
-use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, ProviderOptions};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, OpenAIOptions, ProviderOptions};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
 use entity::entities::models::{self, Model, ProviderConfig, Providers};
 use entity::entities::settings::{self, Model as Setting};
@@ -151,7 +151,6 @@ impl Repository {
                 .await?;
         let result = self.connection.transaction::<_, (Conversation, Message), DbErr>(|txn| {
             Box::pin(async move {
-                
                 let mut c_am: ActiveConversation = conversation.into();
                 c_am.id = ActiveValue::NotSet;
                 match model.provider.into() {
@@ -160,7 +159,8 @@ impl Repository {
                         c_am.options = Set(options_str);
                     }
                     _ => {
-                        c_am.options = Set(String::default());
+                        let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
+                        c_am.options = Set(options_str);
                     }
                 }
                 c_am.created_at = Set(chrono::Local::now());

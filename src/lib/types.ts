@@ -9,7 +9,6 @@ import type {
   newAzureModelFormSchema,
   newOpenAIModelFormSchema,
   openAIOptionsFormSchema,
-  optionsFormSchema,
 } from './schemas';
 
 // type OpenAIConfig = {
@@ -98,7 +97,7 @@ export type Message = NewMessage & {
 
 export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
-export type Options = z.infer<typeof optionsFormSchema>;
+export type Options = AzureOptions | OpenAIOptions;
 export type ProviderOptions = {
   provider: string;
   options: string;
