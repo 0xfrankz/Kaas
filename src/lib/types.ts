@@ -9,6 +9,7 @@ import type {
   newAzureModelFormSchema,
   newOpenAIModelFormSchema,
   openAIOptionsFormSchema,
+  proxySchema,
 } from './schemas';
 
 // type OpenAIConfig = {
@@ -102,6 +103,8 @@ export type ProviderOptions = {
   provider: string;
   options: string;
 };
+
+export type ProxySetting = z.infer<typeof proxySchema>;
 
 // Contexts
 export type TConversationsContext = {

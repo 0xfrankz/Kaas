@@ -25,6 +25,7 @@ export const SETTING_DISPLAY_THEME = 'display:darkmode';
 export const SETTING_PROFILE_NAME = 'profile:name';
 export const SETTING_MODELS_CONTENT_LENGTH = 'models:context_length';
 export const SETTING_MODELS_MAX_TOKENS = 'models:max_tokens';
+export const SETTING_NETWORK_PROXY = 'network:proxy';
 
 // Defaults
 export const DEFAULT_DATE_FORMAT = 'MMM D, YYYY';

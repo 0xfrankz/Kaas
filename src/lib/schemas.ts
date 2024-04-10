@@ -62,3 +62,10 @@ export const conversationFormSchema = z.object({
   modelId: z.coerce.number(),
   message: z.string().min(1, 'Message is required'),
 });
+
+export const proxySchema = z.object({
+  on: z.boolean().optional().default(false),
+  server: z.string().optional().default(''),
+  http: z.boolean().optional().default(false),
+  https: z.boolean().optional().default(false),
+});

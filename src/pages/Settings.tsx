@@ -1,12 +1,23 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useTheme } from 'next-themes';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useRef } from 'react';
+import type { SubmitHandler } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { useShallow } from 'zustand/react/shallow';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,11 +35,14 @@ import {
   SETTING_DISPLAY_THEME,
   SETTING_MODELS_CONTENT_LENGTH,
   SETTING_MODELS_MAX_TOKENS,
+  SETTING_NETWORK_PROXY,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
 import { useUpsertSettingMutation } from '@/lib/hooks';
 import log from '@/lib/log';
+import { proxySchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
+import type { ProxySetting } from '@/lib/types';
 
 function useUpsertSetting(
   successMsg: string,
@@ -270,57 +284,101 @@ function SettingMaxTokens() {
 
 function SettingProxy() {
   const { t } = useTranslation(['generic', 'page-settings']);
-  const { settings } = useAppStateStore();
-  const [useProxy, setUseProxy] = useState(false);
+  const [proxySettingStr, updateSetting] = useAppStateStore(
+    useShallow((state) => [
+      state.settings[SETTING_NETWORK_PROXY],
+      state.updateSetting,
+    ])
+  );
+  const validation = proxySchema.safeParse(proxySettingStr);
+  let proxySetting: ProxySetting;
+  if (validation.success) {
+    proxySetting = validation.data;
+  } else {
+    proxySetting = {
+      on: false,
+      server: '',
+      http: false,
+      https: false,
+    };
+  }
+  const form = useForm<ProxySetting>({
+    resolver: zodResolver(proxySchema),
+    defaultValues: proxySetting,
+  });
+  const useProxy = useWatch({ name: 'on', control: form.control });
+
+  // Callbacks
+  const onSubmit: SubmitHandler<ProxySetting> = (formData) => {
+    console.log('onSubmit', formData);
+  };
 
   return (
     <div className="mt-1 bg-white px-4 py-6">
-      <div className="flex h-9 items-center justify-start">
-        <Label>{t('page-settings:label:use-proxy')}</Label>
-        <Switch
-          checked={useProxy}
-          onCheckedChange={setUseProxy}
-          className="ml-4"
-        />
-        {useProxy ? (
-          <Button className="ml-auto">{t('generic:button:save')}</Button>
-        ) : null}
-      </div>
-      {useProxy ? (
-        <>
-          <div className="mt-6 flex flex-col gap-2">
-            <Label htmlFor="proxy-server" className="font-normal">
-              {t('page-settings:label:proxy-server')}
-            </Label>
-            <Input
-              className="w-52"
-              id="proxy-server"
-              placeholder="http://127.0.0.1:1234"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex h-9 items-center justify-start">
+            <FormField
+              control={form.control}
+              name="on"
+              render={({ field }) => (
+                <FormItem className="flex items-center space-y-0">
+                  <FormLabel className="font-normal">
+                    {t('page-settings:label:use-proxy')}
+                  </FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="ml-4"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
             />
-            <span className="text-xs text-slate-400">
-              {t('page-settings:label:proxy-server-desc')}
-            </span>
+            {useProxy ? (
+              <Button className="ml-auto" type="submit">
+                {t('generic:button:save')}
+              </Button>
+            ) : null}
           </div>
-          <div className="mt-6 flex flex-col gap-2">
-            <Label htmlFor="traffic-type" className="font-normal">
-              {t('page-settings:label:traffic-type')}
-            </Label>
-            <div className="flex h-9 w-52 items-center gap-2 rounded-md border px-6 py-1">
-              <Checkbox id="traffic-http" />
-              <Label htmlFor="traffic-http" className="text-xs font-normal">
-                {t('page-settings:label:traffic-http')}
-              </Label>
-              <Checkbox id="traffic-https" className="ml-auto" />
-              <Label htmlFor="traffic-https" className="text-xs font-normal">
-                {t('page-settings:label:traffic-https')}
-              </Label>
-            </div>
-            <span className="text-xs text-slate-400">
-              {t('page-settings:label:traffic-type-desc')}
-            </span>
-          </div>
-        </>
-      ) : null}
+          {useProxy ? (
+            <>
+              <div className="mt-6 flex flex-col gap-2">
+                <Label htmlFor="server" className="font-normal">
+                  {t('page-settings:label:proxy-server')}
+                </Label>
+                <Input
+                  className="w-52"
+                  id="server"
+                  placeholder="http://127.0.0.1:1234"
+                />
+                <span className="text-xs text-slate-400">
+                  {t('page-settings:label:proxy-server-desc')}
+                </span>
+              </div>
+              <div className="mt-6 flex flex-col gap-2">
+                <Label className="font-normal">
+                  {t('page-settings:label:traffic-type')}
+                </Label>
+                <div className="flex h-9 w-52 items-center gap-2 rounded-md border px-6 py-1">
+                  <Checkbox id="http" />
+                  <Label htmlFor="http" className="text-xs font-normal">
+                    {t('page-settings:label:traffic-http')}
+                  </Label>
+                  <Checkbox id="https" className="ml-auto" />
+                  <Label htmlFor="https" className="text-xs font-normal">
+                    {t('page-settings:label:traffic-https')}
+                  </Label>
+                </div>
+                <span className="text-xs text-slate-400">
+                  {t('page-settings:label:traffic-type-desc')}
+                </span>
+              </div>
+            </>
+          ) : null}
+        </form>
+      </Form>
     </div>
   );
 }
