@@ -1,11 +1,12 @@
 import { useTheme } from 'next-themes';
-import { Suspense, useRef } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import TwoRows from '@/layouts/TwoRows';
 import {
   SETTING_DISPLAY_LANGUAGE,
@@ -266,13 +268,70 @@ function SettingMaxTokens() {
   );
 }
 
+function SettingProxy() {
+  const { t } = useTranslation(['generic', 'page-settings']);
+  const { settings } = useAppStateStore();
+  const [useProxy, setUseProxy] = useState(false);
+
+  return (
+    <div className="mt-1 bg-white px-4 py-6">
+      <div className="flex h-9 items-center justify-start">
+        <Label>{t('page-settings:label:use-proxy')}</Label>
+        <Switch
+          checked={useProxy}
+          onCheckedChange={setUseProxy}
+          className="ml-4"
+        />
+        {useProxy ? (
+          <Button className="ml-auto">{t('generic:button:save')}</Button>
+        ) : null}
+      </div>
+      {useProxy ? (
+        <>
+          <div className="mt-6 flex flex-col gap-2">
+            <Label htmlFor="proxy-server" className="font-normal">
+              {t('page-settings:label:proxy-server')}
+            </Label>
+            <Input
+              className="w-52"
+              id="proxy-server"
+              placeholder="http://127.0.0.1:1234"
+            />
+            <span className="text-xs text-slate-400">
+              {t('page-settings:label:proxy-server-desc')}
+            </span>
+          </div>
+          <div className="mt-6 flex flex-col gap-2">
+            <Label htmlFor="traffic-type" className="font-normal">
+              {t('page-settings:label:traffic-type')}
+            </Label>
+            <div className="flex h-9 w-52 items-center gap-2 rounded-md border px-6 py-1">
+              <Checkbox id="traffic-http" />
+              <Label htmlFor="traffic-http" className="text-xs font-normal">
+                {t('page-settings:label:traffic-http')}
+              </Label>
+              <Checkbox id="traffic-https" className="ml-auto" />
+              <Label htmlFor="traffic-https" className="text-xs font-normal">
+                {t('page-settings:label:traffic-https')}
+              </Label>
+            </div>
+            <span className="text-xs text-slate-400">
+              {t('page-settings:label:traffic-type-desc')}
+            </span>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function SettingGroupDisplay() {
   const { t } = useTranslation(['generic', 'page-settings']);
 
   console.log('SettingGroupDisplay');
 
   return (
-    <div className="flex flex-col">
+    <div className="flex break-inside-avoid flex-col">
       <span className="mb-1 text-sm font-semibold">
         {t('page-settings:label:display')}
       </span>
@@ -288,7 +347,7 @@ function SettingGroupProfile() {
   console.log('SettingGroupProfile');
 
   return (
-    <div className="mt-6 flex flex-col">
+    <div className="mt-8 flex break-inside-avoid flex-col">
       <span className="mb-1 text-sm font-semibold">
         {t('page-settings:label:profile')}
       </span>
@@ -303,12 +362,24 @@ function SettingGroupModels() {
   console.log('SettingGroupModels');
 
   return (
-    <div className="mt-6 flex flex-col">
+    <div className="mt-8 flex break-inside-avoid flex-col">
       <span className="mb-1 text-sm font-semibold">
         {t('page-settings:label:models')}
       </span>
       <SettingContextLength />
       <SettingMaxTokens />
+    </div>
+  );
+}
+
+function SettingGroupNetwork() {
+  const { t } = useTranslation(['generic', 'page-settings']);
+  return (
+    <div className="mt-8 flex break-inside-avoid flex-col">
+      <span className="mb-1 text-sm font-semibold">
+        {t('page-settings:label:network')}
+      </span>
+      <SettingProxy />
     </div>
   );
 }
@@ -329,13 +400,14 @@ export default function SettingsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-slate-100 dark:bg-black">
           <ScrollArea className="w-full grow">
-            <div className="mx-auto flex w-[480px] flex-col justify-center py-12">
-              <Suspense fallback={null}>
+            <Suspense fallback={null}>
+              <div className="mx-auto w-[960px] columns-2 gap-8 py-12">
                 <SettingGroupDisplay />
                 <SettingGroupProfile />
                 <SettingGroupModels />
-              </Suspense>
-            </div>
+                <SettingGroupNetwork />
+              </div>
+            </Suspense>
           </ScrollArea>
         </TwoRows.Bottom>
       </TwoRows>

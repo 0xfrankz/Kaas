@@ -4,14 +4,22 @@
         "display": "Display",
         "profile": "Profile",
         "models": "Models",
+        "network": "Network",
         "language": "Language",
         "theme": "Theme",
         "name": "Name",
+        "use-proxy": "Use proxy",
+        "proxy-server": "Server",
+        "traffic-type": "Traffic type",
+        "traffic-http": "HTTP",
+        "traffic-https": "HTTPS",
         "name-desc": "Will be shown in conversations.",
         "context-length": "Default context length",
         "context-length-desc": "Number of previous messages included  in each model request. Can be overridden by conversation's options.",
         "max-tokens": "Default max tokens",
-        "max-tokens-desc": "Number of previous messages included  in each model request. Can be overridden by conversation's options."
+        "max-tokens-desc": "Number of previous messages included  in each model request. Can be overridden by conversation's options.",
+        "proxy-server-desc": "The address of your proxy server.",
+        "traffic-type-desc": "Which type of traffic should go through proxy?"
     },
     "select": {
         "dark-theme": "Dark Mode",
