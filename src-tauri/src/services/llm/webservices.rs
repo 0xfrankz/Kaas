@@ -134,19 +134,22 @@ pub async fn complete_chat_stream(message: Message, options: ProviderOptions, co
  * Build reqwest client with proxy
  */
 fn build_http_client(proxy_setting: Option<ProxySetting>) -> reqwest::Client {
-    let mut http_client_builder = reqwest::Client::builder();
-    let mut proxy_option: Option<reqwest::Proxy> = None;
-    if let Some(setting) = proxy_setting {
+    let proxy_option: Option<reqwest::Proxy> = if let Some(setting) = proxy_setting {
         if setting.on {
             if setting.http && setting.https {
-                proxy_option = reqwest::Proxy::all(setting.server).ok();
+                reqwest::Proxy::all(setting.server).ok()
             } else if setting.http {
-                proxy_option = reqwest::Proxy::http(setting.server).ok();
+                reqwest::Proxy::http(setting.server).ok()
             } else {
-                proxy_option = reqwest::Proxy::https(setting.server).ok();
+                reqwest::Proxy::https(setting.server).ok()
             }
+        } else {
+            None
         }
-    }
+    } else {
+        None
+    };
+    let mut http_client_builder = reqwest::Client::builder();
     if let Some(proxy) = proxy_option {
         http_client_builder = http_client_builder.proxy(proxy);
     }
