@@ -282,11 +282,10 @@ function SettingProxy() {
       state.updateSetting,
     ])
   );
-  const validation = proxySchema.safeParse(JSON.parse(proxySettingStr));
   let proxySetting: ProxySetting;
-  if (validation.success) {
-    proxySetting = validation.data;
-  } else {
+  try {
+    proxySetting = proxySchema.parse(JSON.parse(proxySettingStr));
+  } catch (e) {
     proxySetting = {
       on: false,
       server: '',
