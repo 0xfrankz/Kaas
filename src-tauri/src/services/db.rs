@@ -100,7 +100,7 @@ impl Repository {
     /**
      * Update a setting, insert if it doesn't exist
      */
-    pub async fn upsert_settings(&self, setting: Setting) -> Result<Setting, String> {
+    pub async fn upsert_setting(&self, setting: Setting) -> Result<Setting, String> {
         let active_model: settings::ActiveModel = setting.clone().into();
         let _ = settings::Entity::insert(active_model)
             .on_conflict(
@@ -115,6 +115,20 @@ impl Repository {
                 "Failed to upsert setting".to_string()
             })?;
         Ok(setting)
+    }
+
+    /**
+     * Get a setting by key
+     */
+    pub async fn get_setting(&self, key: &str) -> Option<Setting> {
+        settings::Entity::find_by_id(key)
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to get setting with key = {}", key)
+            })
+            .unwrap_or(None)
     }
 
     /**

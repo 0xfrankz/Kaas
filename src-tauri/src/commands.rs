@@ -4,9 +4,10 @@ use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions}, 
     messages::{self, Model as Message, NewMessage, Roles}, 
     models::Model,
-    settings::Model as Setting,
+    settings::{Model as Setting, ProxySetting, SETTING_NETWORK_PROXY},
 };
 
+use log::error;
 use tauri::State;
 
 use tokio_stream::StreamExt;
@@ -51,7 +52,7 @@ pub async fn upsert_setting(
     repo: State<'_, Repository>,
 ) -> CommandResult<Setting> {
     let result = repo
-        .upsert_settings(setting)
+        .upsert_setting(setting)
         .await
         .map_err(|message| DbError { message })?;
     Ok(result)
@@ -146,6 +147,18 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         .get_conversation_config(conversation_id)
         .await
         .map_err(|message| DbError { message })?;
+    let proxy_setting = repo
+        .get_setting(SETTING_NETWORK_PROXY)
+        .await
+        .map(|setting| {
+            if let Ok(p_setting) = serde_json::from_str::<ProxySetting>(&setting.value) {
+                Some(p_setting)
+            } else { 
+                None
+            }
+        })
+        .unwrap_or(None);
+    // Build http client
     // Send request in a new thread
     tokio::spawn(async move {
         let stop = Arc::new(AtomicBool::new(false));
@@ -159,7 +172,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         let is_stream_enabled = utils::is_stream_enabled(&options);
         if is_stream_enabled {
             // handle stream response
-            let stream_result = ws::complete_chat_stream(last_message.clone(), options, config).await;
+            let stream_result = ws::complete_chat_stream(last_message.clone(), options, config, proxy_setting).await;
             match stream_result {
                 Ok(mut stream) => {
                     log::info!("Streaming started!");
@@ -240,7 +253,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
                 },
                 _ => {}
             }
-            let result = ws::complete_chat(last_message.clone(), options, config)
+            let result = ws::complete_chat(last_message.clone(), options, config, proxy_setting)
                 .await;
             match result {
                 Ok(reply) => {

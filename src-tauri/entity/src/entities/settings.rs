@@ -3,6 +3,8 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
+pub const SETTING_NETWORK_PROXY: &str = "network:proxy";
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
 #[sea_orm(table_name = "settings")]
 #[serde(rename_all = "camelCase")]
@@ -16,3 +18,12 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProxySetting {
+    pub on: bool,
+    pub server: String,
+    pub http: bool,
+    pub https: bool,
+}
