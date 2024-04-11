@@ -11,7 +11,7 @@ import type {
   SupportedProviders,
 } from '@/lib/types';
 
-import ModelForm from './ModelForm';
+import ModelForm from './forms/ModelForm';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
 

@@ -325,11 +325,18 @@ impl Repository {
                         error!("{}", err);
                         AzureOptions::default()
                     });
-                options_str = serde_json::to_string(&azure_options).unwrap_or(String::default()); // Unwrapping should never fail here?
+                options_str = serde_json::to_string(&azure_options).unwrap_or(String::default());
                 c_am.options = Set(options_str.clone());
             }
             _ => {
-                options_str = String::default();
+                // Deserialize & serialize the options as validation
+                let openai_options: OpenAIOptions = serde_json::from_str(&options)
+                    .unwrap_or_else(|err| {
+                        // record error and return default
+                        error!("{}", err);
+                        OpenAIOptions::default()
+                    });
+                options_str = serde_json::to_string(&openai_options).unwrap_or(String::default());
                 c_am.options = Set(options_str.clone());
             }
         }

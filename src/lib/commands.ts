@@ -2,7 +2,6 @@ import { invoke } from '@tauri-apps/api';
 
 import log from './log';
 import type {
-  AzureOptions,
   Conversation,
   GenericModel,
   Message,
@@ -74,11 +73,10 @@ export async function invokeUpdateOptions({
   options,
 }: {
   conversationId: number;
-  options: AzureOptions;
+  options: Options;
 }) {
-  // Omni the Provider field
+  // Omit the Provider field
   const { provider: ignored, ...rest } = options;
-  console.log('invokeUpdateOptions:', JSON.stringify(rest));
   await invoke<ProviderOptions>('update_options', {
     conversationId,
     options: JSON.stringify(rest),

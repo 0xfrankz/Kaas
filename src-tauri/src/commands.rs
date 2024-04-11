@@ -1,4 +1,4 @@
-use std::{sync::{atomic::{AtomicBool, Ordering}, Arc, Mutex}, time::Instant};
+use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, time::Instant};
 
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions}, 

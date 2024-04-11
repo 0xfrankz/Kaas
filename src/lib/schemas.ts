@@ -33,8 +33,7 @@ export const editOpenAIModelFormSchema = newOpenAIModelFormSchema.extend({
   id: z.number(),
 });
 
-export const azureOptionsFormSchema = z.object({
-  provider: z.literal(PROVIDER_AZURE),
+const commonOptionsFormSchema = z.object({
   frequencyPenalty: z.coerce.number().optional().default(0),
   maxTokens: z.coerce.number().int().optional().default(16),
   n: z.coerce.number().int().optional().default(1),
@@ -48,9 +47,12 @@ export const azureOptionsFormSchema = z.object({
     .transform((v) => (v === '' ? undefined : v)),
 });
 
-export const openAIOptionsFormSchema = z.object({
+export const azureOptionsFormSchema = commonOptionsFormSchema.extend({
+  provider: z.literal(PROVIDER_AZURE),
+});
+
+export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
   provider: z.literal(PROVIDER_OPENAI),
-  frequencyPenalty: z.number().optional().default(0),
 });
 
 export const optionsFormSchema = z.discriminatedUnion('provider', [

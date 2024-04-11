@@ -15,14 +15,14 @@ import type {
   NewOpenAIModel,
 } from '@/lib/types';
 
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import {
   DialogClose,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog';
+} from '../ui/dialog';
 import {
   Form,
   FormControl,
@@ -31,8 +31,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from './ui/form';
-import { Input } from './ui/input';
+} from '../ui/form';
+import { Input } from '../ui/input';
 
 type FormProps<T extends NewModel | Model> = {
   model: T;

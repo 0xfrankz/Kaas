@@ -31,7 +31,6 @@ import {
 } from './commands';
 import { ConversationsContext } from './contexts';
 import type {
-  AzureOptions,
   CommandError,
   Conversation,
   GenericModel,
@@ -154,7 +153,7 @@ export function useCallBot(): UseMutationResult<void, CommandError, number> {
 export function useUpdateOptionsMutation(): UseMutationResult<
   void,
   CommandError,
-  { conversationId: number; options: AzureOptions }
+  { conversationId: number; options: Options }
 > {
   return useMutation({
     mutationFn: invokeUpdateOptions,

@@ -3,13 +3,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { PROVIDER_OPENAI } from '@/lib/constants';
+import { PROVIDER_AZURE } from '@/lib/constants';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { AzureOptions, Conversation } from '@/lib/types';
+import type {
+  AzureOptions,
+  Conversation,
+  OpenAIOptions,
+  Options,
+} from '@/lib/types';
 
-import { AzureOptionsForm } from './forms/AzureOptionsForm';
+import OptionsForm from './forms/OptionsForm';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -57,7 +62,8 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
   }
 
   // Callbacks
-  const onFormSubmit = (formData: AzureOptions) => {
+  const onFormSubmit = (formData: Options) => {
+    console.log('onFormSubmit', formData);
     updateOptionsMutation.mutate(
       {
         conversationId: conversation.id,
@@ -81,15 +87,22 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
 
   const renderForm = () => {
     switch (model.provider) {
-      case PROVIDER_OPENAI:
-        return null;
-      default:
+      case PROVIDER_AZURE:
         return (
-          <AzureOptionsForm
+          <OptionsForm.Azure
             id="optionsForm"
             ref={formRef}
-            onFormSubmit={onFormSubmit}
+            onSubmit={onFormSubmit}
             defaultValues={options as AzureOptions}
+          />
+        );
+      default:
+        return (
+          <OptionsForm.OpenAI
+            id="optionsForm"
+            ref={formRef}
+            onSubmit={onFormSubmit}
+            defaultValues={options as OpenAIOptions}
           />
         );
     }
