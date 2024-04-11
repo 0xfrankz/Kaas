@@ -63,9 +63,17 @@ export const conversationFormSchema = z.object({
   message: z.string().min(1, 'Message is required'),
 });
 
-export const proxySchema = z.object({
-  on: z.boolean().optional().default(false),
-  server: z.string().optional().default(''),
-  http: z.boolean().optional().default(false),
-  https: z.boolean().optional().default(false),
-});
+export const proxySchema = z
+  .object({
+    on: z.boolean().optional().default(false),
+    server: z
+      .string()
+      .url({ message: 'Invalid proxy URL' })
+      .min(1, { message: 'Proxy URL cannot be empty' }),
+    http: z.boolean().optional().default(false),
+    https: z.boolean().optional().default(false),
+  })
+  .refine((data) => data.http || data.https, {
+    message: 'At least one protocol must be selected',
+    path: ['http'],
+  });

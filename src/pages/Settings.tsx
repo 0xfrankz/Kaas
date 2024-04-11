@@ -14,9 +14,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,8 +95,6 @@ function SettingLanguage() {
     }
   );
 
-  console.log('SettingLanguage', 'languageSetting', languageSetting);
-
   const onSaveClick = () => {
     updater({
       key: SETTING_DISPLAY_LANGUAGE,
@@ -103,7 +103,7 @@ function SettingLanguage() {
   };
 
   return (
-    <div className="mt-1 bg-white px-4 py-6">
+    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
       <Label htmlFor="language">{languageLabel}</Label>
       <Select
         defaultValue={languageSetting}
@@ -111,7 +111,7 @@ function SettingLanguage() {
           languageRef.current = v;
         }}
       >
-        <div className="mt-2 flex justify-between">
+        <div className="flex justify-between">
           <SelectTrigger className="w-52" id="language">
             <SelectValue />
           </SelectTrigger>
@@ -159,8 +159,6 @@ function SettingTheme() {
     }
   );
 
-  console.log('SettingTheme', 'themeSetting', themeSetting);
-
   const onSaveClick = () => {
     updater({
       key: SETTING_DISPLAY_THEME,
@@ -169,7 +167,7 @@ function SettingTheme() {
   };
 
   return (
-    <div className="mt-1 bg-white px-4 py-6">
+    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
       <Label htmlFor="theme">{themeLabel}</Label>
       <Select
         defaultValue={themeSetting}
@@ -177,7 +175,7 @@ function SettingTheme() {
           themeRef.current = v;
         }}
       >
-        <div className="mt-2 flex justify-between">
+        <div className="flex justify-between">
           <SelectTrigger className="w-52" id="theme">
             <SelectValue />
           </SelectTrigger>
@@ -209,12 +207,10 @@ function SettingName() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { settings } = useAppStateStore();
 
-  console.log('SettingName');
-
   return (
-    <div className="mt-1 bg-white px-4 py-6">
+    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
       <Label htmlFor="name">{t('page-settings:label:name')}</Label>
-      <div className="mt-2 flex justify-between">
+      <div className="flex justify-between">
         <Input
           className="w-52"
           id="name"
@@ -223,7 +219,7 @@ function SettingName() {
         />
         <Button>{t('generic:button:save')}</Button>
       </div>
-      <span className="mt-2 text-xs text-slate-400">
+      <span className="text-xs text-muted-foreground">
         {t('page-settings:label:name-desc')}
       </span>
     </div>
@@ -234,14 +230,12 @@ function SettingContextLength() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { settings } = useAppStateStore();
 
-  console.log('SettingContextLength');
-
   return (
-    <div className="mt-1 bg-white px-4 py-6">
+    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
       <Label htmlFor="context-length">
         {t('page-settings:label:context-length')}
       </Label>
-      <div className="mt-2 flex justify-between">
+      <div className="flex justify-between">
         <Input
           className="w-52"
           id="context-length"
@@ -250,7 +244,7 @@ function SettingContextLength() {
         />
         <Button>{t('generic:button:save')}</Button>
       </div>
-      <span className="mt-2 text-xs text-slate-400">
+      <span className="text-xs text-muted-foreground">
         {t('page-settings:label:context-length-desc')}
       </span>
     </div>
@@ -261,12 +255,10 @@ function SettingMaxTokens() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { settings } = useAppStateStore();
 
-  console.log('SettingMaxTokens');
-
   return (
-    <div className="mt-1 bg-white px-4 py-6">
+    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
-      <div className="mt-2 flex justify-between">
+      <div className="flex justify-between">
         <Input
           className="w-52"
           id="max-tokens"
@@ -275,7 +267,7 @@ function SettingMaxTokens() {
         />
         <Button>{t('generic:button:save')}</Button>
       </div>
-      <span className="mt-2 text-xs text-slate-400">
+      <span className="text-xs text-muted-foreground">
         {t('page-settings:label:max-tokens-desc')}
       </span>
     </div>
@@ -313,6 +305,8 @@ function SettingProxy() {
     console.log('onSubmit', formData);
   };
 
+  console.log('SettingProxy');
+
   return (
     <div className="mt-1 bg-white px-4 py-6">
       <Form {...form}>
@@ -344,36 +338,80 @@ function SettingProxy() {
           </div>
           {useProxy ? (
             <>
-              <div className="mt-6 flex flex-col gap-2">
-                <Label htmlFor="server" className="font-normal">
-                  {t('page-settings:label:proxy-server')}
-                </Label>
-                <Input
-                  className="w-52"
-                  id="server"
-                  placeholder="http://127.0.0.1:1234"
-                />
-                <span className="text-xs text-slate-400">
-                  {t('page-settings:label:proxy-server-desc')}
-                </span>
-              </div>
+              <FormField
+                control={form.control}
+                name="server"
+                render={({ field }) => (
+                  <div className="mt-6 flex flex-col gap-2">
+                    <Label htmlFor="proxy-server" className="font-normal">
+                      {t('page-settings:label:proxy-server')}
+                    </Label>
+                    <Input
+                      className="w-52"
+                      id="proxy-server"
+                      placeholder="http://127.0.0.1:1234"
+                      {...field}
+                    />
+                    <FormMessage />
+                    <FormDescription>
+                      {t('page-settings:label:proxy-server-desc')}
+                    </FormDescription>
+                  </div>
+                )}
+              />
               <div className="mt-6 flex flex-col gap-2">
                 <Label className="font-normal">
                   {t('page-settings:label:traffic-type')}
                 </Label>
                 <div className="flex h-9 w-52 items-center gap-2 rounded-md border px-6 py-1">
-                  <Checkbox id="http" />
-                  <Label htmlFor="http" className="text-xs font-normal">
-                    {t('page-settings:label:traffic-http')}
-                  </Label>
-                  <Checkbox id="https" className="ml-auto" />
-                  <Label htmlFor="https" className="text-xs font-normal">
-                    {t('page-settings:label:traffic-https')}
-                  </Label>
+                  <FormField
+                    control={form.control}
+                    name="http"
+                    render={({ field }) => (
+                      <>
+                        <Checkbox
+                          id="traffic-http"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <Label
+                          htmlFor="traffic-http"
+                          className="text-xs font-normal"
+                        >
+                          {t('page-settings:label:traffic-http')}
+                        </Label>
+                      </>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="https"
+                    render={({ field }) => (
+                      <>
+                        <Checkbox
+                          id="traffic-https"
+                          className="ml-auto"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <Label
+                          htmlFor="traffic-https"
+                          className="text-xs font-normal"
+                        >
+                          {t('page-settings:label:traffic-https')}
+                        </Label>
+                      </>
+                    )}
+                  />
                 </div>
-                <span className="text-xs text-slate-400">
+                {form.formState.errors.http?.message ? (
+                  <p className="text-[0.8rem] font-medium text-destructive">
+                    {form.formState.errors.http?.message}
+                  </p>
+                ) : null}
+                <FormDescription>
                   {t('page-settings:label:traffic-type-desc')}
-                </span>
+                </FormDescription>
               </div>
             </>
           ) : null}
@@ -385,8 +423,6 @@ function SettingProxy() {
 
 function SettingGroupDisplay() {
   const { t } = useTranslation(['generic', 'page-settings']);
-
-  console.log('SettingGroupDisplay');
 
   return (
     <div className="flex break-inside-avoid flex-col">
@@ -402,8 +438,6 @@ function SettingGroupDisplay() {
 function SettingGroupProfile() {
   const { t } = useTranslation(['generic', 'page-settings']);
 
-  console.log('SettingGroupProfile');
-
   return (
     <div className="mt-8 flex break-inside-avoid flex-col">
       <span className="mb-1 text-sm font-semibold">
@@ -416,8 +450,6 @@ function SettingGroupProfile() {
 
 function SettingGroupModels() {
   const { t } = useTranslation(['generic', 'page-settings']);
-
-  console.log('SettingGroupModels');
 
   return (
     <div className="mt-8 flex break-inside-avoid flex-col">
