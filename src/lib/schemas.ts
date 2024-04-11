@@ -68,12 +68,12 @@ export const proxySchema = z
     on: z.boolean().optional().default(false),
     server: z
       .string()
-      .url({ message: 'Invalid proxy URL' })
-      .min(1, { message: 'Proxy URL cannot be empty' }),
+      .min(1, { message: 'error:validation:empty-proxy-url' })
+      .url({ message: 'error:validation:invalid-proxy-url' }),
     http: z.boolean().optional().default(false),
     https: z.boolean().optional().default(false),
   })
   .refine((data) => data.http || data.https, {
-    message: 'At least one protocol must be selected',
+    message: 'error:validation:empty-traffic-type',
     path: ['http'],
   });

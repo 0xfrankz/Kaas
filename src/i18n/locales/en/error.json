@@ -1,3 +1,7 @@
 {
-    "test": "Test Error"
+    "validation": {
+        "invalid-proxy-url": "Invalid proxy URL",
+        "empty-proxy-url": "Proxy URL cannot be empty",
+        "empty-traffic-type": "At least one protocol must be selected"
+    }
 }

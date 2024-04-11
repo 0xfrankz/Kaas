@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTheme } from 'next-themes';
-import { Suspense, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -282,7 +282,7 @@ function SettingProxy() {
       state.updateSetting,
     ])
   );
-  const validation = proxySchema.safeParse(proxySettingStr);
+  const validation = proxySchema.safeParse(JSON.parse(proxySettingStr));
   let proxySetting: ProxySetting;
   if (validation.success) {
     proxySetting = validation.data;
@@ -299,19 +299,45 @@ function SettingProxy() {
     defaultValues: proxySetting,
   });
   const useProxy = useWatch({ name: 'on', control: form.control });
+  const proxyLabel = t('page-settings:label:proxy');
+  const updater = useUpsertSetting(
+    t('page-settings:message:change-setting-success', { setting: proxyLabel }),
+    t('page-settings:message:change-setting-failure', { setting: proxyLabel }),
+    () => {
+      updateSetting({
+        key: SETTING_NETWORK_PROXY,
+        value: JSON.stringify(form.getValues()),
+      });
+    }
+  );
 
   // Callbacks
   const onSubmit: SubmitHandler<ProxySetting> = (formData) => {
-    console.log('onSubmit', formData);
+    updater({
+      key: SETTING_NETWORK_PROXY,
+      value: JSON.stringify(formData),
+    });
   };
 
-  console.log('SettingProxy');
+  useEffect(() => {
+    if (proxySetting.on && !useProxy) {
+      // user turns off proxy
+      // save automatically
+      updater({
+        key: SETTING_NETWORK_PROXY,
+        value: JSON.stringify(form.getValues()),
+      });
+    }
+  }, [useProxy]);
 
   return (
-    <div className="mt-1 bg-white px-4 py-6">
+    <div className="mt-1 flex flex-col bg-white px-4 py-6">
+      <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        Proxy
+      </span>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex h-9 items-center justify-start">
+          <div className="mt-6 flex h-9 items-center justify-start">
             <FormField
               control={form.control}
               name="on"
@@ -406,7 +432,7 @@ function SettingProxy() {
                 </div>
                 {form.formState.errors.http?.message ? (
                   <p className="text-[0.8rem] font-medium text-destructive">
-                    {form.formState.errors.http?.message}
+                    {t(form.formState.errors.http?.message)}
                   </p>
                 ) : null}
                 <FormDescription>

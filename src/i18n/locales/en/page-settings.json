@@ -8,6 +8,7 @@
         "language": "Language",
         "theme": "Theme",
         "name": "Name",
+        "proxy": "Proxy",
         "use-proxy": "Use proxy",
         "proxy-server": "Server",
         "traffic-type": "Traffic type",

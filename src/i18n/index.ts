@@ -19,7 +19,7 @@ i18n
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
     },
-    ns: ['generic'],
+    ns: ['generic', 'error'],
     saveMissing: true,
   });
 

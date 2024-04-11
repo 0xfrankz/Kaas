@@ -7,6 +7,7 @@ import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 import { Controller, FormProvider, useFormContext } from 'react-hook-form';
 
 import { Label } from '@/components/ui/label';
+import i18next from '@/i18n';
 import { cn } from '@/lib/utils';
 
 const Form = FormProvider;
@@ -139,10 +140,17 @@ FormDescription.displayName = 'FormDescription';
 
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, ...props }, ref) => {
+  React.HTMLAttributes<HTMLParagraphElement> & {
+    i18n?: boolean;
+  }
+>(({ className, children, i18n = true, ...props }, ref) => {
   const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message) : children;
+  // eslint-disable-next-line no-nested-ternary
+  const body = error
+    ? i18n
+      ? i18next.t(String(error?.message))
+      : String(error?.message)
+    : children;
 
   if (!body) {
     return null;
