@@ -150,10 +150,13 @@ pub fn is_stream_enabled(options: &ProviderOptions) -> bool {
             } else {
                 return false;
             }
-            
         },
         _ => {
-            return false;
+            if let Ok(openai_options) = serde_json::from_str::<OpenAIOptions>(&options.options) {
+                return openai_options.stream.unwrap_or(false);
+            } else {
+                return false;
+            }
         }
     }
 }
