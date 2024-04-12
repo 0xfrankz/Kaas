@@ -1,13 +1,20 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { MESSAGE_USER } from '@/lib/constants';
-import { LIST_MESSAGES_KEY, useCreateMessageMutation } from '@/lib/hooks';
+import { MESSAGE_USER, SETTING_USER_ENTER_TO_SEND } from '@/lib/constants';
+import {
+  LIST_MESSAGES_KEY,
+  useCreateMessageMutation,
+  useSettingUpserter,
+} from '@/lib/hooks';
+import { useAppStateStore } from '@/lib/store';
 import type { Message } from '@/lib/types';
 
 import { Button } from './ui/button';
+import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 
 const HEIGHT_LIMIT = 20 * 20;
@@ -20,6 +27,11 @@ export function ChatPromptInput({ conversationId }: Props) {
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const createMsgMutation = useCreateMessageMutation();
+  const enterToSend = useAppStateStore(
+    (state) => state.settings[SETTING_USER_ENTER_TO_SEND] !== 'false'
+  );
+  const upserter = useSettingUpserter();
+  const { t } = useTranslation(['generic', 'page-conversation']);
 
   // Callbacks
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -70,20 +82,50 @@ export function ChatPromptInput({ conversationId }: Props) {
     }
   };
 
+  const onCheckedChange = (checked: boolean) => {
+    upserter({
+      key: SETTING_USER_ENTER_TO_SEND,
+      value: checked.toString(),
+    });
+  };
+
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (enterToSend && event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        onClick();
+      }
+      if (!enterToSend && event.key === 'Enter' && event.shiftKey) {
+        event.preventDefault();
+        onClick();
+      }
+    },
+    [enterToSend]
+  );
+
   return (
-    <div className="mb-4 flex min-h-16 w-auto items-end border-b-2 border-slate-500 text-sm">
-      <div className="mb-5 grow">
-        <Textarea
-          placeholder="How can I help?"
-          className="resize-none overflow-y-hidden border-0 px-2"
-          rows={1}
-          onChange={onChange}
-          ref={promptRef}
-        />
+    <>
+      <div className="mb-1 flex min-h-16 w-auto items-end border-b-2 border-slate-500 text-sm">
+        <div className="mb-5 grow">
+          <Textarea
+            placeholder="How can I help?"
+            className="resize-none overflow-y-hidden border-0 px-2"
+            rows={1}
+            onChange={onChange}
+            ref={promptRef}
+            onKeyDown={onKeyDown}
+          />
+        </div>
+        <Button className="mb-5" onClick={onClick}>
+          <PaperPlaneIcon />
+        </Button>
       </div>
-      <Button className="mb-5" onClick={onClick}>
-        <PaperPlaneIcon />
-      </Button>
-    </div>
+      <div className="mb-4 flex items-center justify-end text-xs text-muted-foreground">
+        <span className="mr-2">
+          {t('page-conversation:label:enter-to-send')}
+        </span>
+        <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
+      </div>
+    </>
   );
 }

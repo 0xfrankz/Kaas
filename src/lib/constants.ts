@@ -20,6 +20,7 @@ export const STREAM_STOPPED = '[[STOPPED]]';
 
 // Setting keys
 export const SETTING_USER_DEFAULT_MODEL = 'user:default_model';
+export const SETTING_USER_ENTER_TO_SEND = 'user:enter_to_send';
 export const SETTING_DISPLAY_LANGUAGE = 'display:language';
 export const SETTING_DISPLAY_THEME = 'display:darkmode';
 export const SETTING_PROFILE_NAME = 'profile:name';

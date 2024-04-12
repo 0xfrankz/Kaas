@@ -30,6 +30,7 @@ import {
   invokeUpsertSetting,
 } from './commands';
 import { ConversationsContext } from './contexts';
+import { useAppStateStore } from './store';
 import type {
   CommandError,
   Conversation,
@@ -88,6 +89,22 @@ export function useUpsertSettingMutation(
     mutationFn: invokeUpsertSetting,
     ...options,
   });
+}
+
+export function useSettingUpserter(
+  onSuccess: () => void = () => {},
+  onError: () => void = () => {}
+) {
+  const { updateSetting } = useAppStateStore();
+  const upsertSettingMutation = useUpsertSettingMutation({
+    onSuccess: (setting) => {
+      updateSetting({ ...setting });
+      onSuccess();
+    },
+    onError,
+  });
+
+  return upsertSettingMutation.mutate;
 }
 
 export function useCreateConversationMutation(): UseMutationResult<
