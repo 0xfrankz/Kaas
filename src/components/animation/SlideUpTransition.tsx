@@ -7,7 +7,7 @@ type Props = {
 export function SlideUpTransition({ motionKey, children }: Props) {
   return (
     <motion.div
-      className="flex min-h-screen grow flex-col bg-white"
+      className="flex min-h-screen grow flex-col bg-background"
       initial={{ opacity: 0, y: 30 }}
       animate={{
         opacity: 1,

@@ -513,7 +513,7 @@ export default function SettingsPage() {
             <PageTitle />
           </Suspense>
         </TwoRows.Top>
-        <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-slate-100 dark:bg-black">
+        <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
           <ScrollArea className="w-full grow">
             <Suspense fallback={null}>
               <div className="mx-auto w-[960px] columns-2 gap-8 py-12">
