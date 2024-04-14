@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
@@ -103,7 +104,7 @@ function SettingLanguage() {
   };
 
   return (
-    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
+    <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="language">{languageLabel}</Label>
       <Select
         defaultValue={languageSetting}
@@ -130,7 +131,7 @@ function SettingLanguage() {
           </SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </Card>
   );
 }
 
@@ -167,7 +168,7 @@ function SettingTheme() {
   };
 
   return (
-    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
+    <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="theme">{themeLabel}</Label>
       <Select
         defaultValue={themeSetting}
@@ -199,7 +200,7 @@ function SettingTheme() {
           </SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </Card>
   );
 }
 
@@ -208,7 +209,7 @@ function SettingName() {
   const { settings } = useAppStateStore();
 
   return (
-    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
+    <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="name">{t('page-settings:label:name')}</Label>
       <div className="flex justify-between">
         <Input
@@ -222,7 +223,7 @@ function SettingName() {
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:name-desc')}
       </span>
-    </div>
+    </Card>
   );
 }
 
@@ -231,7 +232,7 @@ function SettingContextLength() {
   const { settings } = useAppStateStore();
 
   return (
-    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
+    <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="context-length">
         {t('page-settings:label:context-length')}
       </Label>
@@ -247,7 +248,7 @@ function SettingContextLength() {
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:context-length-desc')}
       </span>
-    </div>
+    </Card>
   );
 }
 
@@ -256,7 +257,7 @@ function SettingMaxTokens() {
   const { settings } = useAppStateStore();
 
   return (
-    <div className="mt-1 flex flex-col gap-2 bg-white px-4 py-6">
+    <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
       <div className="flex justify-between">
         <Input
@@ -270,7 +271,7 @@ function SettingMaxTokens() {
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:max-tokens-desc')}
       </span>
-    </div>
+    </Card>
   );
 }
 
@@ -330,7 +331,7 @@ function SettingProxy() {
   }, [useProxy]);
 
   return (
-    <div className="mt-1 flex flex-col bg-white px-4 py-6">
+    <Card className="mt-1 flex flex-col px-4 py-6">
       <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
         Proxy
       </span>
@@ -442,7 +443,7 @@ function SettingProxy() {
           ) : null}
         </form>
       </Form>
-    </div>
+    </Card>
   );
 }
 
