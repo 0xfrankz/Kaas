@@ -43,6 +43,9 @@ export default function HomePage() {
         <Suspense fallback={<GridSkeleton />}>
           <ConversationHistoryGrid />
         </Suspense>
+        <div className="bg-muted p-10 text-muted-foreground">
+          Muted foreground on background
+        </div>
         <div className="bg-background text-foreground">
           <h2>Foreground</h2>
           <Card className="w-[350px]">

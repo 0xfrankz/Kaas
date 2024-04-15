@@ -517,7 +517,7 @@ export default function SettingsPage() {
         <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
           <ScrollArea className="w-full grow">
             <Suspense fallback={null}>
-              <div className="mx-auto w-[960px] columns-2 gap-8 py-12">
+              <div className="mx-auto w-[960px] columns-2 gap-8 py-12 text-foreground">
                 <SettingGroupDisplay />
                 <SettingGroupProfile />
                 <SettingGroupModels />

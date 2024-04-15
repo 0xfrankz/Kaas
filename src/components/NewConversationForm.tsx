@@ -62,7 +62,7 @@ export function NewConversationForm() {
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="mt-6 box-border flex h-[72px] w-[720px] items-center rounded-2xl border border-slate-300 bg-gray-50">
+          <div className="mt-6 box-border flex h-[72px] w-[720px] items-center rounded-2xl border border-input bg-transparent">
             <FormField
               control={form.control}
               name="message"
@@ -92,7 +92,7 @@ export function NewConversationForm() {
                     defaultValue={field.value.toString()}
                   >
                     <FormControl>
-                      <SelectTrigger className="bg-white shadow-none focus:ring-0">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
