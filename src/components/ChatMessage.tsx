@@ -59,13 +59,13 @@ const MetaBar = ({ avatar, name }: MetaBarProps) => {
   return (
     <div
       className={cn(
-        'flex h-6 justify-normal items-center text-xs font-medium text-slate-500'
+        'flex h-6 justify-normal items-center text-xs font-medium text-muted-foreground'
       )}
     >
       {avatar && name ? (
         <div className="flex items-center">
           {avatar}
-          <span className="ml-2 font-medium text-slate-900">{name}</span>
+          <span className="ml-2 font-medium">{name}</span>
         </div>
       ) : null}
       <div className="ml-auto">2:45 PM</div>
@@ -77,7 +77,7 @@ const Content = ({ content, rightAlign = false }: ContentProps) => {
   return (
     <div
       className={cn(
-        'mt-2 prose prose-sm prose-slate',
+        'mt-2 prose prose-sm text-foreground',
         rightAlign ? 'text-right' : 'text-left'
       )}
     >
@@ -112,7 +112,7 @@ const User = ({ message }: MessageProps) => {
 const Bot = ({ message }: MessageProps) => {
   return (
     <HoverContextProvider>
-      <div className="box-border flex w-auto flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow">
+      <div className="box-border flex w-auto flex-col rounded-2xl border border-border bg-[--gray-a2] p-6 shadow">
         <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
         <Content content={message.content} rightAlign={false} />
         <ActionBar />

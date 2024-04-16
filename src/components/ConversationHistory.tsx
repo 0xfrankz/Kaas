@@ -40,7 +40,7 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
 export function ConversationHistory({ activeConversationId }: Props) {
   const { conversations } = useConversationsContext();
   return (
-    <div className="box-border h-full w-72 border-r border-gray-200 px-5 py-6">
+    <div className="box-border h-full w-72 border-r border-border bg-background px-5 py-6">
       <h3 className="px-2 text-xs font-medium tracking-wide text-gray-400">
         Conversation history
       </h3>

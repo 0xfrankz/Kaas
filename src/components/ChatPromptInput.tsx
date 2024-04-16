@@ -105,7 +105,7 @@ export function ChatPromptInput({ conversationId }: Props) {
 
   return (
     <>
-      <div className="mb-1 flex min-h-16 w-auto items-end border-b-2 border-slate-500 text-sm">
+      <div className="mb-1 flex min-h-16 w-auto items-end border-b-2 border-muted text-sm">
         <div className="mb-5 grow">
           <Textarea
             placeholder="How can I help?"

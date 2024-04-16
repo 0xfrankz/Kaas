@@ -82,7 +82,7 @@ export function ChatSection({ conversation }: Props) {
       <TwoRows.Top>
         <TitleBar title={conversation.subject} />
       </TwoRows.Top>
-      <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-slate-100">
+      <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-background">
         <ScrollArea className="w-full grow" viewportRef={viewportRef}>
           <div className="mx-auto w-[640px] pb-4">
             {isSuccess && <ChatMessageList messages={messages} />}
