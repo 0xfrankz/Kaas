@@ -62,7 +62,7 @@ export function NewConversationForm() {
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="mt-6 box-border flex h-[72px] w-[720px] items-center rounded-2xl border border-input bg-transparent">
+          <div className="mt-6 box-border flex h-[72px] w-[720px] items-center rounded-2xl border border-input bg-transparent hover:border-input-hover">
             <FormField
               control={form.control}
               name="message"

@@ -40,6 +40,7 @@ export default function HomePage() {
         <Button variant="destructive">Destructive</Button>
         <Button variant="outline">Outline</Button>
         <Button variant="ghost">Ghost</Button>
+        <Button variant="link">Link</Button>
         <Suspense fallback={<GridSkeleton />}>
           <ConversationHistoryGrid />
         </Suspense>

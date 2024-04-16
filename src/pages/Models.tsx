@@ -114,7 +114,7 @@ export default function ModelsPage() {
                 <div className="grid grid-cols-4 gap-5">
                   {SUPPORTED_PROVIDERS.map((provider) => (
                     <Card
-                      className="border-2 border-slate-900 shadow-none"
+                      className="border border-border"
                       key={`${provider}-model-card`}
                     >
                       <CardHeader className="pb-2">

@@ -14,14 +14,18 @@ const config = {
     },
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'var(--yellow-a7)',
+        border: 'var(--gray-a6)',
+        input: {
+          DEFAULT: 'var(--yellow-a7)',
+          hover: 'var(--yellow-a8)',
+        },
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'var(--gray-12)',
         primary: {
           DEFAULT: 'var(--yellow-9)',
           hover: 'var(--yellow-10)',
+          active: 'filter: var(--button-active)',
           foreground: 'var(--yellow-contrast)',
         },
         secondary: {
@@ -33,11 +37,12 @@ const config = {
           foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
-          DEFAULT: 'var(--gray-a2)',
+          DEFAULT: 'var(--gray-a6)',
           foreground: 'var(--gray-11)',
         },
         accent: {
-          DEFAULT: 'var(--yellow-3)',
+          DEFAULT: 'var(--yellow-4)',
+          hover: 'var(--yellow-5)',
           foreground: 'var(--yellow-12)',
         },
         popover: {
@@ -67,6 +72,9 @@ const config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      saturate: {
+        110: '1.1',
       },
       fontFamily: {
         inter: ['Inter', 'sans-serif'],

@@ -44,7 +44,7 @@ function ModelGridItem({
     }
   };
   return (
-    <Card className="min-h-32 border-2 border-slate-900 shadow-none">
+    <Card className="min-h-32 border border-border">
       <CardHeader className="pb-2">
         <CardTitle className="mx-auto">
           {t(`generic:model:${model.provider}`)}

@@ -78,8 +78,8 @@ function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
   return (
     <Dialog open={showModal} onOpenChange={toggleModal}>
       <DialogTrigger asChild>
-        <Button className="mx-auto w-32 bg-slate-900">
-          <PlusIcon className="size-4 text-white" />
+        <Button className="mx-auto w-32">
+          <PlusIcon className="size-4 text-primary-foreground" />
         </Button>
       </DialogTrigger>
       <DialogContent>{renderForm()}</DialogContent>
