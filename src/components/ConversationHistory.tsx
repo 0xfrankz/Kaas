@@ -20,11 +20,12 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
   return (
     <Button
       asChild
+      variant="ghost"
       className={cn(
-        'flex size-full items-center box-border px-3 justify-start rounded-2xl',
+        'flex size-full items-center box-border px-3 justify-start rounded-2xl hover:bg-[--yellow-a4] active:bg-[--yellow-a5] shadow-none',
         active
-          ? 'bg-[#F9FFB8] text-slate-900 hover:bg-[#F9FFB8] shadow-sm'
-          : 'bg-transparent text-slate-500 hover:bg-gray-50'
+          ? 'bg-[--yellow-a3] text-[--yellow-a11]'
+          : 'bg-transparent text-[--gray-a11]'
       )}
     >
       <Link to={`/conversations/${conversation.id}`}>

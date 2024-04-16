@@ -38,13 +38,13 @@ function SideNavMenuItem({
   return (
     <Button
       className={cn(
-        'flex text-base font-bold mx-auto rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start bg-white hover:bg-gray-50 text-slate-900 shadow-none',
+        'flex text-base font-bold mx-auto rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-[--gray-a11] transition-[width]',
         expanded ? 'w-72' : 'w-12',
-        active ? 'bg-[#F9FFB8] hover:bg-[#F9FFB8]' : '',
+        active ? 'bg-[--gray-a3]' : 'bg-transparent',
         extraClassName
       )}
       title={text}
-      type="button"
+      variant="ghost"
       asChild
     >
       <Link to={to}>
@@ -62,34 +62,34 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
   return (
     <ul
       className={cn(
-        'grow flex flex-col justify-start',
+        'grow flex flex-col justify-start transition-[margin]',
         expanded ? 'mt-24' : 'mt-32'
       )}
     >
       <SideNavMenuItem
         text={t('nav.conversations')}
-        icon={<ArchiveIcon className="size-4" />}
+        icon={<ArchiveIcon className="size-4 text-foreground" />}
         expanded={expanded}
         active={pathname === '/conversations'}
         to="/conversations"
       />
       <SideNavMenuItem
         text={t('nav.templates')}
-        icon={<FileTextIcon className="size-4" />}
+        icon={<FileTextIcon className="size-4 text-foreground" />}
         expanded={expanded}
         active={pathname === '/templates'}
         to="/templates"
       />
       <SideNavMenuItem
         text={t('nav.models')}
-        icon={<ModelIcon className="stroke-slate-900 stroke-1" />}
+        icon={<ModelIcon className="stroke-foreground stroke-1" />}
         expanded={expanded}
         active={pathname === '/models'}
         to="/models"
       />
       <SideNavMenuItem
         text={t('nav.settings')}
-        icon={<GearIcon className="size-4" />}
+        icon={<GearIcon className="size-4 text-foreground" />}
         expanded={expanded}
         active={pathname === '/settings'}
         className="mt-auto"

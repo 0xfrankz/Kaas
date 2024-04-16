@@ -20,7 +20,7 @@ export function SideNav() {
       {renderPlaceHolder()}
       <div
         className={cn(
-          'absolute top-0 left-0 h-screen flex flex-col box-border border-r border-border z-50 bg-background/80 backdrop-blur',
+          'absolute top-0 left-0 h-screen flex flex-col box-border border-r border-border z-50 bg-background/80 backdrop-blur transition-[width]',
           hovering ? 'w-80' : 'w-16'
         )}
         ref={ref}
