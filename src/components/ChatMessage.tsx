@@ -1,8 +1,10 @@
 import { Pencil1Icon, PersonIcon } from '@radix-ui/react-icons';
+import dayjs from 'dayjs';
 import { createContext, useContext, useMemo, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { DEFAULT_DATETIME_FORMAT } from '@/lib/constants';
 import type { Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +26,7 @@ type ContentProps = {
 type MetaBarProps = {
   avatar?: React.ReactNode;
   name?: string;
+  time?: string;
 };
 
 type THoverContext = {
@@ -55,7 +58,7 @@ const HoverContextProvider = ({ children }: WrapperProps) => {
   );
 };
 
-const MetaBar = ({ avatar, name }: MetaBarProps) => {
+const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
   return (
     <div
       className={cn(
@@ -68,7 +71,7 @@ const MetaBar = ({ avatar, name }: MetaBarProps) => {
           <span className="ml-2 font-medium">{name}</span>
         </div>
       ) : null}
-      <div className="ml-auto">2:45 PM</div>
+      {time ? <div className="ml-auto">{time}</div> : null}
     </div>
   );
 };
@@ -101,7 +104,9 @@ const User = ({ message }: MessageProps) => {
   return (
     <HoverContextProvider>
       <div className="flex w-auto flex-col rounded-2xl p-6">
-        <MetaBar />
+        <MetaBar
+          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+        />
         <Content content={message.content} rightAlign />
         <ActionBar />
       </div>
@@ -113,7 +118,11 @@ const Bot = ({ message }: MessageProps) => {
   return (
     <HoverContextProvider>
       <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-        <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
+        <MetaBar
+          avatar={BOT_AVATAR}
+          name="Azure | gpt-3.5"
+          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+        />
         <Content content={message.content} rightAlign={false} />
         <ActionBar />
       </div>
@@ -123,7 +132,7 @@ const Bot = ({ message }: MessageProps) => {
 
 const BotReceiving = ({ message }: { message: string }) => {
   return (
-    <div className="box-border flex w-auto flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow">
+    <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
       <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
       <Content content={message} rightAlign={false} />
     </div>
@@ -140,7 +149,7 @@ const System = ({ message }: MessageProps) => {
 
 const BotLoading = () => {
   return (
-    <div className="box-border flex w-auto flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow">
+    <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
       <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
       <LoadingIcon className="mt-2 h-6 self-start" />
     </div>
