@@ -25,9 +25,7 @@ export function SideNav() {
         )}
         ref={ref}
       >
-        <div className={cn('flex items-center', hovering ? 'm-6' : 'm-4')}>
-          <Logo expanded={hovering} />
-        </div>
+        <Logo expanded={hovering} />
         <SideNavMenu expanded={hovering} />
       </div>
     </div>

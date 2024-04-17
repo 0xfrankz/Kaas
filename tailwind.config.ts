@@ -72,6 +72,7 @@ const config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'spin-once': 'spin .2s linear 1',
       },
       saturate: {
         110: '1.1',
