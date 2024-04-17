@@ -1,5 +1,7 @@
 {
     "label": {
-        "enter-to-send": "Press Enter to send"
+        "enter-to-send": "Press Enter to send",
+        "shift-enter-to-send": "Press Shift+Enter to send",
+        "quick-send": "Quick Send"
     }
 }

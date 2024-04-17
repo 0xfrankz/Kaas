@@ -1,6 +1,6 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -12,6 +12,7 @@ import {
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type { Message } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export function ChatPromptInput({ conversationId }: Props) {
+  const [focused, setFocused] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const createMsgMutation = useCreateMessageMutation();
@@ -103,10 +105,23 @@ export function ChatPromptInput({ conversationId }: Props) {
     [enterToSend]
   );
 
+  const onFocus = () => {
+    setFocused(true);
+  };
+
+  const onBlur = () => {
+    setFocused(false);
+  };
+
   return (
     <>
-      <div className="mb-1 flex min-h-16 w-auto items-end border-b-2 border-muted text-sm">
-        <div className="mb-5 grow">
+      <div
+        className={cn(
+          'mb-2 flex min-h-15 w-auto items-end rounded-xl px-2 py-3 text-sm',
+          focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
+        )}
+      >
+        <div className="my-auto grow">
           <Textarea
             placeholder="How can I help?"
             className="resize-none overflow-y-hidden border-0 px-2"
@@ -114,17 +129,26 @@ export function ChatPromptInput({ conversationId }: Props) {
             onChange={onChange}
             ref={promptRef}
             onKeyDown={onKeyDown}
+            onFocus={onFocus}
+            onBlur={onBlur}
           />
         </div>
-        <Button className="mb-5" onClick={onClick}>
+        <Button onClick={onClick}>
           <PaperPlaneIcon />
         </Button>
       </div>
-      <div className="mb-4 flex items-center justify-end text-xs text-muted-foreground">
-        <span className="mr-2">
-          {t('page-conversation:label:enter-to-send')}
+      <div className="mb-4 flex items-center justify-between px-2 text-xs text-muted-foreground">
+        <span>
+          {enterToSend
+            ? t('page-conversation:label:enter-to-send')
+            : t('page-conversation:label:shift-enter-to-send')}
         </span>
-        <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
+        <div className="flex items-center">
+          <span className="mr-2">
+            {t('page-conversation:label:quick-send')}
+          </span>
+          <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
+        </div>
       </div>
     </>
   );

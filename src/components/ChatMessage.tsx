@@ -89,7 +89,7 @@ const Content = ({ content, rightAlign = false }: ContentProps) => {
 const ActionBar = () => {
   const { hover } = useContext(HoverContext);
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-slate-500">
+    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
       <div className={cn(hover ? null : 'hidden')}>
         <Pencil1Icon className="size-[14px]" />
       </div>
@@ -112,7 +112,7 @@ const User = ({ message }: MessageProps) => {
 const Bot = ({ message }: MessageProps) => {
   return (
     <HoverContextProvider>
-      <div className="box-border flex w-auto flex-col rounded-2xl border border-border bg-[--gray-a2] p-6 shadow">
+      <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
         <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
         <Content content={message.content} rightAlign={false} />
         <ActionBar />

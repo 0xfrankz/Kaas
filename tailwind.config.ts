@@ -69,6 +69,12 @@ const config = {
           to: { height: '0' },
         },
       },
+      boxShadow: {
+        'gray-border-1': '0 0 0 1px var(--gray-a7)',
+        'gray-border-2': '0 0 0 2px var(--gray-a7)',
+        'yellow-border-1': '0 0 0 1px var(--yellow-a7)',
+        'yellow-border-2': '0 0 0 2px var(--yellow-a7)',
+      },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
