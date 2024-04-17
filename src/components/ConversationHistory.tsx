@@ -45,7 +45,7 @@ export function ConversationHistory({ activeConversationId }: Props) {
       <h3 className="px-2 text-xs font-medium tracking-wide text-gray-400">
         Conversation history
       </h3>
-      <ul className="mt-3">
+      <ul className="mt-3 flex flex-col gap-2">
         {conversations.map((c) => {
           return (
             <li key={c.id} className="h-12">

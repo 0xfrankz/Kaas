@@ -32,7 +32,7 @@ function SideNavMenuItem({
   return (
     <Button
       className={cn(
-        'flex text-base font-bold rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-[--gray-a11] transition-all overflow-hidden',
+        'flex text-base font-bold rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-[--gray-11] hover:text-[--gray-11] transition-all overflow-hidden',
         expanded ? 'w-72 ml-4' : 'w-12 ml-2',
         active ? 'bg-[--gray-a3]' : 'bg-transparent',
         extraClassName

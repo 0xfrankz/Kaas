@@ -24,7 +24,7 @@ export function Logo({ expanded = false }: Props) {
           height={32}
           className="hover:animate-spin-once"
         />
-        <span className="my-auto ml-4 font-medium">Kaas</span>
+        <span className="my-auto ml-4 font-medium text-primary">Kaas</span>
       </Link>
     </div>
   );
