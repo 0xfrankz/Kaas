@@ -34,6 +34,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import TwoRows from '@/layouts/TwoRows';
 import {
+  DEFAULT_PROFILE_NAME,
   SETTING_DISPLAY_LANGUAGE,
   SETTING_DISPLAY_THEME,
   SETTING_MODELS_CONTENT_LENGTH,
@@ -206,19 +207,35 @@ function SettingTheme() {
 
 function SettingName() {
   const { t } = useTranslation(['generic', 'page-settings']);
-  const { settings } = useAppStateStore();
+  const userName = useAppStateStore(
+    (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
+  );
+  const nameRef = useRef<HTMLInputElement>(null);
+  const nameLabel = t('page-settings:label:name');
+  const updater = useUpsertSetting(
+    t('page-settings:message:change-setting-success', { setting: nameLabel }),
+    t('page-settings:message:change-setting-failure', { setting: nameLabel })
+  );
+
+  const onSaveClick = () => {
+    updater({
+      key: SETTING_PROFILE_NAME,
+      value: nameRef.current?.value ?? '',
+    });
+  };
 
   return (
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="name">{t('page-settings:label:name')}</Label>
       <div className="flex justify-between">
         <Input
+          ref={nameRef}
           className="w-52"
           id="name"
           placeholder="ME"
-          defaultValue={settings[SETTING_PROFILE_NAME]}
+          defaultValue={userName}
         />
-        <Button>{t('generic:button:save')}</Button>
+        <Button onClick={onSaveClick}>{t('generic:button:save')}</Button>
       </div>
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:name-desc')}
