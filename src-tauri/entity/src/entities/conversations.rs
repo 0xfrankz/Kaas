@@ -85,6 +85,8 @@ pub trait Options {}
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AzureOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context_length: Option<u16>,
     // pub best_of: Option<i32>, // async-openai currently doesn't support this
     // pub echo: Option<bool>, // async-openai currently doesn't support this
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -121,8 +123,9 @@ impl Options for AzureOptions {}
 impl Default for AzureOptions{
     fn default() -> Self {
         AzureOptions {
+            context_length: None,
             frequency_penalty: Some(0.0),
-            max_tokens: Some(16),
+            max_tokens: None,
             n: Some(1),
             presence_penalty: Some(0.0),
             stream: Some(false),
@@ -136,6 +139,8 @@ impl Default for AzureOptions{
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenAIOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context_length: Option<u16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency_penalty: Option<f32>, // min: -2.0, max: 2.0, default: 0
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -159,8 +164,9 @@ impl Options for OpenAIOptions {}
 impl Default for OpenAIOptions{
     fn default() -> Self {
         OpenAIOptions {
+            context_length: None,
             frequency_penalty: Some(0.0),
-            max_tokens: Some(16),
+            max_tokens: None,
             n: Some(1),
             presence_penalty: Some(0.0),
             stream: Some(false),

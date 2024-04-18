@@ -119,7 +119,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
         <DialogHeader>
           <DialogTitle>Change options of this conversation</DialogTitle>
           <DialogDescription>
-            Altering the options can yield unpredictable behaviors and even
+            Altering the options can cause unpredictable behaviors and even
             errors. Make sure you know what you are changing.
           </DialogDescription>
         </DialogHeader>

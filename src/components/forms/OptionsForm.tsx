@@ -60,6 +60,23 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
           <div className="grid grid-cols-2 gap-4 py-8">
             <FormField
               control={form.control}
+              name="contextLength"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    Context Length
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-start-2 col-end-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="frequencyPenalty"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
@@ -240,6 +257,23 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
           <div className="grid grid-cols-2 gap-4 py-8">
+            <FormField
+              control={form.control}
+              name="contextLength"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    Context Length
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-start-2 col-end-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="frequencyPenalty"
