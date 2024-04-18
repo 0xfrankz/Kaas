@@ -1,13 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTheme } from 'next-themes';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { z } from 'zod';
 import { useShallow } from 'zustand/react/shallow';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
+import { FieldErrorMessage } from '@/components/FieldErrorMessage';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -34,6 +36,8 @@ import {
 import { Switch } from '@/components/ui/switch';
 import TwoRows from '@/layouts/TwoRows';
 import {
+  DEFAULT_CONTEXT_LENGTH,
+  DEFAULT_MAX_TOKENS,
   DEFAULT_PROFILE_NAME,
   SETTING_DISPLAY_LANGUAGE,
   SETTING_DISPLAY_THEME,
@@ -245,23 +249,58 @@ function SettingName() {
 }
 
 function SettingContextLength() {
-  const { t } = useTranslation(['generic', 'page-settings']);
-  const { settings } = useAppStateStore();
+  const { t } = useTranslation(['generic', 'page-settings', 'error']);
+  const ctxLength = useAppStateStore(
+    (state) =>
+      state.settings[SETTING_MODELS_CONTENT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
+  );
+  const [error, setError] = useState('');
+  const ctxLengthRef = useRef<HTMLInputElement>(null);
+  const ctxLengthLabel = t('page-settings:label:context-length');
+  const updater = useUpsertSetting(
+    t('page-settings:message:change-setting-success', {
+      setting: ctxLengthLabel,
+    }),
+    t('page-settings:message:change-setting-failure', {
+      setting: ctxLengthLabel,
+    })
+  );
+
+  const onSaveClick = () => {
+    const validation = z.coerce
+      .number()
+      .int()
+      .gte(0)
+      .safeParse(ctxLengthRef.current?.value);
+    if (!validation.success) {
+      setError(
+        t('error:validation:invalid-gte-int', {
+          value: ctxLengthLabel,
+          threshold: 0,
+        })
+      );
+    } else {
+      updater({
+        key: SETTING_MODELS_CONTENT_LENGTH,
+        value: validation.data.toString(),
+      });
+    }
+  };
 
   return (
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
-      <Label htmlFor="context-length">
-        {t('page-settings:label:context-length')}
-      </Label>
+      <Label htmlFor="context-length">{ctxLengthLabel}</Label>
       <div className="flex justify-between">
         <Input
+          ref={ctxLengthRef}
           className="w-52"
           id="context-length"
           placeholder="10"
-          defaultValue={settings[SETTING_MODELS_CONTENT_LENGTH]}
+          defaultValue={ctxLength}
         />
-        <Button>{t('generic:button:save')}</Button>
+        <Button onClick={onSaveClick}>{t('generic:button:save')}</Button>
       </div>
+      {error ? <FieldErrorMessage message={error} /> : null}
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:context-length-desc')}
       </span>
@@ -270,21 +309,57 @@ function SettingContextLength() {
 }
 
 function SettingMaxTokens() {
-  const { t } = useTranslation(['generic', 'page-settings']);
-  const { settings } = useAppStateStore();
+  const { t } = useTranslation(['generic', 'page-settings', 'error']);
+  const maxTokens = useAppStateStore(
+    (state) => state.settings[SETTING_MODELS_MAX_TOKENS] ?? DEFAULT_MAX_TOKENS
+  );
+  const [error, setError] = useState('');
+  const maxTokensRef = useRef<HTMLInputElement>(null);
+  const maxTokensLabel = t('page-settings:label:max-tokens');
+  const updater = useUpsertSetting(
+    t('page-settings:message:change-setting-success', {
+      setting: maxTokensLabel,
+    }),
+    t('page-settings:message:change-setting-failure', {
+      setting: maxTokensLabel,
+    })
+  );
+
+  const onSaveClick = () => {
+    const validation = z.coerce
+      .number()
+      .int()
+      .gte(1)
+      .safeParse(maxTokensRef.current?.value);
+    if (!validation.success) {
+      setError(
+        t('error:validation:invalid-gte-int', {
+          value: maxTokensLabel,
+          threshold: 1,
+        })
+      );
+    } else {
+      updater({
+        key: SETTING_MODELS_MAX_TOKENS,
+        value: validation.data.toString(),
+      });
+    }
+  };
 
   return (
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
       <div className="flex justify-between">
         <Input
+          ref={maxTokensRef}
           className="w-52"
           id="max-tokens"
           placeholder="256"
-          defaultValue={settings[SETTING_MODELS_MAX_TOKENS]}
+          defaultValue={maxTokens}
         />
-        <Button>{t('generic:button:save')}</Button>
+        <Button onClick={onSaveClick}>{t('generic:button:save')}</Button>
       </div>
+      {error ? <FieldErrorMessage message={error} /> : null}
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:max-tokens-desc')}
       </span>
@@ -448,9 +523,9 @@ function SettingProxy() {
                   />
                 </div>
                 {form.formState.errors.http?.message ? (
-                  <p className="text-[0.8rem] font-medium text-destructive">
-                    {t(form.formState.errors.http?.message)}
-                  </p>
+                  <FieldErrorMessage
+                    message={t(form.formState.errors.http?.message)}
+                  />
                 ) : null}
                 <FormDescription>
                   {t('page-settings:label:traffic-type-desc')}

@@ -32,5 +32,5 @@ export const SETTING_NETWORK_PROXY = 'network:proxy';
 export const DEFAULT_DATE_FORMAT = 'MMM D, YYYY';
 export const DEFAULT_DATETIME_FORMAT = 'HH:mm MMM D, YYYY';
 export const DEFAULT_PROFILE_NAME = 'ME';
-export const DEFAULT_CONTEXT_LENGTH = 10;
+export const DEFAULT_CONTEXT_LENGTH = 1;
 export const DEFAULT_MAX_TOKENS = 256;

@@ -2,6 +2,7 @@
     "validation": {
         "invalid-proxy-url": "Invalid proxy URL",
         "empty-proxy-url": "Proxy URL cannot be empty",
-        "empty-traffic-type": "At least one protocol must be selected"
+        "empty-traffic-type": "At least one protocol must be selected",
+        "invalid-gte-int": "{{value}} should be an integer greater than or equal to {{threshold}}"
     }
 }
