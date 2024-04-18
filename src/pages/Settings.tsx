@@ -51,6 +51,7 @@ import log from '@/lib/log';
 import { proxySchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { ProxySetting } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 function useUpsertSetting(
   successMsg: string,
@@ -424,9 +425,19 @@ function SettingProxy() {
 
   return (
     <Card className="mt-1 flex flex-col px-4 py-6">
-      <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-        Proxy
-      </span>
+      <div className="flex items-center">
+        <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {t('page-settings:label:proxy')}
+        </span>
+        <span
+          className={cn(
+            'ml-2 size-2 rounded-full bg-gradient-to-br',
+            proxySetting.on
+              ? 'from-green-400 to-green-500 drop-shadow-md'
+              : 'from-gray-300 to-gray-400'
+          )}
+        />
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="mt-6 flex h-9 items-center justify-start">
