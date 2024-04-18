@@ -14,7 +14,14 @@ const config = {
     },
     extend: {
       colors: {
-        border: 'var(--gray-a6)',
+        border: {
+          DEFAULT: 'var(--gray-a6)',
+          hover: 'var(--gray-a7)',
+          yellow: {
+            DEFAULT: 'var(--yellow-a6)',
+            hover: 'var(--yellow-a7)',
+          },
+        },
         input: {
           DEFAULT: 'var(--yellow-a7)',
           hover: 'var(--yellow-a8)',
@@ -52,6 +59,10 @@ const config = {
         card: {
           DEFAULT: 'hsl(var(--background))',
           foreground: 'var(--gray-12)',
+        },
+        surface: {
+          DEFAULT: 'var(--yellow-surface)',
+          gray: 'var(--gray-surface)',
         },
       },
       borderRadius: {

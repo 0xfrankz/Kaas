@@ -16,7 +16,8 @@
     },
     "model": {
         "Azure": "Microsoft Azure",
-        "OpenAI": "OpenAI"
+        "OpenAI": "OpenAI",
+        "unknown": "Unknown"
     },
     "text": {
         "model-form-title": "Create new $t(generic:model:{{provider}}) model",

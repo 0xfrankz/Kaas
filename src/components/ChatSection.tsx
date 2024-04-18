@@ -33,6 +33,13 @@ export function ChatSection({ conversation }: Props) {
   const callBotMutation = useCallBot();
   const createMsgMutation = useCreateMessageMutation();
   const queryClient = useQueryClient();
+  const messagesWithModelId =
+    messages?.map((msg) => {
+      return {
+        ...msg,
+        modelId: msg.modelId ? msg.modelId : conversation.modelId,
+      };
+    }) ?? [];
 
   // Callbacks
   const onNewUserMessage = async (_message: Message) => {
@@ -85,7 +92,7 @@ export function ChatSection({ conversation }: Props) {
       <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-background">
         <ScrollArea className="w-full grow" viewportRef={viewportRef}>
           <div className="mx-auto w-[640px] pb-4">
-            {isSuccess && <ChatMessageList messages={messages} />}
+            {isSuccess && <ChatMessageList messages={messagesWithModelId} />}
             <BotMessageReceiver
               onMessageReceived={onNewBotMessage}
               onReady={() => setListenerReady(true)}

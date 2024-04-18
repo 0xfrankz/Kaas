@@ -1,14 +1,21 @@
 import { Pencil1Icon, PersonIcon } from '@radix-ui/react-icons';
 import dayjs from 'dayjs';
 import { createContext, useContext, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { DEFAULT_DATETIME_FORMAT } from '@/lib/constants';
+import {
+  DEFAULT_DATETIME_FORMAT,
+  DEFAULT_PROFILE_NAME,
+  SETTING_PROFILE_NAME,
+} from '@/lib/constants';
+import { useAppStateStore } from '@/lib/store';
 import type { Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { LoadingIcon } from './ui/icons/LoadingIcon';
+import { ModelIcon } from './ui/icons/ModelIcon';
 
 type WrapperProps = {
   children: React.ReactNode;
@@ -20,7 +27,6 @@ type MessageProps = {
 
 type ContentProps = {
   content: string;
-  rightAlign: boolean;
 };
 
 type MetaBarProps = {
@@ -38,7 +44,11 @@ const HoverContext = createContext<THoverContext>({
 });
 
 const BOT_AVATAR = (
-  <PersonIcon className="box-border size-6 rounded-full bg-slate-100 p-1" />
+  <ModelIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
+);
+
+const USER_AVATAR = (
+  <PersonIcon className="box-border size-6 rounded-full border border-border-yellow p-1" />
 );
 
 const HoverContextProvider = ({ children }: WrapperProps) => {
@@ -76,14 +86,9 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
   );
 };
 
-const Content = ({ content, rightAlign = false }: ContentProps) => {
+const Content = ({ content }: ContentProps) => {
   return (
-    <div
-      className={cn(
-        'mt-2 prose prose-sm text-foreground',
-        rightAlign ? 'text-right' : 'text-left'
-      )}
-    >
+    <div className={cn('mt-2 prose prose-sm max-w-none text-foreground')}>
       <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
     </div>
   );
@@ -101,13 +106,18 @@ const ActionBar = () => {
 };
 
 const User = ({ message }: MessageProps) => {
+  const userName = useAppStateStore(
+    (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
+  );
   return (
     <HoverContextProvider>
       <div className="flex w-auto flex-col rounded-2xl p-6">
         <MetaBar
+          avatar={USER_AVATAR}
+          name={userName}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
-        <Content content={message.content} rightAlign />
+        <Content content={message.content} />
         <ActionBar />
       </div>
     </HoverContextProvider>
@@ -115,15 +125,19 @@ const User = ({ message }: MessageProps) => {
 };
 
 const Bot = ({ message }: MessageProps) => {
+  const model = useAppStateStore((state) =>
+    state.models.find((m) => m.id === message.modelId)
+  );
+  const { t } = useTranslation(['generic']);
   return (
     <HoverContextProvider>
       <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
         <MetaBar
           avatar={BOT_AVATAR}
-          name="Azure | gpt-3.5"
+          name={model ? `${model.provider}` : t('generic:model:unknown')}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
-        <Content content={message.content} rightAlign={false} />
+        <Content content={message.content} />
         <ActionBar />
       </div>
     </HoverContextProvider>
@@ -134,7 +148,7 @@ const BotReceiving = ({ message }: { message: string }) => {
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
       <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
-      <Content content={message} rightAlign={false} />
+      <Content content={message} />
     </div>
   );
 };
