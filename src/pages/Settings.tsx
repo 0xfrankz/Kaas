@@ -271,13 +271,15 @@ function SettingContextLength() {
     const validation = z.coerce
       .number()
       .int()
-      .gte(0)
+      .min(0)
+      .max(65535)
       .safeParse(ctxLengthRef.current?.value);
     if (!validation.success) {
       setError(
-        t('error:validation:invalid-gte-int', {
+        t('error:validation:invalid-int-minmax', {
           value: ctxLengthLabel,
-          threshold: 0,
+          min: 0,
+          max: 65535,
         })
       );
     } else {
@@ -330,13 +332,15 @@ function SettingMaxTokens() {
     const validation = z.coerce
       .number()
       .int()
-      .gte(1)
+      .min(1)
+      .max(65535)
       .safeParse(maxTokensRef.current?.value);
     if (!validation.success) {
       setError(
-        t('error:validation:invalid-gte-int', {
+        t('error:validation:invalid-int-minmax', {
           value: maxTokensLabel,
-          threshold: 1,
+          min: 1,
+          max: 65535,
         })
       );
     } else {

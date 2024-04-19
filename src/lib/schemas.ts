@@ -34,14 +34,14 @@ export const editOpenAIModelFormSchema = newOpenAIModelFormSchema.extend({
 });
 
 const commonOptionsFormSchema = z.object({
-  contextLength: z.coerce.number().int().gte(0).optional(),
-  frequencyPenalty: z.coerce.number().optional().default(0),
-  maxTokens: z.coerce.number().int().optional(),
-  n: z.coerce.number().int().optional().default(1),
-  presencePenalty: z.coerce.number().optional().default(0),
+  contextLength: z.coerce.number().int().min(0).max(65535).optional(),
+  frequencyPenalty: z.coerce.number().min(-2.0).max(2.0).optional().default(0),
+  maxTokens: z.coerce.number().int().min(1).max(65535).optional(),
+  n: z.coerce.number().int().min(1).max(128).optional().default(1),
+  presencePenalty: z.coerce.number().min(-2.0).max(2.0).optional().default(0),
   stream: z.boolean().optional().default(false),
-  temperature: z.coerce.number().optional().default(1),
-  topP: z.coerce.number().optional().default(1),
+  temperature: z.coerce.number().min(0).max(2.0).optional().default(1),
+  topP: z.coerce.number().min(0).max(1.0).optional().default(1),
   user: z
     .string()
     .optional()

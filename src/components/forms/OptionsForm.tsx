@@ -69,7 +69,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -86,7 +86,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -103,7 +103,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -118,7 +118,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -135,7 +135,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -155,7 +155,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -172,7 +172,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -187,7 +187,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -202,7 +202,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -268,7 +268,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -285,7 +285,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -302,7 +302,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -317,7 +317,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -334,7 +334,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -354,7 +354,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -371,7 +371,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -386,7 +386,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -401,7 +401,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
-                  <div className="col-start-2 col-end-4">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -415,7 +415,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormControl>
                     <Input type="hidden" {...field} />
                   </FormControl>
-                  <div className="col-span-3 col-start-2">
+                  <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>

@@ -63,7 +63,6 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
 
   // Callbacks
   const onFormSubmit = (formData: Options) => {
-    console.log('onFormSubmit', formData);
     updateOptionsMutation.mutate(
       {
         conversationId: conversation.id,
