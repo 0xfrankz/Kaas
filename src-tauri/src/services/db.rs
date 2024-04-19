@@ -354,17 +354,29 @@ impl Repository {
      * Get the last message of a conversation
      */
     pub async fn get_last_message(&self, conversation_id: i32) -> Result<Message, String> {
-        let last_message = messages::Entity::find()
+        self.get_last_messages(conversation_id, 1)
+            .await
+            .map(|mut messages| messages.pop())?
+            .ok_or(format!("Message with conversation id = {} doesn't exist", conversation_id))
+    }
+
+    /**
+     * Get the last n messages of a conversation
+     */
+    pub async fn get_last_messages(&self, conversation_id: i32, n: u16) -> Result<Vec<Message>, String> {
+        let messages = messages::Entity::find()
             .filter(messages::Column::ConversationId.eq(conversation_id))
-            .order_by_desc(messages::Column::CreatedAt)
-            .one(&self.connection)
+            // .order_by_desc(messages::Column::CreatedAt)
+            // .limit(n as u64)
+            .cursor_by(messages::Column::Id)
+            .last(n as u64)
+            .all(&self.connection)
             .await
             .map_err(|err| { 
                 error!("{}", err);
-                format!("Failed to find last message with conversation id = {}", conversation_id)
-            })?
-            .ok_or(format!("Message with conversation id = {} doesn't exist", conversation_id))?;
-        Ok(last_message)
+                format!("Failed to find last {} messages with conversation id = {}", n,conversation_id)
+            })?;
+        Ok(messages)
     }
 
     /**

@@ -64,7 +64,7 @@ use serde::Deserialize;
 //     return Ok(client);
 // }
 
-pub fn message_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions) -> Result<CreateChatCompletionRequest, String> {
+pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
     let request: CreateChatCompletionRequest;
     // set messages

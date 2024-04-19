@@ -41,7 +41,7 @@ import {
   DEFAULT_PROFILE_NAME,
   SETTING_DISPLAY_LANGUAGE,
   SETTING_DISPLAY_THEME,
-  SETTING_MODELS_CONTENT_LENGTH,
+  SETTING_MODELS_CONTEXT_LENGTH,
   SETTING_MODELS_MAX_TOKENS,
   SETTING_NETWORK_PROXY,
   SETTING_PROFILE_NAME,
@@ -253,7 +253,7 @@ function SettingContextLength() {
   const { t } = useTranslation(['generic', 'page-settings', 'error']);
   const ctxLength = useAppStateStore(
     (state) =>
-      state.settings[SETTING_MODELS_CONTENT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
+      state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
   );
   const [error, setError] = useState('');
   const ctxLengthRef = useRef<HTMLInputElement>(null);
@@ -284,7 +284,7 @@ function SettingContextLength() {
       );
     } else {
       updater({
-        key: SETTING_MODELS_CONTENT_LENGTH,
+        key: SETTING_MODELS_CONTEXT_LENGTH,
         value: validation.data.toString(),
       });
     }

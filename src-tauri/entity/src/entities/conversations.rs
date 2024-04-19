@@ -3,6 +3,9 @@
 use sea_orm::{entity::prelude::*, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
+pub const DEFAULT_CONTEXT_LENGTH: u16 = 1;
+pub const DEFAULT_MAX_TOKENS: u16 = 256;
+
 #[derive(Clone, Default, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
 #[sea_orm(table_name = "conversations")]
 #[serde(rename_all = "camelCase")]

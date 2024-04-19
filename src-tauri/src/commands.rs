@@ -1,10 +1,10 @@
 use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, time::Instant};
 
 use entity::entities::{
-    conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions}, 
+    conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::{self, Model as Message, NewMessage, Roles}, 
     models::Model,
-    settings::{Model as Setting, ProxySetting, SETTING_NETWORK_PROXY},
+    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY},
 };
 
 use log::error;
@@ -121,24 +121,7 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 #[tauri::command]
 pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
     let now = Instant::now();
-    // Retrieve message, options and config
-    let last_message = repo
-        .get_last_message(conversation_id)
-        .await
-        .map_err(|message| DbError { message })
-        .and_then(|message| {
-            // Error if the last message is not from user
-            if message.role != Into::<i32>::into(Roles::User) {
-                return Err(StateError { 
-                    message: format!(
-                        "The last message of conversation with id = {} is not from user", 
-                        conversation_id
-                    )
-                });
-            } else {
-                return Ok(message);
-            }
-        })?;
+    // Retrieve options, config and settings
     let options = repo
         .get_conversation_options(conversation_id)
         .await
@@ -158,6 +141,42 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             }
         })
         .unwrap_or(None);
+    let ctx_length_setting: u16 = repo
+        .get_setting(SETTING_MODELS_CONTEXT_LENGTH)
+        .await
+        .map(|setting| {
+            match setting.value.parse::<u16>() {
+                Ok(value) => value,
+                Err(_) => DEFAULT_CONTEXT_LENGTH,
+            }
+        })
+        .unwrap_or(DEFAULT_CONTEXT_LENGTH);
+    let max_token_setting: u16 = repo
+        .get_setting(SETTING_MODELS_MAX_TOKENS)
+        .await
+        .map(|setting| {
+            match setting.value.parse::<u16>() {
+                Ok(value) => value,
+                Err(_) => DEFAULT_MAX_TOKENS,
+            }
+        })
+        .unwrap_or(DEFAULT_MAX_TOKENS);
+    // Try to retrieve the context length from the conversation's options.
+    // If unsuccessful, fall back to the default context length setting.
+    let context_length = serde_json::from_str(&options.options)
+        .map(|options_json: serde_json::Value| {
+            if let Some(ctx_length) = options_json["contextLength"].as_u64() {
+                u16::try_from(ctx_length).unwrap_or(ctx_length_setting)
+            } else {
+                ctx_length_setting
+            }
+        })
+        .unwrap_or(ctx_length_setting);
+    // Retrive message list
+    let last_messages = repo
+        .get_last_messages(conversation_id, context_length + 1) // plus one to get the last user's message
+        .await
+        .map_err(|message| DbError { message })?;
     // Build http client
     // Send request in a new thread
     tokio::spawn(async move {
@@ -168,11 +187,11 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             stop_clone.store(true, Ordering::Release);
         });
         // Invoke bot's API
-        log::info!("Calling bot with message = {:?}, options ={:?} and config = {:?}", last_message, options, config);
+        log::info!("Calling bot with messages = {:?}, options ={:?} and config = {:?}", last_messages, options, config);
         let is_stream_enabled = utils::is_stream_enabled(&options);
         if is_stream_enabled {
             // handle stream response
-            let stream_result = ws::complete_chat_stream(last_message.clone(), options, config, proxy_setting).await;
+            let stream_result = ws::complete_chat_stream(last_messages, options, config, proxy_setting).await;
             match stream_result {
                 Ok(mut stream) => {
                     log::info!("Streaming started!");
@@ -253,7 +272,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
                 },
                 _ => {}
             }
-            let result = ws::complete_chat(last_message.clone(), options, config, proxy_setting)
+            let result = ws::complete_chat(last_messages, options, config, proxy_setting)
                 .await;
             match result {
                 Ok(reply) => {

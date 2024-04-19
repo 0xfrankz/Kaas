@@ -7,7 +7,7 @@ use entity::entities::{conversations::ProviderOptions, messages::Model as Messag
 use reqwest;
 use serde::Deserialize;
 
-use super::utils::message_and_options_to_request;
+use super::utils::messages_and_options_to_request;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,7 +52,7 @@ impl Into<OpenAIConfig> for RawOpenAIConfig {
     }
 }
 
-pub async fn complete_chat(message: Message, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>) -> Result<String, String> {
+pub async fn complete_chat(messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>) -> Result<String, String> {
     let http_client = build_http_client(proxy_setting);
     match config.provider.as_str().into() {
         Providers::Azure => {
@@ -60,7 +60,7 @@ pub async fn complete_chat(message: Message, options: ProviderOptions, config: P
                 .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
             let config: AzureConfig = config_json.into();
             let client = Client::with_config(config).with_http_client(http_client);
-            let request = message_and_options_to_request(&vec![message], &options)?;
+            let request = messages_and_options_to_request(&messages, &options)?;
             execute_chat_complete_request(client, request).await
         },
         Providers::OpenAI => {
@@ -69,7 +69,7 @@ pub async fn complete_chat(message: Message, options: ProviderOptions, config: P
             let model = config_json.model.clone();
             let config: OpenAIConfig = config_json.into();
             let client = Client::with_config(config).with_http_client(http_client);
-            let mut request = message_and_options_to_request(&vec![message], &options)?;
+            let mut request = messages_and_options_to_request(&messages, &options)?;
             request.model = model;
             execute_chat_complete_request(client, request).await
         }
@@ -101,7 +101,7 @@ async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: Cr
     Ok(message)
 }
 
-pub async fn complete_chat_stream(message: Message, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>) -> Result<ChatCompletionResponseStream, String> {
+pub async fn complete_chat_stream(messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>) -> Result<ChatCompletionResponseStream, String> {
     let http_client = build_http_client(proxy_setting);
     match config.provider.as_str().into() {
         Providers::Azure => {
@@ -109,7 +109,7 @@ pub async fn complete_chat_stream(message: Message, options: ProviderOptions, co
                 .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
             let config: AzureConfig = config_json.into();
             let client = Client::with_config(config).with_http_client(http_client);
-            let request = message_and_options_to_request(&vec![message], &options)?;
+            let request = messages_and_options_to_request(&messages, &options)?;
             let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
             return Ok(stream);
         },
@@ -119,7 +119,7 @@ pub async fn complete_chat_stream(message: Message, options: ProviderOptions, co
             let model = config_json.model.clone();
             let config: OpenAIConfig = config_json.into();
             let client = Client::with_config(config).with_http_client(http_client);
-            let mut request = message_and_options_to_request(&vec![message], &options)?;
+            let mut request = messages_and_options_to_request(&messages, &options)?;
             request.model = model;
             let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
             return Ok(stream);

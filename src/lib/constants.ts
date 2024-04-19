@@ -24,7 +24,7 @@ export const SETTING_USER_ENTER_TO_SEND = 'user:enter_to_send';
 export const SETTING_DISPLAY_LANGUAGE = 'display:language';
 export const SETTING_DISPLAY_THEME = 'display:darkmode';
 export const SETTING_PROFILE_NAME = 'profile:name';
-export const SETTING_MODELS_CONTENT_LENGTH = 'models:context_length';
+export const SETTING_MODELS_CONTEXT_LENGTH = 'models:context_length';
 export const SETTING_MODELS_MAX_TOKENS = 'models:max_tokens';
 export const SETTING_NETWORK_PROXY = 'network:proxy';
 
