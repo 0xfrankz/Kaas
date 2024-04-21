@@ -64,7 +64,7 @@ use serde::Deserialize;
 //     return Ok(client);
 // }
 
-pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions) -> Result<CreateChatCompletionRequest, String> {
+pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions, default_max_tokens: Option<u16>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
     let request: CreateChatCompletionRequest;
     // set messages
@@ -78,7 +78,7 @@ pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &Provid
             request = CreateChatCompletionRequest {
                 messages: req_messages,
                 frequency_penalty: options.frequency_penalty,
-                max_tokens: options.max_tokens,
+                max_tokens: options.max_tokens.or(default_max_tokens),
                 n: options.n,
                 presence_penalty: options.presence_penalty,
                 stream: options.stream,

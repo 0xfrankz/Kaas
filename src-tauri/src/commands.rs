@@ -7,14 +7,13 @@ use entity::entities::{
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY},
 };
 
-use log::error;
 use tauri::State;
 
 use tokio_stream::StreamExt;
 
 use crate::{
     errors::CommandError::{self, ApiError, DbError, StateError},
-    services::{db::Repository, llm::{utils::{self, is_stream_enabled}, webservices as ws}},
+    services::{db::Repository, llm::{utils::{self}, webservices as ws}},
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -191,7 +190,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         let is_stream_enabled = utils::is_stream_enabled(&options);
         if is_stream_enabled {
             // handle stream response
-            let stream_result = ws::complete_chat_stream(last_messages, options, config, proxy_setting).await;
+            let stream_result = ws::complete_chat_stream(last_messages, options, config, proxy_setting, Some(max_token_setting)).await;
             match stream_result {
                 Ok(mut stream) => {
                     log::info!("Streaming started!");
@@ -272,7 +271,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
                 },
                 _ => {}
             }
-            let result = ws::complete_chat(last_messages, options, config, proxy_setting)
+            let result = ws::complete_chat(last_messages, options, config, proxy_setting, Some(max_token_setting))
                 .await;
             match result {
                 Ok(reply) => {
