@@ -3,12 +3,13 @@ use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, time::Instant};
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::{self, Model as Message, NewMessage, Roles}, 
-    models::Model,
+    models::{Model, ProviderConfig},
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY},
 };
 
 use tauri::State;
 
+use tokio::sync::oneshot;
 use tokio_stream::StreamExt;
 
 use crate::{
@@ -275,7 +276,40 @@ pub async fn update_options(conversation_id: i32, options: String, repo: State<'
     Ok(result)
 }
 
-// Helper functions for emitting events to frontend
+/***** Functions for calling model API START *****/
+async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+    let window_clone = window.clone();
+    let task_handle = tokio::spawn(async move {
+        // handle non-stream response
+        // start receiving in frontend
+        emit_stream_start(&window);
+        let result = ws::complete_chat(messages, options, config, proxy_setting, Some(max_token_setting))
+            .await;
+        match result {
+            Ok(reply) => {
+                emit_stream_data(&window, reply);
+                emit_stream_done(&window);
+            },
+            Err(msg) => {
+                let err_reply = format!("[[ERROR]]{}", msg);
+                emit_stream_error(&window, err_reply);
+            }
+        }
+    });
+    let abort_handle = task_handle.abort_handle();
+    // Bind listener for cancel events
+    let handler = window_clone.listen("stop-bot", move |_| {
+        abort_handle.abort();
+    });
+    // Run task
+    let _ = task_handle.await;
+    // Unbind listener for cancel events before thread ends
+    window_clone.unlisten(handler);
+
+}
+/***** Functions for calling model API END *****/
+
+/***** Helper functions for emitting events to frontend START *****/
 fn emit_stream_start(window: &tauri::Window) {
     match window.emit("bot-reply", "[[START]]") {
         Err(err) => {
@@ -323,3 +357,4 @@ fn emit_stream_error(window: &tauri::Window, err_message: String) {
 fn emit_stream_data(window: &tauri::Window, data: String) {
     let _ = window.emit("bot-reply", data);
 }
+/***** Helper functions for emitting events to frontend END *****/
