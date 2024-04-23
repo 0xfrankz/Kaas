@@ -179,74 +179,75 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         .map_err(|message| DbError { message })?;
     // Build http client
     // Send request in a new thread
-    tokio::spawn(async move {
-        let stop = Arc::new(AtomicBool::new(false));
-        let stop_clone = Arc::clone(&stop);
-        // Bind listener for cancel events
-        let handler = window.listen("stop-bot", move |_| {
-            stop_clone.store(true, Ordering::Release);
-        });
-        // Invoke bot's API
-        log::info!("Calling bot with messages = {:?}, options ={:?} and config = {:?}", last_messages, options, config);
-        let is_stream_enabled = utils::is_stream_enabled(&options);
-        if is_stream_enabled {
-            // handle stream response
-            let stream_result = ws::complete_chat_stream(last_messages, options, config, proxy_setting, Some(max_token_setting)).await;
-            match stream_result {
-                Ok(mut stream) => {
-                    log::info!("Streaming started!");
-                    // start receiving in frontend
-                    emit_stream_start(&window);
-                    while let Some(result) = stream.next().await {
-                        if stop.load(Ordering::Acquire) {
-                            log::info!("Streaming stopped!");
-                            emit_stream_stopped(&window);
-                            break;
-                        }
-                        match result {
-                            Ok(response) => {
-                                response.choices.iter().for_each(|chat_choice| {
-                                    if let Some(ref content) = chat_choice.delta.content {
-                                        emit_stream_data(&window, content.to_owned());
-                                    }
-                                });
-                            }
-                            Err(err) => {
-                                let err_reply = format!("[[ERROR]]{}", err);
-                                emit_stream_error(&window, err_reply);
-                                break;
-                            }
-                        }
-                    }
-                    if !stop.load(Ordering::Acquire) {
-                        emit_stream_done(&window);
-                    }
-                },
-                Err(msg) => {
-                    emit_stream_error(&window, msg);
-                }
-            }
-        } else {
-            // handle non-stream response
-            // start receiving in frontend
-            emit_stream_start(&window);
-            let result = ws::complete_chat(last_messages, options, config, proxy_setting, Some(max_token_setting))
-                .await;
-            match result {
-                Ok(reply) => {
-                    emit_stream_data(&window, reply);
-                    emit_stream_done(&window);
-                },
-                Err(msg) => {
-                    let err_reply = format!("[[ERROR]]{}", msg);
-                    emit_stream_error(&window, err_reply);
-                }
-            }
-        }
+    // tokio::spawn(async move {
+    //     let stop = Arc::new(AtomicBool::new(false));
+    //     let stop_clone = Arc::clone(&stop);
+    //     // Bind listener for cancel events
+    //     let handler = window.listen("stop-bot", move |_| {
+    //         stop_clone.store(true, Ordering::Release);
+    //     });
+    //     // Invoke bot's API
+    //     log::info!("Calling bot with messages = {:?}, options ={:?} and config = {:?}", last_messages, options, config);
+    //     let is_stream_enabled = utils::is_stream_enabled(&options);
+    //     if is_stream_enabled {
+    //         // handle stream response
+    //         let stream_result = ws::complete_chat_stream(last_messages, options, config, proxy_setting, Some(max_token_setting)).await;
+    //         match stream_result {
+    //             Ok(mut stream) => {
+    //                 log::info!("Streaming started!");
+    //                 // start receiving in frontend
+    //                 emit_stream_start(&window);
+    //                 while let Some(result) = stream.next().await {
+    //                     if stop.load(Ordering::Acquire) {
+    //                         log::info!("Streaming stopped!");
+    //                         emit_stream_stopped(&window);
+    //                         break;
+    //                     }
+    //                     match result {
+    //                         Ok(response) => {
+    //                             response.choices.iter().for_each(|chat_choice| {
+    //                                 if let Some(ref content) = chat_choice.delta.content {
+    //                                     emit_stream_data(&window, content.to_owned());
+    //                                 }
+    //                             });
+    //                         }
+    //                         Err(err) => {
+    //                             let err_reply = format!("[[ERROR]]{}", err);
+    //                             emit_stream_error(&window, err_reply);
+    //                             break;
+    //                         }
+    //                     }
+    //                 }
+    //                 if !stop.load(Ordering::Acquire) {
+    //                     emit_stream_done(&window);
+    //                 }
+    //             },
+    //             Err(msg) => {
+    //                 emit_stream_error(&window, msg);
+    //             }
+    //         }
+    //     } else {
+    //         // handle non-stream response
+    //         // start receiving in frontend
+    //         emit_stream_start(&window);
+    //         let result = ws::complete_chat(last_messages, options, config, proxy_setting, Some(max_token_setting))
+    //             .await;
+    //         match result {
+    //             Ok(reply) => {
+    //                 emit_stream_data(&window, reply);
+    //                 emit_stream_done(&window);
+    //             },
+    //             Err(msg) => {
+    //                 let err_reply = format!("[[ERROR]]{}", msg);
+    //                 emit_stream_error(&window, err_reply);
+    //             }
+    //         }
+    //     }
         
-        // Unbind listener for cancel events before thread ends
-        window.unlisten(handler);
-    });
+    //     // Unbind listener for cancel events before thread ends
+    //     window.unlisten(handler);
+    // });
+    call_bot_one_off(window, last_messages, options, config, proxy_setting, max_token_setting).await;
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
     Ok(())
@@ -278,33 +279,41 @@ pub async fn update_options(conversation_id: i32, options: String, repo: State<'
 
 /***** Functions for calling model API START *****/
 async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+    log::info!("call_bot_one_off");
     let window_clone = window.clone();
+    let window_clone_2 = window.clone();
     let task_handle = tokio::spawn(async move {
         // handle non-stream response
         // start receiving in frontend
         emit_stream_start(&window);
+        log::info!("call_bot_one_off: thread start");
         let result = ws::complete_chat(messages, options, config, proxy_setting, Some(max_token_setting))
             .await;
         match result {
             Ok(reply) => {
+                log::info!("Bot call received: {}", reply);
                 emit_stream_data(&window, reply);
                 emit_stream_done(&window);
+                log::info!("call_bot_one_off: thread done");
             },
             Err(msg) => {
                 let err_reply = format!("[[ERROR]]{}", msg);
                 emit_stream_error(&window, err_reply);
+                log::info!("call_bot_one_off: thread error");
             }
         }
     });
     let abort_handle = task_handle.abort_handle();
     // Bind listener for cancel events
-    let handler = window_clone.listen("stop-bot", move |_| {
+    let event_handle = window_clone.listen("stop-bot", move |_| {
+        log::info!("Bot call stopped!");
         abort_handle.abort();
+        emit_stream_stopped(&window_clone_2);
     });
     // Run task
     let _ = task_handle.await;
     // Unbind listener for cancel events before thread ends
-    window_clone.unlisten(handler);
+    window_clone.unlisten(event_handle);
 
 }
 /***** Functions for calling model API END *****/
