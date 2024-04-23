@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { animate, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -13,6 +14,7 @@ import {
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 import { BotMessageReceiver } from './BotMessageReceiver';
 import { ChatMessageList } from './ChatMessageList';
@@ -128,23 +130,40 @@ export function ChatSection({ conversation }: Props) {
       }
       if (atBottom) {
         document.getElementById('to-bottom')?.classList.add('hidden');
-        document.getElementById('prompt-input')?.classList.remove('hidden');
+        const el = document.getElementById('prompt-input');
+        if (el) {
+          el.classList.remove('hidden');
+          animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
+        }
       } else {
         if (timerRef.current === null) {
-          console.log('Set Timout!');
           timerRef.current = setTimeout(() => {
-            console.log('Timout!');
-            document.getElementById('to-bottom')?.classList.remove('hidden');
-          }, 200);
+            const el = document.getElementById('to-bottom');
+            if (el) {
+              el.classList.remove('hidden');
+              animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
+            }
+          }, 600);
         }
-        console.log(timerRef.current);
         document.getElementById('prompt-input')?.classList.add('hidden');
       }
     }
   }, [atBottom, receiving]);
 
   const renderBottomSection = () => {
-    if (receiving) return <ChatStop />;
+    if (receiving)
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.2, type: 'tween' },
+          }}
+        >
+          <ChatStop />
+        </motion.div>
+      );
     return (
       <>
         <div id="to-bottom" className="hidden">
@@ -175,18 +194,18 @@ export function ChatSection({ conversation }: Props) {
             />
             <div className="h-[104px]" />
             <ScrollBottom scrollContainerRef={viewportRef} />
-            <div className="fixed bottom-0 mt-4 flex min-h-[104px] w-[640px]">
+            <div
+              className={cn(
+                'fixed bottom-0 mt-4 flex min-h-[104px] w-[640px]',
+                atBottom ? ' bg-background' : 'bg-transparent'
+              )}
+            >
               <div className="flex w-full flex-col items-center justify-center">
                 {renderBottomSection()}
               </div>
             </div>
           </div>
         </ScrollArea>
-        {/* <div className="mt-4 min-h-[104px] w-full">
-          <div className="mx-auto h-full w-[640px]">
-            {renderBottomSection()}
-          </div>
-        </div> */}
       </TwoRows.Bottom>
     </TwoRows>
   );
