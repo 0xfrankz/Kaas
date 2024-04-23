@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,8 +17,12 @@ import type { Conversation, Message } from '@/lib/types';
 import { BotMessageReceiver } from './BotMessageReceiver';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
+import { ChatStop } from './ChatStop';
 import { ScrollBottom } from './ScrollBottom';
 import { TitleBar } from './TitleBar';
+import { ToBottom } from './ToBottom';
+
+const MemoizedMessageList = memo(ChatMessageList);
 
 type Props = {
   conversation: Conversation;
@@ -26,20 +30,26 @@ type Props = {
 
 export function ChatSection({ conversation }: Props) {
   const [listenerReady, setListenerReady] = useState(false); // mark to make sure listener is ready before calling bot
+  const [receiving, setReceiving] = useState(false);
+  const [atBottom, setAtBottom] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
   const callBotMutation = useCallBot();
   const createMsgMutation = useCreateMessageMutation();
   const queryClient = useQueryClient();
-  const messagesWithModelId =
-    messages?.map((msg) => {
-      return {
-        ...msg,
-        modelId: msg.modelId ? msg.modelId : conversation.modelId,
-      };
-    }) ?? [];
+  const messagesWithModelId = useMemo(() => {
+    return (
+      messages?.map((msg) => {
+        return {
+          ...msg,
+          modelId: msg.modelId ? msg.modelId : conversation.modelId,
+        };
+      }) ?? []
+    );
+  }, [messages]);
 
   // Callbacks
   const onNewUserMessage = async (_message: Message) => {
@@ -75,6 +85,20 @@ export function ChatSection({ conversation }: Props) {
     );
   };
 
+  const onReceivingChange = useCallback(
+    (isReceiving: boolean) => setReceiving(isReceiving),
+    []
+  );
+
+  const onToBottomClick = useCallback(() => {
+    if (viewportRef.current) {
+      viewportRef.current.scrollTo({
+        top: viewportRef.current?.scrollHeight ?? 0,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (isSuccess && messages?.length > 0 && listenerReady) {
       const lastMsg = messages.at(-1);
@@ -84,6 +108,55 @@ export function ChatSection({ conversation }: Props) {
     }
   }, [isSuccess, messages, listenerReady]);
 
+  useEffect(() => {
+    if (viewportRef.current) {
+      viewportRef.current.onscroll = () => {
+        setAtBottom(
+          (viewportRef.current?.scrollTop ?? 0) +
+            (viewportRef.current?.clientHeight ?? 0) ===
+            viewportRef.current?.scrollHeight
+        );
+      };
+    }
+  }, [viewportRef.current]);
+
+  useEffect(() => {
+    if (!receiving) {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (atBottom) {
+        document.getElementById('to-bottom')?.classList.add('hidden');
+        document.getElementById('prompt-input')?.classList.remove('hidden');
+      } else {
+        if (timerRef.current === null) {
+          console.log('Set Timout!');
+          timerRef.current = setTimeout(() => {
+            console.log('Timout!');
+            document.getElementById('to-bottom')?.classList.remove('hidden');
+          }, 200);
+        }
+        console.log(timerRef.current);
+        document.getElementById('prompt-input')?.classList.add('hidden');
+      }
+    }
+  }, [atBottom, receiving]);
+
+  const renderBottomSection = () => {
+    if (receiving) return <ChatStop />;
+    return (
+      <>
+        <div id="to-bottom" className="hidden">
+          <ToBottom onClick={onToBottomClick} />
+        </div>
+        <div id="prompt-input" className="size-full">
+          <ChatPromptInput conversationId={conversation.id} />
+        </div>
+      </>
+    );
+  };
+
   return (
     <TwoRows className="max-h-screen">
       <TwoRows.Top>
@@ -91,20 +164,29 @@ export function ChatSection({ conversation }: Props) {
       </TwoRows.Top>
       <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-background">
         <ScrollArea className="w-full grow" viewportRef={viewportRef}>
-          <div className="mx-auto w-[640px] pb-4">
-            {isSuccess && <ChatMessageList messages={messagesWithModelId} />}
+          <div className="relative mx-auto w-[640px] pb-4">
+            {isSuccess && (
+              <MemoizedMessageList messages={messagesWithModelId} />
+            )}
             <BotMessageReceiver
               onMessageReceived={onNewBotMessage}
+              onReceivingChange={onReceivingChange}
               onReady={() => setListenerReady(true)}
             />
+            <div className="h-[104px]" />
             <ScrollBottom scrollContainerRef={viewportRef} />
+            <div className="fixed bottom-0 mt-4 flex min-h-[104px] w-[640px]">
+              <div className="flex w-full flex-col items-center justify-center">
+                {renderBottomSection()}
+              </div>
+            </div>
           </div>
         </ScrollArea>
-        <div className="mt-4 w-full">
-          <div className="mx-auto w-[640px]">
-            <ChatPromptInput conversationId={conversation.id} />
+        {/* <div className="mt-4 min-h-[104px] w-full">
+          <div className="mx-auto h-full w-[640px]">
+            {renderBottomSection()}
           </div>
-        </div>
+        </div> */}
       </TwoRows.Bottom>
     </TwoRows>
   );

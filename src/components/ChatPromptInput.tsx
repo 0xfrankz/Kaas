@@ -117,7 +117,7 @@ export function ChatPromptInput({ conversationId }: Props) {
     <>
       <div
         className={cn(
-          'mb-2 flex min-h-15 w-auto items-end rounded-xl px-2 py-3 text-sm',
+          'mb-2 flex min-h-15 w-full items-end rounded-xl px-2 py-3 text-sm',
           focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
         )}
       >
@@ -137,7 +137,7 @@ export function ChatPromptInput({ conversationId }: Props) {
           <PaperPlaneIcon />
         </Button>
       </div>
-      <div className="mb-4 flex items-center justify-between px-2 text-xs text-muted-foreground">
+      <div className="mb-4 flex w-full items-center justify-between px-2 text-xs text-muted-foreground">
         <span>
           {enterToSend
             ? t('page-conversation:label:enter-to-send')

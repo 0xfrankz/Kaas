@@ -14,10 +14,15 @@ import ChatMessage from './ChatMessage';
 
 type Props = {
   onReady: () => void;
+  onReceivingChange: (receiving: boolean) => void;
   onMessageReceived: (message: string) => void;
 };
 
-export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
+export function BotMessageReceiver({
+  onReady,
+  onReceivingChange,
+  onMessageReceived,
+}: Props) {
   const [receiving, setReceiving] = useState(false);
   const acceptingRef = useRef<boolean>(false);
   const [activeBotMessage, setActiveBotMessage] = useState('');
@@ -26,11 +31,13 @@ export function BotMessageReceiver({ onReady, onMessageReceived }: Props) {
 
   const startStreaming = () => {
     setReceiving(true);
+    onReceivingChange(true);
     acceptingRef.current = true;
   };
 
   const endStreaming = () => {
     setReceiving(false);
+    onReceivingChange(false);
     acceptingRef.current = false;
   };
 

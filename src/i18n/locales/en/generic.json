@@ -24,6 +24,7 @@
         "model-form-description": "Fill in your $t(generic:model:{{provider}})'s API information. You can find more information here."
     },
     "label": {
-        "default": "Default"
+        "default": "Default",
+        "stop": "Stop"
     }
 }
