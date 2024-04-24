@@ -109,7 +109,6 @@ export function ChatSection({ conversation }: Props) {
       }
     }
   }, [isSuccess, messages, listenerReady]);
-
   useEffect(() => {
     if (viewportRef.current) {
       viewportRef.current.onscroll = () => {
@@ -119,6 +118,14 @@ export function ChatSection({ conversation }: Props) {
             viewportRef.current?.scrollHeight
         );
       };
+      if (
+        (viewportRef.current?.clientHeight ?? 0) ===
+        viewportRef.current?.scrollHeight
+      ) {
+        // clientHeight is less than screen height
+        // no scroll bar shown and we're at the bottom
+        setAtBottom(true);
+      }
     }
   }, [viewportRef.current]);
 
