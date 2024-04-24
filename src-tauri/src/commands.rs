@@ -298,8 +298,8 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
             },
             Err(msg) => {
                 let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&window, err_reply);
-                log::info!("call_bot_one_off: thread error");
+                emit_stream_error(&window, &err_reply);
+                log::error!("call_bot_one_off: {}", &err_reply);
             }
         }
     });
@@ -315,6 +315,58 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
     // Unbind listener for cancel events before thread ends
     window_clone.unlisten(event_handle);
 
+}
+
+async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+    log::info!("call_bot_stream");
+    let window_clone = window.clone();
+    let window_clone_2 = window.clone();
+    let task_handle = tokio::spawn(async move {
+        // handle stream response
+        // start receiving in frontend
+        emit_stream_start(&window);
+        log::info!("call_bot_stream: thread start");
+        let stream_result = ws::complete_chat_stream(messages, options, config, proxy_setting, Some(max_token_setting)).await;
+        match stream_result {
+            Ok(mut stream) => {
+                log::info!("Streaming started!");
+                while let Some(result) = stream.next().await {
+                    log::info!("Streaming more data...");
+                    match result {
+                        Ok(response) => {
+                            response.choices.iter().for_each(|chat_choice| {
+                                if let Some(ref content) = chat_choice.delta.content {
+                                    emit_stream_data(&window, content.to_owned());
+                                }
+                            });
+                        }
+                        Err(err) => {
+                            let err_reply = format!("[[ERROR]]{}", err);
+                            emit_stream_error(&window, &err_reply);
+                            log::error!("call_bot_stream: Error during stream: {}", &err_reply);
+                            break;
+                        }
+                    }
+                }
+            },
+            Err(msg) => {
+                let err_reply = format!("[[ERROR]]{}", msg);
+                emit_stream_error(&window, &err_reply);
+                log::error!("call_bot_stream: Error starting stream: {}", &err_reply);
+            }
+        }
+    });
+    let abort_handle = task_handle.abort_handle();
+    // Bind listener for cancel events
+    let event_handle = window_clone.listen("stop-bot", move |_| {
+        log::info!("Bot call stopped!");
+        abort_handle.abort();
+        emit_stream_stopped(&window_clone_2);
+    });
+    // Run task
+    let _ = task_handle.await;
+    // Unbind listener for cancel events before thread ends
+    window_clone.unlisten(event_handle);
 }
 /***** Functions for calling model API END *****/
 
@@ -352,12 +404,12 @@ fn emit_stream_stopped(window: &tauri::Window) {
     }
 }
 
-fn emit_stream_error(window: &tauri::Window, err_message: String) {
-    match window.emit("bot-reply", err_message.clone()) {
+fn emit_stream_error(window: &tauri::Window, err_message: &String) {
+    match window.emit("bot-reply", err_message) {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // retry
-            let _ = window.emit("bot-reply", err_message.clone());
+            let _ = window.emit("bot-reply", err_message);
         },
         _ => {}
     }
