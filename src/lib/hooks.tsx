@@ -4,7 +4,8 @@ import type {
   UseMutationResult,
   UseQueryResult,
 } from '@tanstack/react-query';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { produce } from 'immer';
 import type { HTMLAttributes } from 'react';
 import {
   forwardRef,
@@ -27,6 +28,7 @@ import {
   invokeListModels,
   invokeListSettings,
   invokeUpdateOptions,
+  invokeUpdateSubject,
   invokeUpsertSetting,
 } from './commands';
 import { ConversationsContext } from './contexts';
@@ -175,6 +177,39 @@ export function useUpdateOptionsMutation(): UseMutationResult<
   return useMutation({
     mutationFn: invokeUpdateOptions,
   });
+}
+
+export function useSubjectUpdater(
+  onSuccess: () => void = () => {},
+  onError: () => void = () => {}
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: invokeUpdateSubject,
+    onMutate: async ({ conversationId, subject }) => {
+      // Snapshot the previous value
+      const previousConversations = queryClient.getQueryData<Conversation[]>(
+        LIST_CONVERSATIONS_KEY
+      );
+      // Optimistically update
+      queryClient.setQueryData<Conversation[]>(
+        LIST_CONVERSATIONS_KEY,
+        (old) => {
+          return produce(old, (draft) => {
+            if (draft) {
+              const conversation = draft.find((c) => c.id === conversationId);
+              if (conversation) conversation.subject = subject;
+            }
+          });
+        }
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousConversations };
+    },
+    onSuccess,
+    onError,
+  }).mutate;
 }
 
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;

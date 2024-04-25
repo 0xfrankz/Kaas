@@ -83,6 +83,19 @@ export async function invokeUpdateOptions({
   });
 }
 
+export async function invokeUpdateSubject({
+  conversationId,
+  subject,
+}: {
+  conversationId: number;
+  subject: string;
+}) {
+  await invoke<string>('update_subject', {
+    conversationId,
+    subject,
+  });
+}
+
 export async function invokeListMessages(
   conversationId: number
 ): Promise<Message[]> {

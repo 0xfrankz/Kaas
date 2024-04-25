@@ -88,7 +88,11 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
 
 const Content = ({ content }: ContentProps) => {
   return (
-    <div className={cn('mt-2 prose prose-sm max-w-none text-foreground')}>
+    <div
+      className={cn(
+        'mt-2 prose prose-sm max-w-none text-foreground whitespace-pre-wrap'
+      )}
+    >
       <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
     </div>
   );

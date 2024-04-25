@@ -8,8 +8,6 @@ use entity::entities::{
 };
 
 use tauri::State;
-
-use tokio::sync::oneshot;
 use tokio_stream::StreamExt;
 
 use crate::{
@@ -274,6 +272,18 @@ pub async fn update_options(conversation_id: i32, options: String, repo: State<'
         .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::update_options]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'_, Repository>) -> CommandResult<String> {
+    let now = Instant::now();
+    let result = repo
+        .update_conversation_subject(conversation_id, subject)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_subject]: {:.2?}", elapsed);
     Ok(result)
 }
 

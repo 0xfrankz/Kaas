@@ -11,6 +11,7 @@ import {
   useCallBot,
   useCreateMessageMutation,
   useListMessagesQuery,
+  useSubjectUpdater,
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import type { Conversation, Message } from '@/lib/types';
@@ -20,8 +21,8 @@ import { BotMessageReceiver } from './BotMessageReceiver';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ChatStop } from './ChatStop';
+import { EditableTitleBar } from './EditableTitleBar';
 import { ScrollBottom } from './ScrollBottom';
-import { TitleBar } from './TitleBar';
 import { ToBottom } from './ToBottom';
 
 const MemoizedMessageList = memo(ChatMessageList);
@@ -41,6 +42,7 @@ export function ChatSection({ conversation }: Props) {
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
   const callBotMutation = useCallBot();
   const createMsgMutation = useCreateMessageMutation();
+  const subjectUpdater = useSubjectUpdater();
   const queryClient = useQueryClient();
   const messagesWithModelId = useMemo(() => {
     return (
@@ -99,6 +101,10 @@ export function ChatSection({ conversation }: Props) {
         behavior: 'smooth',
       });
     }
+  }, []);
+
+  const onTitleChange = useCallback((newTitle: string) => {
+    subjectUpdater({ conversationId: conversation.id, subject: newTitle });
   }, []);
 
   useEffect(() => {
@@ -186,7 +192,10 @@ export function ChatSection({ conversation }: Props) {
   return (
     <TwoRows className="max-h-screen">
       <TwoRows.Top>
-        <TitleBar title={conversation.subject} />
+        <EditableTitleBar
+          title={conversation.subject}
+          onEditDone={onTitleChange}
+        />
       </TwoRows.Top>
       <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-background">
         <ScrollArea className="w-full grow" viewportRef={viewportRef}>

@@ -351,6 +351,26 @@ impl Repository {
     }
 
     /**
+     * Update title of a conversation
+     */
+    pub async fn update_conversation_subject(&self, conversation_id: i32, subject: String) -> Result<String, String> {
+        let update_result = conversations::Entity::update_many()
+            .filter(conversations::Column::Id.eq(conversation_id))
+            .col_expr(conversations::Column::Subject, sea_query::Expr::value(&subject))
+            .exec(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to update subject of conversation with id = {}", conversation_id)
+            })?;
+        if update_result.rows_affected == 0 {
+            Err(format!("Conversation with id {} doesn't exist", conversation_id))
+        } else {
+            Ok(subject)
+        }
+    }
+
+    /**
      * Get the last message of a conversation
      */
     pub async fn get_last_message(&self, conversation_id: i32) -> Result<Message, String> {
