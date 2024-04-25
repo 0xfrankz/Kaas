@@ -11,8 +11,7 @@ use tauri::State;
 use tokio_stream::StreamExt;
 
 use crate::{
-    errors::CommandError::{self, ApiError, DbError, StateError},
-    services::{db::Repository, llm::{utils::{self}, webservices as ws}},
+    errors::CommandError::{self, ApiError, DbError, StateError}, log_utils::{error, trace}, services::{db::Repository, llm::{utils, webservices as ws}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -245,7 +244,14 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
     //     // Unbind listener for cancel events before thread ends
     //     window.unlisten(handler);
     // });
-    call_bot_one_off(window, last_messages, options, config, proxy_setting, max_token_setting).await;
+    let is_stream_enabled = utils::is_stream_enabled(&options);
+    if is_stream_enabled {
+        // stream response
+        call_bot_stream(window, last_messages, options, config, proxy_setting, max_token_setting).await;
+    } else {
+        // one-off response
+        call_bot_one_off(window, last_messages, options, config, proxy_setting, max_token_setting).await;
+    }
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
     Ok(())
@@ -328,20 +334,21 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
 }
 
 async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
-    log::info!("call_bot_stream");
+    let log_tag = "call_bot_stream";
+    trace(log_tag, "entrant");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
     let task_handle = tokio::spawn(async move {
         // handle stream response
         // start receiving in frontend
         emit_stream_start(&window);
-        log::info!("call_bot_stream: thread start");
+        trace(log_tag, "Thread sp[awned");
         let stream_result = ws::complete_chat_stream(messages, options, config, proxy_setting, Some(max_token_setting)).await;
         match stream_result {
             Ok(mut stream) => {
-                log::info!("Streaming started!");
+                trace(log_tag, "Streaming started!");
                 while let Some(result) = stream.next().await {
-                    log::info!("Streaming more data...");
+                    trace(log_tag, "Streaming data...");
                     match result {
                         Ok(response) => {
                             response.choices.iter().for_each(|chat_choice| {
@@ -353,23 +360,26 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
                         Err(err) => {
                             let err_reply = format!("[[ERROR]]{}", err);
                             emit_stream_error(&window, &err_reply);
-                            log::error!("call_bot_stream: Error during stream: {}", &err_reply);
+                            error(log_tag, &format!("Error during stream: {}", &err_reply));
                             break;
                         }
                     }
                 }
+                trace(log_tag, "Streaming finished!");
+                // stop receiving in frontend
+                emit_stream_done(&window);
             },
             Err(msg) => {
                 let err_reply = format!("[[ERROR]]{}", msg);
                 emit_stream_error(&window, &err_reply);
-                log::error!("call_bot_stream: Error starting stream: {}", &err_reply);
+                error(log_tag, &format!("Error starting stream: {}", &err_reply));
             }
         }
     });
     let abort_handle = task_handle.abort_handle();
     // Bind listener for cancel events
     let event_handle = window_clone.listen("stop-bot", move |_| {
-        log::info!("Bot call stopped!");
+        trace(log_tag, "call stopped");
         abort_handle.abort();
         emit_stream_stopped(&window_clone_2);
     });
@@ -377,6 +387,7 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
     let _ = task_handle.await;
     // Unbind listener for cancel events before thread ends
     window_clone.unlisten(event_handle);
+    trace(log_tag, "exit");
 }
 /***** Functions for calling model API END *****/
 

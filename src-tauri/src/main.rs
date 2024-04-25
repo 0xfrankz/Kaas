@@ -6,6 +6,7 @@ mod core;
 mod errors;
 mod init;
 mod services;
+mod log_utils;
 
 use chrono::Local;
 use log::LevelFilter;
@@ -17,7 +18,7 @@ fn main() {
         error: Color::Red,
         warn: Color::Yellow,
         debug: Color::Green,
-        info: Color::White,
+        info: Color::Blue,
         trace: Color::White,
     };
     tauri::Builder::default()
@@ -38,7 +39,7 @@ fn main() {
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::Stdout, LogTarget::Webview])
-                .level(LevelFilter::Debug)
+                .level(LevelFilter::Trace)
                 .format(move |out, message, record| {
                     out.finish(format_args!(
                         "[{}][{}][{}] {}",
