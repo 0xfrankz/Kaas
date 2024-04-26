@@ -6,10 +6,10 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { useShallow } from 'zustand/react/shallow';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { FieldErrorMessage } from '@/components/FieldErrorMessage';
+import { OnOffIndicator } from '@/components/OnOffIndicator';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -46,12 +46,11 @@ import {
   SETTING_NETWORK_PROXY,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
-import { useUpsertSettingMutation } from '@/lib/hooks';
+import { useProxySetting, useUpsertSettingMutation } from '@/lib/hooks';
 import log from '@/lib/log';
 import { proxySchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { ProxySetting } from '@/lib/types';
-import { cn } from '@/lib/utils';
 
 function useUpsertSetting(
   successMsg: string,
@@ -374,23 +373,7 @@ function SettingMaxTokens() {
 
 function SettingProxy() {
   const { t } = useTranslation(['generic', 'page-settings']);
-  const [proxySettingStr, updateSetting] = useAppStateStore(
-    useShallow((state) => [
-      state.settings[SETTING_NETWORK_PROXY],
-      state.updateSetting,
-    ])
-  );
-  let proxySetting: ProxySetting;
-  try {
-    proxySetting = proxySchema.parse(JSON.parse(proxySettingStr));
-  } catch (e) {
-    proxySetting = {
-      on: false,
-      server: '',
-      http: false,
-      https: false,
-    };
-  }
+  const [proxySetting, setProxySetting] = useProxySetting();
   const form = useForm<ProxySetting>({
     resolver: zodResolver(proxySchema),
     defaultValues: proxySetting,
@@ -401,10 +384,7 @@ function SettingProxy() {
     t('page-settings:message:change-setting-success', { setting: proxyLabel }),
     t('page-settings:message:change-setting-failure', { setting: proxyLabel }),
     () => {
-      updateSetting({
-        key: SETTING_NETWORK_PROXY,
-        value: JSON.stringify(form.getValues()),
-      });
+      setProxySetting(form.getValues());
     }
   );
 
@@ -433,14 +413,7 @@ function SettingProxy() {
         <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           {t('page-settings:label:proxy')}
         </span>
-        <span
-          className={cn(
-            'ml-2 size-2 rounded-full bg-gradient-to-br',
-            proxySetting.on
-              ? 'from-green-400 to-green-500 drop-shadow-md'
-              : 'from-gray-300 to-gray-400'
-          )}
-        />
+        <OnOffIndicator on={proxySetting.on} />
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>

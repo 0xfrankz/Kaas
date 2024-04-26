@@ -21,7 +21,7 @@ import { BotMessageReceiver } from './BotMessageReceiver';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ChatStop } from './ChatStop';
-import { EditableTitleBar } from './EditableTitleBar';
+import { ConversationTitleBar } from './ConversationTitleBar';
 import { ScrollBottom } from './ScrollBottom';
 import { ToBottom } from './ToBottom';
 
@@ -192,7 +192,7 @@ export function ChatSection({ conversation }: Props) {
   return (
     <TwoRows className="max-h-screen">
       <TwoRows.Top>
-        <EditableTitleBar
+        <ConversationTitleBar
           title={conversation.subject}
           onEditDone={onTitleChange}
         />

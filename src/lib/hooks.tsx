@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import {
   invokeCallBot,
@@ -31,7 +32,9 @@ import {
   invokeUpdateSubject,
   invokeUpsertSetting,
 } from './commands';
+import { SETTING_NETWORK_PROXY } from './constants';
 import { ConversationsContext } from './contexts';
+import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
 import type {
   CommandError,
@@ -42,6 +45,7 @@ import type {
   NewMessage,
   NewModel,
   Options,
+  ProxySetting,
   Setting,
   TConversationsContext,
   UnsavedConversation,
@@ -326,4 +330,41 @@ export function useConversationsContext(): TConversationsContext {
   }
 
   return context;
+}
+
+// State hooks
+
+export function useProxySetting(): [
+  ProxySetting,
+  (newProxySetting: ProxySetting) => void,
+] {
+  const [proxySettingStr, updateSetting] = useAppStateStore(
+    useShallow((state) => [
+      state.settings[SETTING_NETWORK_PROXY],
+      state.updateSetting,
+    ])
+  );
+  let proxySetting: ProxySetting;
+  try {
+    proxySetting = proxySchema.parse(JSON.parse(proxySettingStr));
+  } catch (e) {
+    proxySetting = {
+      on: false,
+      server: '',
+      http: false,
+      https: false,
+    };
+  }
+
+  const setProxySetting = useCallback(
+    (newProxySetting: ProxySetting) => {
+      updateSetting({
+        key: SETTING_NETWORK_PROXY,
+        value: JSON.stringify(newProxySetting),
+      });
+    },
+    [updateSetting]
+  );
+
+  return [proxySetting, setProxySetting];
 }

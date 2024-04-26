@@ -1,6 +1,7 @@
 import { CheckIcon, Cross2Icon, Pencil2Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
 
+import { ProxyIndicator } from './ProxyIndicator';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
@@ -9,7 +10,7 @@ type Props = {
   onEditDone: (newTitle: string) => void;
 };
 
-export function EditableTitleBar({ title, onEditDone }: Props) {
+export function ConversationTitleBar({ title, onEditDone }: Props) {
   const [titleText, setTitleText] = useState(title);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,12 +28,13 @@ export function EditableTitleBar({ title, onEditDone }: Props) {
   };
 
   return (
-    <div className="box-border flex h-16 w-full items-center justify-center border-b border-border bg-background">
+    <div className="box-border flex h-16 w-full items-center justify-start gap-2 border-b border-border bg-background px-6">
       {isEditing ? (
         <>
           <Input
-            className="h-fit w-[592px] text-lg font-semibold text-foreground"
+            className="size-fit max-w-[640px] text-lg font-semibold text-foreground"
             defaultValue={titleText}
+            size={titleText.length}
             ref={inputRef}
           />
           <Button className="ml-2 size-9 rounded-full p-0" onClick={onConfirm}>
@@ -48,18 +50,19 @@ export function EditableTitleBar({ title, onEditDone }: Props) {
         </>
       ) : (
         <>
-          <h1 className="h-fit w-[592px] truncate text-center text-lg font-semibold text-foreground">
+          <h1 className="size-fit max-w-[640px] truncate text-center text-lg font-semibold text-foreground">
             {titleText}
           </h1>
           <Button
-            className="fixed right-10"
+            className=""
             variant="ghost"
             onClick={() => setIsEditing(true)}
           >
-            <Pencil2Icon className="size-4" />
+            <Pencil2Icon className="size-4 text-muted-foreground" />
           </Button>
         </>
       )}
+      <ProxyIndicator className="ml-auto" />
     </div>
   );
 }

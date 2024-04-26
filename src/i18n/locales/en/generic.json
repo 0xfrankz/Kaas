@@ -25,6 +25,9 @@
     },
     "label": {
         "default": "Default",
-        "stop": "Stop"
+        "stop": "Stop",
+        "proxy": "Proxy",
+        "on": "ON",
+        "off": "OFF"
     }
 }
