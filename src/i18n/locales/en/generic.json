@@ -3,7 +3,7 @@
     "nav": {
         "home": "Home",
         "conversations": "Conversations",
-        "templates": "Templates",
+        "prompts": "Prompts",
         "models": "Models",
         "settings": "Settings"
     },

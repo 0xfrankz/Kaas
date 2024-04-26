@@ -67,11 +67,11 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         to="/conversations"
       />
       <SideNavMenuItem
-        text={t('nav.templates')}
+        text={t('nav.prompts')}
         icon={<FileTextIcon className="size-4 text-foreground" />}
         expanded={expanded}
-        active={pathname === '/templates'}
-        to="/templates"
+        active={pathname === '/prompts'}
+        to="/prompts"
       />
       <SideNavMenuItem
         text={t('nav.models')}

@@ -24,8 +24,8 @@ import {
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
 import ModelsPage from '@/pages/Models';
+import PromptsPage from '@/pages/Prompts';
 import SettingsPage from '@/pages/Settings';
-import TemplatesPage from '@/pages/Templates';
 
 import { GlobalFallback } from './components/GlobalFallback';
 import { PageSkeleton } from './components/placeholders/WholePage';
@@ -78,8 +78,8 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: 'templates',
-        element: <TemplatesPage />,
+        path: 'prompts',
+        element: <PromptsPage />,
       },
       {
         path: 'settings',

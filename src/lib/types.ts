@@ -129,6 +129,11 @@ export type ModelFormHandler = {
   reset: () => void;
 };
 
+export type DialogHandler = {
+  open: () => void;
+  close: () => void;
+};
+
 // Functions
 export function toGenericModel(model: NewModel): GenericNewModel {
   const { provider, ...config } = model;

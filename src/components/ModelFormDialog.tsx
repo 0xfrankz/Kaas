@@ -55,6 +55,7 @@ function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
               } as NewOpenAIModel
             }
             onSubmit={onFormSubmit}
+            ref={formRef}
           />
         );
       default:
@@ -70,6 +71,7 @@ function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
               } as NewAzureModel
             }
             onSubmit={onFormSubmit}
+            ref={formRef}
           />
         );
     }
