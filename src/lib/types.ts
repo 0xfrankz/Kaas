@@ -8,6 +8,7 @@ import type {
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newOpenAIModelFormSchema,
+  newPromptFormSchema,
   openAIOptionsFormSchema,
   proxySchema,
 } from './schemas';
@@ -103,6 +104,15 @@ export type Options = AzureOptions | OpenAIOptions;
 export type ProviderOptions = {
   provider: string;
   options: string;
+};
+
+export type NewPrompt = z.infer<typeof newPromptFormSchema>;
+
+export type Prompt = NewPrompt & {
+  id: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
 };
 
 export type ProxySetting = z.infer<typeof proxySchema>;

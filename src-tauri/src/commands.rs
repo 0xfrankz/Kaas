@@ -3,8 +3,9 @@ use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, time::Instant};
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::{self, Model as Message, NewMessage, Roles}, 
-    models::{Model, ProviderConfig},
-    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY},
+    models::{Model, ProviderConfig}, 
+    prompts::{Model as Prompt, NewPrompt}, 
+    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
 
 use tauri::State;
@@ -174,76 +175,7 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         .get_last_messages(conversation_id, context_length + 1) // plus one to get the last user's message
         .await
         .map_err(|message| DbError { message })?;
-    // Build http client
-    // Send request in a new thread
-    // tokio::spawn(async move {
-    //     let stop = Arc::new(AtomicBool::new(false));
-    //     let stop_clone = Arc::clone(&stop);
-    //     // Bind listener for cancel events
-    //     let handler = window.listen("stop-bot", move |_| {
-    //         stop_clone.store(true, Ordering::Release);
-    //     });
-    //     // Invoke bot's API
-    //     log::info!("Calling bot with messages = {:?}, options ={:?} and config = {:?}", last_messages, options, config);
-    //     let is_stream_enabled = utils::is_stream_enabled(&options);
-    //     if is_stream_enabled {
-    //         // handle stream response
-    //         let stream_result = ws::complete_chat_stream(last_messages, options, config, proxy_setting, Some(max_token_setting)).await;
-    //         match stream_result {
-    //             Ok(mut stream) => {
-    //                 log::info!("Streaming started!");
-    //                 // start receiving in frontend
-    //                 emit_stream_start(&window);
-    //                 while let Some(result) = stream.next().await {
-    //                     if stop.load(Ordering::Acquire) {
-    //                         log::info!("Streaming stopped!");
-    //                         emit_stream_stopped(&window);
-    //                         break;
-    //                     }
-    //                     match result {
-    //                         Ok(response) => {
-    //                             response.choices.iter().for_each(|chat_choice| {
-    //                                 if let Some(ref content) = chat_choice.delta.content {
-    //                                     emit_stream_data(&window, content.to_owned());
-    //                                 }
-    //                             });
-    //                         }
-    //                         Err(err) => {
-    //                             let err_reply = format!("[[ERROR]]{}", err);
-    //                             emit_stream_error(&window, err_reply);
-    //                             break;
-    //                         }
-    //                     }
-    //                 }
-    //                 if !stop.load(Ordering::Acquire) {
-    //                     emit_stream_done(&window);
-    //                 }
-    //             },
-    //             Err(msg) => {
-    //                 emit_stream_error(&window, msg);
-    //             }
-    //         }
-    //     } else {
-    //         // handle non-stream response
-    //         // start receiving in frontend
-    //         emit_stream_start(&window);
-    //         let result = ws::complete_chat(last_messages, options, config, proxy_setting, Some(max_token_setting))
-    //             .await;
-    //         match result {
-    //             Ok(reply) => {
-    //                 emit_stream_data(&window, reply);
-    //                 emit_stream_done(&window);
-    //             },
-    //             Err(msg) => {
-    //                 let err_reply = format!("[[ERROR]]{}", msg);
-    //                 emit_stream_error(&window, err_reply);
-    //             }
-    //         }
-    //     }
-        
-    //     // Unbind listener for cancel events before thread ends
-    //     window.unlisten(handler);
-    // });
+    // delegate to one-off or stream function to send request
     let is_stream_enabled = utils::is_stream_enabled(&options);
     if is_stream_enabled {
         // stream response
@@ -291,6 +223,11 @@ pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::update_subject]: {:.2?}", elapsed);
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn create_prompt(prompt: NewPrompt, repo: State<'_, Repository>) -> CommandResult<Prompt> {
+    Err(CommandError::UnknownError{message: "not implemented".to_owned()})
 }
 
 /***** Functions for calling model API START *****/

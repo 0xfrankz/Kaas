@@ -2,15 +2,6 @@ import { z } from 'zod';
 
 import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
 
-// export const createModelSchema = z
-//   .object({
-//     apiKey: z.string().min(1, 'API Key is required'),
-//     endpoint: z.string().min(1, 'Endpoint is required'),
-//     deploymentId: z.string().min(1, 'Deployment ID is required'),
-//     provider: z.string(),
-//   })
-//   .required();
-
 export const newOpenAIModelFormSchema = z.object({
   provider: z.literal(PROVIDER_OPENAI),
   apiKey: z.string().min(1, 'API Key is required'),
@@ -64,6 +55,11 @@ export const optionsFormSchema = z.discriminatedUnion('provider', [
 export const conversationFormSchema = z.object({
   modelId: z.coerce.number(),
   message: z.string().min(1, 'Message is required'),
+});
+
+export const newPromptFormSchema = z.object({
+  alias: z.string(),
+  content: z.string(),
 });
 
 export const proxySchema = z

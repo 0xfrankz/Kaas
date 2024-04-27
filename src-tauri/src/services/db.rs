@@ -2,6 +2,7 @@
 use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, OpenAIOptions, ProviderOptions};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
 use entity::entities::models::{self, Model, ProviderConfig, Providers};
+use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
@@ -443,6 +444,36 @@ impl Repository {
             })?
             .ok_or(format!("Failed to get model of message with id = {}", message.id))?;
 
+        Ok(result)
+    }
+
+    /**
+     * Insert a new prompt
+     */
+    pub async fn create_prompt(&self, new_prompt: NewPrompt) -> Result<Prompt, String> {
+        let mut active_model = new_prompt.into_active_model();
+        active_model.created_at = Set(chrono::Local::now());
+        let result = active_model
+            .insert(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to create new prompt".to_string()
+            })?;
+        Ok(result)
+    }
+
+    /**
+     * List all prompts
+     */
+    pub async fn list_prompts(&self) -> Result<Vec<Prompt>, String> {
+        let result = prompts::Entity::find()
+            .all(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to list prompts".to_string()
+            })?;
         Ok(result)
     }
 }

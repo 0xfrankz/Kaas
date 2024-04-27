@@ -34,7 +34,8 @@ fn main() {
             commands::update_subject,
             commands::create_message,
             commands::list_messages,
-            commands::call_bot
+            commands::call_bot,
+            commands::create_prompt,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

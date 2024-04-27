@@ -5,6 +5,8 @@ mod m20240228_150548_create_settings;
 mod m20240301_024630_create_conversations;
 mod m20240301_024644_create_messages;
 mod m20240402_095857_seed_settings;
+mod m20240427_130803_create_prompts;
+
 
 
 pub struct Migrator;
@@ -18,6 +20,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240301_024630_create_conversations::Migration),
             Box::new(m20240301_024644_create_messages::Migration),
             Box::new(m20240402_095857_seed_settings::Migration),
+            Box::new(m20240427_130803_create_prompts::Migration)
         ]
     }
 }
