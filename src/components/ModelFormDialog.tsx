@@ -26,20 +26,12 @@ type EditFormProps = {
 };
 
 function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const formRef = useRef<ModelFormHandler>(null);
-
-  // Callbacks
-  const toggleModal = (open: boolean) => {
-    setShowModal(open);
-    if (!open) {
-      formRef.current?.reset();
-    }
-  };
 
   const onFormSubmit = (model: NewModel) => {
     onSubmit(model);
-    toggleModal(false);
+    setShowDialog(false);
   };
 
   const renderForm = () => {
@@ -78,7 +70,7 @@ function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
   };
 
   return (
-    <Dialog open={showModal} onOpenChange={toggleModal}>
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogTrigger asChild>
         <Button className="mx-auto w-32">
           <PlusIcon className="size-4 text-primary-foreground" />

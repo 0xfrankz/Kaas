@@ -12,7 +12,7 @@ use tauri::State;
 use tokio_stream::StreamExt;
 
 use crate::{
-    errors::CommandError::{self, ApiError, DbError, StateError}, log_utils::{error, trace}, services::{db::Repository, llm::{utils, webservices as ws}}
+    errors::CommandError::{self, ApiError, DbError, StateError}, log_utils::{error, trace, info}, services::{db::Repository, llm::{utils, webservices as ws}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -227,10 +227,15 @@ pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'
 
 #[tauri::command]
 pub async fn create_prompt(new_prompt: NewPrompt, repo: State<'_, Repository>) -> CommandResult<Prompt> {
+    let log_tag = "create_prompt";
+    let now = Instant::now();
+    info(log_tag, &format!("{:?}", new_prompt));
     let result = repo
         .create_prompt(new_prompt)
         .await
         .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    info(log_tag, &format!("[Timer]: {:.2?}", elapsed));
     Ok(result)
 }
 

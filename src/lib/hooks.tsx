@@ -28,6 +28,7 @@ import {
   invokeListConversations,
   invokeListMessages,
   invokeListModels,
+  invokeListPrompts,
   invokeListSettings,
   invokeUpdateOptions,
   invokeUpdateSubject,
@@ -230,6 +231,13 @@ export function usePromptCreator(
     mutationFn: invokeCreatePrompt,
     ...options,
   }).mutate;
+}
+
+export function useListPromptsQuery(): UseQueryResult<Prompt[], CommandError> {
+  return useQuery({
+    queryKey: LIST_PROMPTS_KEY,
+    queryFn: invokeListPrompts,
+  });
 }
 
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;

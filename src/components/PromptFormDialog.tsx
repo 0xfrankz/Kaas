@@ -15,13 +15,20 @@ import {
   DialogTitle,
 } from './ui/dialog';
 
-type DialogProps = {
+type NewPromptDialogProps = {
   onSubmit: (newPrompt: NewPrompt) => void;
 };
-const NewPromptFormDialog = forwardRef<DialogHandler, DialogProps>(
+
+const NewPromptFormDialog = forwardRef<DialogHandler, NewPromptDialogProps>(
   ({ onSubmit }, ref) => {
     const [showDialog, setShowDialog] = useState(false);
     const { t } = useTranslation(['page-prompts']);
+
+    // Callbacks
+    const onFormSubmit = (prompt: NewPrompt) => {
+      onSubmit(prompt);
+      setShowDialog(false);
+    };
 
     useImperativeHandle(ref, () => ({
       open: () => setShowDialog(true),
@@ -37,7 +44,7 @@ const NewPromptFormDialog = forwardRef<DialogHandler, DialogProps>(
               {t('page-prompts:message:create-prompt-tips')}
             </DialogDescription>
           </DialogHeader>
-          <PromptForm.New id="promptForm" onSubmit={onSubmit} />
+          <PromptForm.New id="promptForm" onSubmit={onFormSubmit} />
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="secondary">{t('generic:button:cancel')}</Button>

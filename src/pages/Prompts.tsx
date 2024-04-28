@@ -23,9 +23,9 @@ export default function PromptsPage() {
           </Suspense>
         </TwoRows.Top>
         <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
-          <ScrollArea className="w-full grow bg-green-50">
+          <ScrollArea className="w-full grow">
             <Suspense fallback={null}>
-              <div className="mx-auto my-6 w-[1080px] max-w-[1080px] bg-red-50">
+              <div className="mx-auto my-6 w-[1080px] max-w-[1080px]">
                 <h2 className="text-3xl font-semibold tracking-tight">
                   {t('page-prompts:section:your-prompts')}
                 </h2>

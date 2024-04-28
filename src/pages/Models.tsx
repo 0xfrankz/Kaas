@@ -42,7 +42,6 @@ export default function ModelsPage() {
 
   // Callbacks
   const onSubmit: SubmitHandler<NewModel> = (formData) => {
-    log.info(`Formdata: ${JSON.stringify(formData)}`);
     createModelMutation.mutate(formData, {
       onSuccess: async (result) => {
         log.info(`Model created: ${JSON.stringify(result)}`);

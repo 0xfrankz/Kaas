@@ -21,10 +21,9 @@ pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
 
-#[derive(DeriveIntoActiveModel, Deserialize)]
+#[derive(DeriveIntoActiveModel, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct NewPrompt {
-    pub id: i32,
     pub alias: String,
     pub content: String,
 }

@@ -126,3 +126,8 @@ export async function invokeCreatePrompt(
   });
   return result;
 }
+
+export async function invokeListPrompts(): Promise<Prompt[]> {
+  const result = await invoke<Prompt[]>('list_prompts');
+  return result;
+}

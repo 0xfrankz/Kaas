@@ -1,10 +1,17 @@
+import { CalendarIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { Plus } from 'lucide-react';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { LIST_PROMPTS_KEY, usePromptCreator } from '@/lib/hooks';
+import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
+import {
+  LIST_PROMPTS_KEY,
+  useListPromptsQuery,
+  usePromptCreator,
+} from '@/lib/hooks';
 import log from '@/lib/log';
 import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -20,25 +27,27 @@ import {
 } from './ui/card';
 
 type GridItemProps = {
-  alias: string;
+  prompt: Prompt;
 };
 
-function PromptGridItem({ alias }: GridItemProps) {
-  const double = Math.ceil(Math.random() * 10) % 2 === 0;
+function PromptGridItem({ prompt }: GridItemProps) {
   return (
     <Card className={cn('mb-6 flex break-inside-avoid flex-col')}>
       <CardHeader>
-        <CardTitle>{alias}</CardTitle>
+        <CardTitle>{prompt.alias}</CardTitle>
       </CardHeader>
-      <CardContent className="max-h-96 min-h-20 overflow-hidden text-ellipsis">
-        <p>
-          {double
-            ? 'This is the prompt! This is the prompt!'
-            : 'This is the prompt! This is the prompt! This is the prompt! This is the prompt! This is the prompt! This is the prompt!'}
-        </p>
+      <CardContent className="max-h-96 overflow-hidden text-ellipsis">
+        <p>{prompt.content}</p>
       </CardContent>
       <CardFooter className="justify-end text-sm text-muted-foreground">
-        <p>Card Footer</p>
+        <div className="flex items-center justify-end text-xs">
+          <CalendarIcon className="size-4" />
+          <span className="ml-1">
+            {prompt.createdAt
+              ? dayjs(prompt.createdAt).format(DEFAULT_DATE_FORMAT)
+              : 'Unknown'}
+          </span>
+        </div>
       </CardFooter>
     </Card>
   );
@@ -58,9 +67,10 @@ function AddPromptItem({ onClick }: { onClick: () => void }) {
 export function PromptGrid() {
   const queryClient = useQueryClient();
   const { t } = useTranslation(['generic', 'page-prompts']);
+  // Queries
+  const { data: prompts, isSuccess } = useListPromptsQuery();
   const creator = usePromptCreator({
     onSuccess: async (prompt) => {
-      await log.info(`Prompt created`);
       // Update cache
       queryClient.setQueryData<Prompt[]>(LIST_PROMPTS_KEY, (old) =>
         old ? [...old, prompt] : [prompt]
@@ -77,6 +87,7 @@ export function PromptGrid() {
   });
   const newPromptDialogRef = useRef<DialogHandler>(null);
 
+  // Callbacks
   const onCreateClick = useCallback(() => {
     newPromptDialogRef.current?.open();
   }, [newPromptDialogRef]);
@@ -92,9 +103,10 @@ export function PromptGrid() {
     <>
       <div className="mx-auto mt-12 w-full columns-3 gap-8 text-foreground">
         <AddPromptItem onClick={onCreateClick} />
-        {Array.from({ length: 10 }, (_, i) => (
-          <PromptGridItem key={i} alias={`prompt-${i + 1}`} />
-        ))}
+        {isSuccess &&
+          prompts.map((prompt) => (
+            <PromptGridItem key={prompt.id} prompt={prompt} />
+          ))}
       </div>
       <PromptFormDialog.New ref={newPromptDialogRef} onSubmit={onSubmit} />
     </>
