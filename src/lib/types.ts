@@ -13,34 +13,6 @@ import type {
   proxySchema,
 } from './schemas';
 
-// type OpenAIConfig = {
-//   apiKey: string;
-//   model: string;
-// };
-
-// type AzureConfig = {
-//   apiKey: string;
-//   endpoint: string;
-//   deploymentId: string;
-// };
-
-// type ProviderConfig<T> = T extends 'OpenAI'
-//   ? OpenAIConfig
-//   : T extends 'Azure'
-//     ? AzureConfig
-//     : never;
-
-// export type Model<
-//   TProvider = SupportedProviders,
-//   TConfig = ProviderConfig<TProvider>,
-// > = {
-//   id: number;
-//   provider: TProvider;
-//   config: TConfig;
-//   createdAt: string;
-//   updatedAt?: string;
-//   deletedAt?: string;
-// };
 export type NewAzureModel = z.infer<typeof newAzureModelFormSchema>;
 export type AzureModel = z.infer<typeof editAzureModelFormSchema>;
 export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;

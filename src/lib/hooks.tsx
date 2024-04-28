@@ -23,6 +23,7 @@ import {
   invokeCreateConversation,
   invokeCreateMessage,
   invokeCreateModel,
+  invokeCreatePrompt,
   invokeGetOptions,
   invokeListConversations,
   invokeListMessages,
@@ -44,7 +45,9 @@ import type {
   Model,
   NewMessage,
   NewModel,
+  NewPrompt,
   Options,
+  Prompt,
   ProxySetting,
   Setting,
   TConversationsContext,
@@ -57,6 +60,7 @@ export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
 export const OPTIONS_CONVERSATION_KEY = ['options-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
+export const LIST_PROMPTS_KEY = ['list-prompts'];
 
 export function useCreateModelMutation(): UseMutationResult<
   GenericModel,
@@ -216,6 +220,18 @@ export function useSubjectUpdater(
   }).mutate;
 }
 
+export function usePromptCreator(
+  options?: Omit<
+    UseMutationOptions<Prompt, CommandError, NewPrompt>,
+    'mutationFn'
+  >
+) {
+  return useMutation({
+    mutationFn: invokeCreatePrompt,
+    ...options,
+  }).mutate;
+}
+
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;
 const Anchor = forwardRef<HTMLDivElement, AnchorAttributesProps>(
   ({ className, ...props }, ref) => (
@@ -285,8 +301,8 @@ export function useScrollToBottom(
         }
       },
       {
-        root: null, // 相对于哪个元素开始监视，null表示文档视口
-        threshold: 0, // 交叉比例达到多少时执行回调函数，0表示完全不可见时执行
+        root: null,
+        threshold: 0,
       }
     );
   }, [isSticky]);
@@ -333,7 +349,6 @@ export function useConversationsContext(): TConversationsContext {
 }
 
 // State hooks
-
 export function useProxySetting(): [
   ProxySetting,
   (newProxySetting: ProxySetting) => void,

@@ -36,6 +36,7 @@ fn main() {
             commands::list_messages,
             commands::call_bot,
             commands::create_prompt,
+            commands::list_prompts
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

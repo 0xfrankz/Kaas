@@ -8,7 +8,9 @@ import type {
   Model,
   NewMessage,
   NewModel,
+  NewPrompt,
   Options,
+  Prompt,
   ProviderOptions,
   Setting,
   UnsavedConversation,
@@ -114,4 +116,13 @@ export async function invokeCallBot(conversationId: number): Promise<void> {
   await invoke<Message>('call_bot', {
     conversationId,
   });
+}
+
+export async function invokeCreatePrompt(
+  newPrompt: NewPrompt
+): Promise<Prompt> {
+  const result = await invoke<Prompt>('create_prompt', {
+    newPrompt,
+  });
+  return result;
 }

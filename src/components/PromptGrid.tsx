@@ -1,7 +1,12 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
-import type { DialogHandler } from '@/lib/types';
+import { LIST_PROMPTS_KEY, usePromptCreator } from '@/lib/hooks';
+import log from '@/lib/log';
+import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import PromptFormDialog from './PromptFormDialog';
@@ -51,11 +56,37 @@ function AddPromptItem({ onClick }: { onClick: () => void }) {
 }
 
 export function PromptGrid() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation(['generic', 'page-prompts']);
+  const creator = usePromptCreator({
+    onSuccess: async (prompt) => {
+      await log.info(`Prompt created`);
+      // Update cache
+      queryClient.setQueryData<Prompt[]>(LIST_PROMPTS_KEY, (old) =>
+        old ? [...old, prompt] : [prompt]
+      );
+      // Show toast
+      toast.success(t('page-prompts:message:create-prompt-success'));
+    },
+    onError: async (error, variables) => {
+      await log.error(
+        `Failed to create prompt: data = ${JSON.stringify(variables)}, error = ${error.message}`
+      );
+      toast.error(`Failed to create prompt: ${error.message}`);
+    },
+  });
   const newPromptDialogRef = useRef<DialogHandler>(null);
 
   const onCreateClick = useCallback(() => {
     newPromptDialogRef.current?.open();
   }, [newPromptDialogRef]);
+
+  const onSubmit = useCallback(
+    (newPrompt: NewPrompt) => {
+      creator(newPrompt);
+    },
+    [creator]
+  );
 
   return (
     <>
@@ -65,10 +96,7 @@ export function PromptGrid() {
           <PromptGridItem key={i} alias={`prompt-${i + 1}`} />
         ))}
       </div>
-      <PromptFormDialog.New
-        ref={newPromptDialogRef}
-        onSubmit={() => console.log('submitted')}
-      />
+      <PromptFormDialog.New ref={newPromptDialogRef} onSubmit={onSubmit} />
     </>
   );
 }

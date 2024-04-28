@@ -8,7 +8,8 @@
         "settings": "Settings"
     },
     "button": {
-        "save": "Save"
+        "save": "Save",
+        "cancel": "Cancel"
     },
     "select": {
         "language-en": "English",
@@ -28,6 +29,8 @@
         "stop": "Stop",
         "proxy": "Proxy",
         "on": "ON",
-        "off": "OFF"
+        "off": "OFF",
+        "alias": "Alias",
+        "prompt": "Prompt"
     }
 }

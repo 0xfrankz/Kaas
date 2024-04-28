@@ -1,6 +1,11 @@
 {
     "title": "Prompts",
     "section": {
-        "your-prompts": "Your Prompts"
+        "your-prompts": "Your Prompts",
+        "create-prompt": "Create new prompt template"
+    },
+    "message": {
+        "create-prompt-success": "Prompt has been created",
+        "create-prompt-tips": "You can use variables in your prompt, enclose them with double curly braces, e.g. {{variable}}."
     }
 }

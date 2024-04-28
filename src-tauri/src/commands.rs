@@ -226,8 +226,21 @@ pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'
 }
 
 #[tauri::command]
-pub async fn create_prompt(prompt: NewPrompt, repo: State<'_, Repository>) -> CommandResult<Prompt> {
-    Err(CommandError::UnknownError{message: "not implemented".to_owned()})
+pub async fn create_prompt(new_prompt: NewPrompt, repo: State<'_, Repository>) -> CommandResult<Prompt> {
+    let result = repo
+        .create_prompt(new_prompt)
+        .await
+        .map_err(|message| DbError { message })?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn list_prompts(repo: State<'_, Repository>) -> CommandResult<Vec<Prompt>> {
+    let result = repo
+        .list_prompts()
+        .await
+        .map_err(|message| DbError { message })?;
+    Ok(result)
 }
 
 /***** Functions for calling model API START *****/
