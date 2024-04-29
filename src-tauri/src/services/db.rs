@@ -77,7 +77,7 @@ impl Repository {
             .await
             .map_err(|err| {
                 error!("{}", err);
-                "Failed to get model".to_string()
+                format!("Failed to get model with id {}", model_id)
             })?
             .ok_or(format!("Model with id {} doesn't exist", model_id))?;
         Ok(result)
@@ -468,11 +468,53 @@ impl Repository {
      */
     pub async fn list_prompts(&self) -> Result<Vec<Prompt>, String> {
         let result = prompts::Entity::find()
+            .filter(prompts::Column::DeletedAt.is_null())
             .all(&self.connection)
             .await
             .map_err(|err| {
                 error!("{}", err);
                 "Failed to list prompts".to_string()
+            })?;
+        Ok(result)
+    }
+
+    /**
+     * Update a prompt
+     */
+    pub async fn update_prompt(&self, prompt: Prompt) -> Result<Prompt, String> {
+        let mut active_model: prompts::ActiveModel = prompt.into();
+        active_model.updated_at = Set(Some(chrono::Local::now()));
+        let result = active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to update prompt".to_string()
+            })?;
+        Ok(result)
+    }
+
+    /**
+     * Soft delete a prompt
+    */
+    pub async fn delete_prompt(&self, prompt_id: i32) -> Result<Prompt, String> {
+        let prompt = prompts::Entity::find_by_id(prompt_id)
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to get prompt with id {}", prompt_id)
+            })?
+            .ok_or(format!("Prompt with id {} doesn't exist", prompt_id))?;
+        let mut active_model: prompts::ActiveModel = prompt.clone().into();
+        // Perform soft delete
+        active_model.deleted_at = Set(Some(chrono::Local::now()));
+        let result = active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to delete prompt".to_string()
             })?;
         Ok(result)
     }

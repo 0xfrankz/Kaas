@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { DialogHandler, NewPrompt } from '@/lib/types';
+import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
 
 import PromptForm from './forms/PromptForm';
 import { Button } from './ui/button';
@@ -19,44 +19,96 @@ type NewPromptDialogProps = {
   onSubmit: (newPrompt: NewPrompt) => void;
 };
 
-const NewPromptFormDialog = forwardRef<DialogHandler, NewPromptDialogProps>(
-  ({ onSubmit }, ref) => {
-    const [showDialog, setShowDialog] = useState(false);
-    const { t } = useTranslation(['page-prompts']);
+type EditPromptDialogProps = {
+  onSubmit: (prompt: Prompt) => void;
+  onDeleteClick: (prompt: Prompt) => void;
+};
 
-    // Callbacks
-    const onFormSubmit = (prompt: NewPrompt) => {
-      onSubmit(prompt);
+const NewPromptFormDialog = forwardRef<
+  DialogHandler<undefined>,
+  NewPromptDialogProps
+>(({ onSubmit }, ref) => {
+  const [showDialog, setShowDialog] = useState(false);
+  const { t } = useTranslation(['page-prompts']);
+
+  useImperativeHandle(ref, () => ({
+    open: () => setShowDialog(true),
+    close: () => setShowDialog(false),
+  }));
+
+  return (
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('page-prompts:section:create-prompt')}</DialogTitle>
+          <DialogDescription>
+            {t('page-prompts:message:create-prompt-tips')}
+          </DialogDescription>
+        </DialogHeader>
+        <PromptForm.New id="promptForm" onSubmit={onSubmit} />
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">{t('generic:action:cancel')}</Button>
+          </DialogClose>
+          <Button form="promptForm">{t('generic:action:save')}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+});
+
+const EditPromptFormDialog = forwardRef<
+  DialogHandler<Prompt>,
+  EditPromptDialogProps
+>(({ onSubmit, onDeleteClick }, ref) => {
+  const [showDialog, setShowDialog] = useState(false);
+  const [prompt, setPrompt] = useState<Prompt>();
+  const { t } = useTranslation(['page-prompts']);
+
+  useImperativeHandle(ref, () => ({
+    open: (defaultValue?: Prompt) => {
+      setPrompt(defaultValue);
+      setShowDialog(true);
+    },
+    close: () => {
+      setPrompt(undefined);
       setShowDialog(false);
-    };
+    },
+  }));
 
-    useImperativeHandle(ref, () => ({
-      open: () => setShowDialog(true),
-      close: () => setShowDialog(false),
-    }));
-
-    return (
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('page-prompts:section:create-prompt')}</DialogTitle>
-            <DialogDescription>
-              {t('page-prompts:message:create-prompt-tips')}
-            </DialogDescription>
-          </DialogHeader>
-          <PromptForm.New id="promptForm" onSubmit={onFormSubmit} />
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="secondary">{t('generic:button:cancel')}</Button>
-            </DialogClose>
-            <Button form="promptForm">{t('generic:button:save')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-);
+  return prompt ? (
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('page-prompts:section:create-prompt')}</DialogTitle>
+          <DialogDescription>
+            {t('page-prompts:message:create-prompt-tips')}
+          </DialogDescription>
+        </DialogHeader>
+        <PromptForm.Edit
+          id="promptForm"
+          onSubmit={onSubmit}
+          defaultValues={prompt}
+        />
+        <DialogFooter>
+          <Button
+            variant="destructive"
+            className="mr-auto"
+            onClick={() => onDeleteClick(prompt)}
+          >
+            {t('generic:action:delete')}
+          </Button>
+          <DialogClose asChild>
+            <Button variant="secondary">{t('generic:action:cancel')}</Button>
+          </DialogClose>
+          <Button form="promptForm">{t('generic:action:save')}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ) : null;
+});
 
 export default {
   New: NewPromptFormDialog,
+  Edit: EditPromptFormDialog,
 };

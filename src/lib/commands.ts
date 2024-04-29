@@ -131,3 +131,13 @@ export async function invokeListPrompts(): Promise<Prompt[]> {
   const result = await invoke<Prompt[]>('list_prompts');
   return result;
 }
+
+export async function invokeUpdatePrompt(prompt: Prompt): Promise<Prompt> {
+  const result = await invoke<Prompt>('update_prompt', { prompt });
+  return result;
+}
+
+export async function invokeDeletePrompt(promptId: number): Promise<Prompt> {
+  const result = await invoke<Prompt>('delete_prompt', { promptId });
+  return result;
+}

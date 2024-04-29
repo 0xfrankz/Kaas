@@ -248,6 +248,24 @@ pub async fn list_prompts(repo: State<'_, Repository>) -> CommandResult<Vec<Prom
     Ok(result)
 }
 
+#[tauri::command]
+pub async fn update_prompt(prompt: Prompt, repo: State<'_, Repository>) -> CommandResult<Prompt> {
+    let result = repo
+        .update_prompt(prompt)
+        .await
+        .map_err(|message| DbError { message })?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn delete_prompt(prompt_id: i32, repo: State<'_, Repository>) -> CommandResult<Prompt> {
+    let result = repo
+        .delete_prompt(prompt_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    Ok(result)
+}
+
 /***** Functions for calling model API START *****/
 async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
     log::info!("call_bot_one_off");

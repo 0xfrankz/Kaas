@@ -126,7 +126,7 @@ function SettingLanguage() {
               onSaveClick();
             }}
           >
-            {t('generic:button:save')}
+            {t('generic:action:save')}
           </Button>
         </div>
         <SelectContent>
@@ -190,7 +190,7 @@ function SettingTheme() {
               onSaveClick();
             }}
           >
-            {t('generic:button:save')}
+            {t('generic:action:save')}
           </Button>
         </div>
         <SelectContent>
@@ -239,7 +239,7 @@ function SettingName() {
           placeholder="ME"
           defaultValue={userName}
         />
-        <Button onClick={onSaveClick}>{t('generic:button:save')}</Button>
+        <Button onClick={onSaveClick}>{t('generic:action:save')}</Button>
       </div>
       <span className="text-xs text-muted-foreground">
         {t('page-settings:label:name-desc')}
@@ -300,7 +300,7 @@ function SettingContextLength() {
           placeholder="10"
           defaultValue={ctxLength}
         />
-        <Button onClick={onSaveClick}>{t('generic:button:save')}</Button>
+        <Button onClick={onSaveClick}>{t('generic:action:save')}</Button>
       </div>
       {error ? <FieldErrorMessage message={error} /> : null}
       <span className="text-xs text-muted-foreground">
@@ -361,7 +361,7 @@ function SettingMaxTokens() {
           placeholder="256"
           defaultValue={maxTokens}
         />
-        <Button onClick={onSaveClick}>{t('generic:button:save')}</Button>
+        <Button onClick={onSaveClick}>{t('generic:action:save')}</Button>
       </div>
       {error ? <FieldErrorMessage message={error} /> : null}
       <span className="text-xs text-muted-foreground">
@@ -438,7 +438,7 @@ function SettingProxy() {
             />
             {useProxy ? (
               <Button className="ml-auto" type="submit">
-                {t('generic:button:save')}
+                {t('generic:action:save')}
               </Button>
             ) : null}
           </div>

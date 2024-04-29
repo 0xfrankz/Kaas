@@ -111,8 +111,8 @@ export type ModelFormHandler = {
   reset: () => void;
 };
 
-export type DialogHandler = {
-  open: () => void;
+export type DialogHandler<T> = {
+  open: (defaultValue?: T) => void;
   close: () => void;
 };
 

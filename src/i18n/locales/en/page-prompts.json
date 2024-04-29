@@ -6,6 +6,8 @@
     },
     "message": {
         "create-prompt-success": "Prompt has been created",
-        "create-prompt-tips": "You can use variables in your prompt, enclose them with double curly braces, e.g. {{variable}}."
+        "create-prompt-tips": "You can use variables in your prompt, enclose them with double curly braces, e.g. {{variable}}.",
+        "update-prompt-success": "Prompt has been updated",
+        "delete-prompt-success": "Prompt has been deleted"
     }
 }

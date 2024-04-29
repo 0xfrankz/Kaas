@@ -24,6 +24,7 @@ import {
   invokeCreateMessage,
   invokeCreateModel,
   invokeCreatePrompt,
+  invokeDeletePrompt,
   invokeGetOptions,
   invokeListConversations,
   invokeListMessages,
@@ -31,6 +32,7 @@ import {
   invokeListPrompts,
   invokeListSettings,
   invokeUpdateOptions,
+  invokeUpdatePrompt,
   invokeUpdateSubject,
   invokeUpsertSetting,
 } from './commands';
@@ -238,6 +240,24 @@ export function useListPromptsQuery(): UseQueryResult<Prompt[], CommandError> {
     queryKey: LIST_PROMPTS_KEY,
     queryFn: invokeListPrompts,
   });
+}
+
+export function usePromptUpdater(
+  options?: Omit<UseMutationOptions<Prompt, CommandError, Prompt>, 'mutationFn'>
+) {
+  return useMutation({
+    mutationFn: invokeUpdatePrompt,
+    ...options,
+  }).mutate;
+}
+
+export function usePromptDeleter(
+  options?: Omit<UseMutationOptions<Prompt, CommandError, number>, 'mutationFn'>
+) {
+  return useMutation({
+    mutationFn: invokeDeletePrompt,
+    ...options,
+  }).mutate;
 }
 
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;
