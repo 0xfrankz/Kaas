@@ -43,11 +43,11 @@ const NewPromptFormDialog = forwardRef<
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('page-prompts:section:create-prompt')}</DialogTitle>
-          <DialogDescription className="whitespace-pre-wrap">
+          <div className="whitespace-pre-wrap text-sm text-muted-foreground">
             <Markdown remarkPlugins={[remarkGfm]}>
               {t('page-prompts:message:create-prompt-tips')}
             </Markdown>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <PromptForm.New id="promptForm" onSubmit={onSubmit} />
         <DialogFooter>
