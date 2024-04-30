@@ -483,6 +483,7 @@ impl Repository {
      */
     pub async fn update_prompt(&self, prompt: Prompt) -> Result<Prompt, String> {
         let mut active_model: prompts::ActiveModel = prompt.into();
+        active_model = active_model.reset_all(); // set all fields as dirty
         active_model.updated_at = Set(Some(chrono::Local::now()));
         let result = active_model
             .update(&self.connection)

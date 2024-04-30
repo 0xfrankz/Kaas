@@ -18,6 +18,21 @@ export function debounce<T>(
   };
 }
 
+export function throttle<T>(
+  callback: (args: T) => void,
+  wait: number
+): (args: T) => void {
+  let timeoutId: number | null = null;
+  return (args) => {
+    if (timeoutId !== null) {
+      callback(args);
+      timeoutId = window.setTimeout(() => {
+        timeoutId = null;
+      }, wait);
+    }
+  };
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

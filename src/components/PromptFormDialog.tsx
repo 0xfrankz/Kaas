@@ -1,5 +1,7 @@
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
 
@@ -41,8 +43,10 @@ const NewPromptFormDialog = forwardRef<
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('page-prompts:section:create-prompt')}</DialogTitle>
-          <DialogDescription>
-            {t('page-prompts:message:create-prompt-tips')}
+          <DialogDescription className="whitespace-pre-wrap">
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {t('page-prompts:message:create-prompt-tips')}
+            </Markdown>
           </DialogDescription>
         </DialogHeader>
         <PromptForm.New id="promptForm" onSubmit={onSubmit} />

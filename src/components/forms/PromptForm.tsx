@@ -1,12 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ForwardedRef, HTMLAttributes } from 'react';
-import { forwardRef, useImperativeHandle } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { extractVariables } from '@/lib/prompts';
 import { editPromptFormSchema, newPromptFormSchema } from '@/lib/schemas';
 import type { FormHandler, NewPrompt, Prompt } from '@/lib/types';
+import { debounce } from '@/lib/utils';
 
+import { Badge } from '../ui/badge';
 import {
   Form,
   FormControl,
@@ -29,6 +38,7 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
   ({ onSubmit, ...props }: NewFormProps, ref: ForwardedRef<FormHandler>) => {
+    const [variables, setVariables] = useState<Set<string>>(new Set());
     const { t } = useTranslation(['generic']);
     const form = useForm<NewPrompt>({
       resolver: zodResolver(newPromptFormSchema),
@@ -49,6 +59,19 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
       [form]
     );
 
+    const onChangeDebounded = useMemo(() => {
+      return debounce((value: string) => {
+        setVariables(new Set(extractVariables(value)));
+      }, 200);
+    }, []);
+
+    const onChange = useCallback(
+      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        onChangeDebounded(e.target.value);
+      },
+      []
+    );
+
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -66,8 +89,28 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                       className="col-span-3 rounded-md py-1"
                       rows={10}
                       {...field}
+                      onChange={(ev) => {
+                        field.onChange(ev);
+                        onChange(ev);
+                      }}
                     />
                   </FormControl>
+                  {variables.size > 0 && (
+                    <div className="col-span-3 col-start-2 flex flex-wrap items-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        Variables:
+                      </span>
+                      {Array.from(variables).map((v) => (
+                        <Badge
+                          key={v}
+                          className="text-xs font-normal"
+                          variant="outline"
+                        >
+                          {v}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   <div className="col-span-4">
                     <FormMessage />
                   </div>
