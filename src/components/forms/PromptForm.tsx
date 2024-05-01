@@ -10,12 +10,11 @@ import {
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { extractVariables } from '@/lib/prompts';
 import { editPromptFormSchema, newPromptFormSchema } from '@/lib/schemas';
 import type { FormHandler, NewPrompt, Prompt } from '@/lib/types';
 import { debounce } from '@/lib/utils';
 
-import { Badge } from '../ui/badge';
+import { PromptVariables } from '../PromptVariables';
 import {
   Form,
   FormControl,
@@ -38,7 +37,7 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
   ({ onSubmit, ...props }: NewFormProps, ref: ForwardedRef<FormHandler>) => {
-    const [variables, setVariables] = useState<Set<string>>(new Set());
+    const [prompt, setPrompt] = useState<string>();
     const { t } = useTranslation(['generic']);
     const form = useForm<NewPrompt>({
       resolver: zodResolver(newPromptFormSchema),
@@ -61,7 +60,7 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
 
     const onChangeDebounded = useMemo(() => {
       return debounce((value: string) => {
-        setVariables(new Set(extractVariables(value)));
+        setPrompt(value);
       }, 200);
     }, []);
 
@@ -95,22 +94,7 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                       }}
                     />
                   </FormControl>
-                  {variables.size > 0 && (
-                    <div className="col-span-3 col-start-2 flex flex-wrap items-center gap-1">
-                      <span className="text-xs text-muted-foreground">
-                        Variables:
-                      </span>
-                      {Array.from(variables).map((v) => (
-                        <Badge
-                          key={v}
-                          className="text-xs font-normal"
-                          variant="outline"
-                        >
-                          {v}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                  <PromptVariables prompt={prompt} />
                   <div className="col-span-4">
                     <FormMessage />
                   </div>
@@ -146,11 +130,25 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
     { onSubmit, defaultValues, ...props }: EditFormProps,
     ref: ForwardedRef<FormHandler>
   ) => {
+    const [prompt, setPrompt] = useState<string>();
     const { t } = useTranslation(['generic']);
     const form = useForm<Prompt>({
       resolver: zodResolver(editPromptFormSchema),
       defaultValues,
     });
+
+    const onChangeDebounded = useMemo(() => {
+      return debounce((value: string) => {
+        setPrompt(value);
+      }, 200);
+    }, []);
+
+    const onChange = useCallback(
+      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        onChangeDebounded(e.target.value);
+      },
+      []
+    );
 
     // Hooks
     useImperativeHandle(
@@ -180,8 +178,13 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
                       className="col-span-3 rounded-md py-1"
                       rows={10}
                       {...field}
+                      onChange={(ev) => {
+                        field.onChange(ev);
+                        onChange(ev);
+                      }}
                     />
                   </FormControl>
+                  <PromptVariables prompt={prompt} />
                   <div className="col-span-4">
                     <FormMessage />
                   </div>
