@@ -3,6 +3,7 @@ import type { ForwardedRef, HTMLAttributes } from 'react';
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useState,
@@ -10,8 +11,12 @@ import {
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { editPromptFormSchema, newPromptFormSchema } from '@/lib/schemas';
-import type { FormHandler, NewPrompt, Prompt } from '@/lib/types';
+import {
+  editPromptFormSchema,
+  newPromptFormSchema,
+  usePromptFormSchema,
+} from '@/lib/schemas';
+import type { FilledPrompt, FormHandler, NewPrompt, Prompt } from '@/lib/types';
 import { debounce } from '@/lib/utils';
 
 import { PromptVariables } from '../PromptVariables';
@@ -33,6 +38,12 @@ type NewFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
   defaultValues: Prompt;
   onSubmit: (prompt: Prompt) => void;
+};
+
+type UseFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
+  defaultValues: Prompt;
+  onSubmit: (prompt: string) => void;
+  onFormChange: (prompt: string) => void;
 };
 
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
@@ -243,7 +254,87 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
   }
 );
 
+const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
+  (
+    { onSubmit, onFormChange, defaultValues, ...props }: UseFormProps,
+    ref: ForwardedRef<FormHandler>
+  ) => {
+    const [prompt, setPrompt] = useState<string>();
+    const { t } = useTranslation(['generic']);
+    const form = useForm<FilledPrompt>({
+      resolver: zodResolver(usePromptFormSchema),
+      defaultValues: {
+        prompt: defaultValues?.content ?? '',
+      },
+    });
+
+    const onChangeDebounded = useMemo(() => {
+      return debounce((value: string) => {
+        setPrompt(value);
+      }, 200);
+    }, []);
+
+    const onChange = useCallback(
+      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        onChangeDebounded(e.target.value);
+      },
+      []
+    );
+
+    useEffect(() => {
+      const subscription = form.watch((value, { name, type }) =>
+        console.log(value, name, type)
+      );
+      return () => subscription.unsubscribe();
+    }, [form.watch]);
+
+    // Hooks
+    useImperativeHandle(
+      ref,
+      () => {
+        return {
+          reset: () => form.reset(),
+        };
+      },
+      [form]
+    );
+
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
+          <div className="flex flex-col gap-4 py-4">
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormControl>
+                    <Textarea
+                      className="col-span-4 rounded-md py-1"
+                      rows={10}
+                      {...field}
+                      onChange={(ev) => {
+                        field.onChange(ev);
+                        onChange(ev);
+                      }}
+                    />
+                  </FormControl>
+                  <PromptVariables prompt={prompt} />
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
+        </form>
+      </Form>
+    );
+  }
+);
+
 export default {
   New: NewPromptForm,
   Edit: EditPromptForm,
+  Use: UsePromptForm,
 };

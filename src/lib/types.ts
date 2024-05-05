@@ -87,6 +87,10 @@ export type Prompt = NewPrompt & {
   deletedAt?: string;
 };
 
+export type FilledPrompt = {
+  prompt: string;
+};
+
 export type ProxySetting = z.infer<typeof proxySchema>;
 
 // Contexts

@@ -20,6 +20,7 @@ import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import PromptFormDialog from './PromptFormDialog';
+import { PromptUseDialog } from './PromptUseDialog';
 import { Button } from './ui/button';
 import {
   Card,
@@ -92,6 +93,7 @@ export function PromptGrid() {
   const { t } = useTranslation(['generic', 'page-prompts']);
   const newPromptDialogRef = useRef<DialogHandler<undefined>>(null);
   const editPromptDialogRef = useRef<DialogHandler<Prompt>>(null);
+  const usePromptDialogRef = useRef<DialogHandler<Prompt>>(null);
   // Queries
   const { data: prompts, isSuccess } = useListPromptsQuery();
   const creator = usePromptCreator({
@@ -170,12 +172,11 @@ export function PromptGrid() {
   );
 
   const onEditClick = useCallback((prompt: Prompt) => {
-    console.log('Edit', prompt);
     editPromptDialogRef.current?.open(prompt);
   }, []);
 
   const onUseClick = useCallback((prompt: Prompt) => {
-    console.log('Use', prompt);
+    usePromptDialogRef.current?.open(prompt);
   }, []);
 
   const onEditSubmit = useCallback(
@@ -214,6 +215,12 @@ export function PromptGrid() {
         ref={editPromptDialogRef}
         onSubmit={onEditSubmit}
         onDeleteClick={onDeleteClick}
+      />
+      <PromptUseDialog
+        ref={usePromptDialogRef}
+        onConfirm={() => {
+          console.log('onConfirm');
+        }}
       />
     </>
   );

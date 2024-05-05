@@ -67,6 +67,10 @@ export const editPromptFormSchema = newPromptFormSchema.extend({
   createdAt: z.string(),
 });
 
+export const usePromptFormSchema = z.object({
+  prompt: z.string(),
+});
+
 export const proxySchema = z
   .object({
     on: z.boolean().optional().default(false),
