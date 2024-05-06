@@ -54,9 +54,12 @@ export const PromptUseDialog = forwardRef<
             {prompt.alias}
             <PromptForm.Use
               id="promptForm"
-              defaultValues={prompt}
+              defaultPrompt={prompt}
               onSubmit={() => {
                 console.log('onSubmit');
+              }}
+              onFormChange={() => {
+                console.log('onFormChange');
               }}
             />
           </div>

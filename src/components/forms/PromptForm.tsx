@@ -8,9 +8,10 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { extractVariables } from '@/lib/prompts';
 import {
   editPromptFormSchema,
   newPromptFormSchema,
@@ -41,7 +42,7 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 };
 
 type UseFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
-  defaultValues: Prompt;
+  defaultPrompt: Prompt;
   onSubmit: (prompt: string) => void;
   onFormChange: (prompt: string) => void;
 };
@@ -256,37 +257,39 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
 
 const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
   (
-    { onSubmit, onFormChange, defaultValues, ...props }: UseFormProps,
+    { onSubmit, onFormChange, defaultPrompt, ...props }: UseFormProps,
     ref: ForwardedRef<FormHandler>
   ) => {
-    const [prompt, setPrompt] = useState<string>();
     const { t } = useTranslation(['generic']);
+    const variables = new Set(extractVariables(defaultPrompt.content));
     const form = useForm<FilledPrompt>({
       resolver: zodResolver(usePromptFormSchema),
       defaultValues: {
-        prompt: defaultValues?.content ?? '',
+        prompt: defaultPrompt?.content ?? '',
+        variables: Array.from(variables)
+          .sort()
+          .map((label) => ({
+            label,
+            value: '',
+          })),
       },
     });
+    const { fields, insert, remove } = useFieldArray({
+      control: form.control,
+      name: 'variables',
+    });
+    const prompt = form.watch('prompt');
 
-    const onChangeDebounded = useMemo(() => {
-      return debounce((value: string) => {
-        setPrompt(value);
-      }, 200);
-    }, []);
+    // useEffect(() => {
+    //   const subscription = form.watch((value, { name, type }) =>
+    //     console.log(value, name, type)
+    //   );
+    //   return () => subscription.unsubscribe();
+    // }, [form.watch]);
 
-    const onChange = useCallback(
-      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        onChangeDebounded(e.target.value);
-      },
-      []
-    );
-
-    useEffect(() => {
-      const subscription = form.watch((value, { name, type }) =>
-        console.log(value, name, type)
-      );
-      return () => subscription.unsubscribe();
-    }, [form.watch]);
+    const onFormSubmit = (data: any) => {
+      console.log('onFormSubmit', data);
+    };
 
     // Hooks
     useImperativeHandle(
@@ -299,13 +302,69 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
       [form]
     );
 
+    useEffect(() => {
+      const newVars = new Set(extractVariables(prompt));
+      const oldVars = fields.map((f) => f.label).sort();
+      // remove first
+      const toRemove: number[] = [];
+      oldVars.forEach((ov, i) => {
+        if (!newVars.has(ov)) {
+          toRemove.push(i);
+        }
+      });
+      remove(toRemove);
+      // then add
+      newVars.forEach((nv) => {
+        let insertPos = 0;
+        let matchPos = -1;
+        for (let i = 0; i < oldVars.length; i += 1) {
+          if (oldVars[i] === nv) {
+            // if match exists, break and do nothing
+            matchPos = i;
+            break;
+          } else if (oldVars[i] > nv) {
+            // elif next value is greater, insert at this position
+            insertPos = i;
+            break;
+          } else {
+            // else move cursor forward
+            insertPos += 1;
+          }
+        }
+
+        if (matchPos === -1) {
+          insert(insertPos, { label: nv, value: '' }, { shouldFocus: false });
+        }
+      });
+    }, [prompt]);
+
+    const renderVariables = () => {
+      return fields.map((item, index) => {
+        return (
+          <Controller
+            key={item.id}
+            control={form.control}
+            name={`variables.${index}.value`}
+            render={({ field }) => {
+              return (
+                <div className="col-span-4">
+                  <label htmlFor={field.name}>{item.label}</label>
+                  <input {...field} id={field.name} />
+                </div>
+              );
+            }}
+          />
+        );
+      });
+    };
+
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
+        <form onSubmit={form.handleSubmit(onFormSubmit)} {...props}>
           <div className="flex flex-col gap-4 py-4">
             <FormField
               control={form.control}
-              name="content"
+              name="prompt"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormControl>
@@ -313,10 +372,10 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
                       className="col-span-4 rounded-md py-1"
                       rows={10}
                       {...field}
-                      onChange={(ev) => {
-                        field.onChange(ev);
-                        onChange(ev);
-                      }}
+                      // onChange={(ev) => {
+                      //   field.onChange(ev);
+                      //   onChange(ev);
+                      // }}
                     />
                   </FormControl>
                   <PromptVariables prompt={prompt} />
@@ -326,6 +385,7 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
                 </FormItem>
               )}
             />
+            {renderVariables()}
           </div>
         </form>
       </Form>

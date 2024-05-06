@@ -11,6 +11,7 @@ import type {
   newPromptFormSchema,
   openAIOptionsFormSchema,
   proxySchema,
+  usePromptFormSchema,
 } from './schemas';
 
 export type NewAzureModel = z.infer<typeof newAzureModelFormSchema>;
@@ -87,9 +88,7 @@ export type Prompt = NewPrompt & {
   deletedAt?: string;
 };
 
-export type FilledPrompt = {
-  prompt: string;
-};
+export type FilledPrompt = z.infer<typeof usePromptFormSchema>;
 
 export type ProxySetting = z.infer<typeof proxySchema>;
 
