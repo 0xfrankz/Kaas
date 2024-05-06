@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import { extractVariables } from '@/lib/prompts';
@@ -44,7 +44,7 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 type UseFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
   defaultPrompt: Prompt;
   onSubmit: (prompt: string) => void;
-  onFormChange: (prompt: string) => void;
+  onFormChange: (data: FilledPrompt) => void;
 };
 
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
@@ -262,30 +262,28 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
   ) => {
     const { t } = useTranslation(['generic']);
     const variables = new Set(extractVariables(defaultPrompt.content));
+    const defaultValues = {
+      prompt: defaultPrompt?.content ?? '',
+      variables: Array.from(variables)
+        .sort()
+        .map((label) => ({
+          label,
+          value: '',
+        })),
+    };
     const form = useForm<FilledPrompt>({
       resolver: zodResolver(usePromptFormSchema),
-      defaultValues: {
-        prompt: defaultPrompt?.content ?? '',
-        variables: Array.from(variables)
-          .sort()
-          .map((label) => ({
-            label,
-            value: '',
-          })),
-      },
+      defaultValues,
+    });
+    const formData = useWatch({
+      control: form.control,
+      defaultValue: defaultValues,
     });
     const { fields, insert, remove } = useFieldArray({
       control: form.control,
       name: 'variables',
     });
     const prompt = form.watch('prompt');
-
-    // useEffect(() => {
-    //   const subscription = form.watch((value, { name, type }) =>
-    //     console.log(value, name, type)
-    //   );
-    //   return () => subscription.unsubscribe();
-    // }, [form.watch]);
 
     const onFormSubmit = (data: any) => {
       console.log('onFormSubmit', data);
@@ -338,6 +336,18 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
       });
     }, [prompt]);
 
+    useEffect(() => {
+      const data = {
+        prompt: formData.prompt ?? '',
+        variables:
+          formData.variables?.map((v) => ({
+            label: v.label ?? '',
+            value: v.value ?? '',
+          })) ?? [],
+      };
+      onFormChange(data);
+    }, [formData]);
+
     const renderVariables = () => {
       return fields.map((item, index) => {
         return (
@@ -349,7 +359,7 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
               return (
                 <div className="col-span-4">
                   <label htmlFor={field.name}>{item.label}</label>
-                  <input {...field} id={field.name} />
+                  <Input {...field} id={field.name} className="mt-1" />
                 </div>
               );
             }}
@@ -372,13 +382,8 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
                       className="col-span-4 rounded-md py-1"
                       rows={10}
                       {...field}
-                      // onChange={(ev) => {
-                      //   field.onChange(ev);
-                      //   onChange(ev);
-                      // }}
                     />
                   </FormControl>
-                  <PromptVariables prompt={prompt} />
                   <div className="col-span-4">
                     <FormMessage />
                   </div>

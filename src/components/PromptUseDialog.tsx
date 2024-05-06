@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 
 type UsePromptDialogProps = {
@@ -49,8 +50,8 @@ export const PromptUseDialog = forwardRef<
             {t('page-prompts:message:use-prompt-tips')}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex">
-          <div className="flex-1">
+        <div className="flex max-h-[600px] overflow-hidden">
+          <ScrollArea className="flex-1">
             {prompt.alias}
             <PromptForm.Use
               id="promptForm"
@@ -58,11 +59,11 @@ export const PromptUseDialog = forwardRef<
               onSubmit={() => {
                 console.log('onSubmit');
               }}
-              onFormChange={() => {
-                console.log('onFormChange');
+              onFormChange={(data) => {
+                console.log('onFormChange', data);
               }}
             />
-          </div>
+          </ScrollArea>
           <Separator orientation="vertical" className="mx-2" />
           <div className="flex-1">
             <PromptPreviewer prompt="ojbk" />
