@@ -11,6 +11,7 @@ import {
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { useFilledPromptContext } from '@/lib/hooks';
 import { extractVariables } from '@/lib/prompts';
 import {
   editPromptFormSchema,
@@ -42,9 +43,7 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 };
 
 type UseFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
-  defaultPrompt: Prompt;
   onSubmit: (prompt: string) => void;
-  onFormChange: (data: FilledPrompt) => void;
 };
 
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
@@ -256,28 +255,17 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
 );
 
 const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
-  (
-    { onSubmit, onFormChange, defaultPrompt, ...props }: UseFormProps,
-    ref: ForwardedRef<FormHandler>
-  ) => {
+  ({ onSubmit, ...props }: UseFormProps, ref: ForwardedRef<FormHandler>) => {
     const { t } = useTranslation(['generic']);
-    const variables = new Set(extractVariables(defaultPrompt.content));
-    const defaultValues = {
-      prompt: defaultPrompt?.content ?? '',
-      variables: Array.from(variables)
-        .sort()
-        .map((label) => ({
-          label,
-          value: '',
-        })),
-    };
+    const { prompt: filledPrompt, setPrompt: setFilledPrompt } =
+      useFilledPromptContext();
     const form = useForm<FilledPrompt>({
       resolver: zodResolver(usePromptFormSchema),
-      defaultValues,
+      defaultValues: filledPrompt,
     });
     const formData = useWatch({
       control: form.control,
-      defaultValue: defaultValues,
+      defaultValue: filledPrompt,
     });
     const { fields, insert, remove } = useFieldArray({
       control: form.control,
@@ -345,7 +333,7 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
             value: v.value ?? '',
           })) ?? [],
       };
-      onFormChange(data);
+      setFilledPrompt(data);
     }, [formData]);
 
     const renderVariables = () => {

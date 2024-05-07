@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { SETTING_DISPLAY_LANGUAGE, SETTING_DISPLAY_THEME } from './constants';
-import { ConversationsContext } from './contexts';
+import { ConversationsContext, FilledPromptContext } from './contexts';
 import { AppError, ERROR_TYPE_APP_STATE } from './error';
 import {
   useListConversationsQuery,
@@ -13,7 +13,7 @@ import {
 } from './hooks';
 import log from './log';
 import { useAppStateStore } from './store';
-import type { TConversationsContext } from './types';
+import type { FilledPrompt, TConversationsContext } from './types';
 
 export function RQProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -131,5 +131,28 @@ export function ConversationsContextProvider({
     <ConversationsContext.Provider value={conversationContext}>
       {children}
     </ConversationsContext.Provider>
+  );
+}
+
+export function FilledPromptContextProvider({
+  defaultValue,
+  children,
+}: {
+  defaultValue: FilledPrompt;
+  children: React.ReactNode;
+}) {
+  const [prompt, setPrompt] = useState(defaultValue);
+  const context = useMemo(
+    () => ({
+      prompt,
+      setPrompt,
+    }),
+    [prompt, setPrompt]
+  );
+
+  return (
+    <FilledPromptContext.Provider value={context}>
+      {children}
+    </FilledPromptContext.Provider>
   );
 }

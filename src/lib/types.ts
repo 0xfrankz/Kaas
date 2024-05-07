@@ -99,6 +99,11 @@ export type TConversationsContext = {
   get: (id: number) => Conversation | undefined;
 };
 
+export type TFilledPromptContext = {
+  prompt: FilledPrompt;
+  setPrompt: (prompt: FilledPrompt) => void;
+};
+
 // Errors
 export type CommandError = {
   type: string;

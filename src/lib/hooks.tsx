@@ -37,7 +37,7 @@ import {
   invokeUpsertSetting,
 } from './commands';
 import { SETTING_NETWORK_PROXY } from './constants';
-import { ConversationsContext } from './contexts';
+import { ConversationsContext, FilledPromptContext } from './contexts';
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
 import type {
@@ -54,6 +54,7 @@ import type {
   ProxySetting,
   Setting,
   TConversationsContext,
+  TFilledPromptContext,
   UnsavedConversation,
 } from './types';
 
@@ -373,6 +374,16 @@ export function useConversationsContext(): TConversationsContext {
     );
   }
 
+  return context;
+}
+
+export function useFilledPromptContext(): TFilledPromptContext {
+  const context = useContext(FilledPromptContext);
+  if (context === undefined) {
+    throw new Error(
+      'useFilledPromptContext must be used within a FilledPromptContextProvider'
+    );
+  }
   return context;
 }
 

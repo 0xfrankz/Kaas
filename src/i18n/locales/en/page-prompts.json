@@ -10,6 +10,6 @@
         "create-prompt-tips": "You can use variables in your prompt, enclose them with curly braces, e.g. {variable_name}. \n_Use no more than 20 alphanumeric characters or underscore for variable name._",
         "update-prompt-success": "Prompt has been updated",
         "delete-prompt-success": "Prompt has been deleted",
-        "use-prompt-tips": "Use prompt tips"
+        "use-prompt-tips": "Replace variables in your prompt template with real values, then pick a model to start a new conversation."
     }
 }

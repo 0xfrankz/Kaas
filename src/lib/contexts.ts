@@ -1,7 +1,11 @@
-import React from 'react';
+import { createContext } from 'react';
 
-import type { TConversationsContext } from './types';
+import type { TConversationsContext, TFilledPromptContext } from './types';
 
-export const ConversationsContext = React.createContext<
+export const ConversationsContext = createContext<
   TConversationsContext | undefined
+>(undefined);
+
+export const FilledPromptContext = createContext<
+  TFilledPromptContext | undefined
 >(undefined);
