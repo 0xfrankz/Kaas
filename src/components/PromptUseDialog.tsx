@@ -2,7 +2,7 @@ import { DialogDescription } from '@radix-ui/react-dialog';
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import type { HTMLAttributes } from 'react';
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import {
+  LIST_CONVERSATIONS_KEY,
   useCreateConversationMutation,
   useFilledPromptContext,
 } from '@/lib/hooks';
@@ -57,22 +58,22 @@ const LocalNewConversationForm = forwardRef<
   const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
     const validation = conversationFormSchema.safeParse(formData);
     if (validation.success) {
-      // createConversationMutation.mutate(validation.data, {
-      //   onSuccess: async (conversation) => {
-      //     navigate(`/conversations/${conversation.id}`);
-      //     return queryClient.invalidateQueries({
-      //       queryKey: LIST_CONVERSATIONS_KEY,
-      //     });
-      //   },
-      // });
-      console.log(validation.data);
-      toast.success('Validated!!!');
+      createConversationMutation.mutate(validation.data, {
+        onSuccess: async (conversation) => {
+          navigate(`/conversations/${conversation.id}`);
+          return queryClient.invalidateQueries({
+            queryKey: LIST_CONVERSATIONS_KEY,
+          });
+        },
+      });
     } else {
-      toast.warning(
-        "Input can't be empty. Type something to start a new conversation."
-      );
+      toast.warning("Prompt can't be empty.");
     }
   };
+
+  useEffect(() => {
+    form.setValue('message', promptStr);
+  }, [form, promptStr]);
 
   return (
     <Form {...form}>
@@ -81,11 +82,11 @@ const LocalNewConversationForm = forwardRef<
           <FormField
             control={form.control}
             name="message"
-            defaultValue={promptStr}
+            // defaultValue={promptStr}
             render={({ field }) => (
               <FormItem className="ml-4 grow">
                 <FormControl>
-                  <Input type="hidden" value={promptStr} name={field.name} />
+                  <Input type="hidden" {...field} value={promptStr} />
                 </FormControl>
               </FormItem>
             )}
@@ -128,7 +129,6 @@ export const PromptUseDialog = forwardRef<
 >(({ onConfirm }, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const [prompt, setPrompt] = useState<Prompt>();
-  const { models } = useAppStateStore();
   const filledPrompt = {
     prompt: prompt?.content ?? '',
     variables: Array.from(new Set(extractVariables(prompt?.content ?? '')))
