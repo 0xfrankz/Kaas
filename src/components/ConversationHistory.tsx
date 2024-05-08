@@ -1,4 +1,4 @@
-import { ChatBubbleIcon } from '@radix-ui/react-icons';
+import { MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useConversationsContext } from '@/lib/hooks';
@@ -29,7 +29,7 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
       )}
     >
       <Link to={`/conversations/${conversation.id}`}>
-        <ChatBubbleIcon className="size-4" />
+        <MessageSquare className="size-4" />
         <span className="ml-2 w-40 overflow-hidden text-ellipsis text-left text-sm">
           {conversation.subject}
         </span>

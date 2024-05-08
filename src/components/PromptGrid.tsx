@@ -1,8 +1,7 @@
-import { CalendarIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { produce } from 'immer';
-import { Plus } from 'lucide-react';
+import { Calendar, Plus } from 'lucide-react';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -48,8 +47,8 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
       </CardContent>
       <CardFooter className="items-center justify-start">
         <div className="flex items-center text-xs text-muted-foreground">
-          <CalendarIcon className="size-4" />
-          <span className="ml-1">
+          <Calendar className="size-4 text-muted-foreground" />
+          <span className="ml-1 text-muted-foreground">
             {prompt.createdAt
               ? dayjs(prompt.createdAt).format(DEFAULT_DATE_FORMAT)
               : 'Unknown'}

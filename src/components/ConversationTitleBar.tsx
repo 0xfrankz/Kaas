@@ -1,4 +1,4 @@
-import { CheckIcon, Cross2Icon, Pencil2Icon } from '@radix-ui/react-icons';
+import { Check, SquarePen, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import { ProxyIndicator } from './ProxyIndicator';
@@ -38,14 +38,14 @@ export function ConversationTitleBar({ title, onEditDone }: Props) {
             ref={inputRef}
           />
           <Button className="ml-2 size-9 rounded-full p-0" onClick={onConfirm}>
-            <CheckIcon className="size-4" />
+            <Check className="size-4" />
           </Button>
           <Button
             variant="secondary"
             onClick={onCancel}
             className="ml-2 size-9 rounded-full p-0"
           >
-            <Cross2Icon className="size-4" />
+            <X className="size-4" />
           </Button>
         </>
       ) : (
@@ -58,7 +58,7 @@ export function ConversationTitleBar({ title, onEditDone }: Props) {
             variant="ghost"
             onClick={() => setIsEditing(true)}
           >
-            <Pencil2Icon className="size-4 text-muted-foreground" />
+            <SquarePen className="size-4 text-muted-foreground" />
           </Button>
         </>
       )}

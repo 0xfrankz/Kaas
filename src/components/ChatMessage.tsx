@@ -1,5 +1,5 @@
-import { Pencil1Icon, PersonIcon } from '@radix-ui/react-icons';
 import dayjs from 'dayjs';
+import { Bot as BotIcon, SquarePen, UserRound } from 'lucide-react';
 import { createContext, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -15,7 +15,6 @@ import type { Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { LoadingIcon } from './ui/icons/LoadingIcon';
-import { ModelIcon } from './ui/icons/ModelIcon';
 
 type WrapperProps = {
   children: React.ReactNode;
@@ -44,11 +43,11 @@ const HoverContext = createContext<THoverContext>({
 });
 
 const BOT_AVATAR = (
-  <ModelIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
+  <BotIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
 );
 
 const USER_AVATAR = (
-  <PersonIcon className="box-border size-6 rounded-full border border-border-yellow p-1" />
+  <UserRound className="box-border size-6 rounded-full border border-border-yellow p-1" />
 );
 
 const HoverContextProvider = ({ children }: WrapperProps) => {
@@ -103,7 +102,7 @@ const ActionBar = () => {
   return (
     <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
       <div className={cn(hover ? null : 'hidden')}>
-        <Pencil1Icon className="size-[14px]" />
+        <SquarePen className="size-[14px]" />
       </div>
     </div>
   );

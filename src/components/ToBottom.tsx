@@ -1,4 +1,4 @@
-import { ArrowDownIcon } from '@radix-ui/react-icons';
+import { ArrowDown } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { forwardRef } from 'react';
 
@@ -31,7 +31,7 @@ export const ToBottom = forwardRef<
       {...props}
       ref={ref}
     >
-      <ArrowDownIcon className="size-4" />
+      <ArrowDown className="size-4" />
     </Button>
   );
 });

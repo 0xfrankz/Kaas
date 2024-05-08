@@ -1,6 +1,6 @@
 import { DialogDescription } from '@radix-ui/react-dialog';
-import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { SendHorizonal } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
@@ -202,7 +202,7 @@ export const PromptUseDialog = forwardRef<
                   {t('generic:action:cancel')}
                 </Button>
                 <Button form="usePromptForm" type="submit">
-                  <PaperPlaneIcon className="size-4" />
+                  <SendHorizonal className="size-4" />
                 </Button>
               </div>
             </div>

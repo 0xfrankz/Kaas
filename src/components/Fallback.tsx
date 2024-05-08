@@ -1,4 +1,4 @@
-import { CrossCircledIcon } from '@radix-ui/react-icons';
+import { CircleX } from 'lucide-react';
 import type { FallbackProps } from 'react-error-boundary';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,7 @@ export function Fallback({ error, resetErrorBoundary }: FallbackProps) {
   }
   return (
     <div className="flex grow flex-col items-center justify-center">
-      <CrossCircledIcon className="size-20 text-red-500" />
+      <CircleX className="size-20 text-red-500" />
       <div className="mt-6 max-w-[640px] text-lg">{errMsg}</div>
       {errReason && (
         <div className="mt-2 max-w-[640px] text-sm">{errReason}</div>

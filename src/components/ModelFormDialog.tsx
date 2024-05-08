@@ -1,4 +1,4 @@
-import { PlusIcon } from '@radix-ui/react-icons';
+import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
@@ -73,7 +73,7 @@ function NewModelFormDialog({ provider, onSubmit }: NewFormProps) {
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogTrigger asChild>
         <Button className="mx-auto w-32">
-          <PlusIcon className="size-4 text-primary-foreground" />
+          <Plus className="size-4 text-primary-foreground" />
         </Button>
       </DialogTrigger>
       <DialogContent>{renderForm()}</DialogContent>

@@ -1,5 +1,5 @@
-import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { Settings2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -111,7 +111,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className={className}>
-          <MixerHorizontalIcon className="size-4" />
+          <Settings2 className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">

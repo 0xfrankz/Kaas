@@ -1,5 +1,5 @@
-import { StopIcon } from '@radix-ui/react-icons';
 import { emit } from '@tauri-apps/api/event';
+import { Square } from 'lucide-react';
 
 import { Button } from './ui/button';
 
@@ -13,7 +13,7 @@ export function ChatStop() {
       className="size-9 rounded-full p-0 drop-shadow-lg"
       onClick={onClick}
     >
-      <StopIcon className="size-4" />
+      <Square className="size-4" />
     </Button>
   );
 }

@@ -1,5 +1,5 @@
-import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { SendHorizonal } from 'lucide-react';
 import { useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -109,7 +109,7 @@ export function NewConversationForm() {
               )}
             />
             <Button type="submit" className="mx-4">
-              <PaperPlaneIcon className="size-4" />
+              <SendHorizonal className="size-4" />
             </Button>
           </div>
           <div className="col-span-3 col-start-2">

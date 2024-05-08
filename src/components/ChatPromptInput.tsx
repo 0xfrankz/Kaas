@@ -1,5 +1,5 @@
-import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { SendHorizonal } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -134,7 +134,7 @@ export function ChatPromptInput({ conversationId }: Props) {
           />
         </div>
         <Button onClick={onClick}>
-          <PaperPlaneIcon />
+          <SendHorizonal className="size-4" />
         </Button>
       </div>
       <div className="mb-4 flex w-full items-center justify-between px-2 text-xs text-muted-foreground">
