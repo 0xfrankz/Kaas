@@ -12,7 +12,8 @@
         "cancel": "Cancel",
         "edit": "Edit",
         "delete": "Delete",
-        "use": "Use"
+        "use": "Use",
+        "confirm": "Confirm"
     },
     "select": {
         "language-en": "English",
