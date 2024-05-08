@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import {
   createBrowserRouter,
+  Navigate,
   Outlet,
   RouterProvider,
   useLocation,
@@ -29,7 +30,6 @@ import SettingsPage from '@/pages/Settings';
 
 import { GlobalFallback } from './components/GlobalFallback';
 import { PageSkeleton } from './components/placeholders/WholePage';
-import HomePage from './pages/Home';
 
 const AnimatedOutlet = (): React.JSX.Element => {
   const location = useLocation();
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <Navigate to="/conversations" replace />,
       },
       {
         path: 'models',
