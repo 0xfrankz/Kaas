@@ -42,10 +42,6 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
   onSubmit: (prompt: Prompt) => void;
 };
 
-type UseFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
-  onSubmit: (prompt: string) => void;
-};
-
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
   ({ onSubmit, ...props }: NewFormProps, ref: ForwardedRef<FormHandler>) => {
     const [prompt, setPrompt] = useState<string>();
@@ -254,9 +250,11 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
   }
 );
 
-const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
-  ({ onSubmit, ...props }: UseFormProps, ref: ForwardedRef<FormHandler>) => {
-    const { t } = useTranslation(['generic']);
+const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
+  (
+    { ...props }: HTMLAttributes<HTMLFormElement>,
+    ref: ForwardedRef<FormHandler>
+  ) => {
     const { prompt: filledPrompt, setPrompt: setFilledPrompt } =
       useFilledPromptContext();
     const form = useForm<FilledPrompt>({
@@ -272,10 +270,6 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
       name: 'variables',
     });
     const prompt = form.watch('prompt');
-
-    const onFormSubmit = (data: any) => {
-      console.log('onFormSubmit', data);
-    };
 
     // Hooks
     useImperativeHandle(
@@ -358,7 +352,7 @@ const UsePromptForm = forwardRef<FormHandler, UseFormProps>(
 
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onFormSubmit)} {...props}>
+        <form {...props}>
           <div className="flex flex-col gap-4 py-4">
             <FormField
               control={form.control}

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -15,8 +16,6 @@ import type {
   NewOpenAIModel,
 } from '@/lib/types';
 
-import { Button } from '../ui/button';
-import { DialogClose, DialogFooter } from '../ui/dialog';
 import {
   Form,
   FormControl,
@@ -28,7 +27,10 @@ import {
 } from '../ui/form';
 import { Input } from '../ui/input';
 
-type FormProps<T extends NewModel | Model> = {
+type FormProps<T extends NewModel | Model> = Omit<
+  HTMLAttributes<HTMLFormElement>,
+  'onSubmit'
+> & {
   model: T;
   onSubmit: (model: T) => void;
 };
@@ -36,7 +38,7 @@ type FormProps<T extends NewModel | Model> = {
 const NewAzureModelForm = forwardRef<
   ModelFormHandler,
   FormProps<NewAzureModel>
->(({ model, onSubmit }, ref) => {
+>(({ model, onSubmit, ...props }, ref) => {
   const form = useForm<NewAzureModel>({
     resolver: zodResolver(newAzureModelFormSchema),
     defaultValues: model,
@@ -51,7 +53,7 @@ const NewAzureModelForm = forwardRef<
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
           <FormField
             control={form.control}
@@ -144,12 +146,6 @@ const NewAzureModelForm = forwardRef<
             )}
           />
         </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary">Cancel</Button>
-          </DialogClose>
-          <Button type="submit">Save</Button>
-        </DialogFooter>
       </form>
     </Form>
   );
@@ -158,7 +154,7 @@ const NewAzureModelForm = forwardRef<
 const NewOpenAIModelForm = forwardRef<
   ModelFormHandler,
   FormProps<NewOpenAIModel>
->(({ model, onSubmit }, ref) => {
+>(({ model, onSubmit, ...props }, ref) => {
   const form = useForm<NewOpenAIModel>({
     resolver: zodResolver(newOpenAIModelFormSchema),
     defaultValues: model,
@@ -173,7 +169,7 @@ const NewOpenAIModelForm = forwardRef<
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
           <FormField
             control={form.control}
@@ -230,12 +226,6 @@ const NewOpenAIModelForm = forwardRef<
             )}
           />
         </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary">Cancel</Button>
-          </DialogClose>
-          <Button type="submit">Save</Button>
-        </DialogFooter>
       </form>
     </Form>
   );

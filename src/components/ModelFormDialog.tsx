@@ -67,6 +67,7 @@ const NewModelFormDialog = forwardRef<
       case PROVIDER_OPENAI:
         return (
           <ModelForm.OpenAI.New
+            id="modelForm"
             model={
               {
                 provider: PROVIDER_OPENAI,
@@ -80,6 +81,7 @@ const NewModelFormDialog = forwardRef<
       default:
         return (
           <ModelForm.Azure.New
+            id="modelForm"
             model={
               {
                 provider: PROVIDER_AZURE,
@@ -109,6 +111,12 @@ const NewModelFormDialog = forwardRef<
           </DialogDescription>
         </DialogHeader>
         {renderForm()}
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">{t('generic:action:cancel')}</Button>
+          </DialogClose>
+          <Button form="modelForm">{t('generic:action:save')}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
