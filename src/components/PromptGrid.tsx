@@ -195,7 +195,7 @@ export function PromptGrid() {
 
   return (
     <>
-      <div className="mx-auto mt-12 w-full columns-3 gap-8 text-foreground">
+      <div className="mx-auto mt-6 w-full columns-3 gap-8 text-foreground">
         <AddPromptItem onClick={onCreateClick} />
         {isSuccess &&
           prompts.map((prompt) => (
