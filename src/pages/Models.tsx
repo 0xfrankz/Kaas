@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import TwoRows from '@/layouts/TwoRows';
 import {
@@ -71,71 +72,73 @@ export default function ModelsPage() {
 
   return (
     <SlideUpTransition motionKey="models">
-      <TwoRows>
+      <TwoRows className="max-h-screen">
         <TwoRows.Top>
           <TitleBar title={t('page-models:title')} />
         </TwoRows.Top>
-        <TwoRows.Bottom>
-          <div className="flex size-full justify-center">
-            <div className="w-[1080px] max-w-[1080px]">
-              <div
-                className={cn(
-                  'flex flex-col px-[34px] min-h-[348px] mt-6',
-                  hasModels ? null : 'justify-center items-center'
-                )}
-              >
-                {hasModels ? (
-                  <>
-                    <h2 className="text-3xl font-semibold tracking-tight">
-                      {t('page-models:section:your-models')}
-                    </h2>
-                    <ModelGrid
-                      models={models}
-                      onDefaultChange={onDefaultChange}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-3xl font-semibold tracking-tight">
-                      {t('page-models:text:no-model')}
-                    </h2>
-                    <p className="mt-4 text-sm">
-                      {t('page-models:text:add-model')}
-                    </p>
-                  </>
-                )}
-              </div>
-              <Separator />
-              <div className="px-[34px]">
-                <h2 className="my-6 text-xl font-semibold tracking-tight">
-                  {t('page-models:section:supported-models')}
-                </h2>
-                <div className="grid grid-cols-4 gap-5">
-                  {SUPPORTED_PROVIDERS.map((provider) => (
-                    <Card
-                      className="border border-border"
-                      key={`${provider}-model-card`}
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="mx-auto">
-                          {t(`generic:model:${provider}`)}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <p className="text-center">GPT-3.5 and GPT-4</p>
-                      </CardContent>
-                      <CardFooter>
-                        <ModelFormDialog.New
-                          provider={provider}
-                          onSubmit={onSubmit}
-                        />
-                      </CardFooter>
-                    </Card>
-                  ))}
+        <TwoRows.Bottom className="flex overflow-hidden">
+          <ScrollArea className="w-full grow">
+            <div className="flex size-full justify-center">
+              <div className="w-[1080px] max-w-[1080px]">
+                <div
+                  className={cn(
+                    'flex flex-col px-[34px] min-h-[348px] mt-6',
+                    hasModels ? null : 'justify-center items-center'
+                  )}
+                >
+                  {hasModels ? (
+                    <>
+                      <h2 className="text-3xl font-semibold tracking-tight">
+                        {t('page-models:section:your-models')}
+                      </h2>
+                      <ModelGrid
+                        models={models}
+                        onDefaultChange={onDefaultChange}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-3xl font-semibold tracking-tight">
+                        {t('page-models:text:no-model')}
+                      </h2>
+                      <p className="mt-4 text-sm">
+                        {t('page-models:text:add-model')}
+                      </p>
+                    </>
+                  )}
+                </div>
+                <Separator className="my-6" />
+                <div className="mb-6 px-[34px]">
+                  <h2 className="text-xl font-semibold tracking-tight">
+                    {t('page-models:section:supported-models')}
+                  </h2>
+                  <div className="mt-6 grid grid-cols-4 gap-5">
+                    {SUPPORTED_PROVIDERS.map((provider) => (
+                      <Card
+                        className="border border-border"
+                        key={`${provider}-model-card`}
+                      >
+                        <CardHeader className="pb-2">
+                          <CardTitle className="mx-auto">
+                            {t(`generic:model:${provider}`)}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <p className="text-center">GPT-3.5 and GPT-4</p>
+                        </CardContent>
+                        <CardFooter>
+                          <ModelFormDialog.New
+                            provider={provider}
+                            onSubmit={onSubmit}
+                          />
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </TwoRows.Bottom>
       </TwoRows>
     </SlideUpTransition>

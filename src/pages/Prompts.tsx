@@ -15,14 +15,14 @@ function PageTitle() {
 export default function PromptsPage() {
   const { t } = useTranslation(['generic', 'page-prompts']);
   return (
-    <SlideUpTransition motionKey="templates">
+    <SlideUpTransition motionKey="prompts">
       <TwoRows className="max-h-screen">
         <TwoRows.Top>
           <Suspense fallback={null}>
             <PageTitle />
           </Suspense>
         </TwoRows.Top>
-        <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
+        <TwoRows.Bottom className="flex justify-center overflow-hidden bg-background">
           <ScrollArea className="w-full grow">
             <Suspense fallback={null}>
               <div className="mx-auto my-6 w-[1080px] max-w-[1080px]">

@@ -7,6 +7,7 @@ import { NewConversationForm } from '@/components/NewConversationForm';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
 import { ModelIcon } from '@/components/ui/icons/ModelIcon';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
 import { useConversationsContext } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
@@ -61,16 +62,18 @@ export default function ConversationsPage() {
 
   return (
     <SlideUpTransition motionKey="conversations">
-      <TwoRows>
+      <TwoRows className="max-h-screen">
         <TwoRows.Top>
           <TitleBar title={t('page-conversations:title')} />
         </TwoRows.Top>
-        <TwoRows.Bottom>
-          <div className="flex grow justify-center">
-            <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
-              {hasModels ? render() : renderEmptyModels()}
+        <TwoRows.Bottom className="flex overflow-hidden">
+          <ScrollArea className="w-full grow">
+            <div className="flex grow justify-center">
+              <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
+                {hasModels ? render() : renderEmptyModels()}
+              </div>
             </div>
-          </div>
+          </ScrollArea>
         </TwoRows.Bottom>
       </TwoRows>
     </SlideUpTransition>
