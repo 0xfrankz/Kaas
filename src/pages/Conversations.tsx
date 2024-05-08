@@ -40,7 +40,7 @@ export default function ConversationsPage() {
   const render = () => {
     return (
       <>
-        <div className="mt-12">
+        <div>
           <NewConversationForm />
         </div>
         <div className="mt-12 flex grow">
@@ -68,10 +68,8 @@ export default function ConversationsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex overflow-hidden">
           <ScrollArea className="w-full grow">
-            <div className="flex grow justify-center">
-              <div className="flex w-[1080px] max-w-[1080px] flex-col px-[34px]">
-                {hasModels ? render() : renderEmptyModels()}
-              </div>
+            <div className="mx-auto mb-6 mt-12 flex w-[1080px] max-w-[1080px] flex-col">
+              {hasModels ? render() : renderEmptyModels()}
             </div>
           </ScrollArea>
         </TwoRows.Bottom>

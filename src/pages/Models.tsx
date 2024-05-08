@@ -78,11 +78,11 @@ export default function ModelsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex overflow-hidden">
           <ScrollArea className="w-full grow">
-            <div className="flex size-full justify-center">
+            <div className="mb-6 mt-12 flex size-full justify-center">
               <div className="w-[1080px] max-w-[1080px]">
                 <div
                   className={cn(
-                    'flex flex-col px-[34px] min-h-[348px] mt-6',
+                    'flex flex-col min-h-[348px]',
                     hasModels ? null : 'justify-center items-center'
                   )}
                 >
@@ -108,7 +108,7 @@ export default function ModelsPage() {
                   )}
                 </div>
                 <Separator className="my-6" />
-                <div className="mb-6 px-[34px]">
+                <div>
                   <h2 className="text-xl font-semibold tracking-tight">
                     {t('page-models:section:supported-models')}
                   </h2>

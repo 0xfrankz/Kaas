@@ -596,14 +596,12 @@ export default function SettingsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
           <ScrollArea className="w-full grow">
-            <Suspense fallback={null}>
-              <div className="mx-auto w-[960px] columns-2 gap-8 py-12 text-foreground">
-                <SettingGroupDisplay />
-                <SettingGroupProfile />
-                <SettingGroupModels />
-                <SettingGroupNetwork />
-              </div>
-            </Suspense>
+            <div className="mx-auto mb-6 mt-12 w-[960px] columns-2 gap-8 text-foreground">
+              <SettingGroupDisplay />
+              <SettingGroupProfile />
+              <SettingGroupModels />
+              <SettingGroupNetwork />
+            </div>
           </ScrollArea>
         </TwoRows.Bottom>
       </TwoRows>
