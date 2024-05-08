@@ -1,4 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import { useCallback, useRef } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -7,6 +9,7 @@ import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import ModelFormDialog from '@/components/ModelFormDialog';
 import { ModelGrid } from '@/components/ModelGrid';
 import { TitleBar } from '@/components/TitleBar';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -28,11 +31,12 @@ import {
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
-import type { NewModel } from '@/lib/types';
+import type { DialogHandler, NewModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
   const { t } = useTranslation(['generic', 'page-models']);
+  const newPromptDialogRef = useRef<DialogHandler<string>>(null);
   const { models, updateSetting } = useAppStateStore();
   const queryClient = useQueryClient();
   const hasModels = models.length > 0;
@@ -42,6 +46,13 @@ export default function ModelsPage() {
   const upsertSettingMutation = useUpsertSettingMutation();
 
   // Callbacks
+  const onCreateClick = useCallback(
+    (provider: string) => {
+      newPromptDialogRef.current?.open(provider);
+    },
+    [newPromptDialogRef]
+  );
+
   const onSubmit: SubmitHandler<NewModel> = (formData) => {
     createModelMutation.mutate(formData, {
       onSuccess: async (result) => {
@@ -127,10 +138,12 @@ export default function ModelsPage() {
                           <p className="text-center">GPT-3.5 and GPT-4</p>
                         </CardContent>
                         <CardFooter>
-                          <ModelFormDialog.New
-                            provider={provider}
-                            onSubmit={onSubmit}
-                          />
+                          <Button
+                            className="mx-auto w-32"
+                            onClick={() => onCreateClick(provider)}
+                          >
+                            <Plus className="size-4 text-primary-foreground" />
+                          </Button>
                         </CardFooter>
                       </Card>
                     ))}
@@ -139,6 +152,7 @@ export default function ModelsPage() {
               </div>
             </div>
           </ScrollArea>
+          <ModelFormDialog.New ref={newPromptDialogRef} onSubmit={onSubmit} />
         </TwoRows.Bottom>
       </TwoRows>
     </SlideUpTransition>

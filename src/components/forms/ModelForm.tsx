@@ -16,13 +16,7 @@ import type {
 } from '@/lib/types';
 
 import { Button } from '../ui/button';
-import {
-  DialogClose,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
+import { DialogClose, DialogFooter } from '../ui/dialog';
 import {
   Form,
   FormControl,
@@ -58,16 +52,6 @@ const NewAzureModelForm = forwardRef<
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <DialogHeader>
-          <DialogTitle>
-            {t('generic:text:model-form-title', { provider: model.provider })}
-          </DialogTitle>
-          <DialogDescription>
-            {t('generic:text:model-form-description', {
-              provider: model.provider,
-            })}
-          </DialogDescription>
-        </DialogHeader>
         <div className="grid gap-4 py-8">
           <FormField
             control={form.control}
@@ -190,16 +174,6 @@ const NewOpenAIModelForm = forwardRef<
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <DialogHeader>
-          <DialogTitle>
-            {t('generic:text:model-form-title', { provider: model.provider })}
-          </DialogTitle>
-          <DialogDescription>
-            {t('generic:text:model-form-description', {
-              provider: model.provider,
-            })}
-          </DialogDescription>
-        </DialogHeader>
         <div className="grid gap-4 py-8">
           <FormField
             control={form.control}

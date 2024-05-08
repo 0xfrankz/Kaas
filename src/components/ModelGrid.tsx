@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -6,8 +7,10 @@ import {
   SETTING_USER_DEFAULT_MODEL,
 } from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
-import type { Model } from '@/lib/types';
+import type { DialogHandler, Model } from '@/lib/types';
 
+import ModelFormDialog from './ModelFormDialog';
+import { Button } from './ui/button';
 import {
   Card,
   CardContent,
@@ -22,10 +25,12 @@ function ModelGridItem({
   model,
   isDefault,
   onDefaultChange,
+  onEditClick,
 }: {
   model: Model;
   isDefault: boolean;
   onDefaultChange: (defaultModelId: number) => void;
+  onEditClick: (model: Model) => void;
 }) {
   const { t } = useTranslation();
   const onCheckedChange = (checked: boolean) => {
@@ -54,17 +59,25 @@ function ModelGridItem({
         <p className="text-center">{getModelName(model)}</p>
       </CardContent>
       <CardFooter>
-        <div className="mx-auto flex items-center space-x-2">
-          <Switch
-            id="airplane-mode"
-            checked={isDefault}
-            disabled={isDefault}
-            onCheckedChange={onCheckedChange}
-            className="disabled:opacity-100"
-          />
-          <Label htmlFor="airplane-mode" className="font-medium">
-            {t('generic:label:default')}
-          </Label>
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Switch
+              id="default-switch"
+              checked={isDefault}
+              disabled={isDefault}
+              onCheckedChange={onCheckedChange}
+              className="disabled:opacity-100"
+            />
+            <Label
+              htmlFor="default-switch"
+              className="font-medium text-muted-foreground peer-disabled:text-foreground peer-disabled:opacity-100"
+            >
+              {t('generic:label:default')}
+            </Label>
+          </div>
+          <Button variant="secondary" onClick={() => onEditClick(model)}>
+            {t('generic:action:edit')}
+          </Button>
         </div>
       </CardFooter>
     </Card>
@@ -79,8 +92,13 @@ export function ModelGrid({
   onDefaultChange: (defaultModelId: number) => void;
 }) {
   const { settings } = useAppStateStore();
+  const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
   const defaultModelId =
     parseInt(settings[SETTING_USER_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
+
+  const onEditClick = useCallback((model: Model) => {
+    editPromptDialogRef.current?.open(model);
+  }, []);
 
   return (
     <div className="mt-6 grid grid-cols-4 gap-5">
@@ -91,9 +109,15 @@ export function ModelGrid({
             isDefault={model.id === defaultModelId}
             key={model.id}
             onDefaultChange={onDefaultChange}
+            onEditClick={onEditClick}
           />
         );
       })}
+      <ModelFormDialog.Edit
+        ref={editPromptDialogRef}
+        onSubmit={() => console.log('ModelEdit onSubmit')}
+        onDeleteClick={() => console.log('ModelEdit onDeleteClick')}
+      />
     </div>
   );
 }
