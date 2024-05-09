@@ -31,7 +31,7 @@ import {
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
-import type { DialogHandler, NewModel } from '@/lib/types';
+import type { DialogHandler, EditModel, NewModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
@@ -53,7 +53,7 @@ export default function ModelsPage() {
     [newPromptDialogRef]
   );
 
-  const onSubmit: SubmitHandler<NewModel> = (formData) => {
+  const onCreateSubmit: SubmitHandler<NewModel> = (formData) => {
     createModelMutation.mutate(formData, {
       onSuccess: async (result) => {
         log.info(`Model created: ${JSON.stringify(result)}`);
@@ -64,6 +64,14 @@ export default function ModelsPage() {
         toast.error(`${error.type}: ${error.message}`);
       },
     });
+  };
+
+  const onUpdateSubmit: SubmitHandler<EditModel> = (formData) => {
+    console.log('onUpdateSubmit', formData);
+  };
+
+  const onDelete = (model: EditModel) => {
+    console.log('onDelete', model);
   };
 
   const onDefaultChange = (defaultModelId: number) => {
@@ -105,6 +113,8 @@ export default function ModelsPage() {
                       <ModelGrid
                         models={models}
                         onDefaultChange={onDefaultChange}
+                        onUpdateSubmit={onUpdateSubmit}
+                        onDelete={onDelete}
                       />
                     </>
                   ) : (
@@ -152,7 +162,10 @@ export default function ModelsPage() {
               </div>
             </div>
           </ScrollArea>
-          <ModelFormDialog.New ref={newPromptDialogRef} onSubmit={onSubmit} />
+          <ModelFormDialog.New
+            ref={newPromptDialogRef}
+            onSubmit={onCreateSubmit}
+          />
         </TwoRows.Bottom>
       </TwoRows>
     </SlideUpTransition>

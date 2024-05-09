@@ -2,14 +2,8 @@ import { Trash2 } from 'lucide-react';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
-import type {
-  DialogHandler,
-  Model,
-  NewAzureModel,
-  NewModel,
-  NewOpenAIModel,
-} from '@/lib/types';
+import { PROVIDER_OPENAI } from '@/lib/constants';
+import type { DialogHandler, EditModel, Model, NewModel } from '@/lib/types';
 
 import ModelForm from './forms/ModelForm';
 import { Button } from './ui/button';
@@ -34,8 +28,8 @@ type NewModelDialogProps = {
 };
 
 type EditModelDialogProps = {
-  onSubmit: (model: Model) => void;
-  onDeleteClick: (model: Model) => void;
+  onSubmit: (model: EditModel) => void;
+  onDeleteClick: (model: EditModel) => void;
 };
 
 const NewModelFormDialog = forwardRef<
@@ -65,35 +59,9 @@ const NewModelFormDialog = forwardRef<
   const renderForm = () => {
     switch (provider) {
       case PROVIDER_OPENAI:
-        return (
-          <ModelForm.OpenAI.New
-            id="modelForm"
-            model={
-              {
-                provider: PROVIDER_OPENAI,
-                apiKey: '',
-                model: '',
-              } as NewOpenAIModel
-            }
-            onSubmit={onFormSubmit}
-          />
-        );
+        return <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
       default:
-        return (
-          <ModelForm.Azure.New
-            id="modelForm"
-            model={
-              {
-                provider: PROVIDER_AZURE,
-                apiKey: '',
-                endpoint: '',
-                apiVersion: '',
-                deploymentId: '',
-              } as NewAzureModel
-            }
-            onSubmit={onFormSubmit}
-          />
-        );
+        return <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
     }
   };
 
@@ -141,6 +109,33 @@ const EditModelFormDialog = forwardRef<
     },
   }));
 
+  const onFormSubmit = (updatedModel: EditModel) => {
+    onSubmit(updatedModel);
+    setShowDialog(false);
+  };
+
+  const renderForm = () => {
+    if (!model) return null;
+    switch (model.provider) {
+      case PROVIDER_OPENAI:
+        return (
+          <ModelForm.OpenAI.Edit
+            id="modelForm"
+            model={model}
+            onSubmit={onFormSubmit}
+          />
+        );
+      default:
+        return (
+          <ModelForm.Azure.Edit
+            id="modelForm"
+            model={model}
+            onSubmit={onFormSubmit}
+          />
+        );
+    }
+  };
+
   return model ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
@@ -150,7 +145,7 @@ const EditModelFormDialog = forwardRef<
             {t('page-prompts:message:create-prompt-tips')}
           </DialogDescription>
         </DialogHeader>
-        <div>Dialog contentttttt!</div>
+        {renderForm()}
         <DialogFooter>
           <Popover>
             <PopoverTrigger asChild>
@@ -183,7 +178,7 @@ const EditModelFormDialog = forwardRef<
           <DialogClose asChild>
             <Button variant="secondary">{t('generic:action:cancel')}</Button>
           </DialogClose>
-          <Button form="promptForm">{t('generic:action:save')}</Button>
+          <Button form="modelForm">{t('generic:action:save')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

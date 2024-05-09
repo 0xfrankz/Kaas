@@ -7,7 +7,7 @@ import {
   SETTING_USER_DEFAULT_MODEL,
 } from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
-import type { DialogHandler, Model } from '@/lib/types';
+import type { DialogHandler, EditModel, Model } from '@/lib/types';
 
 import ModelFormDialog from './ModelFormDialog';
 import { Button } from './ui/button';
@@ -87,9 +87,13 @@ function ModelGridItem({
 export function ModelGrid({
   models,
   onDefaultChange,
+  onUpdateSubmit,
+  onDelete,
 }: {
   models: Model[];
   onDefaultChange: (defaultModelId: number) => void;
+  onUpdateSubmit: (model: EditModel) => void;
+  onDelete: (model: EditModel) => void;
 }) {
   const { settings } = useAppStateStore();
   const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
@@ -115,8 +119,8 @@ export function ModelGrid({
       })}
       <ModelFormDialog.Edit
         ref={editPromptDialogRef}
-        onSubmit={() => console.log('ModelEdit onSubmit')}
-        onDeleteClick={() => console.log('ModelEdit onDeleteClick')}
+        onSubmit={onUpdateSubmit}
+        onDeleteClick={onDelete}
       />
     </div>
   );

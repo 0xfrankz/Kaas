@@ -20,6 +20,7 @@ export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;
 export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
 
 export type NewModel = NewAzureModel | NewOpenAIModel;
+export type EditModel = AzureModel | OpenAIModel;
 
 export type GenericNewModel = {
   provider: string;

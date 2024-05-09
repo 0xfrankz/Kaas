@@ -1,19 +1,25 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
 import {
+  editAzureModelFormSchema,
+  editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newOpenAIModelFormSchema,
 } from '@/lib/schemas';
 import type {
-  Model,
+  AzureModel,
+  EditModel,
   ModelFormHandler,
   NewAzureModel,
   NewModel,
   NewOpenAIModel,
+  OpenAIModel,
 } from '@/lib/types';
 
 import {
@@ -27,30 +33,29 @@ import {
 } from '../ui/form';
 import { Input } from '../ui/input';
 
-type FormProps<T extends NewModel | Model> = Omit<
+type NewFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
+  onSubmit: (model: NewModel) => void;
+};
+
+type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
+  model: EditModel;
+  onSubmit: (model: EditModel) => void;
+};
+
+type GenericFormProps<T extends NewModel | EditModel> = Omit<
   HTMLAttributes<HTMLFormElement>,
   'onSubmit'
 > & {
-  model: T;
+  form: UseFormReturn<T, any, T>;
   onSubmit: (model: T) => void;
 };
 
-const NewAzureModelForm = forwardRef<
-  ModelFormHandler,
-  FormProps<NewAzureModel>
->(({ model, onSubmit, ...props }, ref) => {
-  const form = useForm<NewAzureModel>({
-    resolver: zodResolver(newAzureModelFormSchema),
-    defaultValues: model,
-  });
-  const { t } = useTranslation(['generic']);
-
-  useImperativeHandle(ref, () => ({
-    reset: () => {
-      form.reset();
-    },
-  }));
-
+const GenericAzureModelForm = ({
+  form,
+  onSubmit,
+  ...props
+}: GenericFormProps<NewModel | EditModel>) => {
+  const isEdit = !!form.getValues('id');
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -133,11 +138,7 @@ const NewAzureModelForm = forwardRef<
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input
-                    type="hidden"
-                    value={model.provider}
-                    name={field.name}
-                  />
+                  <Input type="hidden" {...field} />
                 </FormControl>
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
@@ -145,28 +146,34 @@ const NewAzureModelForm = forwardRef<
               </FormItem>
             )}
           />
+          {isEdit ? (
+            <FormField
+              control={form.control}
+              name="id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <div className="col-span-3 col-start-2">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          ) : null}
         </div>
       </form>
     </Form>
   );
-});
+};
 
-const NewOpenAIModelForm = forwardRef<
-  ModelFormHandler,
-  FormProps<NewOpenAIModel>
->(({ model, onSubmit, ...props }, ref) => {
-  const form = useForm<NewOpenAIModel>({
-    resolver: zodResolver(newOpenAIModelFormSchema),
-    defaultValues: model,
-  });
-  const { t } = useTranslation(['generic']);
-
-  useImperativeHandle(ref, () => ({
-    reset: () => {
-      form.reset();
-    },
-  }));
-
+const GenericOpenAIModelForm = ({
+  form,
+  onSubmit,
+  ...props
+}: GenericFormProps<NewModel | EditModel>) => {
+  const isEdit = !!form.getValues('id');
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -213,11 +220,7 @@ const NewOpenAIModelForm = forwardRef<
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input
-                    type="hidden"
-                    value={model.provider}
-                    name={field.name}
-                  />
+                  <Input type="hidden" {...field} />
                 </FormControl>
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
@@ -225,17 +228,147 @@ const NewOpenAIModelForm = forwardRef<
               </FormItem>
             )}
           />
+          {isEdit ? (
+            <FormField
+              control={form.control}
+              name="id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <div className="col-span-3 col-start-2">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          ) : null}
         </div>
       </form>
     </Form>
   );
-});
+};
+
+const NewAzureModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewAzureModel>({
+      resolver: zodResolver(newAzureModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_AZURE,
+        apiKey: '',
+        endpoint: '',
+        apiVersion: '',
+        deploymentId: '',
+      },
+    });
+    const { t } = useTranslation(['generic']);
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericAzureModelForm
+        form={
+          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
+        }
+        onSubmit={onSubmit}
+        {...props}
+      />
+    );
+  }
+);
+
+const EditAzureModelForm = forwardRef<ModelFormHandler, EditFormProps>(
+  ({ model, onSubmit, ...props }, ref) => {
+    const form = useForm<AzureModel>({
+      resolver: zodResolver(editAzureModelFormSchema),
+      defaultValues: model as AzureModel,
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericAzureModelForm
+        form={
+          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
+        }
+        onSubmit={onSubmit as (model: NewModel | EditModel) => void}
+        {...props}
+      />
+    );
+  }
+);
+
+const NewOpenAIModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewOpenAIModel>({
+      resolver: zodResolver(newOpenAIModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_OPENAI,
+        apiKey: '',
+        model: '',
+      },
+    });
+    const { t } = useTranslation(['generic']);
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={
+          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
+        }
+        onSubmit={onSubmit}
+        {...props}
+      />
+    );
+  }
+);
+
+const EditOpenAIModelForm = forwardRef<ModelFormHandler, EditFormProps>(
+  ({ model, onSubmit, ...props }, ref) => {
+    const form = useForm<OpenAIModel>({
+      resolver: zodResolver(editOpenAIModelFormSchema),
+      defaultValues: model as OpenAIModel,
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={
+          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
+        }
+        onSubmit={onSubmit as (model: NewModel | EditModel) => void}
+        {...props}
+      />
+    );
+  }
+);
 
 export default {
   Azure: {
     New: NewAzureModelForm,
+    Edit: EditAzureModelForm,
   },
   OpenAI: {
     New: NewOpenAIModelForm,
+    Edit: EditOpenAIModelForm,
   },
 };
