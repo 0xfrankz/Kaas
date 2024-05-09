@@ -45,7 +45,7 @@ impl Repository {
     pub async fn create_model(&self, model: Model) -> Result<Model, String> {
         let mut active_model: models::ActiveModel = model.into();
         active_model.id = ActiveValue::NotSet;
-        active_model.created_at = Set(chrono::Local::now());
+        active_model.created_at = Set(Some(chrono::Local::now()));
         let result = active_model.insert(&self.connection).await.map_err(|err| {
             error!("{}", err);
             "Failed to create model".to_string()
@@ -88,7 +88,7 @@ impl Repository {
      */
     pub async fn update_model(&self, model: Model) -> Result<Model, String> {
         let mut active_model: models::ActiveModel = model.into();
-        active_model = active_model.reset_all(); // set all fields as dirty
+        active_model.reset(models::Column::Config); // mark config as dirty
         active_model.updated_at = Set(Some(chrono::Local::now()));
         let result = active_model
             .update(&self.connection)
@@ -525,7 +525,8 @@ impl Repository {
      */
     pub async fn update_prompt(&self, prompt: Prompt) -> Result<Prompt, String> {
         let mut active_model: prompts::ActiveModel = prompt.into();
-        active_model = active_model.reset_all(); // set all fields as dirty
+        active_model.reset(prompts::Column::Alias); // mark alias as dirty
+        active_model.reset(prompts::Column::Content); // mark content as dirty
         active_model.updated_at = Set(Some(chrono::Local::now()));
         let result = active_model
             .update(&self.connection)

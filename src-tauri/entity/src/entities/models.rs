@@ -45,12 +45,11 @@ impl Into<String> for Providers {
 #[serde(rename_all = "camelCase")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    #[serde(skip_deserializing)]
     pub id: i32,
     pub provider: String,
     pub config: String,
     #[serde(skip_deserializing)]
-    pub created_at: DateTimeLocal,
+    pub created_at: Option<DateTimeLocal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
     pub updated_at: Option<DateTimeLocal>,

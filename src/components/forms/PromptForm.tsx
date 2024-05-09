@@ -229,20 +229,6 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="createdAt"
-              render={({ field }) => (
-                <FormItem className="hidden">
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
           </div>
         </form>
       </Form>

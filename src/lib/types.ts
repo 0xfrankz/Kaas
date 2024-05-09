@@ -85,7 +85,7 @@ export type NewPrompt = z.infer<typeof newPromptFormSchema>;
 
 export type Prompt = NewPrompt & {
   id: number;
-  createdAt: string;
+  createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
 };
