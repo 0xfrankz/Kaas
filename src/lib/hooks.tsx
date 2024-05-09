@@ -24,6 +24,7 @@ import {
   invokeCreateMessage,
   invokeCreateModel,
   invokeCreatePrompt,
+  invokeDeleteModel,
   invokeDeletePrompt,
   invokeGetOptions,
   invokeListConversations,
@@ -31,6 +32,7 @@ import {
   invokeListModels,
   invokeListPrompts,
   invokeListSettings,
+  invokeUpdateModel,
   invokeUpdateOptions,
   invokeUpdatePrompt,
   invokeUpdateSubject,
@@ -81,6 +83,24 @@ export function useListModelsQuery(): UseQueryResult<Model[], CommandError> {
     queryKey: LIST_MODELS_KEY,
     queryFn: invokeListModels,
   });
+}
+
+export function useModelUpdater(
+  options?: Omit<UseMutationOptions<Model, CommandError, Model>, 'mutationFn'>
+) {
+  return useMutation({
+    mutationFn: invokeUpdateModel,
+    ...options,
+  }).mutate;
+}
+
+export function useModelDeleter(
+  options?: Omit<UseMutationOptions<Model, CommandError, number>, 'mutationFn'>
+) {
+  return useMutation({
+    mutationFn: invokeDeleteModel,
+    ...options,
+  }).mutate;
 }
 
 export function useListSettingsQuery(): UseQueryResult<

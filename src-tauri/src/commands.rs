@@ -36,6 +36,25 @@ pub async fn list_models(repo: State<'_, Repository>) -> CommandResult<Vec<Model
 }
 
 #[tauri::command]
+pub async fn update_model(model: Model, repo: State<'_, Repository>) -> CommandResult<Model> {
+    log::info!("Updating model: {:?}", model);
+    let result = repo
+        .update_model(model)
+        .await
+        .map_err(|message| DbError { message })?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn delete_model(model_id: i32, repo: State<'_, Repository>) -> CommandResult<Model> {
+    let result = repo
+        .delete_model(model_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    Ok(result)
+}
+
+#[tauri::command]
 pub async fn list_settings(repo: State<'_, Repository>) -> CommandResult<Vec<Setting>> {
     let result = repo
         .list_settings()

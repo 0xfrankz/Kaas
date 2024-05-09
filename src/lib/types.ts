@@ -20,23 +20,24 @@ export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;
 export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
 
 export type NewModel = NewAzureModel | NewOpenAIModel;
-export type EditModel = AzureModel | OpenAIModel;
-
-export type GenericNewModel = {
-  provider: string;
-  config: string;
-};
 
 type SavedModelAttrs = {
   id: number;
-  createdAt: string;
+  createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
 };
 
 export type Model = NewModel & SavedModelAttrs;
 
-export type GenericModel = GenericNewModel & SavedModelAttrs;
+export type GenericModel = {
+  provider: string;
+  config: string;
+  id?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+};
 
 export type Setting = {
   key: string;
@@ -126,9 +127,18 @@ export type DialogHandler<T> = {
 };
 
 // Functions
-export function toGenericModel(model: NewModel): GenericNewModel {
+export function toGenericModel(model: NewModel | Model): GenericModel {
+  if ('id' in model) {
+    const { id, provider, ...config } = model;
+    return {
+      id,
+      provider,
+      config: JSON.stringify(config),
+    };
+  }
   const { provider, ...config } = model;
   return {
+    id: undefined,
     provider,
     config: JSON.stringify(config),
   };

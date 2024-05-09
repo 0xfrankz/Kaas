@@ -14,7 +14,7 @@ import {
 } from '@/lib/schemas';
 import type {
   AzureModel,
-  EditModel,
+  Model,
   ModelFormHandler,
   NewAzureModel,
   NewModel,
@@ -38,11 +38,11 @@ type NewFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 };
 
 type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
-  model: EditModel;
-  onSubmit: (model: EditModel) => void;
+  model: Model;
+  onSubmit: (model: Model) => void;
 };
 
-type GenericFormProps<T extends NewModel | EditModel> = Omit<
+type GenericFormProps<T extends NewModel | Model> = Omit<
   HTMLAttributes<HTMLFormElement>,
   'onSubmit'
 > & {
@@ -54,7 +54,7 @@ const GenericAzureModelForm = ({
   form,
   onSubmit,
   ...props
-}: GenericFormProps<NewModel | EditModel>) => {
+}: GenericFormProps<NewModel | Model>) => {
   const isEdit = !!form.getValues('id');
   return (
     <Form {...form}>
@@ -172,7 +172,7 @@ const GenericOpenAIModelForm = ({
   form,
   onSubmit,
   ...props
-}: GenericFormProps<NewModel | EditModel>) => {
+}: GenericFormProps<NewModel | Model>) => {
   const isEdit = !!form.getValues('id');
   return (
     <Form {...form}>
@@ -272,9 +272,7 @@ const NewAzureModelForm = forwardRef<ModelFormHandler, NewFormProps>(
 
     return (
       <GenericAzureModelForm
-        form={
-          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
-        }
+        form={form as UseFormReturn<NewModel | Model, any, NewModel | Model>}
         onSubmit={onSubmit}
         {...props}
       />
@@ -297,10 +295,8 @@ const EditAzureModelForm = forwardRef<ModelFormHandler, EditFormProps>(
 
     return (
       <GenericAzureModelForm
-        form={
-          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
-        }
-        onSubmit={onSubmit as (model: NewModel | EditModel) => void}
+        form={form as UseFormReturn<NewModel | Model, any, NewModel | Model>}
+        onSubmit={onSubmit as (model: NewModel | Model) => void}
         {...props}
       />
     );
@@ -327,9 +323,7 @@ const NewOpenAIModelForm = forwardRef<ModelFormHandler, NewFormProps>(
 
     return (
       <GenericOpenAIModelForm
-        form={
-          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
-        }
+        form={form as UseFormReturn<NewModel | Model, any, NewModel | Model>}
         onSubmit={onSubmit}
         {...props}
       />
@@ -352,10 +346,8 @@ const EditOpenAIModelForm = forwardRef<ModelFormHandler, EditFormProps>(
 
     return (
       <GenericOpenAIModelForm
-        form={
-          form as UseFormReturn<NewModel | EditModel, any, NewModel | EditModel>
-        }
-        onSubmit={onSubmit as (model: NewModel | EditModel) => void}
+        form={form as UseFormReturn<NewModel | Model, any, NewModel | Model>}
+        onSubmit={onSubmit as (model: NewModel | Model) => void}
         {...props}
       />
     );

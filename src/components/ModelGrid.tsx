@@ -1,4 +1,3 @@
-import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -7,9 +6,8 @@ import {
   SETTING_USER_DEFAULT_MODEL,
 } from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
-import type { DialogHandler, EditModel, Model } from '@/lib/types';
+import type { Model } from '@/lib/types';
 
-import ModelFormDialog from './ModelFormDialog';
 import { Button } from './ui/button';
 import {
   Card,
@@ -87,22 +85,15 @@ function ModelGridItem({
 export function ModelGrid({
   models,
   onDefaultChange,
-  onUpdateSubmit,
-  onDelete,
+  onEdit,
 }: {
   models: Model[];
   onDefaultChange: (defaultModelId: number) => void;
-  onUpdateSubmit: (model: EditModel) => void;
-  onDelete: (model: EditModel) => void;
+  onEdit: (model: Model) => void;
 }) {
   const { settings } = useAppStateStore();
-  const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
   const defaultModelId =
     parseInt(settings[SETTING_USER_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
-
-  const onEditClick = useCallback((model: Model) => {
-    editPromptDialogRef.current?.open(model);
-  }, []);
 
   return (
     <div className="mt-6 grid grid-cols-4 gap-5">
@@ -113,15 +104,10 @@ export function ModelGrid({
             isDefault={model.id === defaultModelId}
             key={model.id}
             onDefaultChange={onDefaultChange}
-            onEditClick={onEditClick}
+            onEditClick={onEdit}
           />
         );
       })}
-      <ModelFormDialog.Edit
-        ref={editPromptDialogRef}
-        onSubmit={onUpdateSubmit}
-        onDeleteClick={onDelete}
-      />
     </div>
   );
 }

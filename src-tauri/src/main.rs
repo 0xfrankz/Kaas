@@ -25,6 +25,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::create_model,
             commands::list_models,
+            commands::update_model,
+            commands::delete_model,
             commands::list_settings,
             commands::upsert_setting,
             commands::create_conversation,

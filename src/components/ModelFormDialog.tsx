@@ -3,7 +3,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { PROVIDER_OPENAI } from '@/lib/constants';
-import type { DialogHandler, EditModel, Model, NewModel } from '@/lib/types';
+import type { DialogHandler, Model, NewModel } from '@/lib/types';
 
 import ModelForm from './forms/ModelForm';
 import { Button } from './ui/button';
@@ -28,8 +28,8 @@ type NewModelDialogProps = {
 };
 
 type EditModelDialogProps = {
-  onSubmit: (model: EditModel) => void;
-  onDeleteClick: (model: EditModel) => void;
+  onSubmit: (model: Model) => void;
+  onDelete: (model: Model) => void;
 };
 
 const NewModelFormDialog = forwardRef<
@@ -93,7 +93,7 @@ const NewModelFormDialog = forwardRef<
 const EditModelFormDialog = forwardRef<
   DialogHandler<Model>,
   EditModelDialogProps
->(({ onSubmit, onDeleteClick }, ref) => {
+>(({ onSubmit, onDelete }, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const [model, setModel] = useState<Model>();
   const { t } = useTranslation(['page-models']);
@@ -109,7 +109,7 @@ const EditModelFormDialog = forwardRef<
     },
   }));
 
-  const onFormSubmit = (updatedModel: EditModel) => {
+  const onFormSubmit = (updatedModel: Model) => {
     onSubmit(updatedModel);
     setShowDialog(false);
   };
@@ -166,10 +166,7 @@ const EditModelFormDialog = forwardRef<
                     {t('generic:action:cancel')}
                   </Button>
                 </PopoverClose>
-                <Button
-                  variant="destructive"
-                  onClick={() => onDeleteClick(model)}
-                >
+                <Button variant="destructive" onClick={() => onDelete(model)}>
                   {t('generic:action:confirm')}
                 </Button>
               </div>

@@ -84,6 +84,48 @@ impl Repository {
     }
 
     /**
+     * Update a model
+     */
+    pub async fn update_model(&self, model: Model) -> Result<Model, String> {
+        let mut active_model: models::ActiveModel = model.into();
+        active_model = active_model.reset_all(); // set all fields as dirty
+        active_model.updated_at = Set(Some(chrono::Local::now()));
+        let result = active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to update model".to_string()
+            })?;
+        Ok(result)
+    }
+
+    /**
+     * Soft delete a model
+     */
+    pub async fn delete_model(&self, model_id: i32) -> Result<Model, String> {
+        let model = models::Entity::find_by_id(model_id)
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to get model with id {}", model_id)
+            })?
+            .ok_or(format!("Model with id {} doesn't exist", model_id))?;
+        let mut active_model: models::ActiveModel = model.into();
+        // Perform soft delete
+        active_model.deleted_at = Set(Some(chrono::Local::now()));
+        let result = active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to delete model".to_string()
+            })?;
+        Ok(result)
+    }
+
+    /**
      * List all settings
      */
     pub async fn list_settings(&self) -> Result<Vec<settings::Model>, String> {

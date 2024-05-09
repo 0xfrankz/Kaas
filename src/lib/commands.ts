@@ -36,6 +36,29 @@ export async function invokeListModels(): Promise<Model[]> {
   return result.map(fromGenericModel);
 }
 
+export async function invokeUpdateModel(model: Model): Promise<Model> {
+  const genericModel = toGenericModel(model);
+  console.log(
+    'invokeUpdateModel',
+    'model',
+    model,
+    'genericModel',
+    genericModel
+  );
+  const result = await invoke<GenericModel>('update_model', {
+    model: genericModel,
+  });
+  return fromGenericModel(result);
+}
+
+export async function invokeDeleteModel(modelId: number): Promise<Model> {
+  const result = await invoke<GenericModel>('delete_model', {
+    modelId,
+  });
+  console.log('invokeDeleteModel', 'result', result);
+  return fromGenericModel(result);
+}
+
 export async function invokeListSettings(): Promise<Setting[]> {
   const result = await invoke<Setting[]>('list_settings');
   return result;

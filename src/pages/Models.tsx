@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { produce } from 'immer';
 import { Plus } from 'lucide-react';
 import { useCallback, useRef } from 'react';
-import type { SubmitHandler } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -27,16 +27,19 @@ import {
 import {
   LIST_MODELS_KEY,
   useCreateModelMutation,
+  useModelDeleter,
+  useModelUpdater,
   useUpsertSettingMutation,
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
-import type { DialogHandler, EditModel, NewModel } from '@/lib/types';
+import type { DialogHandler, Model, NewModel } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
   const { t } = useTranslation(['generic', 'page-models']);
   const newPromptDialogRef = useRef<DialogHandler<string>>(null);
+  const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
   const { models, updateSetting } = useAppStateStore();
   const queryClient = useQueryClient();
   const hasModels = models.length > 0;
@@ -44,6 +47,49 @@ export default function ModelsPage() {
   // Queries
   const createModelMutation = useCreateModelMutation();
   const upsertSettingMutation = useUpsertSettingMutation();
+  const deleter = useModelDeleter({
+    onSuccess: async (model) => {
+      // Update cache
+      queryClient.setQueryData<Model[]>(LIST_MODELS_KEY, (old) =>
+        produce(old, (draft) => {
+          return draft?.filter((p) => p.id !== model.id);
+        })
+      );
+      // Show toast
+      toast.success(t('page-models:message:delete-model-success'));
+      // Close dialog
+      editPromptDialogRef.current?.close();
+    },
+    onError: async (error, variables) => {
+      await log.error(
+        `Failed to delete model: data = ${JSON.stringify(variables)}, error = ${error.message}`
+      );
+      toast.error(`Failed to delete model: ${error.message}`);
+    },
+  });
+  const updater = useModelUpdater({
+    onSuccess: async (model) => {
+      // Update cache
+      queryClient.setQueryData<Model[]>(LIST_MODELS_KEY, (old) =>
+        produce(old, (draft) => {
+          const index = draft?.findIndex((p) => p.id === model.id) ?? -1;
+          if (index !== -1 && draft) {
+            draft[index] = model;
+          }
+        })
+      );
+      // Show toast
+      toast.success(t('page-models:message:update-model-success'));
+      // Close dialog
+      editPromptDialogRef.current?.close();
+    },
+    onError: async (error, variables) => {
+      await log.error(
+        `Failed to update model: data = ${JSON.stringify(variables)}, error = ${error.message}`
+      );
+      toast.error(`Failed to update model: ${error.message}`);
+    },
+  });
 
   // Callbacks
   const onCreateClick = useCallback(
@@ -53,26 +99,39 @@ export default function ModelsPage() {
     [newPromptDialogRef]
   );
 
-  const onCreateSubmit: SubmitHandler<NewModel> = (formData) => {
-    createModelMutation.mutate(formData, {
-      onSuccess: async (result) => {
-        log.info(`Model created: ${JSON.stringify(result)}`);
-        return queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
-      },
-      onError: (error) => {
-        log.error(error);
-        toast.error(`${error.type}: ${error.message}`);
-      },
-    });
-  };
+  const onCreateSubmit = useCallback(
+    (model: NewModel) => {
+      createModelMutation.mutate(model, {
+        onSuccess: async (result) => {
+          log.info(`Model created: ${JSON.stringify(result)}`);
+          return queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
+        },
+        onError: (error) => {
+          log.error(error);
+          toast.error(`${error.type}: ${error.message}`);
+        },
+      });
+    },
+    [createModelMutation]
+  );
 
-  const onUpdateSubmit: SubmitHandler<EditModel> = (formData) => {
-    console.log('onUpdateSubmit', formData);
-  };
+  const onEdit = useCallback((model: Model) => {
+    editPromptDialogRef.current?.open(model);
+  }, []);
 
-  const onDelete = (model: EditModel) => {
-    console.log('onDelete', model);
-  };
+  const onUpdateSubmit = useCallback(
+    (model: Model) => {
+      updater(model);
+    },
+    [updater]
+  );
+
+  const onDelete = useCallback(
+    (model: Model) => {
+      deleter(model.id);
+    },
+    [deleter]
+  );
 
   const onDefaultChange = (defaultModelId: number) => {
     upsertSettingMutation.mutate(
@@ -113,8 +172,7 @@ export default function ModelsPage() {
                       <ModelGrid
                         models={models}
                         onDefaultChange={onDefaultChange}
-                        onUpdateSubmit={onUpdateSubmit}
-                        onDelete={onDelete}
+                        onEdit={onEdit}
                       />
                     </>
                   ) : (
@@ -165,6 +223,11 @@ export default function ModelsPage() {
           <ModelFormDialog.New
             ref={newPromptDialogRef}
             onSubmit={onCreateSubmit}
+          />
+          <ModelFormDialog.Edit
+            ref={editPromptDialogRef}
+            onSubmit={onUpdateSubmit}
+            onDelete={onDelete}
           />
         </TwoRows.Bottom>
       </TwoRows>
