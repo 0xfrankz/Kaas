@@ -3,6 +3,7 @@
     "section": {
         "your-prompts": "Your Prompts",
         "create-prompt": "Create new prompt template",
+        "update-prompt": "Edit prompt template",
         "use-prompt": "Start a conversation with this prompt"
     },
     "message": {

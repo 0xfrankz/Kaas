@@ -1,4 +1,3 @@
-import { DialogDescription } from '@radix-ui/react-dialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { SendHorizonal } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
@@ -23,7 +22,13 @@ import type { DialogHandler, Prompt, UnsavedConversation } from '@/lib/types';
 import PromptForm from './forms/PromptForm';
 import { PromptPreviewer } from './PromptPreviewer';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 import { Form, FormControl, FormField, FormItem } from './ui/form';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';

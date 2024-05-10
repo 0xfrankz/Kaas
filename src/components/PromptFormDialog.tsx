@@ -91,9 +91,11 @@ const EditPromptFormDialog = forwardRef<
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('page-prompts:section:create-prompt')}</DialogTitle>
+          <DialogTitle>{t('page-prompts:section:update-prompt')}</DialogTitle>
           <DialogDescription>
-            {t('page-prompts:message:create-prompt-tips')}
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {t('page-prompts:message:create-prompt-tips')}
+            </Markdown>
           </DialogDescription>
         </DialogHeader>
         <PromptForm.Edit
