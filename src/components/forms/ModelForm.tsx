@@ -202,11 +202,32 @@ const GenericOpenAIModelForm = ({
   onSubmit,
   ...props
 }: GenericFormProps<NewModel | Model>) => {
+  const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
+          <FormField
+            control={form.control}
+            name="alias"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">
+                  {t('page-models:label:alias')}
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                  <FormDescription>
+                    {t('page-models:message:alias-tips')}
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="apiKey"
