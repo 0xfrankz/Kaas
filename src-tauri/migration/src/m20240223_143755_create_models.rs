@@ -4,6 +4,7 @@ use sea_orm_migration::prelude::*;
 pub enum Models {
     Table,
     Id,
+    Alias,
     Provider,
     Config,
     CreatedAt,
@@ -29,6 +30,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
+                    .col(ColumnDef::new(Models::Alias).string().not_null())
                     .col(ColumnDef::new(Models::Provider).string().not_null())
                     .col(ColumnDef::new(Models::Config).json().not_null())
                     .col(ColumnDef::new(Models::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
