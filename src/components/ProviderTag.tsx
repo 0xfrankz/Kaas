@@ -12,13 +12,21 @@ export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
     return (
       <div
         ref={ref}
-        className={cn('text-sm', className)}
+        className={cn(
+          'text-xs flex h-8 items-center px-4 gap-2 w-fit rounded-full bg-background border',
+          className
+        )}
         {...prop}
         style={{
-          backgroundColor:
+          borderColor:
             theme === 'light' ? styles.color.light : styles.color.dark,
         }}
       >
+        <img
+          src={`/public/images/${styles.icon}`}
+          alt={provider}
+          className="m-auto size-4"
+        />
         {provider}
       </div>
     );

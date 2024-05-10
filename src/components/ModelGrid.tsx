@@ -10,13 +10,7 @@ import type { Model } from '@/lib/types';
 
 import { ProviderTag } from './ProviderTag';
 import { Button } from './ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from './ui/card';
+import { Card, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 
@@ -49,13 +43,11 @@ function ModelGridItem({
   };
   return (
     <Card className="min-h-32 border border-border">
-      <CardHeader className="pb-2">
+      <CardHeader className="items-center space-y-2 pb-2">
         <CardTitle className="mx-auto">{model.alias}</CardTitle>
-      </CardHeader>
-      <CardContent className="pb-2">
         <ProviderTag provider={model.provider} />
-      </CardContent>
-      <CardFooter>
+      </CardHeader>
+      <CardFooter className="mt-6">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-1">
             <Switch
