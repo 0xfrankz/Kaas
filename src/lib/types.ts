@@ -95,6 +95,14 @@ export type FilledPrompt = z.infer<typeof usePromptFormSchema>;
 
 export type ProxySetting = z.infer<typeof proxySchema>;
 
+export type ProviderStyles = {
+  icon: string;
+  color: {
+    light: string;
+    dark: string;
+  };
+};
+
 // Contexts
 export type TConversationsContext = {
   conversations: Conversation[];

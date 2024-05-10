@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { produce } from 'immer';
-import { Plus } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -8,15 +8,8 @@ import { toast } from 'sonner';
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import ModelFormDialog from '@/components/ModelFormDialog';
 import { ModelGrid } from '@/components/ModelGrid';
+import { SupportedModelCard } from '@/components/SupportedModelCard';
 import { TitleBar } from '@/components/TitleBar';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import TwoRows from '@/layouts/TwoRows';
@@ -42,6 +35,7 @@ export default function ModelsPage() {
   const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
   const { models, updateSetting } = useAppStateStore();
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
   const hasModels = models.length > 0;
 
   // Queries
@@ -193,27 +187,10 @@ export default function ModelsPage() {
                   </h2>
                   <div className="mt-6 grid grid-cols-4 gap-5">
                     {SUPPORTED_PROVIDERS.map((provider) => (
-                      <Card
-                        className="border border-border"
-                        key={`${provider}-model-card`}
-                      >
-                        <CardHeader className="pb-2">
-                          <CardTitle className="mx-auto">
-                            {t(`generic:model:${provider}`)}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <p className="text-center">GPT-3.5 and GPT-4</p>
-                        </CardContent>
-                        <CardFooter>
-                          <Button
-                            className="mx-auto w-32"
-                            onClick={() => onCreateClick(provider)}
-                          >
-                            <Plus className="size-4 text-primary-foreground" />
-                          </Button>
-                        </CardFooter>
-                      </Card>
+                      <SupportedModelCard
+                        provider={provider}
+                        onClick={() => onCreateClick(provider)}
+                      />
                     ))}
                   </div>
                 </div>

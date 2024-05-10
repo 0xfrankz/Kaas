@@ -6,6 +6,22 @@ export const PROVIDER_INFO = {
   [PROVIDER_OPENAI]: 'OpenAI',
   [PROVIDER_AZURE]: 'Microsoft Azure',
 };
+export const PROVIDER_STYLES = {
+  [PROVIDER_OPENAI]: {
+    icon: 'oai_logo.svg',
+    color: {
+      light: '#C2DCD3',
+      dark: '#348B6B',
+    },
+  },
+  [PROVIDER_AZURE]: {
+    icon: 'azure_logo.svg',
+    color: {
+      light: '#CCE4F6',
+      dark: '#0078D4',
+    },
+  },
+};
 
 // Message types
 export const MESSAGE_USER = 0;
