@@ -8,6 +8,7 @@ import {
 import { useAppStateStore } from '@/lib/store';
 import type { Model } from '@/lib/types';
 
+import { ProviderTag } from './ProviderTag';
 import { Button } from './ui/button';
 import {
   Card,
@@ -49,12 +50,10 @@ function ModelGridItem({
   return (
     <Card className="min-h-32 border border-border">
       <CardHeader className="pb-2">
-        <CardTitle className="mx-auto">
-          {t(`generic:model:${model.provider}`)}
-        </CardTitle>
+        <CardTitle className="mx-auto">{model.alias}</CardTitle>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-center">{getModelName(model)}</p>
+        <ProviderTag provider={model.provider} />
       </CardContent>
       <CardFooter>
         <div className="flex w-full items-center justify-between">

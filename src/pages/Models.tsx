@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { produce } from 'immer';
-import { useTheme } from 'next-themes';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -35,7 +34,6 @@ export default function ModelsPage() {
   const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
   const { models, updateSetting } = useAppStateStore();
   const queryClient = useQueryClient();
-  const { theme } = useTheme();
   const hasModels = models.length > 0;
 
   // Queries
