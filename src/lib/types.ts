@@ -32,7 +32,7 @@ export type Model = NewModel & SavedModelAttrs;
 
 export type GenericModel = {
   alias: string;
-  provider: string;
+  provider: SupportedProviders;
   config: string;
   id?: number;
   createdAt?: string;
@@ -58,7 +58,7 @@ export type Conversation = {
   updatedAt?: string;
   deletedAt?: string;
   messageCount?: number;
-  modelProvider?: string;
+  modelProvider?: SupportedProviders;
 };
 
 export type NewMessage = {
@@ -78,7 +78,7 @@ export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
 export type Options = AzureOptions | OpenAIOptions;
 export type ProviderOptions = {
-  provider: string;
+  provider: SupportedProviders;
   options: string;
 };
 
