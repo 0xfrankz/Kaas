@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
 import type { Conversation } from '@/lib/types';
 
-import { Badge } from './ui/badge';
+import { ProviderTag } from './ProviderTag';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 
 function ConversationGridItem({
@@ -33,9 +33,11 @@ function ConversationGridItem({
         <CardContent className="grow px-4 py-0">
           <p className="">{conversation.subject}</p>
         </CardContent>
-        <CardFooter className="p-4">
-          <Badge>{conversation.modelProvider}</Badge>
-        </CardFooter>
+        {conversation.modelProvider ? (
+          <CardFooter className="p-4">
+            <ProviderTag provider={conversation.modelProvider} />
+          </CardFooter>
+        ) : null}
       </Card>
     </Link>
   );
