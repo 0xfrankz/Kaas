@@ -31,6 +31,7 @@ type SavedModelAttrs = {
 export type Model = NewModel & SavedModelAttrs;
 
 export type GenericModel = {
+  alias: string;
   provider: string;
   config: string;
   id?: number;
@@ -129,16 +130,17 @@ export type DialogHandler<T> = {
 // Functions
 export function toGenericModel(model: NewModel | Model): GenericModel {
   if ('id' in model) {
-    const { id, provider, ...config } = model;
+    const { id, alias, provider, ...config } = model;
     return {
       id,
+      alias,
       provider,
       config: JSON.stringify(config),
     };
   }
-  const { provider, ...config } = model;
+  const { alias, provider, ...config } = model;
   return {
-    id: undefined,
+    alias,
     provider,
     config: JSON.stringify(config),
   };

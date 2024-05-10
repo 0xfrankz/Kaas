@@ -1,7 +1,7 @@
 
 use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, OpenAIOptions, ProviderOptions};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
-use entity::entities::models::{self, Model, ProviderConfig, Providers};
+use entity::entities::models::{self, Model, NewModel, ProviderConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
 use entity::entities::settings::{self, Model as Setting};
 use log::{error, info};
@@ -42,9 +42,8 @@ impl Repository {
     /**
      * Insert a new model
      */
-    pub async fn create_model(&self, model: Model) -> Result<Model, String> {
-        let mut active_model: models::ActiveModel = model.into();
-        active_model.id = ActiveValue::NotSet;
+    pub async fn create_model(&self, new_model: NewModel) -> Result<Model, String> {
+        let mut active_model = new_model.into_active_model();
         active_model.created_at = Set(Some(chrono::Local::now()));
         let result = active_model.insert(&self.connection).await.map_err(|err| {
             error!("{}", err);
@@ -88,6 +87,7 @@ impl Repository {
      */
     pub async fn update_model(&self, model: Model) -> Result<Model, String> {
         let mut active_model: models::ActiveModel = model.into();
+        active_model.reset(models::Column::Alias); // mark alias as dirty
         active_model.reset(models::Column::Config); // mark config as dirty
         active_model.updated_at = Set(Some(chrono::Local::now()));
         let result = active_model

@@ -3,7 +3,7 @@ use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, time::Instant};
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::{self, Model as Message, NewMessage, Roles}, 
-    models::{Model, ProviderConfig}, 
+    models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
@@ -18,9 +18,10 @@ use crate::{
 type CommandResult<T = ()> = Result<T, CommandError>;
 
 #[tauri::command]
-pub async fn create_model(model: Model, repo: State<'_, Repository>) -> CommandResult<Model> {
+pub async fn create_model(new_model: NewModel, repo: State<'_, Repository>) -> CommandResult<Model> {
+    log::debug!("Creating model: {:?}", new_model);
     let result = repo
-        .create_model(model)
+        .create_model(new_model)
         .await
         .map_err(|message| DbError { message })?;
     Ok(result)
@@ -37,7 +38,6 @@ pub async fn list_models(repo: State<'_, Repository>) -> CommandResult<Vec<Model
 
 #[tauri::command]
 pub async fn update_model(model: Model, repo: State<'_, Repository>) -> CommandResult<Model> {
-    log::info!("Updating model: {:?}", model);
     let result = repo
         .update_model(model)
         .await

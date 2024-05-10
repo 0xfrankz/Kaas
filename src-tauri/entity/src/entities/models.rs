@@ -46,6 +46,7 @@ impl Into<String> for Providers {
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub alias: String,
     pub provider: String,
     pub config: String,
     #[serde(skip_deserializing)]
@@ -92,4 +93,11 @@ pub struct AzureConfig {
 
 impl Config for AzureConfig {}
 
+#[derive(DeriveIntoActiveModel, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct NewModel {
+    pub alias: String,
+    pub provider: String,
+    pub config: String,
+}
 

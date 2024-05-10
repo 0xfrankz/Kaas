@@ -11,7 +11,6 @@ import {
   useListModelsQuery,
   useListSettingsQuery,
 } from './hooks';
-import log from './log';
 import { useAppStateStore } from './store';
 import type { FilledPrompt, TConversationsContext } from './types';
 
@@ -73,7 +72,6 @@ export function InitializationProvider({
       }
 
       setInitialized(true);
-      log.debug('App successfully initialized');
     }
   }, [isModelsSuccess, isSettingsSuccess, modelList, settingList]);
 

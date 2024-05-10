@@ -25,8 +25,15 @@ export async function invokeCreateModel(
   model: NewModel
 ): Promise<GenericModel> {
   const genericModel = toGenericModel(model);
+  console.log(
+    'invokeCreateModel',
+    'model',
+    model,
+    'genericModel',
+    genericModel
+  );
   const result = await invoke<GenericModel>('create_model', {
-    model: genericModel,
+    newModel: genericModel,
   });
   return result;
 }

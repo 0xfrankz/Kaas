@@ -55,6 +55,7 @@ const GenericAzureModelForm = ({
   onSubmit,
   ...props
 }: GenericFormProps<NewModel | Model>) => {
+  const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
   return (
     <Form {...form}>
@@ -62,17 +63,39 @@ const GenericAzureModelForm = ({
         <div className="grid gap-4 py-8">
           <FormField
             control={form.control}
-            name="apiKey"
+            name="alias"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">API Key</FormLabel>
+                <FormLabel className="text-right">
+                  {t('page-models:label:alias')}
+                </FormLabel>
                 <FormControl>
                   <Input className="col-span-3" {...field} />
                 </FormControl>
                 <div className="col-start-2 col-end-4">
                   <FormMessage />
                   <FormDescription>
-                    This is the key for your Azure API.
+                    {t('page-models:message:alias-tips')}
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="apiKey"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">
+                  {t('page-models:label:api-key')}
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                  <FormDescription>
+                    {t('page-models:message:api-key-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
@@ -83,14 +106,16 @@ const GenericAzureModelForm = ({
             name="endpoint"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">Endpoint</FormLabel>
+                <FormLabel className="text-right">
+                  {t('page-models:label:endpoint')}
+                </FormLabel>
                 <FormControl>
                   <Input className="col-span-3" {...field} />
                 </FormControl>
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
                   <FormDescription>
-                    This is the endpoint of your Azure API.
+                    {t('page-models:message:endpoint-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
@@ -101,14 +126,16 @@ const GenericAzureModelForm = ({
             name="apiVersion"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">API Version</FormLabel>
+                <FormLabel className="text-right">
+                  {t('page-models:label:api-version')}
+                </FormLabel>
                 <FormControl>
                   <Input className="col-span-3" {...field} />
                 </FormControl>
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
                   <FormDescription>
-                    This is the version of your Azure API.
+                    {t('page-models:message:api-version-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
@@ -119,14 +146,16 @@ const GenericAzureModelForm = ({
             name="deploymentId"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">Deployment ID</FormLabel>
+                <FormLabel className="text-right">
+                  {t('page-models:label:deployment-id')}
+                </FormLabel>
                 <FormControl>
                   <Input className="col-span-3" {...field} />
                 </FormControl>
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
                   <FormDescription>
-                    This is the deployment name of your Azure API.
+                    {t('page-models:message:deployment-id-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
