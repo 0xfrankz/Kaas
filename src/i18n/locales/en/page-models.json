@@ -2,10 +2,16 @@
     "title": "Models",
     "section": {
         "your-models": "Your Models",
-        "supported-models": "Supported Models"
+        "supported-models": "Supported Models",
+        "create-model": "Create new model",
+        "update-model": "Edit model settings"
     },
-    "text": {
+    "message": {
         "no-model": "You have no models yet",
-        "add-model": "Add one from below"
+        "add-model": "Add one from below",
+        "update-model-success": "Model has been updated",
+        "delete-model-success": "Model has been deleted",
+        "update-model-tips": "Give your model an alias to make it easier to identify.",
+        "delete-model-warning": "Deleted model cannot be recovered.\nDo you still want to proceed?"
     }
 }

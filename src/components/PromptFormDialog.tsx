@@ -1,4 +1,3 @@
-import { Trash2 } from 'lucide-react';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -6,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 
 import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
 
+import { DeleteWithConfirmation } from './DeleteWithConfirmation';
 import PromptForm from './forms/PromptForm';
 import { Button } from './ui/button';
 import {
@@ -17,12 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
-import {
-  Popover,
-  PopoverClose,
-  PopoverContent,
-  PopoverTrigger,
-} from './ui/popover';
 
 type NewPromptDialogProps = {
   onSubmit: (newPrompt: NewPrompt) => void;
@@ -104,34 +98,10 @@ const EditPromptFormDialog = forwardRef<
           defaultValues={prompt}
         />
         <DialogFooter>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                className="mr-auto text-red-600 hover:bg-red-100 hover:text-red-800"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="whitespace-pre-wrap text-sm">
-                {t('page-prompts:message:delete-prompt-warning')}
-              </div>
-              <div className="mt-2 flex justify-center gap-2">
-                <PopoverClose asChild>
-                  <Button variant="secondary">
-                    {t('generic:action:cancel')}
-                  </Button>
-                </PopoverClose>
-                <Button
-                  variant="destructive"
-                  onClick={() => onDeleteClick(prompt)}
-                >
-                  {t('generic:action:confirm')}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <DeleteWithConfirmation
+            message={t('page-prompts:message:delete-prompt-warning')}
+            onConfirm={() => onDeleteClick(prompt)}
+          />
           <DialogClose asChild>
             <Button variant="secondary">{t('generic:action:cancel')}</Button>
           </DialogClose>
