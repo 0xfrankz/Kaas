@@ -13,7 +13,7 @@ export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
       <div
         ref={ref}
         className={cn(
-          'text-xs flex h-8 items-center px-4 gap-2 w-fit rounded-full bg-background border',
+          'text-xs flex h-6 items-center px-2 gap-2 w-fit rounded-full bg-background border-2',
           className
         )}
         {...prop}
@@ -25,7 +25,7 @@ export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
         <img
           src={`/public/images/${styles.icon}`}
           alt={provider}
-          className="m-auto size-4"
+          className="m-auto size-[14px]"
         />
         {provider}
       </div>
