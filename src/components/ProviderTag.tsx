@@ -4,6 +4,8 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import type { SupportedProviders } from '@/lib/types';
 import { cn, getProviderStyles } from '@/lib/utils';
 
+import { ProviderIcon } from './ProviderIcon';
+
 type Attrs = HTMLAttributes<HTMLDivElement> & { provider: SupportedProviders };
 export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
   ({ provider, className, ...prop }, ref) => {
@@ -22,11 +24,7 @@ export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
             theme === 'light' ? styles.color.light : styles.color.dark,
         }}
       >
-        <img
-          src={`/public/images/${styles.icon}`}
-          alt={provider}
-          className="m-auto size-[14px]"
-        />
+        <ProviderIcon provider={provider} />
         {provider}
       </div>
     );

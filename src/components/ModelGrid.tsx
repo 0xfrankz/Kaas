@@ -1,10 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import {
-  PROVIDER_AZURE,
-  PROVIDER_OPENAI,
-  SETTING_USER_DEFAULT_MODEL,
-} from '@/lib/constants';
+import { SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
 import type { Model } from '@/lib/types';
 
@@ -29,16 +25,6 @@ function ModelGridItem({
   const onCheckedChange = (checked: boolean) => {
     if (checked) {
       onDefaultChange(model.id);
-    }
-  };
-  const getModelName = (m: Model): string => {
-    switch (m.provider) {
-      case PROVIDER_AZURE:
-        return m.deploymentId;
-      case PROVIDER_OPENAI:
-        return m.model;
-      default:
-        return '';
     }
   };
   return (

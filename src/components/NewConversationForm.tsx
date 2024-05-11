@@ -15,6 +15,7 @@ import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { UnsavedConversation } from '@/lib/types';
 
+import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
 import { Input } from './ui/input';
@@ -99,7 +100,10 @@ export function NewConversationForm() {
                     <SelectContent>
                       {models.map((model) => (
                         <SelectItem value={model.id.toString()} key={model.id}>
-                          {model.provider}
+                          <div className="flex gap-2">
+                            <ProviderIcon provider={model.provider} />
+                            {model.alias}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

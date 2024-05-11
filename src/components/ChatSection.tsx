@@ -14,6 +14,7 @@ import {
   useSubjectUpdater,
 } from '@/lib/hooks';
 import log from '@/lib/log';
+import { useAppStateStore } from '@/lib/store';
 import type { Conversation, Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,9 @@ export function ChatSection({ conversation }: Props) {
   const [atBottom, setAtBottom] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const model = useAppStateStore((state) =>
+    state.models.find((m) => m.id === conversation.modelId)
+  );
 
   // Queries
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
@@ -194,6 +198,7 @@ export function ChatSection({ conversation }: Props) {
       <TwoRows.Top>
         <ConversationTitleBar
           title={conversation.subject}
+          model={model}
           onEditDone={onTitleChange}
         />
       </TwoRows.Top>
