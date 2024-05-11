@@ -59,6 +59,7 @@ impl Repository {
     pub async fn list_models(&self) -> Result<Vec<Model>, String> {
         let result: Vec<Model> = 
             models::Entity::find()
+                .filter(models::Column::DeletedAt.is_null())
                 .all(&self.connection)
                 .await.map_err(|err| {
                     error!("{}", err);
