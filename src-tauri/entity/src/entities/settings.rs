@@ -28,4 +28,6 @@ pub struct ProxySetting {
     pub server: String,
     pub http: bool,
     pub https: bool,
+    pub username: Option<String>,
+    pub password: Option<String>,
 }

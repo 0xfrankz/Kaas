@@ -519,6 +519,41 @@ function SettingProxy() {
                   {t('page-settings:label:traffic-type-desc')}
                 </FormDescription>
               </div>
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <div className="mt-6 flex flex-col gap-2">
+                    <Label htmlFor="proxy-username" className="font-normal">
+                      {t('page-settings:label:proxy-username')}
+                    </Label>
+                    <Input className="w-52" id="proxy-username" {...field} />
+                    <FormDescription>
+                      {t('page-settings:label:proxy-name-psw-tips')}
+                    </FormDescription>
+                  </div>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <div className="mt-6 flex flex-col gap-2">
+                    <Label htmlFor="proxy-password" className="font-normal">
+                      {t('page-settings:label:proxy-password')}
+                    </Label>
+                    <Input
+                      type="password"
+                      className="w-52"
+                      id="proxy-password"
+                      {...field}
+                    />
+                    <FormDescription>
+                      {t('page-settings:label:proxy-name-psw-tips')}
+                    </FormDescription>
+                  </div>
+                )}
+              />
             </>
           ) : null}
         </form>

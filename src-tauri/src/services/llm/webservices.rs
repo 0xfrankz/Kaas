@@ -119,12 +119,23 @@ pub async fn complete_chat_stream(messages: Vec<Message>, options: ProviderOptio
 fn build_http_client(proxy_setting: Option<ProxySetting>) -> reqwest::Client {
     let proxy_option: Option<reqwest::Proxy> = if let Some(setting) = proxy_setting {
         if setting.on {
-            if setting.http && setting.https {
+            let proxy_option = if setting.http && setting.https {
                 reqwest::Proxy::all(setting.server).ok()
             } else if setting.http {
                 reqwest::Proxy::http(setting.server).ok()
             } else {
                 reqwest::Proxy::https(setting.server).ok()
+            };
+            if let Some(proxy) = proxy_option {
+                if let (Some(username), Some(password)) = (setting.username, setting.password) {
+                    Some(proxy
+                        .basic_auth(username.as_str(), password.as_str())
+                    )
+                } else {
+                    Some(proxy.to_owned())
+                }
+            } else {
+                None
             }
         } else {
             None

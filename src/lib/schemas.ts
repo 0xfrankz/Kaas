@@ -90,6 +90,8 @@ export const proxySchema = z
       .url({ message: 'error:validation:invalid-proxy-url' }),
     http: z.boolean().optional().default(false),
     https: z.boolean().optional().default(false),
+    username: z.string().optional(),
+    password: z.string().optional(),
   })
   .refine((data) => data.http || data.https, {
     message: 'error:validation:empty-traffic-type',
