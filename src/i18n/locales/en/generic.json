@@ -8,12 +8,13 @@
         "settings": "Settings"
     },
     "action": {
-        "save": "Save",
         "cancel": "Cancel",
-        "edit": "Edit",
+        "confirm": "Confirm",
+        "continue": "Continue",
         "delete": "Delete",
-        "use": "Use",
-        "confirm": "Confirm"
+        "edit": "Edit",
+        "save": "Save",
+        "use": "Use"
     },
     "select": {
         "language-en": "English",
@@ -24,9 +25,9 @@
         "OpenAI": "OpenAI",
         "unknown": "Unknown"
     },
-    "text": {
-        "model-form-title": "Create new $t(generic:model:{{provider}}) model",
-        "model-form-description": "Fill in your $t(generic:model:{{provider}})'s API information. You can find more information here."
+    "message": {
+        "last-message": "Last message: {{lastMessage}}",
+        "created-at": "Created at: {{createdAt}}"
     },
     "label": {
         "default": "Default",

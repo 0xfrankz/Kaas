@@ -45,7 +45,7 @@ const config = {
         },
         muted: {
           DEFAULT: 'var(--gray-a6)',
-          foreground: 'var(--gray-11)',
+          foreground: 'var(--gray-a11)',
         },
         accent: {
           DEFAULT: 'var(--yellow-4)',

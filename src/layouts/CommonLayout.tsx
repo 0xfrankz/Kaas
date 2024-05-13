@@ -1,6 +1,7 @@
 /* eslint-disable tailwindcss/no-custom-classname */
 import { ErrorBoundary } from 'react-error-boundary';
 
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Fallback } from '@/components/Fallback';
 import { SideNav } from '@/components/SideNav';
 import { Toaster } from '@/components/ui/sonner';
@@ -16,6 +17,7 @@ export default function CommonLayout({
         <SideNav />
         {children}
         <Toaster />
+        <ConfirmationDialog />
       </ErrorBoundary>
     </div>
   );

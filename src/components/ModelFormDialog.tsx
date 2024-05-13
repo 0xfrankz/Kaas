@@ -64,10 +64,10 @@ const NewModelFormDialog = forwardRef<
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {t('generic:text:model-form-title', { provider })}
+            {t('page-models:section:create-model', { provider })}
           </DialogTitle>
           <DialogDescription>
-            {t('generic:text:model-form-description', {
+            {t('page-models:message:create-model-tips', {
               provider,
             })}
           </DialogDescription>
