@@ -25,6 +25,7 @@ import {
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
 import ModelsPage from '@/pages/Models';
+import NewConversationPage from '@/pages/NewConversation';
 import PromptsPage from '@/pages/Prompts';
 import SettingsPage from '@/pages/Settings';
 
@@ -70,6 +71,10 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <ConversationsPage />,
+          },
+          {
+            path: 'new',
+            element: <NewConversationPage />,
           },
           {
             path: ':conversationId',

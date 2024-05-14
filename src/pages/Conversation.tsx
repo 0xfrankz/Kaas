@@ -18,6 +18,7 @@ function ConversationPage() {
   const { conversationId } = useParams<Params>();
   const cid = parseNumberOrNull(conversationId);
   if (cid === null) {
+    // redirect to new conversation page?
     throw new AppError(
       ERROR_TYPE_APP_STATE,
       `${conversationId} is not a valid number`,

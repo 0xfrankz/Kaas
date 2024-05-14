@@ -14,7 +14,8 @@
         "delete": "Delete",
         "edit": "Edit",
         "save": "Save",
-        "use": "Use"
+        "use": "Use",
+        "start-new-conversation": "Start a new conversation"
     },
     "select": {
         "language-en": "English",

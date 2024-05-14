@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Calendar, MessageCircle, Play, Trash2 } from 'lucide-react';
+import { Calendar, MessageCircle, Play, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { useConfirmationStateStore } from '@/lib/store';
 import type { Conversation } from '@/lib/types';
 
 import { ProviderTag } from './ProviderTag';
+import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import {
   ContextMenu,
@@ -93,9 +94,17 @@ export function ConversationGrid({
 
   return (
     <div className="flex grow flex-col">
-      <h2 className="text-3xl font-semibold tracking-tight">
-        {conversations.length} conversations
-      </h2>
+      <div className="flex justify-between">
+        <h2 className="text-3xl font-semibold tracking-tight">
+          {conversations.length} conversations
+        </h2>
+        <Button onClick={() => navigate(`/conversations/new`)}>
+          <Plus className="size-4" />
+          <span className="ml-2">
+            {t('generic:action:start-new-conversation')}
+          </span>
+        </Button>
+      </div>
       <div className="mt-6 grid grid-cols-3 gap-[26px]">
         {conversations.map((conversation) => {
           return (
