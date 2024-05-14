@@ -56,7 +56,11 @@ export default function ModelsPage() {
       await log.error(
         `Failed to delete model: data = ${JSON.stringify(variables)}, error = ${error.message}`
       );
-      toast.error(`Failed to delete model: ${error.message}`);
+      toast.error(
+        t('page-models:message:delete-model-error', {
+          errorMsg: error.message,
+        })
+      );
     },
   });
   const updater = useModelUpdater({

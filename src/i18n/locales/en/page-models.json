@@ -18,6 +18,7 @@
         "add-model": "Add one from below",
         "update-model-success": "Model has been updated",
         "delete-model-success": "Model has been deleted",
+        "delete-model-error": "Failed to delete model: {{errorMsg}}",
         "create-model-tips": "Fill in your $t(generic:model:{{provider}})'s API information.",
         "update-model-tips": "Give your model an alias to make it easier to identify.",
         "delete-model-warning": "Deleted model cannot be recovered.\nDo you still want to proceed?",

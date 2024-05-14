@@ -24,6 +24,7 @@ import {
   invokeCreateMessage,
   invokeCreateModel,
   invokeCreatePrompt,
+  invokeDeleteConversation,
   invokeDeleteModel,
   invokeDeletePrompt,
   invokeGetOptions,
@@ -159,6 +160,27 @@ export function useListConversationsQuery(): UseQueryResult<
     queryKey: LIST_CONVERSATIONS_KEY,
     queryFn: invokeListConversations,
   });
+}
+
+export function useConversationDeleter(
+  options?: Omit<
+    UseMutationOptions<Conversation, CommandError, number>,
+    'mutationFn'
+  >
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: invokeDeleteConversation,
+    onSuccess: (conversation) => {
+      // default onsucess behaviour
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          return draft?.filter((p) => p.id !== conversation.id);
+        })
+      );
+    },
+    ...options,
+  }).mutate;
 }
 
 export function useGetOptionsQuery(conversationId: number): {
@@ -384,68 +406,6 @@ export function useScrollToBottom(
     Anchor: anchorEl,
   };
 }
-
-// type ConfirmationDialogProps = {};
-
-// const InnerConfirmationDialog = forwardRef<
-//   ConfirmationDialogHandler,
-//   ConfirmationDialogProps
-// >((_ignored, ref) => {
-//   const [isOpen, setIsOpen] = useState(false);
-//   useImperativeHandle(ref, () => ({
-//     setOpen: setIsOpen,
-//   }));
-//   return (
-//     <AlertDialog open={isOpen}>
-//       <AlertDialogContent>
-//         <AlertDialogHeader>
-//           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-//           <AlertDialogDescription>
-//             This action cannot be undone. This will permanently delete your
-//             account and remove your data from our servers.
-//           </AlertDialogDescription>
-//         </AlertDialogHeader>
-//         <AlertDialogFooter>
-//           <AlertDialogCancel>Cancel</AlertDialogCancel>
-//           <AlertDialogAction>Confirm</AlertDialogAction>
-//         </AlertDialogFooter>
-//       </AlertDialogContent>
-//     </AlertDialog>
-//   );
-// });
-
-// type ConfirmationDialogHandler = {
-//   setOpen: (open: boolean) => void;
-// };
-
-// type UseConfirmationDialogResult = {
-//   DialogEl: (
-//     props: ComponentPropsWithoutRef<typeof InnerConfirmationDialog>
-//   ) => React.JSX.Element;
-//   open: () => void;
-//   close: () => void;
-// };
-
-// export function useConfirmationDialog(): UseConfirmationDialogResult {
-//   const dialogRef = useRef<ConfirmationDialogHandler>();
-//   const dialogEl = useMemo(() => {
-//     return <InnerConfirmationDialog ref={dialogRef} />;
-//   }, [dialogRef]);
-
-//   const open = useCallback(() => {
-//     dialogRef.current?.setOpen(true);
-//   }, [dialogRef]);
-
-//   const close = useCallback(() => {
-//     dialogRef.current?.setOpen(false);
-//   }, [dialogRef]);
-
-//   return {
-//     DialogEl: dialogEl,
-//     open,
-//     close,
-//   };
-// }
 
 // Context hooks
 export function useConversationsContext(): TConversationsContext {

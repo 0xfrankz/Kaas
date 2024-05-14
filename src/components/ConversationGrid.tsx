@@ -2,8 +2,11 @@ import dayjs from 'dayjs';
 import { Calendar, MessageCircle, Play, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
+import { useConversationDeleter } from '@/lib/hooks';
+import log from '@/lib/log';
 import { useConfirmationStateStore } from '@/lib/store';
 import type { Conversation } from '@/lib/types';
 
@@ -59,16 +62,31 @@ export function ConversationGrid({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { open } = useConfirmationStateStore();
+  const deleter = useConversationDeleter({
+    onSettled: async (ignored, error, variables) => {
+      if (!error) {
+        toast.success(
+          t('page-conversations:message:delete-conversation-success')
+        );
+      } else {
+        await log.error(
+          `Failed to delete conversation: data = ${JSON.stringify(variables)}, error = ${error.message}`
+        );
+        toast.error(
+          t('page-conversations:message:delete-conversation-error', {
+            errorMsg: error.message,
+          })
+        );
+      }
+    },
+  });
 
-  const onDeleteClick = () => {
+  const onDeleteClick = (conversation: Conversation) => {
     open({
       title: t('generic:message:are-you-sure'),
       message: t('page-conversations:message:delete-conversation-warning'),
       onConfirm: () => {
-        console.log('onConfirm');
-      },
-      onCancel: () => {
-        console.log('onCancel');
+        deleter(conversation.id);
       },
     });
   };
@@ -97,7 +115,9 @@ export function ConversationGrid({
                 </ContextMenuItem>
                 <ContextMenuItem
                   className="cursor-pointer gap-2 focus:bg-destructive focus:text-destructive-foreground"
-                  onClick={onDeleteClick}
+                  onClick={() => {
+                    onDeleteClick(conversation);
+                  }}
                 >
                   <Trash2 className="size-4" /> {t('generic:action:delete')}
                 </ContextMenuItem>

@@ -47,10 +47,13 @@ pub async fn update_model(model: Model, repo: State<'_, Repository>) -> CommandR
 
 #[tauri::command]
 pub async fn delete_model(model_id: i32, repo: State<'_, Repository>) -> CommandResult<Model> {
+    let now = Instant::now();
     let result = repo
         .delete_model(model_id)
         .await
         .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::delete_model]: {:.2?}", elapsed);
     Ok(result)
 }
 
@@ -108,6 +111,18 @@ pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Ve
         .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::list_conversations]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Conversation> {
+    let now = Instant::now();
+    let result = repo
+        .delete_conversation(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::delete_conversation]: {:.2?}", elapsed);
     Ok(result)
 }
 

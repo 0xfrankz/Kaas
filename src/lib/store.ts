@@ -14,7 +14,7 @@ type ConfirmationData = {
   title: string;
   message: string;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 };
 
 export type ConfirmationState = {

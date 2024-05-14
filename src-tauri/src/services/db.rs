@@ -252,6 +252,7 @@ impl Repository {
      */
     pub async fn list_conversations(&self) -> Result<Vec<ConversationListItem>, String> {
         let result = conversations::Entity::find()
+                .filter(conversations::Column::DeletedAt.is_null())
                 .join(
                     JoinType::LeftJoin,
                     conversations::Relation::Messages.def()
@@ -270,6 +271,31 @@ impl Repository {
                     error!("{}", err);
                     "Failed to list conversations".to_string()
                 })?;
+        Ok(result)
+    }
+
+    /**
+     * Soft delete a conversation
+    */
+    pub async fn delete_conversation(&self, conversation_id: i32) -> Result<Conversation, String> {
+        let conv = conversations::Entity::find_by_id(conversation_id)
+                .one(&self.connection)
+                .await
+                .map_err(|err| {
+                    error!("{}", err);
+                    format!("Failed to get conversation with id = {}", conversation_id)
+                })?
+                .ok_or(format!("Conversation with id {} doesn't exist", conversation_id))?;
+        let mut active_model: conversations::ActiveModel = conv.into();
+        // Perform soft delete
+        active_model.deleted_at = Set(Some(chrono::Local::now()));
+        let result = active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to delete conversation with id = {}", conversation_id)
+            })?;
         Ok(result)
     }
 
@@ -559,7 +585,7 @@ impl Repository {
             .await
             .map_err(|err| {
                 error!("{}", err);
-                "Failed to delete prompt".to_string()
+                format!("Failed to delete prompt with id = {}", prompt_id)
             })?;
         Ok(result)
     }

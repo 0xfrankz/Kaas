@@ -25,13 +25,6 @@ export async function invokeCreateModel(
   model: NewModel
 ): Promise<GenericModel> {
   const genericModel = toGenericModel(model);
-  console.log(
-    'invokeCreateModel',
-    'model',
-    model,
-    'genericModel',
-    genericModel
-  );
   const result = await invoke<GenericModel>('create_model', {
     newModel: genericModel,
   });
@@ -45,13 +38,6 @@ export async function invokeListModels(): Promise<Model[]> {
 
 export async function invokeUpdateModel(model: Model): Promise<Model> {
   const genericModel = toGenericModel(model);
-  console.log(
-    'invokeUpdateModel',
-    'model',
-    model,
-    'genericModel',
-    genericModel
-  );
   const result = await invoke<GenericModel>('update_model', {
     model: genericModel,
   });
@@ -62,7 +48,6 @@ export async function invokeDeleteModel(modelId: number): Promise<Model> {
   const result = await invoke<GenericModel>('delete_model', {
     modelId,
   });
-  console.log('invokeDeleteModel', 'result', result);
   return fromGenericModel(result);
 }
 
@@ -88,6 +73,15 @@ export async function invokeCreateConversation(
 export async function invokeListConversations(): Promise<Conversation[]> {
   const result = await invoke<Conversation[]>('list_conversations');
   log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);
+  return result;
+}
+
+export async function invokeDeleteConversation(
+  conversationId: number
+): Promise<Conversation> {
+  const result = await invoke<Conversation>('delete_conversation', {
+    conversationId,
+  });
   return result;
 }
 
