@@ -27,7 +27,8 @@
     },
     "message": {
         "last-message": "Last message: {{lastMessage}}",
-        "created-at": "Created at: {{createdAt}}"
+        "created-at": "Created at: {{createdAt}}",
+        "are-you-sure": "Are you absolutely sure?"
     },
     "label": {
         "default": "Default",

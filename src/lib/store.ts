@@ -10,6 +10,19 @@ export type AppState = {
   updateSetting: (setting: Setting) => void;
 };
 
+type ConfirmationData = {
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
+
+export type ConfirmationState = {
+  data?: ConfirmationData;
+  open: (data: ConfirmationData) => void;
+  close: () => void;
+};
+
 export const useAppStateStore = create<AppState>()((set) => ({
   models: [],
   settings: {},
@@ -31,4 +44,10 @@ export const useAppStateStore = create<AppState>()((set) => ({
         settings: { ...state.settings, [setting.key]: setting.value },
       };
     }),
+}));
+
+export const useConfirmationStateStore = create<ConfirmationState>()((set) => ({
+  data: undefined,
+  open: (data) => set({ data }),
+  close: () => set({ data: undefined }),
 }));

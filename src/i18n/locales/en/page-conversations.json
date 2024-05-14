@@ -2,5 +2,8 @@
     "title": "Conversations",
     "labels": {
         "start-new": "Start a new conversation"
+    },
+    "message": {
+        "delete-conversation-warning": "Deleted conversation cannot be recovered.\nDo you still want to proceed?"
     }
 }

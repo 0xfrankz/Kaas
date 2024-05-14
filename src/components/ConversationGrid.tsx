@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
-import { useConfirmationDialog } from '@/lib/hooks';
+import { useConfirmationStateStore } from '@/lib/store';
 import type { Conversation } from '@/lib/types';
 
 import { ProviderTag } from './ProviderTag';
@@ -58,10 +58,19 @@ export function ConversationGrid({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setOpen: setDialogOpen } = useConfirmationDialog();
+  const { open } = useConfirmationStateStore();
 
-  const onConfirmClick = () => {
-    setDialogOpen(true);
+  const onDeleteClick = () => {
+    open({
+      title: t('generic:message:are-you-sure'),
+      message: t('page-conversations:message:delete-conversation-warning'),
+      onConfirm: () => {
+        console.log('onConfirm');
+      },
+      onCancel: () => {
+        console.log('onCancel');
+      },
+    });
   };
 
   return (
@@ -88,7 +97,7 @@ export function ConversationGrid({
                 </ContextMenuItem>
                 <ContextMenuItem
                   className="cursor-pointer gap-2 focus:bg-destructive focus:text-destructive-foreground"
-                  onClick={onConfirmClick}
+                  onClick={onDeleteClick}
                 >
                   <Trash2 className="size-4" /> {t('generic:action:delete')}
                 </ContextMenuItem>
