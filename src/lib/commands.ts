@@ -70,6 +70,19 @@ export async function invokeCreateConversation(
   return result;
 }
 
+export async function invokeCreateBareConversation(
+  subject: string
+): Promise<Conversation> {
+  const bareConversation = {
+    id: 0,
+    subject,
+  };
+  const result = await invoke<Conversation>('create_bare_conversation', {
+    bareConversation,
+  });
+  return result;
+}
+
 export async function invokeListConversations(): Promise<Conversation[]> {
   const result = await invoke<Conversation[]>('list_conversations');
   log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);

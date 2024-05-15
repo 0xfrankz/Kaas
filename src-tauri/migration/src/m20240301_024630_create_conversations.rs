@@ -30,9 +30,9 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Conversations::ModelId).integer().not_null())
+                    .col(ColumnDef::new(Conversations::ModelId).integer())
                     .col(ColumnDef::new(Conversations::Subject).string().not_null())
-                    .col(ColumnDef::new(Conversations::Options).json().not_null())
+                    .col(ColumnDef::new(Conversations::Options).string())
                     .col(ColumnDef::new(Conversations::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
                     .col(ColumnDef::new(Conversations::UpdatedAt).timestamp().null())
                     .col(ColumnDef::new(Conversations::DeletedAt).timestamp().null())

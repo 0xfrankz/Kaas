@@ -1,7 +1,12 @@
 // Supported API providers
 export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
-export const SUPPORTED_PROVIDERS = [PROVIDER_OPENAI, PROVIDER_AZURE] as const;
+export const PROVIDER_UNKNOWN = 'Unknown';
+export const SUPPORTED_PROVIDERS = [
+  PROVIDER_OPENAI,
+  PROVIDER_AZURE,
+  PROVIDER_UNKNOWN,
+] as const;
 export const PROVIDER_INFO = {
   [PROVIDER_OPENAI]: 'OpenAI',
   [PROVIDER_AZURE]: 'Microsoft Azure',
@@ -19,6 +24,13 @@ export const PROVIDER_STYLES = {
     color: {
       light: '#CCE4F6',
       dark: '#0078D4',
+    },
+  },
+  [PROVIDER_UNKNOWN]: {
+    icon: 'unknown_logo.svg',
+    color: {
+      light: '#CCCCCC',
+      dark: '#CCCCCC',
     },
   },
 };

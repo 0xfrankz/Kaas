@@ -6,6 +6,7 @@
     "message": {
         "delete-conversation-warning": "Deleted conversation cannot be recovered.\nDo you still want to proceed?",
         "delete-conversation-success": "Conversation has been deleted",
-        "delete-conversation-error": "Failed to delete conversation: {{errorMsg}}"
+        "delete-conversation-error": "Failed to delete conversation: {{errorMsg}}",
+        "create-conversation-error": "Failed to create conversation: {{errorMsg}}"
     }
 }

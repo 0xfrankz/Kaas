@@ -38,6 +38,7 @@
         "on": "ON",
         "off": "OFF",
         "alias": "Alias",
-        "prompt": "Prompt"
+        "prompt": "Prompt",
+        "new-conversation": "New conversation"
     }
 }

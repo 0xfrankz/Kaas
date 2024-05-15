@@ -13,10 +13,12 @@ pub struct Model {
     #[sea_orm(primary_key)]
     #[serde(skip_deserializing)]
     pub id: i32,
-    pub model_id: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model_id: Option<i32>,
     pub subject: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
-    pub options: String,
+    pub options: Option<String>,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -59,9 +61,9 @@ impl ActiveModelBehavior for ActiveModel {}
 #[serde(rename_all = "camelCase")]
 pub struct ConversationListItem {
     pub id: i32,
-    pub model_id: i32,
+    pub model_id: Option<i32>,
     pub subject: String,
-    pub options: String,
+    pub options: Option<String>,
     pub created_at: DateTimeLocal,
     pub updated_at: Option<DateTimeLocal>,
     pub deleted_at: Option<DateTimeLocal>,

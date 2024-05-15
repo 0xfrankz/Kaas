@@ -182,16 +182,18 @@ impl Repository {
         &self,
         conversation: Conversation,
     ) -> Result<Conversation, String> {
-        let model = self.get_model(conversation.model_id).await?;
         let mut active_model: ActiveConversation = conversation.clone().into();
         active_model.id = ActiveValue::NotSet;
-        match model.provider.into() {
-            Providers::Azure => {
-                let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
-                active_model.options = Set(options_str);
-            }
-            _ => {
-                active_model.options = Set(String::default());
+        if let Some(model_id) = conversation.model_id {
+            let model = self.get_model(model_id).await?;
+            match model.provider.into() {
+                Providers::Azure => {
+                    let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
+                    active_model.options = Set(Some(options_str));
+                }
+                _ => {
+                    active_model.options = Set(None);
+                }
             }
         }
         
@@ -204,8 +206,11 @@ impl Repository {
     }
 
     pub async fn create_conversation_with_message(&self, conversation: Conversation, message: Message) -> Result<(Conversation, Message), String> {
+        // when created with a message
+        // model id must be present
+        let mode_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
         let model = self
-                .get_model(conversation.model_id)
+                .get_model(mode_id)
                 .await?;
         let result = self.connection.transaction::<_, (Conversation, Message), DbErr>(|txn| {
             Box::pin(async move {
@@ -214,11 +219,11 @@ impl Repository {
                 match model.provider.into() {
                     Providers::Azure => {
                         let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
-                        c_am.options = Set(options_str);
+                        c_am.options = Set(Some(options_str));
                     }
                     _ => {
                         let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                        c_am.options = Set(options_str);
+                        c_am.options = Set(Some(options_str));
                     }
                 }
                 c_am.created_at = Set(chrono::Local::now());
@@ -258,7 +263,7 @@ impl Repository {
                     conversations::Relation::Messages.def()
                 )
                 .join(
-                    JoinType::InnerJoin,
+                    JoinType::LeftJoin,
                     conversations::Relation::Models.def()
                 )
                 .column_as(models::Column::Provider, "model_provider")
@@ -373,7 +378,7 @@ impl Repository {
                     )
                 )?;
         // Convert to active model
-        let model_id = conversation.model_id;
+        let model_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
         let mut c_am: conversations::ActiveModel = conversation.into();
         // Get provider string
         let provider: String = models::Entity::find_by_id(model_id)
@@ -396,7 +401,7 @@ impl Repository {
                         AzureOptions::default()
                     });
                 options_str = serde_json::to_string(&azure_options).unwrap_or(String::default());
-                c_am.options = Set(options_str.clone());
+                c_am.options = Set(Some(options_str.clone()));
             }
             _ => {
                 // Deserialize & serialize the options as validation
@@ -407,7 +412,7 @@ impl Repository {
                         OpenAIOptions::default()
                     });
                 options_str = serde_json::to_string(&openai_options).unwrap_or(String::default());
-                c_am.options = Set(options_str.clone());
+                c_am.options = Set(Some(options_str.clone()));
             }
         }
         // Update DB

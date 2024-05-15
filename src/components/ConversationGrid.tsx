@@ -4,8 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
-import { useConversationDeleter } from '@/lib/hooks';
+import { DEFAULT_DATE_FORMAT, PROVIDER_UNKNOWN } from '@/lib/constants';
+import {
+  useBareConversationCreator,
+  useConversationDeleter,
+} from '@/lib/hooks';
 import log from '@/lib/log';
 import { useConfirmationStateStore } from '@/lib/store';
 import type { Conversation } from '@/lib/types';
@@ -46,11 +49,11 @@ function ConversationGridItem({
         <CardContent className="grow px-4 py-0">
           <p className="">{conversation.subject}</p>
         </CardContent>
-        {conversation.modelProvider ? (
-          <CardFooter className="p-4">
-            <ProviderTag provider={conversation.modelProvider} />
-          </CardFooter>
-        ) : null}
+        <CardFooter className="p-4">
+          <ProviderTag
+            provider={conversation.modelProvider ?? PROVIDER_UNKNOWN}
+          />
+        </CardFooter>
       </Card>
     </Link>
   );
@@ -81,6 +84,23 @@ export function ConversationGrid({
       }
     },
   });
+  const creator = useBareConversationCreator({
+    onSettled: async (conversation, error) => {
+      if (!error && conversation) {
+        navigate(`/conversations/${conversation.id}`);
+      } else {
+        const errorMsg = error?.message ?? '';
+        await log.error(
+          `Failed to create bare conversation: , error = ${errorMsg}`
+        );
+        toast.error(
+          t('page-conversations:message:create-conversation-error', {
+            errorMsg,
+          })
+        );
+      }
+    },
+  });
 
   const onDeleteClick = (conversation: Conversation) => {
     open({
@@ -92,13 +112,17 @@ export function ConversationGrid({
     });
   };
 
+  const onCreateClick = () => {
+    creator(t('generic:label:new-conversation'));
+  };
+
   return (
     <div className="flex grow flex-col">
       <div className="flex justify-between">
         <h2 className="text-3xl font-semibold tracking-tight">
           {conversations.length} conversations
         </h2>
-        <Button onClick={() => navigate(`/conversations/new`)}>
+        <Button onClick={onCreateClick}>
           <Plus className="size-4" />
           <span className="ml-2">
             {t('generic:action:start-new-conversation')}

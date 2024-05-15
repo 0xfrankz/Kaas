@@ -51,9 +51,9 @@ export type UnsavedConversation = z.infer<typeof conversationFormSchema>;
 
 export type Conversation = {
   id: number;
-  modelId: number;
+  modelId?: number;
   subject: string;
-  options: string;
+  options?: string;
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;

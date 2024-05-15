@@ -1,4 +1,4 @@
-use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, time::Instant};
+use std::time::Instant;
 
 use entity::entities::{
     conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
@@ -85,7 +85,7 @@ pub async fn create_conversation(
 ) -> CommandResult<Conversation> {
     // Assemble conversation & message models
     let conversation = Conversation {
-        model_id: new_conversation.model_id,
+        model_id: Some(new_conversation.model_id),
         subject: new_conversation.message.clone(),
         ..Default::default()
     };
@@ -96,6 +96,16 @@ pub async fn create_conversation(
     };
     let (conversation, _) = repo
         .create_conversation_with_message(conversation, message)
+        .await
+        .map_err(|message| DbError { message })?;
+
+    Ok(conversation)
+}
+
+#[tauri::command]
+pub async fn create_bare_conversation(bare_conversation: Conversation, repo: State<'_, Repository>) -> CommandResult<Conversation> {
+    let conversation = repo
+        .create_conversation(bare_conversation)
         .await
         .map_err(|message| DbError { message })?;
 

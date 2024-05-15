@@ -20,6 +20,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import {
   invokeCallBot,
+  invokeCreateBareConversation,
   invokeCreateConversation,
   invokeCreateMessage,
   invokeCreateModel,
@@ -178,6 +179,26 @@ export function useConversationDeleter(
           return draft?.filter((p) => p.id !== conversation.id);
         })
       );
+    },
+    ...options,
+  }).mutate;
+}
+
+export function useBareConversationCreator(
+  options?: Omit<
+    UseMutationOptions<Conversation, CommandError, string>,
+    'mutationFn'
+  >
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: invokeCreateBareConversation,
+    onSuccess: () => {
+      // default onsucess behaviour
+      // invalid conversation list query
+      queryClient.invalidateQueries({
+        queryKey: LIST_CONVERSATIONS_KEY,
+      });
     },
     ...options,
   }).mutate;

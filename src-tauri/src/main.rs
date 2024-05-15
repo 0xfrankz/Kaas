@@ -30,6 +30,7 @@ fn main() {
             commands::list_settings,
             commands::upsert_setting,
             commands::create_conversation,
+            commands::create_bare_conversation,
             commands::list_conversations,
             commands::delete_conversation,
             commands::get_options,
