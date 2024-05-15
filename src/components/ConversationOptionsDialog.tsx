@@ -46,11 +46,8 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
   );
 
   if (!model) {
-    throw new AppError(
-      ERROR_TYPE_APP_STATE,
-      'Unknown',
-      'Cannot find model for this conversation!'
-    );
+    // model is not setted or is deleted
+    return null;
   }
 
   if (isError && error) {

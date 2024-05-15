@@ -135,6 +135,10 @@ export type DialogHandler<T> = {
   close: () => void;
 };
 
+export type StatefulDialogHandler<T> = DialogHandler<T> & {
+  isOpen: () => boolean;
+};
+
 // Functions
 export function toGenericModel(model: NewModel | Model): GenericModel {
   if ('id' in model) {

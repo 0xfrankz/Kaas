@@ -1,7 +1,13 @@
 {
+    "section": {
+        "choose-model": "Choose a model for {{subject}}"
+    },
     "label": {
         "enter-to-send": "Press Enter to send",
         "shift-enter-to-send": "Press Shift+Enter to send",
         "quick-send": "Quick Send"
+    },
+    "message": {
+        "no-model": "You need to choose a model first"
     }
 }
