@@ -1,7 +1,6 @@
 import './styles.css';
 import '@/i18n';
 
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 import React, { Suspense } from 'react';
@@ -25,7 +24,6 @@ import {
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
 import ModelsPage from '@/pages/Models';
-import NewConversationPage from '@/pages/NewConversation';
 import PromptsPage from '@/pages/Prompts';
 import SettingsPage from '@/pages/Settings';
 
@@ -73,10 +71,6 @@ const router = createBrowserRouter([
             element: <ConversationsPage />,
           },
           {
-            path: 'new',
-            element: <NewConversationPage />,
-          },
-          {
             path: ':conversationId',
             element: <ConversationPage />,
           },
@@ -105,7 +99,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             </InitializationProvider>
           </Suspense>
         </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
       </RQProvider>
     </ErrorBoundary>
   </React.StrictMode>
