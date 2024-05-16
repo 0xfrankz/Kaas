@@ -173,6 +173,18 @@ pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'
 }
 
 #[tauri::command]
+pub async fn update_conversation_model(conversation_id: i32, model_id: i32, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
+    let now = Instant::now();
+    let result = repo
+        .update_conversation_model(conversation_id, model_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_conversation_model]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
 pub async fn update_conversation(conversation: UpdateConversationDTO, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
     let now = Instant::now();
     let result = repo

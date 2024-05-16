@@ -192,6 +192,7 @@ impl Repository {
                     active_model.options = Set(Some(options_str));
                 }
                 _ => {
+                    let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
                     active_model.options = Set(None);
                 }
             }
@@ -444,6 +445,41 @@ impl Repository {
             Ok(subject)
         }
     }
+
+    /**
+     * Update model of a conversation
+     * @return String model's privider
+     */
+    pub async fn update_conversation_model(&self, conversation_id: i32, model_id: i32) -> Result<ConversationDetailsDTO, String> {
+        let model = self.get_model(model_id).await?;
+        let mut active_model = conversations::ActiveModel {
+            id: Set(conversation_id),
+            model_id: Set(Some(model_id)),
+            ..Default::default()
+        };
+        match (&model.provider).into() {
+            Providers::Azure => {
+                let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
+                active_model.options = Set(Some(options_str));
+            }
+            _ => {
+                let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
+                active_model.options = Set(Some(options_str));
+            }
+        }
+        active_model.updated_at = Set(Some(chrono::Local::now()));
+        active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to update conversation".to_string()
+            })?;
+        
+        // fetch details and return
+        self.get_conversation_details(conversation_id).await
+    }
+
 
     /**
      * Update a conversation

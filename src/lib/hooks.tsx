@@ -35,6 +35,7 @@ import {
   invokeListPrompts,
   invokeListSettings,
   invokeUpdateConversation,
+  invokeUpdateConversationModel,
   invokeUpdateModel,
   invokeUpdateOptions,
   invokeUpdatePrompt,
@@ -203,6 +204,40 @@ export function useBlankConversationCreator(
       queryClient.invalidateQueries({
         queryKey: LIST_CONVERSATIONS_KEY,
       });
+    },
+    ...options,
+  }).mutate;
+}
+
+export function useConversationModelUpdater(
+  options?: Omit<
+    UseMutationOptions<
+      ConversationDetails,
+      CommandError,
+      {
+        conversationId: number;
+        modelId: number;
+      }
+    >,
+    'mutationFn'
+  >
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: invokeUpdateConversationModel,
+    onSuccess: (conversation) => {
+      // default onsucess behaviour
+      queryClient.setQueryData<ConversationDetails[]>(
+        LIST_CONVERSATIONS_KEY,
+        (old) =>
+          produce(old, (draft) => {
+            const index =
+              draft?.findIndex((c) => c.id === conversation.id) ?? -1;
+            if (index !== -1 && draft) {
+              draft[index] = conversation;
+            }
+          })
+      );
     },
     ...options,
   }).mutate;

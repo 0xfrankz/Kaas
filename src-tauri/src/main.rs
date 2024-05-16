@@ -37,6 +37,7 @@ fn main() {
             commands::get_options,
             commands::update_options,
             commands::update_subject,
+            commands::update_conversation_model,
             commands::create_message,
             commands::list_messages,
             commands::call_bot,

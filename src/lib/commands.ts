@@ -102,6 +102,23 @@ export async function invokeDeleteConversation(
   return result;
 }
 
+export async function invokeUpdateConversationModel({
+  conversationId,
+  modelId,
+}: {
+  conversationId: number;
+  modelId: number;
+}): Promise<ConversationDetails> {
+  const result = await invoke<ConversationDetails>(
+    'update_conversation_model',
+    {
+      conversationId,
+      modelId,
+    }
+  );
+  return result;
+}
+
 export async function invokeUpdateConversation(
   conversation: UpdateConversation
 ): Promise<ConversationDetails> {

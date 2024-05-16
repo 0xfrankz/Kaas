@@ -11,7 +11,7 @@ import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
   useCallBot,
-  useConversationUpdater,
+  useConversationModelUpdater,
   useCreateMessageMutation,
   useListMessagesQuery,
   useSubjectUpdater,
@@ -59,7 +59,7 @@ export function ChatSection({ conversation }: Props) {
   const callBotMutation = useCallBot();
   const createMsgMutation = useCreateMessageMutation();
   const subjectUpdater = useSubjectUpdater();
-  const conversationUpdater = useConversationUpdater();
+  const modelUpdater = useConversationModelUpdater();
 
   const queryClient = useQueryClient();
   const messagesWithModelId = useMemo(() => {
@@ -131,8 +131,8 @@ export function ChatSection({ conversation }: Props) {
 
   const onChooseSubmit = useCallback((selectedModel: Model) => {
     console.log('selected model:', selectedModel);
-    conversationUpdater({
-      id: conversation.id,
+    modelUpdater({
+      conversationId: conversation.id,
       modelId: selectedModel.id,
     });
   }, []);
