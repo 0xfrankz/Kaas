@@ -13,7 +13,7 @@ import {
 } from '@/lib/hooks';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
-import type { UnsavedConversation } from '@/lib/types';
+import type { NewConversation } from '@/lib/types';
 
 import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
@@ -29,7 +29,7 @@ import {
 
 export function NewConversationForm() {
   const { models } = useAppStateStore();
-  const form = useForm<UnsavedConversation>();
+  const form = useForm<NewConversation>();
   const inputRef = useRef<HTMLInputElement>(null);
   const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
@@ -37,7 +37,7 @@ export function NewConversationForm() {
   const { t } = useTranslation(['page-conversations']);
 
   // Callbacks
-  const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
+  const onSubmit: SubmitHandler<NewConversation> = (formData) => {
     const validation = conversationFormSchema.safeParse(formData);
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {

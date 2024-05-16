@@ -20,7 +20,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import {
   invokeCallBot,
-  invokeCreateBareConversation,
+  invokeCreateBlankConversation,
   invokeCreateConversation,
   invokeCreateMessage,
   invokeCreateModel,
@@ -34,6 +34,7 @@ import {
   invokeListModels,
   invokeListPrompts,
   invokeListSettings,
+  invokeUpdateConversation,
   invokeUpdateModel,
   invokeUpdateOptions,
   invokeUpdatePrompt,
@@ -46,10 +47,11 @@ import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
 import type {
   CommandError,
-  Conversation,
+  ConversationDetails,
   GenericModel,
   Message,
   Model,
+  NewConversation,
   NewMessage,
   NewModel,
   NewPrompt,
@@ -59,7 +61,7 @@ import type {
   Setting,
   TConversationsContext,
   TFilledPromptContext,
-  UnsavedConversation,
+  UpdateConversation,
 } from './types';
 
 export const LIST_MODELS_KEY = ['list-models'];
@@ -144,9 +146,9 @@ export function useSettingUpserter(
 }
 
 export function useCreateConversationMutation(): UseMutationResult<
-  Conversation,
+  ConversationDetails,
   CommandError,
-  UnsavedConversation
+  NewConversation
 > {
   return useMutation({
     mutationFn: invokeCreateConversation,
@@ -154,7 +156,7 @@ export function useCreateConversationMutation(): UseMutationResult<
 }
 
 export function useListConversationsQuery(): UseQueryResult<
-  Conversation[],
+  ConversationDetails[],
   CommandError
 > {
   return useQuery({
@@ -165,7 +167,7 @@ export function useListConversationsQuery(): UseQueryResult<
 
 export function useConversationDeleter(
   options?: Omit<
-    UseMutationOptions<Conversation, CommandError, number>,
+    UseMutationOptions<ConversationDetails, CommandError, number>,
     'mutationFn'
   >
 ) {
@@ -174,31 +176,60 @@ export function useConversationDeleter(
     mutationFn: invokeDeleteConversation,
     onSuccess: (conversation) => {
       // default onsucess behaviour
-      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
-        produce(old, (draft) => {
-          return draft?.filter((p) => p.id !== conversation.id);
-        })
+      queryClient.setQueryData<ConversationDetails[]>(
+        LIST_CONVERSATIONS_KEY,
+        (old) =>
+          produce(old, (draft) => {
+            return draft?.filter((p) => p.id !== conversation.id);
+          })
       );
     },
     ...options,
   }).mutate;
 }
 
-export function useBareConversationCreator(
+export function useBlankConversationCreator(
   options?: Omit<
-    UseMutationOptions<Conversation, CommandError, string>,
+    UseMutationOptions<ConversationDetails, CommandError, string>,
     'mutationFn'
   >
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: invokeCreateBareConversation,
+    mutationFn: invokeCreateBlankConversation,
     onSuccess: () => {
       // default onsucess behaviour
       // invalid conversation list query
       queryClient.invalidateQueries({
         queryKey: LIST_CONVERSATIONS_KEY,
       });
+    },
+    ...options,
+  }).mutate;
+}
+
+export function useConversationUpdater(
+  options?: Omit<
+    UseMutationOptions<ConversationDetails, CommandError, UpdateConversation>,
+    'mutationFn'
+  >
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: invokeUpdateConversation,
+    onSuccess: (conversation) => {
+      // default onsucess behaviour
+      queryClient.setQueryData<ConversationDetails[]>(
+        LIST_CONVERSATIONS_KEY,
+        (old) =>
+          produce(old, (draft) => {
+            const index =
+              draft?.findIndex((c) => c.id === conversation.id) ?? -1;
+            if (index !== -1 && draft) {
+              draft[index] = conversation;
+            }
+          })
+      );
     },
     ...options,
   }).mutate;
@@ -263,11 +294,11 @@ export function useSubjectUpdater(
     mutationFn: invokeUpdateSubject,
     onMutate: async ({ conversationId, subject }) => {
       // Snapshot the previous value
-      const previousConversations = queryClient.getQueryData<Conversation[]>(
-        LIST_CONVERSATIONS_KEY
-      );
+      const previousConversations = queryClient.getQueryData<
+        ConversationDetails[]
+      >(LIST_CONVERSATIONS_KEY);
       // Optimistically update
-      queryClient.setQueryData<Conversation[]>(
+      queryClient.setQueryData<ConversationDetails[]>(
         LIST_CONVERSATIONS_KEY,
         (old) => {
           return produce(old, (draft) => {

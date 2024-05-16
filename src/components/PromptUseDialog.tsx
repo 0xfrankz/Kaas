@@ -17,7 +17,7 @@ import { extractVariables, interpolate } from '@/lib/prompts';
 import { FilledPromptContextProvider } from '@/lib/providers';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
-import type { DialogHandler, Prompt, UnsavedConversation } from '@/lib/types';
+import type { DialogHandler, NewConversation, Prompt } from '@/lib/types';
 
 import PromptForm from './forms/PromptForm';
 import { PromptPreviewer } from './PromptPreviewer';
@@ -54,13 +54,13 @@ const LocalNewConversationForm = forwardRef<
   );
   const promptStr = interpolate(prompt.prompt, promptCtx);
   const { models } = useAppStateStore();
-  const form = useForm<UnsavedConversation>();
+  const form = useForm<NewConversation>();
   const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // Callbacks
-  const onSubmit: SubmitHandler<UnsavedConversation> = (formData) => {
+  const onSubmit: SubmitHandler<NewConversation> = (formData) => {
     const validation = conversationFormSchema.safeParse(formData);
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {

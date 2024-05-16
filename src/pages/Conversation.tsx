@@ -7,7 +7,7 @@ import { ConversationOptionsDialog } from '@/components/ConversationOptionsDialo
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useConversationsContext } from '@/lib/hooks';
-import type { Conversation } from '@/lib/types';
+import type { ConversationDetails } from '@/lib/types';
 import { errorGuard, parseNumberOrNull } from '@/lib/utils';
 
 type Params = {
@@ -40,7 +40,7 @@ function ConversationPage() {
         </TwoColumns.Left>
         <TwoColumns.Right className="relative">
           <ChatSection
-            conversation={conversation as Conversation}
+            conversation={conversation as ConversationDetails}
             key={conversation.id}
           />
           <ConversationOptionsDialog

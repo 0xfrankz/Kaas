@@ -6,12 +6,12 @@ import { toast } from 'sonner';
 
 import { DEFAULT_DATE_FORMAT, PROVIDER_UNKNOWN } from '@/lib/constants';
 import {
-  useBareConversationCreator,
+  useBlankConversationCreator,
   useConversationDeleter,
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useConfirmationStateStore } from '@/lib/store';
-import type { Conversation } from '@/lib/types';
+import type { ConversationDetails } from '@/lib/types';
 
 import { ProviderTag } from './ProviderTag';
 import { Button } from './ui/button';
@@ -27,7 +27,7 @@ import {
 function ConversationGridItem({
   conversation,
 }: {
-  conversation: Conversation;
+  conversation: ConversationDetails;
 }) {
   return (
     <Link to={`/conversations/${conversation.id}`}>
@@ -61,7 +61,7 @@ function ConversationGridItem({
 export function ConversationGrid({
   conversations,
 }: {
-  conversations: Conversation[];
+  conversations: ConversationDetails[];
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ export function ConversationGrid({
       }
     },
   });
-  const creator = useBareConversationCreator({
+  const creator = useBlankConversationCreator({
     onSettled: async (conversation, error) => {
       if (!error && conversation) {
         navigate(`/conversations/${conversation.id}`);
@@ -102,7 +102,7 @@ export function ConversationGrid({
     },
   });
 
-  const onDeleteClick = (conversation: Conversation) => {
+  const onDeleteClick = (conversation: ConversationDetails) => {
     open({
       title: t('generic:message:are-you-sure'),
       message: t('page-conversations:message:delete-conversation-warning'),

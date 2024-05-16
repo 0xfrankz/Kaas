@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use entity::entities::{
-    conversations::{ConversationListItem, Model as Conversation, NewConversation, ProviderOptions, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
+    conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::{self, Model as Message, NewMessage, Roles}, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
@@ -80,7 +80,7 @@ pub async fn upsert_setting(
 
 #[tauri::command]
 pub async fn create_conversation(
-    new_conversation: NewConversation,
+    new_conversation: NewConversationDTO,
     repo: State<'_, Repository>,
 ) -> CommandResult<Conversation> {
     // Assemble conversation & message models
@@ -103,9 +103,9 @@ pub async fn create_conversation(
 }
 
 #[tauri::command]
-pub async fn create_bare_conversation(bare_conversation: Conversation, repo: State<'_, Repository>) -> CommandResult<Conversation> {
+pub async fn create_blank_conversation(blank_conversation: Conversation, repo: State<'_, Repository>) -> CommandResult<Conversation> {
     let conversation = repo
-        .create_conversation(bare_conversation)
+        .create_conversation(blank_conversation)
         .await
         .map_err(|message| DbError { message })?;
 
@@ -113,7 +113,7 @@ pub async fn create_bare_conversation(bare_conversation: Conversation, repo: Sta
 }
 
 #[tauri::command]
-pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationListItem>> {
+pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationDetailsDTO>> {
     let now = Instant::now();
     let result = repo
         .list_conversations()
@@ -125,7 +125,7 @@ pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Ve
 }
 
 #[tauri::command]
-pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Conversation> {
+pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ConversationDTO> {
     let now = Instant::now();
     let result = repo
         .delete_conversation(conversation_id)
@@ -133,6 +133,54 @@ pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repositor
         .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::delete_conversation]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
+    let now = Instant::now();
+    let result = repo
+        .get_conversation_options(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::get_options]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
+    let now = Instant::now();
+    let result = repo
+        .update_conversation_options(conversation_id, options)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_options]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'_, Repository>) -> CommandResult<String> {
+    let now = Instant::now();
+    let result = repo
+        .update_conversation_subject(conversation_id, subject)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_subject]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_conversation(conversation: UpdateConversationDTO, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
+    let now = Instant::now();
+    let result = repo
+        .update_conversation(conversation)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_conversation]: {:.2?}", elapsed);
     Ok(result)
 }
 
@@ -231,42 +279,6 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
     Ok(())
-}
-
-#[tauri::command]
-pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
-    let now = Instant::now();
-    let result = repo
-        .get_conversation_options(conversation_id)
-        .await
-        .map_err(|message| DbError { message })?;
-    let elapsed = now.elapsed();
-    log::info!("[Timer][commands::get_options]: {:.2?}", elapsed);
-    Ok(result)
-}
-
-#[tauri::command]
-pub async fn update_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
-    let now = Instant::now();
-    let result = repo
-        .update_conversation_options(conversation_id, options)
-        .await
-        .map_err(|message| DbError { message })?;
-    let elapsed = now.elapsed();
-    log::info!("[Timer][commands::update_options]: {:.2?}", elapsed);
-    Ok(result)
-}
-
-#[tauri::command]
-pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'_, Repository>) -> CommandResult<String> {
-    let now = Instant::now();
-    let result = repo
-        .update_conversation_subject(conversation_id, subject)
-        .await
-        .map_err(|message| DbError { message })?;
-    let elapsed = now.elapsed();
-    log::info!("[Timer][commands::update_subject]: {:.2?}", elapsed);
-    Ok(result)
 }
 
 #[tauri::command]

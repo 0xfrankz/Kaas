@@ -1,5 +1,5 @@
 
-use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationListItem, Model as Conversation, OpenAIOptions, ProviderOptions};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, ProviderOptions, UpdateConversationDTO};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
 use entity::entities::models::{self, Model, NewModel, ProviderConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
@@ -255,7 +255,7 @@ impl Repository {
     /**
      * List all conversations
      */
-    pub async fn list_conversations(&self) -> Result<Vec<ConversationListItem>, String> {
+    pub async fn list_conversations(&self) -> Result<Vec<ConversationDetailsDTO>, String> {
         let result = conversations::Entity::find()
                 .filter(conversations::Column::DeletedAt.is_null())
                 .join(
@@ -269,7 +269,7 @@ impl Repository {
                 .column_as(models::Column::Provider, "model_provider")
                 .column_as(messages::Column::Id.count(), "message_count")
                 .group_by(conversations::Column::Id)
-                .into_model::<ConversationListItem>()
+                .into_model::<ConversationDetailsDTO>()
                 .all(&self.connection)
                 .await
                 .map_err(|err| {
@@ -282,7 +282,7 @@ impl Repository {
     /**
      * Soft delete a conversation
     */
-    pub async fn delete_conversation(&self, conversation_id: i32) -> Result<Conversation, String> {
+    pub async fn delete_conversation(&self, conversation_id: i32) -> Result<ConversationDTO, String> {
         let conv = conversations::Entity::find_by_id(conversation_id)
                 .one(&self.connection)
                 .await
@@ -443,6 +443,51 @@ impl Repository {
         } else {
             Ok(subject)
         }
+    }
+
+    /**
+     * Update a conversation
+     */
+    pub async fn update_conversation(&self, conversation: UpdateConversationDTO) -> Result<ConversationDetailsDTO, String> {
+        let conversation_id = conversation.id;
+        let mut active_model = conversations::ActiveModel::from(conversation);
+        active_model.updated_at = Set(Some(chrono::Local::now()));
+        active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to update conversation".to_string()
+            })?;
+        // fetch details and return
+        self.get_conversation_details(conversation_id).await
+    }
+
+    /**
+     * Get details of a conversation
+     */
+    pub async fn get_conversation_details(&self, conversation_id: i32) -> Result<ConversationDetailsDTO, String> {
+        let result = conversations::Entity::find_by_id(conversation_id)
+                .join(
+                    JoinType::LeftJoin,
+                    conversations::Relation::Messages.def()
+                )
+                .join(
+                    JoinType::LeftJoin,
+                    conversations::Relation::Models.def()
+                )
+                .column_as(models::Column::Provider, "model_provider")
+                .column_as(messages::Column::Id.count(), "message_count")
+                .group_by(conversations::Column::Id)
+                .into_model::<ConversationDetailsDTO>()
+                .one(&self.connection)
+                .await
+                .map_err(|err| {
+                    error!("{}", err);
+                    "Failed to list conversations".to_string()
+                })?
+                .ok_or(format!("Conversation with id {} doesn't exist", conversation_id))?;
+        Ok(result)
     }
 
     /**

@@ -47,7 +47,7 @@ export type Setting = {
 
 export type SupportedProviders = (typeof SUPPORTED_PROVIDERS)[number];
 
-export type UnsavedConversation = z.infer<typeof conversationFormSchema>;
+export type NewConversation = z.infer<typeof conversationFormSchema>;
 
 export type Conversation = {
   id: number;
@@ -57,8 +57,25 @@ export type Conversation = {
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
+};
+
+export type ConversationDetails = {
+  id: number;
+  modelId?: number;
+  subject: string;
+  options?: string;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
   messageCount?: number;
   modelProvider?: SupportedProviders;
+};
+
+export type UpdateConversation = Omit<
+  Conversation,
+  'subject' | 'createdAt' | 'updatedAt' | 'deletedAt'
+> & {
+  subject?: string;
 };
 
 export type NewMessage = {
@@ -105,9 +122,9 @@ export type ProviderStyles = {
 
 // Contexts
 export type TConversationsContext = {
-  conversations: Conversation[];
+  conversations: ConversationDetails[];
   isLoading: boolean;
-  get: (id: number) => Conversation | undefined;
+  get: (id: number) => ConversationDetails | undefined;
 };
 
 export type TFilledPromptContext = {

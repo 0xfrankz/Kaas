@@ -2,7 +2,7 @@ import { MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useConversationsContext } from '@/lib/hooks';
-import type { Conversation } from '@/lib/types';
+import type { ConversationDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { Button } from './ui/button';
@@ -12,7 +12,7 @@ type Props = {
 };
 
 type ItemProps = {
-  conversation: Conversation;
+  conversation: ConversationDetails;
   active: boolean;
 };
 

@@ -11,13 +11,19 @@ import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
   useCallBot,
+  useConversationUpdater,
   useCreateMessageMutation,
   useListMessagesQuery,
   useSubjectUpdater,
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
-import type { Conversation, Message, StatefulDialogHandler } from '@/lib/types';
+import type {
+  ConversationDetails,
+  Message,
+  Model,
+  StatefulDialogHandler,
+} from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { BotMessageReceiver } from './BotMessageReceiver';
@@ -33,7 +39,7 @@ import { Button } from './ui/button';
 const MemoizedMessageList = memo(ChatMessageList);
 
 type Props = {
-  conversation: Conversation;
+  conversation: ConversationDetails;
 };
 
 export function ChatSection({ conversation }: Props) {
@@ -53,6 +59,8 @@ export function ChatSection({ conversation }: Props) {
   const callBotMutation = useCallBot();
   const createMsgMutation = useCreateMessageMutation();
   const subjectUpdater = useSubjectUpdater();
+  const conversationUpdater = useConversationUpdater();
+
   const queryClient = useQueryClient();
   const messagesWithModelId = useMemo(() => {
     return (
@@ -120,6 +128,14 @@ export function ChatSection({ conversation }: Props) {
   const onChooseClick = useCallback(() => {
     dialogRef.current?.open(conversation.subject);
   }, [dialogRef]);
+
+  const onChooseSubmit = useCallback((selectedModel: Model) => {
+    console.log('selected model:', selectedModel);
+    conversationUpdater({
+      id: conversation.id,
+      modelId: selectedModel.id,
+    });
+  }, []);
 
   useEffect(() => {
     if (isSuccess && messages?.length > 0 && listenerReady) {
@@ -248,12 +264,7 @@ export function ChatSection({ conversation }: Props) {
           <Package className="size-4 text-foreground" />
           <span className="ml-2">{t('generic:action:choose-a-model')}</span>
         </Button>
-        <ModelPickerDialog
-          ref={dialogRef}
-          onSubmit={() => {
-            console.log('onSubmit');
-          }}
-        />
+        <ModelPickerDialog ref={dialogRef} onSubmit={onChooseSubmit} />
       </div>
     );
   };

@@ -9,7 +9,7 @@ import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type {
   AzureOptions,
-  Conversation,
+  ConversationDetails,
   OpenAIOptions,
   Options,
 } from '@/lib/types';
@@ -29,7 +29,7 @@ import {
 
 type Props = {
   className?: string;
-  conversation: Conversation;
+  conversation: ConversationDetails;
 };
 
 export function ConversationOptionsDialog({ className, conversation }: Props) {

@@ -3,9 +3,11 @@ import { invoke } from '@tauri-apps/api';
 import log from './log';
 import type {
   Conversation,
+  ConversationDetails,
   GenericModel,
   Message,
   Model,
+  NewConversation,
   NewMessage,
   NewModel,
   NewPrompt,
@@ -13,7 +15,7 @@ import type {
   Prompt,
   ProviderOptions,
   Setting,
-  UnsavedConversation,
+  UpdateConversation,
 } from './types';
 import {
   fromGenericChatOptions,
@@ -62,7 +64,7 @@ export async function invokeUpsertSetting(setting: Setting): Promise<Setting> {
 }
 
 export async function invokeCreateConversation(
-  newConversation: UnsavedConversation
+  newConversation: NewConversation
 ): Promise<Conversation> {
   const result = await invoke<Conversation>('create_conversation', {
     newConversation,
@@ -70,21 +72,23 @@ export async function invokeCreateConversation(
   return result;
 }
 
-export async function invokeCreateBareConversation(
+export async function invokeCreateBlankConversation(
   subject: string
 ): Promise<Conversation> {
-  const bareConversation = {
+  const blankConversation = {
     id: 0,
     subject,
   };
-  const result = await invoke<Conversation>('create_bare_conversation', {
-    bareConversation,
+  const result = await invoke<Conversation>('create_blank_conversation', {
+    blankConversation,
   });
   return result;
 }
 
-export async function invokeListConversations(): Promise<Conversation[]> {
-  const result = await invoke<Conversation[]>('list_conversations');
+export async function invokeListConversations(): Promise<
+  ConversationDetails[]
+> {
+  const result = await invoke<ConversationDetails[]>('list_conversations');
   log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);
   return result;
 }
@@ -94,6 +98,15 @@ export async function invokeDeleteConversation(
 ): Promise<Conversation> {
   const result = await invoke<Conversation>('delete_conversation', {
     conversationId,
+  });
+  return result;
+}
+
+export async function invokeUpdateConversation(
+  conversation: UpdateConversation
+): Promise<ConversationDetails> {
+  const result = await invoke<ConversationDetails>('update_conversation', {
+    conversation,
   });
   return result;
 }
