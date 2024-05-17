@@ -2,9 +2,9 @@
 export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
 export const PROVIDER_UNKNOWN = 'Unknown';
-export const SUPPORTED_PROVIDERS = [
-  PROVIDER_OPENAI,
-  PROVIDER_AZURE,
+export const SUPPORTED_PROVIDERS = [PROVIDER_OPENAI, PROVIDER_AZURE] as const;
+export const ALL_PROVIDERS = [
+  ...SUPPORTED_PROVIDERS,
   PROVIDER_UNKNOWN,
 ] as const;
 export const PROVIDER_INFO = {

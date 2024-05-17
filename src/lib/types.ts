@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { SUPPORTED_PROVIDERS } from './constants';
+import type { ALL_PROVIDERS, SUPPORTED_PROVIDERS } from './constants';
 import type {
   azureOptionsFormSchema,
   conversationFormSchema,
@@ -32,7 +32,7 @@ export type Model = NewModel & SavedModelAttrs;
 
 export type GenericModel = {
   alias: string;
-  provider: SupportedProviders;
+  provider: AllProviders;
   config: string;
   id?: number;
   createdAt?: string;
@@ -45,6 +45,7 @@ export type Setting = {
   value: string;
 };
 
+export type AllProviders = (typeof ALL_PROVIDERS)[number];
 export type SupportedProviders = (typeof SUPPORTED_PROVIDERS)[number];
 
 export type NewConversation = z.infer<typeof conversationFormSchema>;
@@ -68,7 +69,7 @@ export type ConversationDetails = {
   updatedAt?: string;
   deletedAt?: string;
   messageCount?: number;
-  modelProvider?: SupportedProviders;
+  modelProvider?: AllProviders;
 };
 
 export type UpdateConversation = Omit<
@@ -95,7 +96,7 @@ export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
 export type Options = AzureOptions | OpenAIOptions;
 export type ProviderOptions = {
-  provider: SupportedProviders;
+  provider: AllProviders;
   options: string;
 };
 

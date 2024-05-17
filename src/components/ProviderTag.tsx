@@ -1,12 +1,12 @@
 import { useTheme } from 'next-themes';
 import { forwardRef, type HTMLAttributes } from 'react';
 
-import type { SupportedProviders } from '@/lib/types';
+import type { AllProviders } from '@/lib/types';
 import { cn, getProviderStyles } from '@/lib/utils';
 
 import { ProviderIcon } from './ProviderIcon';
 
-type Attrs = HTMLAttributes<HTMLDivElement> & { provider: SupportedProviders };
+type Attrs = HTMLAttributes<HTMLDivElement> & { provider: AllProviders };
 export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
   ({ provider, className, ...prop }, ref) => {
     const { theme } = useTheme();

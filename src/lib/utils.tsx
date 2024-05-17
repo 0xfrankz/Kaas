@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { Fallback } from '@/components/Fallback';
 
 import { PROVIDER_STYLES } from './constants';
-import type { ProviderStyles, SupportedProviders } from './types';
+import type { AllProviders, ProviderStyles } from './types';
 
 export function debounce<T>(
   callback: (args: T) => void,
@@ -57,8 +57,6 @@ export function errorGuard(component: React.ReactNode) {
   return result;
 }
 
-export function getProviderStyles(
-  provider: SupportedProviders
-): ProviderStyles {
+export function getProviderStyles(provider: AllProviders): ProviderStyles {
   return PROVIDER_STYLES[provider];
 }

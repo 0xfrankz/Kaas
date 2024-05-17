@@ -2,14 +2,14 @@ import { Plus } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 
-import type { SupportedProviders } from '@/lib/types';
+import type { AllProviders } from '@/lib/types';
 import { getProviderStyles } from '@/lib/utils';
 
 import { Button } from './ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from './ui/card';
 
 type Props = {
-  provider: SupportedProviders;
+  provider: AllProviders;
   onClick: (provider: string) => void;
 };
 

@@ -1,10 +1,10 @@
 import { forwardRef, type HTMLAttributes } from 'react';
 
-import type { SupportedProviders } from '@/lib/types';
+import type { AllProviders } from '@/lib/types';
 import { cn, getProviderStyles } from '@/lib/utils';
 
 type Attrs = HTMLAttributes<HTMLImageElement> & {
-  provider: SupportedProviders;
+  provider: AllProviders;
 };
 
 export const ProviderIcon = forwardRef<HTMLImageElement, Attrs>(
