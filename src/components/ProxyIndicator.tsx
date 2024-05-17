@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useProxySetting } from '@/lib/hooks';
@@ -28,19 +27,17 @@ export function ProxyIndicator({
       )}
       {...props}
     >
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <div className="flex items-center">
-              <Network className="size-4" />
-              <OnOffIndicator on={proxySetting.on} />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <span>{`${t('generic:label:proxy')} ${t(onOffKey)}`}</span>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <div className="flex h-6 items-center rounded-full border-2 bg-background px-2">
+            <Network className="size-[14px]" />
+            <OnOffIndicator on={proxySetting.on} />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <span>{`${t('generic:label:proxy')} ${t(onOffKey)}`}</span>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }

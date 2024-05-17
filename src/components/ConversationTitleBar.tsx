@@ -1,21 +1,26 @@
 import { Check, SquarePen, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-import type { Model } from '@/lib/types';
+import type { ConversationDetails, Model } from '@/lib/types';
 
 import { ModelTag } from './ModelTag';
 import { ProxyIndicator } from './ProxyIndicator';
+import { SystemMessageSetter } from './SystemMessageSetter';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 type Props = {
-  title: string;
+  conversation: ConversationDetails;
   model?: Model;
   onEditDone: (newTitle: string) => void;
 };
 
-export function ConversationTitleBar({ title, model, onEditDone }: Props) {
-  const [titleText, setTitleText] = useState(title);
+export function ConversationTitleBar({
+  conversation,
+  model,
+  onEditDone,
+}: Props) {
+  const [titleText, setTitleText] = useState(conversation.subject);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +72,8 @@ export function ConversationTitleBar({ title, model, onEditDone }: Props) {
         </>
       )}
       <ModelTag model={model} className="ml-auto" />
-      <ProxyIndicator className="ml-4" />
+      <ProxyIndicator />
+      <SystemMessageSetter conversation={conversation} />
     </div>
   );
 }

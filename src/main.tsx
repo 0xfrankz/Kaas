@@ -29,6 +29,7 @@ import SettingsPage from '@/pages/Settings';
 
 import { GlobalFallback } from './components/GlobalFallback';
 import { PageSkeleton } from './components/placeholders/WholePage';
+import { TooltipProvider } from './components/ui/tooltip';
 
 const AnimatedOutlet = (): React.JSX.Element => {
   const location = useLocation();
@@ -93,11 +94,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <ErrorBoundary FallbackComponent={GlobalFallback}>
       <RQProvider>
         <ThemeProvider defaultTheme="system" attribute="class">
-          <Suspense fallback={<PageSkeleton />}>
-            <InitializationProvider>
-              <RouterProvider router={router} />
-            </InitializationProvider>
-          </Suspense>
+          <TooltipProvider delayDuration={0}>
+            <Suspense fallback={<PageSkeleton />}>
+              <InitializationProvider>
+                <RouterProvider router={router} />
+              </InitializationProvider>
+            </Suspense>
+          </TooltipProvider>
         </ThemeProvider>
       </RQProvider>
     </ErrorBoundary>

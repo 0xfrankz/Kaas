@@ -280,7 +280,7 @@ export function ChatSection({ conversation }: Props) {
     <TwoRows className="max-h-screen">
       <TwoRows.Top>
         <ConversationTitleBar
-          title={conversation.subject}
+          conversation={conversation}
           model={model}
           onEditDone={onTitleChange}
         />

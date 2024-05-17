@@ -1,6 +1,7 @@
 {
     "section": {
-        "choose-model": "Choose a model for {{subject}}"
+        "choose-model": "Choose a model for {{subject}}",
+        "set-system-message": "Set the system message for {{subject}}"
     },
     "label": {
         "enter-to-send": "Press Enter to send",
@@ -8,6 +9,7 @@
         "quick-send": "Quick Send"
     },
     "message": {
-        "no-model": "You need to choose a model first"
+        "no-model": "You need to choose a model first",
+        "set-system-message-tips": "Define the general behaviour of the bot.\nThe system message will be sent with every user message."
     }
 }
