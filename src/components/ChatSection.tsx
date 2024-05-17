@@ -10,6 +10,7 @@ import TwoRows from '@/layouts/TwoRows';
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
+  OPTIONS_CONVERSATION_KEY,
   useCallBot,
   useConversationModelUpdater,
   useCreateMessageMutation,
@@ -55,13 +56,20 @@ export function ChatSection({ conversation }: Props) {
   const { t } = useTranslation(['page-conversation']);
 
   // Queries
+  const queryClient = useQueryClient();
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
   const callBotMutation = useCallBot();
   const createMsgMutation = useCreateMessageMutation();
   const subjectUpdater = useSubjectUpdater();
-  const modelUpdater = useConversationModelUpdater();
+  const modelUpdater = useConversationModelUpdater({
+    onSettled(c) {
+      // invalidate option's cache
+      queryClient.invalidateQueries({
+        queryKey: [...OPTIONS_CONVERSATION_KEY, { conversationId: c.id }],
+      });
+    },
+  });
 
-  const queryClient = useQueryClient();
   const messagesWithModelId = useMemo(() => {
     return (
       messages?.map((msg) => {
@@ -130,7 +138,6 @@ export function ChatSection({ conversation }: Props) {
   }, [dialogRef]);
 
   const onChooseSubmit = useCallback((selectedModel: Model) => {
-    console.log('selected model:', selectedModel);
     modelUpdater({
       conversationId: conversation.id,
       modelId: selectedModel.id,
