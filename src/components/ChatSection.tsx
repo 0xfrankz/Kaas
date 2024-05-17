@@ -65,7 +65,7 @@ export function ChatSection({ conversation }: Props) {
     onSettled(c) {
       // invalidate option's cache
       queryClient.invalidateQueries({
-        queryKey: [...OPTIONS_CONVERSATION_KEY, { conversationId: c.id }],
+        queryKey: [...OPTIONS_CONVERSATION_KEY, { conversationId: c?.id }],
       });
     },
   });
