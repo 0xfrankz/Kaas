@@ -21,7 +21,9 @@ export function SystemMessageSetter({
       />
       <SystemMessageDialog
         ref={dialogRef}
-        onSubmit={() => console.log('system message submit')}
+        onSubmit={(newSysMsg) =>
+          console.log('system message submit', newSysMsg)
+        }
       />
     </>
   );

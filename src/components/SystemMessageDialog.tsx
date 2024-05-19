@@ -1,12 +1,20 @@
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { MESSAGE_SYSTEM } from '@/lib/constants';
 import type {
   ConversationDetails,
   DialogHandler,
   NewMessage,
 } from '@/lib/types';
 
+import { AutoFitTextarea } from './AutoFitTextarea';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -15,7 +23,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
-import { Textarea } from './ui/textarea';
 
 type DialogProps = {
   onSubmit: (systemMessage: NewMessage) => void;
@@ -26,6 +33,7 @@ export const SystemMessageDialog = forwardRef<
   DialogProps
 >(({ onSubmit }, ref) => {
   const [showDialog, setShowDialog] = useState(false);
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const [conversation, setConversation] = useState<
     ConversationDetails | undefined
   >(undefined);
@@ -42,6 +50,16 @@ export const SystemMessageDialog = forwardRef<
     },
   }));
 
+  const onClick = useCallback(() => {
+    if (conversation) {
+      onSubmit({
+        content: taRef.current?.value ?? '',
+        conversationId: conversation?.id,
+        role: MESSAGE_SYSTEM,
+      });
+    }
+  }, []);
+
   return conversation ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
@@ -56,17 +74,13 @@ export const SystemMessageDialog = forwardRef<
           </DialogDescription>
         </DialogHeader>
         <div>
-          <Textarea
-            placeholder="You are a very helpful assistant."
-            className="resize-none overflow-y-hidden border px-2"
-            rows={1}
-          />
+          <AutoFitTextarea ref={taRef} className="rounded-xl p-2" rows={5} />
         </div>
         <div className="flex h-fit items-center justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDialog(false)}>
             {t('generic:action:cancel')}
           </Button>
-          <Button>Set</Button>
+          <Button onClick={onClick}>{t('generic:action:set')}</Button>
         </div>
       </DialogContent>
     </Dialog>
