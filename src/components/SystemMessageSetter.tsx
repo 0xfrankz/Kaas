@@ -18,6 +18,7 @@ export function SystemMessageSetter({
         onClick={() => {
           dialogRef.current?.open(conversation);
         }}
+        conversation={conversation}
       />
       <SystemMessageDialog ref={dialogRef} />
     </>

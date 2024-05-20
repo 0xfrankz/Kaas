@@ -1,6 +1,8 @@
 import { SquareTerminal } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 
+import { useGetSystemMessageQuery } from '@/lib/hooks';
+import type { ConversationDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { OnOffIndicator } from './OnOffIndicator';
@@ -8,12 +10,17 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export function SystemMessageIndicator({
+  conversation,
   className,
   onClick,
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   onClick: () => void;
+  conversation: ConversationDetails;
 }) {
+  const { data } = useGetSystemMessageQuery({
+    conversationId: conversation.id,
+  });
   return (
     <div
       className={cn(
@@ -29,7 +36,7 @@ export function SystemMessageIndicator({
             onClick={onClick}
           >
             <SquareTerminal className="size-[14px]" />
-            <OnOffIndicator on={false} />
+            <OnOffIndicator on={!!data} />
           </Button>
         </TooltipTrigger>
         <TooltipContent>

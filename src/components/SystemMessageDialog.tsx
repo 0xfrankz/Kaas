@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -50,6 +51,12 @@ export const SystemMessageDialog = forwardRef<
     },
   }));
 
+  useEffect(() => {
+    if (taRef.current && message) {
+      taRef.current.value = message.content;
+    }
+  }, [taRef, message]);
+
   const onClick = useCallback(() => {
     // create or update
     if (conversation) {
@@ -75,12 +82,7 @@ export const SystemMessageDialog = forwardRef<
           </DialogDescription>
         </DialogHeader>
         <div>
-          <AutoFitTextarea
-            ref={taRef}
-            className="rounded-xl p-2"
-            rows={5}
-            value={message?.content ?? ''}
-          />
+          <AutoFitTextarea ref={taRef} className="rounded-xl p-2" rows={5} />
         </div>
         <div className="flex h-fit items-center justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDialog(false)}>
