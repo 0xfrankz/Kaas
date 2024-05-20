@@ -8,11 +8,8 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { MESSAGE_SYSTEM } from '@/lib/constants';
-import type {
-  ConversationDetails,
-  DialogHandler,
-  NewMessage,
-} from '@/lib/types';
+import { useGetSystemMessageQuery, useMessageCreator } from '@/lib/hooks';
+import type { ConversationDetails, DialogHandler } from '@/lib/types';
 
 import { AutoFitTextarea } from './AutoFitTextarea';
 import { Button } from './ui/button';
@@ -24,19 +21,22 @@ import {
   DialogTitle,
 } from './ui/dialog';
 
-type DialogProps = {
-  onSubmit: (systemMessage: NewMessage) => void;
-};
+type DialogProps = {};
 
 export const SystemMessageDialog = forwardRef<
   DialogHandler<ConversationDetails>,
   DialogProps
->(({ onSubmit }, ref) => {
+>((_, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const [conversation, setConversation] = useState<
     ConversationDetails | undefined
   >(undefined);
+  const { data: message } = useGetSystemMessageQuery({
+    conversationId: conversation?.id ?? 0,
+    enabled: !!conversation,
+  });
+  const creator = useMessageCreator();
   const { t } = useTranslation(['page-conversation']);
 
   useImperativeHandle(ref, () => ({
@@ -51,8 +51,9 @@ export const SystemMessageDialog = forwardRef<
   }));
 
   const onClick = useCallback(() => {
+    // create or update
     if (conversation) {
-      onSubmit({
+      creator({
         content: taRef.current?.value ?? '',
         conversationId: conversation?.id,
         role: MESSAGE_SYSTEM,
@@ -74,7 +75,12 @@ export const SystemMessageDialog = forwardRef<
           </DialogDescription>
         </DialogHeader>
         <div>
-          <AutoFitTextarea ref={taRef} className="rounded-xl p-2" rows={5} />
+          <AutoFitTextarea
+            ref={taRef}
+            className="rounded-xl p-2"
+            rows={5}
+            value={message?.content ?? ''}
+          />
         </div>
         <div className="flex h-fit items-center justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDialog(false)}>

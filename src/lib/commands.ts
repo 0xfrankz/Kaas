@@ -179,6 +179,25 @@ export async function invokeCreateMessage(
   return result;
 }
 
+export async function invokeGetSystemMessage(
+  conversationId: number
+): Promise<Message> {
+  const result = await invoke<Message>('get_system_message', {
+    conversationId,
+  });
+  console.log('invokeGetSystemMessage', result);
+  return result;
+}
+
+export async function invokeUpsertSystemMessage(
+  message: NewMessage
+): Promise<Message> {
+  const result = await invoke<Message>('update_message', {
+    message,
+  });
+  return result;
+}
+
 export async function invokeCallBot(conversationId: number): Promise<void> {
   await invoke<Message>('call_bot', {
     conversationId,

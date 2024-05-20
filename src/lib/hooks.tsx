@@ -2,6 +2,7 @@ import type {
   QueryKey,
   UseMutationOptions,
   UseMutationResult,
+  UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -29,6 +30,7 @@ import {
   invokeDeleteModel,
   invokeDeletePrompt,
   invokeGetOptions,
+  invokeGetSystemMessage,
   invokeListConversations,
   invokeListMessages,
   invokeListModels,
@@ -42,7 +44,7 @@ import {
   invokeUpdateSubject,
   invokeUpsertSetting,
 } from './commands';
-import { SETTING_NETWORK_PROXY } from './constants';
+import { MESSAGE_USER, SETTING_NETWORK_PROXY } from './constants';
 import { ConversationsContext, FilledPromptContext } from './contexts';
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
@@ -71,6 +73,7 @@ export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
 export const OPTIONS_CONVERSATION_KEY = ['options-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
+export const SYSTEM_MESSAGE_KEY = ['system-message'];
 export const LIST_PROMPTS_KEY = ['list-prompts'];
 
 export function useCreateModelMutation(): UseMutationResult<
@@ -294,6 +297,19 @@ export function useListMessagesQuery(
   });
 }
 
+export function useGetSystemMessageQuery({
+  conversationId,
+  ...options
+}: Omit<UseQueryOptions<Message, CommandError>, 'queryKey' | 'queryFn'> & {
+  conversationId: number;
+}): UseQueryResult<Message, CommandError> {
+  return useQuery({
+    queryKey: [...SYSTEM_MESSAGE_KEY, { conversationId }],
+    queryFn: () => invokeGetSystemMessage(conversationId),
+    ...options,
+  });
+}
+
 export function useCreateMessageMutation(): UseMutationResult<
   Message,
   CommandError,
@@ -302,6 +318,28 @@ export function useCreateMessageMutation(): UseMutationResult<
   return useMutation({
     mutationFn: invokeCreateMessage,
   });
+}
+
+export function useMessageCreator(
+  options?: Omit<
+    UseMutationOptions<Message, CommandError, NewMessage>,
+    'mutationFn'
+  >
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: invokeCreateMessage,
+    onSuccess: (message) => {
+      // Update cache if it is a user message
+      if (message.role === MESSAGE_USER) {
+        queryClient.setQueryData<Message[]>(
+          [...LIST_MESSAGES_KEY, { conversationId: message.conversationId }],
+          (messages) => (messages ? [...messages, message] : [message])
+        );
+      }
+    },
+    ...options,
+  }).mutate;
 }
 
 export function useCallBot(): UseMutationResult<void, CommandError, number> {

@@ -87,7 +87,8 @@ export type NewMessage = {
 
 export type Message = NewMessage & {
   id: number;
-  createdAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   deletedAt?: string;
   modelId?: number;
 };

@@ -11,20 +11,15 @@ export function SystemMessageSetter({
   conversation: ConversationDetails;
 }) {
   const dialogRef = useRef<DialogHandler<ConversationDetails>>(null);
+
   return (
     <>
       <SystemMessageIndicator
         onClick={() => {
-          console.log('system message click', dialogRef);
           dialogRef.current?.open(conversation);
         }}
       />
-      <SystemMessageDialog
-        ref={dialogRef}
-        onSubmit={(newSysMsg) =>
-          console.log('system message submit', newSysMsg)
-        }
-      />
+      <SystemMessageDialog ref={dialogRef} />
     </>
   );
 }

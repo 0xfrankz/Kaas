@@ -8,6 +8,7 @@ use entity::entities::{
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
 
+use reqwest::Response;
 use tauri::State;
 use tokio_stream::StreamExt;
 
@@ -217,6 +218,42 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
         .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::list_messages]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Option<Message>> {
+    let now = Instant::now();
+    let result = repo
+        .get_system_message(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::get_system_message]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_message(message: Message, repo: State<'_, Repository>) -> CommandResult<Message> {
+    let now = Instant::now();
+    let result = repo
+        .update_message(message)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::update_message]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn hard_delete_message(message: Message, repo: State<'_, Repository>) -> CommandResult<Message> {
+    let now = Instant::now();
+    let result = repo
+        .hard_delete_message(message)
+        .await
+        .map_err(|message| DbError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::hard_delete_message]: {:.2?}", elapsed);
     Ok(result)
 }
 

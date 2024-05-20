@@ -40,7 +40,13 @@ pub struct Model {
     pub conversation_id: i32,
     pub role: i32,
     pub content: String,
+    #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub updated_at: Option<DateTimeLocal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
     pub deleted_at: Option<DateTimeLocal>,
 }
 

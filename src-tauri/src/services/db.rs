@@ -588,6 +588,53 @@ impl Repository {
         Ok(result)
     }
 
+    /**
+     * Get the system message of a conversation
+     */
+    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<Message>, String> {
+        let result: Result<Option<Message>, String> = messages::Entity::find()
+            .filter(messages::Column::ConversationId.eq(conversation_id))
+            .filter(messages::Column::Role.eq(Into::<i32>::into(messages::Roles::System)))
+            .one(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to get system message of conversation with id = {}", conversation_id)
+            });
+        result
+    }
+
+    /**
+     * Update the system message of a conversation
+     */
+    pub async fn update_message(&self, message: Message) -> Result<Message, String> {
+        let mut active_model = message.into_active_model();
+        active_model.reset(messages::Column::Content);
+        active_model.updated_at = Set(Some(chrono::Local::now()));
+        let result = active_model
+            .update(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to update message".to_string()
+            })?;
+        Ok(result)
+    }
+
+    /**
+     * Hard delete a message
+     */
+    pub async fn hard_delete_message(&self, message: Message) -> Result<Message, String> {
+        messages::Entity::delete_by_id(message.id)
+            .exec(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to delete message".to_string()
+            })?;
+        Ok(message)
+    }
+
     pub async fn get_model_of_message(&self, message: &Message) -> Result<Model, String> {
         let result = message
             .find_linked(MessageToModel)

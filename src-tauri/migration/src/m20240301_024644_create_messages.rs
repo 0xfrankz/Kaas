@@ -8,6 +8,7 @@ enum Messages {
     Role,
     Content,
     CreatedAt,
+    UpdatedAt,
     DeletedAt
 }
 
@@ -33,6 +34,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Messages::Role).integer().not_null())
                     .col(ColumnDef::new(Messages::Content).text().not_null())
                     .col(ColumnDef::new(Messages::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
+                    .col(ColumnDef::new(Messages::UpdatedAt).timestamp().null())
                     .col(ColumnDef::new(Messages::DeletedAt).timestamp().null())
                     .foreign_key(
                         ForeignKey::create()
