@@ -58,7 +58,7 @@ export const SystemMessageDialog = forwardRef<
         role: MESSAGE_SYSTEM,
       });
     }
-  }, []);
+  }, [conversation]);
 
   return conversation ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
