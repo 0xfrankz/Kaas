@@ -61,12 +61,12 @@ export const SystemMessageDialog = forwardRef<
           })
         );
       } else if (sysMsg) {
-        queryClient.invalidateQueries({
-          queryKey: [
-            ...SYSTEM_MESSAGE_KEY,
-            { conversationId: sysMsg.conversationId },
-          ],
-        });
+        queryClient.setQueryData(
+          [...SYSTEM_MESSAGE_KEY, { conversationId: sysMsg.conversationId }],
+          () => {
+            return sysMsg;
+          }
+        );
         toast.success(
           t('page-conversation:message:set-system-message-success')
         );
@@ -97,12 +97,12 @@ export const SystemMessageDialog = forwardRef<
           })
         );
       } else if (sysMsg) {
-        queryClient.invalidateQueries({
-          queryKey: [
-            ...SYSTEM_MESSAGE_KEY,
-            { conversationId: sysMsg.conversationId },
-          ],
-        });
+        queryClient.setQueryData(
+          [...SYSTEM_MESSAGE_KEY, { conversationId: sysMsg.conversationId }],
+          () => {
+            return null;
+          }
+        );
         toast.success(
           t('page-conversation:message:unset-system-message-success')
         );
@@ -120,18 +120,6 @@ export const SystemMessageDialog = forwardRef<
       setConversation(undefined);
     },
   }));
-
-  // useEffect(() => {
-  //   if (taRef.current && message) {
-  //     taRef.current.value = message.content;
-  //   }
-  //   console.log(
-  //     'taRef value changed',
-  //     taRef.current,
-  //     message,
-  //     taRef.current?.value
-  //   );
-  // }, [taRef.current, message]);
 
   const onClick = useCallback(() => {
     console.log('onclick', conversation, message);

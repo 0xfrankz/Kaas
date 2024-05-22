@@ -311,19 +311,28 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             }
         })
         .unwrap_or(ctx_length_setting);
-    // Retrive message list
-    let last_messages = repo
+    // Retrieve system message
+    let sys_message = repo
+        .get_system_message(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    // Retrieve message list as context
+    let mut context = repo
         .get_last_messages(conversation_id, context_length + 1) // plus one to get the last user's message
         .await
         .map_err(|message| DbError { message })?;
+    if let Some(sys_m) = sys_message {
+        context.insert(0, sys_m);
+    }
+    log::info!("calling bot with context {:?}", context);
     // delegate to one-off or stream function to send request
     let is_stream_enabled = utils::is_stream_enabled(&options);
     if is_stream_enabled {
         // stream response
-        call_bot_stream(window, last_messages, options, config, proxy_setting, max_token_setting).await;
+        call_bot_stream(window, context, options, config, proxy_setting, max_token_setting).await;
     } else {
         // one-off response
-        call_bot_one_off(window, last_messages, options, config, proxy_setting, max_token_setting).await;
+        call_bot_one_off(window, context, options, config, proxy_setting, max_token_setting).await;
     }
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
