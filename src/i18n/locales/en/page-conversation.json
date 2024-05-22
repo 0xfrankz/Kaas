@@ -10,6 +10,10 @@
     },
     "message": {
         "no-model": "You need to choose a model first",
-        "set-system-message-tips": "Define the general behaviour of the bot.\nThe system message will be sent with every user message."
+        "set-system-message-tips": "Define the general behaviour of the bot.\nThe system message will be sent with every user message.",
+        "set-system-message-success": "System messge has been set",
+        "set-system-message-error": "Failed to set system message: {{errorMsg}}",
+        "unset-system-message-success": "System messge has been unset",
+        "unset-system-message-error": "Failed to unset system message: {{errorMsg}}"
     }
 }

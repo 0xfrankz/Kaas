@@ -1,5 +1,6 @@
 import { SquareTerminal } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useGetSystemMessageQuery } from '@/lib/hooks';
 import type { ConversationDetails } from '@/lib/types';
@@ -18,9 +19,12 @@ export function SystemMessageIndicator({
   onClick: () => void;
   conversation: ConversationDetails;
 }) {
+  const { t } = useTranslation();
   const { data } = useGetSystemMessageQuery({
     conversationId: conversation.id,
   });
+  console.log('SystemMessageIndicator', data);
+  const onOffKey = data ? 'generic:label:set' : 'generic:label:not-set';
   return (
     <div
       className={cn(
@@ -40,7 +44,7 @@ export function SystemMessageIndicator({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <span>System message not set</span>
+          <span>{`${t('generic:label:system-message')} ${t(onOffKey)}`}</span>
         </TooltipContent>
       </Tooltip>
     </div>

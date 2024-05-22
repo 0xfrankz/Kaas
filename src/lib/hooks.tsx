@@ -31,6 +31,7 @@ import {
   invokeDeletePrompt,
   invokeGetOptions,
   invokeGetSystemMessage,
+  invokeHardDeleteMessage,
   invokeListConversations,
   invokeListMessages,
   invokeListModels,
@@ -38,6 +39,7 @@ import {
   invokeListSettings,
   invokeUpdateConversation,
   invokeUpdateConversationModel,
+  invokeUpdateMessage,
   invokeUpdateModel,
   invokeUpdateOptions,
   invokeUpdatePrompt,
@@ -329,15 +331,40 @@ export function useMessageCreator(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: invokeCreateMessage,
-    onSuccess: (message) => {
-      // Update cache if it is a user message
-      if (message.role === MESSAGE_USER) {
+    onSuccess: (msg) => {
+      // Update cache
+      // Add to list if it is a user message
+      if (msg.role === MESSAGE_USER) {
         queryClient.setQueryData<Message[]>(
-          [...LIST_MESSAGES_KEY, { conversationId: message.conversationId }],
-          (messages) => (messages ? [...messages, message] : [message])
+          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+          (messages) => (messages ? [...messages, msg] : [msg])
         );
       }
     },
+    ...options,
+  }).mutate;
+}
+
+export function useMessageUpdater(
+  options?: Omit<
+    UseMutationOptions<Message, CommandError, Message>,
+    'mutationFn'
+  >
+) {
+  return useMutation({
+    mutationFn: invokeUpdateMessage,
+    ...options,
+  }).mutate;
+}
+
+export function useMessageHardDeleter(
+  options?: Omit<
+    UseMutationOptions<Message, CommandError, Message>,
+    'mutationFn'
+  >
+) {
+  return useMutation({
+    mutationFn: invokeHardDeleteMessage,
     ...options,
   }).mutate;
 }

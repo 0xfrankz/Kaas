@@ -185,14 +185,20 @@ export async function invokeGetSystemMessage(
   const result = await invoke<Message>('get_system_message', {
     conversationId,
   });
-  console.log('invokeGetSystemMessage', result);
   return result;
 }
 
-export async function invokeUpsertSystemMessage(
-  message: NewMessage
-): Promise<Message> {
+export async function invokeUpdateMessage(message: Message): Promise<Message> {
   const result = await invoke<Message>('update_message', {
+    message,
+  });
+  return result;
+}
+
+export async function invokeHardDeleteMessage(
+  message: Message
+): Promise<Message> {
+  const result = await invoke<Message>('hard_delete_message', {
     message,
   });
   return result;

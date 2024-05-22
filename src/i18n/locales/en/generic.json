@@ -42,6 +42,9 @@
         "off": "OFF",
         "alias": "Alias",
         "prompt": "Prompt",
-        "new-conversation": "New conversation"
+        "new-conversation": "New conversation",
+        "system-message": "System message",
+        "set": "SET",
+        "not-set": "NOT SET"
     }
 }

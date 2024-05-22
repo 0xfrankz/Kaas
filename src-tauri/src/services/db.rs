@@ -576,8 +576,11 @@ impl Repository {
      */
     pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<Message>, String> {
         // Retrieve all Messages from DB with conversation_id
+        // By default, filter out all system messages
         let result= messages::Entity::find()
             .filter(messages::Column::ConversationId.eq(conversation_id))
+            .filter(messages::Column::Role.ne(Into::<i32>::into(messages::Roles::System)))
+            .filter(messages::Column::DeletedAt.is_null())
             .all(&self.connection)
             .await
             // .unwrap();

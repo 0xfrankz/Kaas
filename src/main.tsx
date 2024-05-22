@@ -1,6 +1,7 @@
 import './styles.css';
 import '@/i18n';
 
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 import React, { Suspense } from 'react';
@@ -102,6 +103,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             </Suspense>
           </TooltipProvider>
         </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </RQProvider>
     </ErrorBoundary>
   </React.StrictMode>

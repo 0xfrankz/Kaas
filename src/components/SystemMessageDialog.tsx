@@ -1,16 +1,28 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 import { MESSAGE_SYSTEM } from '@/lib/constants';
-import { useGetSystemMessageQuery, useMessageCreator } from '@/lib/hooks';
-import type { ConversationDetails, DialogHandler } from '@/lib/types';
+import {
+  SYSTEM_MESSAGE_KEY,
+  useGetSystemMessageQuery,
+  useMessageCreator,
+  useMessageHardDeleter,
+  useMessageUpdater,
+} from '@/lib/hooks';
+import type {
+  CommandError,
+  ConversationDetails,
+  DialogHandler,
+  Message,
+} from '@/lib/types';
 
 import { AutoFitTextarea } from './AutoFitTextarea';
 import { Button } from './ui/button';
@@ -35,10 +47,68 @@ export const SystemMessageDialog = forwardRef<
   >(undefined);
   const { data: message } = useGetSystemMessageQuery({
     conversationId: conversation?.id ?? 0,
-    enabled: !!conversation,
+    // enabled: !!conversation,
   });
-  const creator = useMessageCreator();
   const { t } = useTranslation(['page-conversation']);
+  const queryClient = useQueryClient();
+  const defaultCallback = useCallback(
+    (sysMsg: Message | undefined, error: CommandError | null) => {
+      setShowDialog(false);
+      if (error) {
+        toast.error(
+          t('page-conversation:message:set-system-message-error', {
+            errorMsg: error.message,
+          })
+        );
+      } else if (sysMsg) {
+        queryClient.invalidateQueries({
+          queryKey: [
+            ...SYSTEM_MESSAGE_KEY,
+            { conversationId: sysMsg.conversationId },
+          ],
+        });
+        toast.success(
+          t('page-conversation:message:set-system-message-success')
+        );
+      }
+    },
+    []
+  );
+  const creator = useMessageCreator({
+    onSuccess: () => {
+      // override default behaviour to avoid system message appear in list
+    },
+    onSettled: (sysMsg, error) => {
+      defaultCallback(sysMsg, error);
+    },
+  });
+  const updater = useMessageUpdater({
+    onSettled: (sysMsg, error) => {
+      defaultCallback(sysMsg, error);
+    },
+  });
+  const deleter = useMessageHardDeleter({
+    onSettled: (sysMsg, error) => {
+      setShowDialog(false);
+      if (error) {
+        toast.error(
+          t('page-conversation:message:unset-system-message-error', {
+            errorMsg: error.message,
+          })
+        );
+      } else if (sysMsg) {
+        queryClient.invalidateQueries({
+          queryKey: [
+            ...SYSTEM_MESSAGE_KEY,
+            { conversationId: sysMsg.conversationId },
+          ],
+        });
+        toast.success(
+          t('page-conversation:message:unset-system-message-success')
+        );
+      }
+    },
+  });
 
   useImperativeHandle(ref, () => ({
     open: (c) => {
@@ -51,23 +121,47 @@ export const SystemMessageDialog = forwardRef<
     },
   }));
 
-  useEffect(() => {
-    if (taRef.current && message) {
-      taRef.current.value = message.content;
-    }
-  }, [taRef, message]);
+  // useEffect(() => {
+  //   if (taRef.current && message) {
+  //     taRef.current.value = message.content;
+  //   }
+  //   console.log(
+  //     'taRef value changed',
+  //     taRef.current,
+  //     message,
+  //     taRef.current?.value
+  //   );
+  // }, [taRef.current, message]);
 
   const onClick = useCallback(() => {
-    // create or update
+    console.log('onclick', conversation, message);
+    // create, update or deleter
     if (conversation) {
-      creator({
-        content: taRef.current?.value ?? '',
-        conversationId: conversation?.id,
-        role: MESSAGE_SYSTEM,
-      });
+      if (message) {
+        // update or delete
+        const mStr = taRef.current?.value ?? '';
+        const mData = {
+          id: message.id,
+          content: mStr,
+          conversationId: conversation?.id,
+          role: MESSAGE_SYSTEM,
+        };
+        if (mStr.trim().length === 0) {
+          deleter(mData);
+        } else {
+          updater(mData);
+        }
+      } else {
+        // create
+        creator({
+          content: taRef.current?.value ?? '',
+          conversationId: conversation?.id,
+          role: MESSAGE_SYSTEM,
+        });
+      }
     }
-  }, [conversation]);
-
+  }, [conversation, message]);
+  console.log('SystemMessageDialog', message);
   return conversation ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
@@ -82,7 +176,12 @@ export const SystemMessageDialog = forwardRef<
           </DialogDescription>
         </DialogHeader>
         <div>
-          <AutoFitTextarea ref={taRef} className="rounded-xl p-2" rows={5} />
+          <AutoFitTextarea
+            ref={taRef}
+            className="rounded-xl p-2"
+            rows={5}
+            defaultValue={message?.content ?? ''}
+          />
         </div>
         <div className="flex h-fit items-center justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDialog(false)}>
