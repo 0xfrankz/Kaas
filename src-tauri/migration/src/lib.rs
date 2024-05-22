@@ -1,13 +1,11 @@
 pub use sea_orm_migration::prelude::*;
 
-mod m20240223_143755_create_models;
-mod m20240228_150548_create_settings;
-mod m20240301_024630_create_conversations;
-mod m20240301_024644_create_messages;
-mod m20240402_095857_seed_settings;
-mod m20240427_130803_create_prompts;
-
-
+mod m20240101_000001_create_models;
+mod m20240101_000002_create_settings;
+mod m20240101_000003_create_conversations;
+mod m20240101_000004_create_messages;
+mod m20240101_000005_create_prompts;
+mod m20240101_100001_seed_settings;
 
 pub struct Migrator;
 
@@ -15,12 +13,12 @@ pub struct Migrator;
 impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         vec![
-            Box::new(m20240223_143755_create_models::Migration),
-            Box::new(m20240228_150548_create_settings::Migration),
-            Box::new(m20240301_024630_create_conversations::Migration),
-            Box::new(m20240301_024644_create_messages::Migration),
-            Box::new(m20240402_095857_seed_settings::Migration),
-            Box::new(m20240427_130803_create_prompts::Migration)
+            Box::new(m20240101_000001_create_models::Migration),
+            Box::new(m20240101_000002_create_settings::Migration),
+            Box::new(m20240101_000003_create_conversations::Migration),
+            Box::new(m20240101_000004_create_messages::Migration),
+            Box::new(m20240101_100001_seed_settings::Migration),
+            Box::new(m20240101_000005_create_prompts::Migration)
         ]
     }
 }

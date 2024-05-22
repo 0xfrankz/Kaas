@@ -1,12 +1,12 @@
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveIden)]
-enum Messages {
+pub enum Conversations {
     Table,
     Id,
-    ConversationId,
-    Role,
-    Content,
+    ModelId,
+    Subject,
+    Options,
     CreatedAt,
     UpdatedAt,
     DeletedAt
@@ -21,26 +21,26 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Messages::Table)
+                    .table(Conversations::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Messages::Id)
+                        ColumnDef::new(Conversations::Id)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Messages::ConversationId).integer().not_null())
-                    .col(ColumnDef::new(Messages::Role).integer().not_null())
-                    .col(ColumnDef::new(Messages::Content).text().not_null())
-                    .col(ColumnDef::new(Messages::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(Messages::UpdatedAt).timestamp().null())
-                    .col(ColumnDef::new(Messages::DeletedAt).timestamp().null())
+                    .col(ColumnDef::new(Conversations::ModelId).integer())
+                    .col(ColumnDef::new(Conversations::Subject).string().not_null())
+                    .col(ColumnDef::new(Conversations::Options).string())
+                    .col(ColumnDef::new(Conversations::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
+                    .col(ColumnDef::new(Conversations::UpdatedAt).timestamp().null())
+                    .col(ColumnDef::new(Conversations::DeletedAt).timestamp().null())
                     .foreign_key(
                         ForeignKey::create()
-                            .name("FK_messages_conversations")
-                            .from(Messages::Table, Messages::ConversationId)
-                            .to(super::m20240301_024630_create_conversations::Conversations::Table, super::m20240301_024630_create_conversations::Conversations::Id)
+                            .name("FK_conversations_models")
+                            .from(Conversations::Table, Conversations::ModelId)
+                            .to(super::m20240101_000001_create_models::Models::Table, super::m20240101_000001_create_models::Models::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade)
                     )
@@ -51,7 +51,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Messages::Table).to_owned())
+            .drop_table(Table::drop().table(Conversations::Table).to_owned())
             .await
     }
 }
