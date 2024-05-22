@@ -1,5 +1,6 @@
 import { Check, SquarePen, X } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import type { ConversationDetails, Model } from '@/lib/types';
 
@@ -23,6 +24,7 @@ export function ConversationTitleBar({
   const [titleText, setTitleText] = useState(conversation.subject);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const onConfirm = () => {
     if (inputRef.current) {
@@ -72,7 +74,11 @@ export function ConversationTitleBar({
         </>
       )}
       <ModelTag model={model} className="ml-auto" />
-      <ProxyIndicator />
+      <ProxyIndicator
+        onClick={() => {
+          navigate(`/settings`);
+        }}
+      />
       <SystemMessageSetter conversation={conversation} />
     </div>
   );

@@ -23,7 +23,6 @@ export function SystemMessageIndicator({
   const { data } = useGetSystemMessageQuery({
     conversationId: conversation.id,
   });
-  console.log('SystemMessageIndicator', data);
   const onOffKey = data ? 'generic:label:set' : 'generic:label:not-set';
   return (
     <div
@@ -36,7 +35,7 @@ export function SystemMessageIndicator({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            className="flex h-6 items-center rounded-full border-2 bg-background px-2 text-muted-foreground hover:bg-background"
+            className="flex h-6 items-center rounded-full border-2 bg-background px-2 text-muted-foreground shadow-none hover:bg-background"
             onClick={onClick}
           >
             <SquareTerminal className="size-[14px]" />
