@@ -167,7 +167,7 @@ export const PromptUseDialog = forwardRef<
         </DialogHeader>
         <Button type="button" asChild>
           <Link to="/models" className="mx-auto w-fit">
-            <Package className="size-4 text-foreground" />
+            <Package className="size-4" />
             <span className="ml-2">{t('generic:action:create-a-model')}</span>
           </Link>
         </Button>

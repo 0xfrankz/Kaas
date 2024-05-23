@@ -43,7 +43,7 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
         <CardTitle>{prompt.alias}</CardTitle>
       </CardHeader>
       <CardContent className="max-h-96 overflow-hidden text-ellipsis">
-        <p>{prompt.content}</p>
+        <p className="whitespace-pre-wrap">{prompt.content}</p>
       </CardContent>
       <CardFooter className="items-center justify-start">
         <div className="flex items-center text-xs text-muted-foreground">
