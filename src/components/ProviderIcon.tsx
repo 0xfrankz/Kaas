@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes';
 import { forwardRef, type HTMLAttributes } from 'react';
 
 import type { AllProviders } from '@/lib/types';
@@ -9,11 +10,12 @@ type Attrs = HTMLAttributes<HTMLImageElement> & {
 
 export const ProviderIcon = forwardRef<HTMLImageElement, Attrs>(
   ({ provider, className, ...prop }, ref) => {
+    const { theme } = useTheme();
     const styles = getProviderStyles(provider);
     return (
       <img
         ref={ref}
-        src={`/public/images/${styles.icon}`}
+        src={`/public/images/${theme === 'light' ? styles.icon.light : styles.icon.dark}`}
         alt={provider}
         className={cn('m-auto size-[14px]', className)}
         {...prop}

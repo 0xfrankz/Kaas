@@ -13,21 +13,30 @@ export const PROVIDER_INFO = {
 };
 export const PROVIDER_STYLES = {
   [PROVIDER_OPENAI]: {
-    icon: 'oai_logo.svg',
+    icon: {
+      light: 'oai_logo.svg',
+      dark: 'oai_logo.svg',
+    },
     color: {
       light: '#C2DCD3',
       dark: '#348B6B',
     },
   },
   [PROVIDER_AZURE]: {
-    icon: 'azure_logo.svg',
+    icon: {
+      light: 'azure_logo.svg',
+      dark: 'azure_logo.svg',
+    },
     color: {
       light: '#CCE4F6',
       dark: '#0078D4',
     },
   },
   [PROVIDER_UNKNOWN]: {
-    icon: 'unknown_logo.svg',
+    icon: {
+      light: 'unknown_logo_b.svg',
+      dark: 'unknown_logo_w.svg',
+    },
     color: {
       light: '#CCCCCC',
       dark: '#CCCCCC',

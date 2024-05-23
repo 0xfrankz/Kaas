@@ -115,7 +115,10 @@ export type FilledPrompt = z.infer<typeof usePromptFormSchema>;
 export type ProxySetting = z.infer<typeof proxySchema>;
 
 export type ProviderStyles = {
-  icon: string;
+  icon: {
+    light: string;
+    dark: string;
+  };
   color: {
     light: string;
     dark: string;
