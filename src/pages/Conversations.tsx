@@ -28,7 +28,7 @@ export default function ConversationsPage() {
         <div className="mt-6">
           <Button type="button" asChild>
             <Link to="/models">
-              <Package className="size-4 text-foreground" />
+              <Package className="size-4" />
               <span className="ml-2">{t('generic:action:create-a-model')}</span>
             </Link>
           </Button>
