@@ -46,6 +46,7 @@
         "new-conversation": "New conversation",
         "system-message": "System message",
         "set": "SET",
-        "not-set": "NOT SET"
+        "not-set": "NOT SET",
+        "unknown": "Unknown"
     }
 }

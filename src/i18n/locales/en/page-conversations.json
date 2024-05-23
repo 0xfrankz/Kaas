@@ -1,13 +1,17 @@
 {
     "title": "Conversations",
-    "labels": {
-        "start-new": "Start a new conversation"
+    "label": {
+        "start-new": "Start a new conversation",
+        "num-of-conversations": "{{num}} conversations"
     },
     "message": {
         "no-model": "You need to create a model first",
+        "no-conversation": "You have no conversations yet",
         "delete-conversation-warning": "Deleted conversation cannot be recovered.\nDo you still want to proceed?",
         "delete-conversation-success": "Conversation has been deleted",
         "delete-conversation-error": "Failed to delete conversation: {{errorMsg}}",
-        "create-conversation-error": "Failed to create conversation: {{errorMsg}}"
+        "create-conversation-error": "Failed to create conversation: {{errorMsg}}",
+        "input-cant-be-empty": "Input can't be empty. Type something to start a new conversation.",
+        "ask-anything": "Ask anything..."
     }
 }

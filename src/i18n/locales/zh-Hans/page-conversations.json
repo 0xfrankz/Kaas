@@ -1,0 +1,17 @@
+{
+    "title": "对话",
+    "label": {
+        "start-new": "开始新对话",
+        "num-of-conversations": "{{num}}个对话"
+    },
+    "message": {
+        "no-model": "你需要先创建一个模型",
+        "no-conversation": "你还没有任何对话",
+        "delete-conversation-warning": "对话删除后无法恢复\n你确定要继续吗？",
+        "delete-conversation-success": "对话已经删除",
+        "delete-conversation-error": "删除对话失败: {{errorMsg}}",
+        "create-conversation-error": "创建对话失败: {{errorMsg}}",
+        "input-cant-be-empty": "输入不能为空。输入一些内容来开始新对话。",
+        "ask-anything": "随便问点什么……"
+    }
+}

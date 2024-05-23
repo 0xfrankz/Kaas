@@ -120,7 +120,9 @@ export function ConversationGrid({
     <div className="flex grow flex-col">
       <div className="flex justify-between">
         <h2 className="text-3xl font-semibold tracking-tight">
-          {conversations.length} conversations
+          {t('page-conversations:label:num-of-conversations', {
+            num: conversations.length,
+          })}
         </h2>
         <Button onClick={onCreateClick}>
           <Plus className="size-4" />
@@ -162,7 +164,7 @@ export function ConversationGrid({
                         ? dayjs(conversation.createdAt).format(
                             DEFAULT_DATE_FORMAT
                           )
-                        : 'Unknown',
+                        : t('generic:label:unknown'),
                     })}
                   </span>
                   <span>
@@ -171,7 +173,7 @@ export function ConversationGrid({
                         ? dayjs(conversation.createdAt).format(
                             DEFAULT_DATE_FORMAT
                           )
-                        : 'Unknown',
+                        : t('generic:label:unknown'),
                     })}
                   </span>
                 </div>

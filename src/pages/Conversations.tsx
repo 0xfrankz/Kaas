@@ -48,7 +48,7 @@ export default function ConversationsPage() {
             <ConversationGrid conversations={conversations} />
           ) : (
             <h2 className="m-auto text-3xl font-semibold tracking-tight">
-              You have no conversations yet
+              {t('page-conversations:message:no-conversation')}
             </h2>
           )}
         </div>

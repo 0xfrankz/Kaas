@@ -50,16 +50,14 @@ export function NewConversationForm() {
       });
     } else {
       inputRef.current?.focus();
-      toast.warning(
-        "Input can't be empty. Type something to start a new conversation."
-      );
+      toast.warning(t('page-conversations:message:input-cant-be-empty'));
     }
   };
 
   return (
     <div className="flex flex-col items-center">
       <h2 className="text-3xl font-semibold tracking-tight">
-        {t('page-conversations:labels.start-new')}
+        {t('page-conversations:label:start-new')}
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -72,7 +70,7 @@ export function NewConversationForm() {
                 <FormItem className="ml-4 grow">
                   <FormControl>
                     <Input
-                      placeholder="Ask anything..."
+                      placeholder={t('page-conversations:message:ask-anything')}
                       {...field}
                       className="border-0 px-0"
                       ref={inputRef}
