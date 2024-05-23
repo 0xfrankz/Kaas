@@ -1,3 +1,37 @@
 {
-    "title": "设置"
+    "title": "设置",
+    "label": {
+        "display": "显示",
+        "profile": "个人资料",
+        "models": "模型",
+        "network": "网络",
+        "language": "语言",
+        "theme": "主题",
+        "name": "名称",
+        "proxy": "代理",
+        "use-proxy": "使用代理",
+        "proxy-server": "服务器",
+        "traffic-type": "流量类型",
+        "traffic-http": "HTTP",
+        "traffic-https": "HTTPS",
+        "proxy-username": "用户名（可选）",
+        "proxy-password": "密码（可选）",
+        "proxy-name-psw-tips": "如果您的代理需要",
+        "name-desc": "将在对话中显示。",
+        "context-length": "默认上下文长度",
+        "context-length-desc": "每次请求模型时包含的历史消息数量。可以在对话选项中覆盖此设置。",
+        "max-tokens": "默认最大词元（token）数",
+        "max-tokens-desc": "每次请求模型时包含的最大词元（token）数量。可以在对话选项中覆盖此设置",
+        "proxy-server-desc": "代理服务器的地址。",
+        "traffic-type-desc": "哪种类型的流量应经过代理？"
+    },
+    "select": {
+        "dark-theme": "深色模式",
+        "light-theme": "浅色模式",
+        "system": "跟随系统"
+    },
+    "message": {
+        "change-setting-success": "{{setting}}已更改",
+        "change-setting-failure": "更改{{setting}}失败"
+    }
 }
