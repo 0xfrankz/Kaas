@@ -34,7 +34,7 @@ export function SupportedModelCard({ provider, onClick }: Props) {
         }}
       >
         <img
-          src={`/public/images/${styles.icon}`}
+          src={`/public/images/${theme === 'light' ? styles.icon.light : styles.icon.dark}`}
           alt={provider}
           className="size-6"
         />
