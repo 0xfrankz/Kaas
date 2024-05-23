@@ -1,11 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { SendHorizonal } from 'lucide-react';
+import { Package, SendHorizonal } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import {
@@ -133,6 +133,7 @@ export const PromptUseDialog = forwardRef<
   UsePromptDialogProps
 >(({ onConfirm }, ref) => {
   const [showDialog, setShowDialog] = useState(false);
+  const { models } = useAppStateStore();
   const [prompt, setPrompt] = useState<Prompt>();
   const filledPrompt = {
     prompt: prompt?.content ?? '',
@@ -156,8 +157,26 @@ export const PromptUseDialog = forwardRef<
     },
   }));
 
-  return prompt ? (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+  const renderEmptyModels = () => {
+    return (
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="mx-auto">
+            {t('page-prompts:message:no-model')}
+          </DialogTitle>
+        </DialogHeader>
+        <Button type="button" asChild>
+          <Link to="/models" className="mx-auto w-fit">
+            <Package className="size-4 text-foreground" />
+            <span className="ml-2">{t('generic:action:create-a-model')}</span>
+          </Link>
+        </Button>
+      </DialogContent>
+    );
+  };
+
+  const renderForm = () => {
+    return prompt ? (
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>{t('page-prompts:section:use-prompt')}</DialogTitle>
@@ -176,28 +195,10 @@ export const PromptUseDialog = forwardRef<
                 }}
               />
             </ScrollArea>
-            {/* <Separator orientation="vertical" className="mx-2" /> */}
             <div className="flex flex-1 flex-col">
               <ScrollArea className="flex-1 rounded-2xl bg-muted">
                 <PromptPreviewer />
               </ScrollArea>
-              {/* <div className="flex h-[72px] items-center justify-end">
-                <Select
-                  onValueChange={() => console.log('model changed')}
-                  defaultValue=""
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {models.map((model) => (
-                      <SelectItem value={model.id.toString()} key={model.id}>
-                        {model.provider}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div> */}
               <LocalNewConversationForm id="usePromptForm" />
               <div className="flex h-fit items-center justify-end gap-2">
                 <Button
@@ -214,6 +215,12 @@ export const PromptUseDialog = forwardRef<
           </div>
         </FilledPromptContextProvider>
       </DialogContent>
+    ) : null;
+  };
+
+  return (
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      {models && models.length > 0 ? renderForm() : renderEmptyModels()}
     </Dialog>
-  ) : null;
+  );
 });

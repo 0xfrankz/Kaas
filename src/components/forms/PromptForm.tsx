@@ -168,6 +168,11 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
       [form]
     );
 
+    useEffect(() => {
+      // initialize prompt
+      setPrompt(form.getValues('content'));
+    }, [form]);
+
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
