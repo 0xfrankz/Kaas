@@ -3,8 +3,50 @@
     "nav": {
         "home": "首页",
         "conversations": "对话",
-        "templates": "模板",
+        "prompts": "提示词",
         "models": "模型",
         "settings": "设置"
+    },
+    "action": {
+        "cancel": "取消",
+        "confirm": "确定",
+        "continue": "继续",
+        "delete": "删除",
+        "edit": "Edi编辑t",
+        "save": "保存",
+        "use": "使用",
+        "set": "设置",
+        "start-new-conversation": "开始新对话",
+        "choose-a-model": "选择模型",
+        "use-this-model": "使用此模型",
+        "create-a-model": "创建模型"
+    },
+    "select": {
+        "language-en": "英文",
+        "language-zh-Hans": "简体中文"
+    },
+    "model": {
+        "Azure": "微软Azure",
+        "OpenAI": "OpenAI",
+        "unknown": "未知"
+    },
+    "message": {
+        "last-message": "最近一条消息: {{lastMessage}}",
+        "created-at": "创建于: {{createdAt}}",
+        "are-you-sure": "你确定吗？"
+    },
+    "label": {
+        "default": "默认",
+        "stop": "停止",
+        "proxy": "代理",
+        "on": "开",
+        "off": "关",
+        "alias": "别名",
+        "prompt": "提示词",
+        "new-conversation": "新对话",
+        "system-message": "系统消息",
+        "set": "已设置",
+        "not-set": "未设置",
+        "unknown": "未知"
     }
 }
