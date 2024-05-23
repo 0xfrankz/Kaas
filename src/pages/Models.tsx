@@ -174,10 +174,10 @@ export default function ModelsPage() {
                   ) : (
                     <>
                       <h2 className="text-3xl font-semibold tracking-tight">
-                        {t('page-modes:message:no-model')}
+                        {t('page-models:message:no-model')}
                       </h2>
                       <p className="mt-4 text-sm">
-                        {t('page-modes:message:add-model')}
+                        {t('page-models:message:add-model')}
                       </p>
                     </>
                   )}

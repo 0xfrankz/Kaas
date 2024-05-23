@@ -1,3 +1,4 @@
+import { Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -6,7 +7,6 @@ import { ConversationGrid } from '@/components/ConversationGrid';
 import { NewConversationForm } from '@/components/NewConversationForm';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
-import { ModelIcon } from '@/components/ui/icons/ModelIcon';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
 import { useConversationsContext } from '@/lib/hooks';
@@ -21,19 +21,19 @@ export default function ConversationsPage() {
 
   const renderEmptyModels = () => {
     return (
-      <>
+      <div className="flex min-h-[348px] flex-col items-center justify-center">
         <h2 className="text-3xl font-semibold tracking-tight">
-          You need to create a model first
+          {t('page-conversations:message:no-model')}
         </h2>
         <div className="mt-6">
           <Button type="button" asChild>
             <Link to="/models">
-              <ModelIcon className="stroke-white stroke-1" />
-              <span className="ml-2">My models</span>
+              <Package className="size-4 text-foreground" />
+              <span className="ml-2">{t('generic:action:create-a-model')}</span>
             </Link>
           </Button>
         </div>
-      </>
+      </div>
     );
   };
 
