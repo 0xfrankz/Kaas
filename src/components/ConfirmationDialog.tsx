@@ -14,7 +14,9 @@ import {
 export function ConfirmationDialog() {
   const { data, close } = useConfirmationStateStore();
   const onCancel = () => {
-    data?.onCancel();
+    if (data && data.onCancel) {
+      data.onCancel();
+    }
     close();
   };
   const onConfirm = () => {
