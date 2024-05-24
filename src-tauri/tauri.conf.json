@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "kaas",
+    "productName": "Kaas",
     "version": "0.1.0"
   },
   "tauri": {
@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "kass.ai",
+      "identifier": "kassapp.com",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -60,7 +60,7 @@
         "minHeight": 540,
         "minWidth": 960,
         "resizable": true,
-        "title": "kaas",
+        "title": "Kaas",
         "width": 1440
       }
     ]
