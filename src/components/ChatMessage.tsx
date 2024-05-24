@@ -85,14 +85,26 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
   );
 };
 
+const MarkdownContent = ({ content }: ContentProps) => {
+  return (
+    <div
+      className={cn(
+        'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
+      )}
+    >
+      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+    </div>
+  );
+};
+
 const Content = ({ content }: ContentProps) => {
   return (
     <div
       className={cn(
-        'mt-2 prose prose-sm max-w-none text-foreground whitespace-pre-wrap'
+        'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
       )}
     >
-      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+      {content}
     </div>
   );
 };
@@ -140,7 +152,7 @@ const Bot = ({ message }: MessageProps) => {
           name={model ? `${model.provider}` : t('generic:model:unknown')}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
-        <Content content={message.content} />
+        <MarkdownContent content={message.content} />
         <ActionBar />
       </div>
     </HoverContextProvider>
@@ -151,7 +163,7 @@ const BotReceiving = ({ message }: { message: string }) => {
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
       <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
-      <Content content={message} />
+      <MarkdownContent content={message} />
     </div>
   );
 };
