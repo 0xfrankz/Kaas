@@ -744,7 +744,7 @@ impl Builder {
             if !Db::database_exists(url).await.unwrap_or(false) {
                 Db::create_database(url)
                     .await
-                    .map_err(|_| "Failed to create database".to_string())?;
+                    .map_err(|err| format!("Failed to create database at {}: {}", url, err))?;
             }
             // let pool = SqlitePool::connect(url).await.map_err(|_| "Failed to connect to database".to_string())?;
             let connection = Database::connect(format!("sqlite:{}", url))
