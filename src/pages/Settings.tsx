@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTheme } from 'next-themes';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import type { HTMLAttributes } from 'react';
+import { forwardRef, Suspense, useEffect, useRef, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -51,6 +52,7 @@ import log from '@/lib/log';
 import { proxySchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { ProxySetting } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 function useUpsertSetting(
   successMsg: string,
@@ -589,11 +591,18 @@ function SettingGroupProfile() {
   );
 }
 
-function SettingGroupModels() {
+const SettingGroupModels = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
   const { t } = useTranslation(['generic', 'page-settings']);
 
   return (
-    <div className="mt-8 flex break-inside-avoid flex-col">
+    <div
+      className={cn('mt-8 flex break-inside-avoid flex-col', className)}
+      {...props}
+      ref={ref}
+    >
       <span className="mb-1 text-sm font-semibold">
         {t('page-settings:label:models')}
       </span>
@@ -601,7 +610,7 @@ function SettingGroupModels() {
       <SettingMaxTokens />
     </div>
   );
-}
+});
 
 function SettingGroupNetwork() {
   const { t } = useTranslation(['generic', 'page-settings']);
@@ -634,7 +643,7 @@ export default function SettingsPage() {
             <div className="mx-auto mb-6 mt-12 w-[960px] columns-2 gap-8 text-foreground">
               <SettingGroupDisplay />
               <SettingGroupProfile />
-              <SettingGroupModels />
+              <SettingGroupModels className="break-after-column" />
               <SettingGroupNetwork />
             </div>
           </ScrollArea>
