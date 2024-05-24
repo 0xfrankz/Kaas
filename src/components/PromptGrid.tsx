@@ -77,11 +77,12 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
 }
 
 function AddPromptItem({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation();
   return (
     <Button className="mb-6 h-fit w-full" onClick={onClick}>
       <div className="flex grow flex-col items-center justify-center space-y-1.5 py-4">
         <Plus className="size-10" />
-        <span>Create new prompt template</span>
+        <span>{t('generic:action:create-prompt')}</span>
       </div>
     </Button>
   );

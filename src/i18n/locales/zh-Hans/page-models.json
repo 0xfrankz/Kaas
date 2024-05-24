@@ -1,0 +1,33 @@
+{
+    "title": "模型",
+    "section": {
+        "your-models": "你的模型",
+        "supported-models": "支持的模型",
+        "create-model": "创建新$t(generic:model:{{provider}})模型",
+        "update-model": "编辑模型"
+    },
+    "label": {
+        "alias": "别名",
+        "api-key": "API密钥",
+        "endpoint": "接口地址（endpoint）",
+        "api-version": "API版本",
+        "deployment-id": "部署ID（deployment ID）",
+        "model": "模型"
+    },
+    "message": {
+        "no-model": "你还没有创建任何模型",
+        "add-model": "点击下方按钮进行创建",
+        "update-model-success": "已创建模型",
+        "delete-model-success": "已删除模型",
+        "delete-model-error": "删除模型失败: {{errorMsg}}",
+        "create-model-tips": "填写你的$t(generic:model:{{provider}})API信息。",
+        "update-model-tips": "为模型起一个别名以便查找",
+        "delete-model-warning": "模型删除后无法回复\n你确定要继续吗？",
+        "alias-tips": "别名有助于查找模型",
+        "api-key-tips": "你的模型的API密钥",
+        "endpoint-tips": "你的模型的API接口地址（endpoint）",
+        "api-version-tips": "你的模型的API版本",
+        "deployment-id-tips": "你的模型的API部署ID（deployment ID）",
+        "model-tips": "你的模型的model类型"
+    }
+}

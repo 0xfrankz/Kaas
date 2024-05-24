@@ -1,0 +1,18 @@
+{
+    "title": "提示词",
+    "section": {
+        "your-prompts": "你的提示词",
+        "create-prompt": "创建新提示词模板",
+        "update-prompt": "编辑提示词模板",
+        "use-prompt": "使用此提示词开始新对话"
+    },
+    "message": {
+        "no-model": "你还没有创建模型",
+        "create-prompt-success": "已创建提示词模板",
+        "create-prompt-tips": "你可以在提示词模板中使用变量，用花括号标记，例如 {variable_name}。 \n_变量名称可以包含不超过20个英文字母、数字或下划线_",
+        "update-prompt-success": "已更新提示词模板",
+        "delete-prompt-success": "已删除提示词模板",
+        "use-prompt-tips": "将模板中的变量替换为真实值，然后选择一个模型开始新对话。",
+        "delete-prompt-warning": "提示词模板删除后无法恢复\n你确定要继续吗？"
+    }
+}

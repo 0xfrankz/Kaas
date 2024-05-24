@@ -233,14 +233,16 @@ const GenericOpenAIModelForm = ({
             name="apiKey"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">API Key</FormLabel>
+                <FormLabel className="text-right">
+                  {t('page-models:label:api-key')}
+                </FormLabel>
                 <FormControl>
                   <Input className="col-span-3" {...field} />
                 </FormControl>
                 <div className="col-start-2 col-end-4">
                   <FormMessage />
                   <FormDescription>
-                    This is the key for your OpenAI API.
+                    {t('page-models:message:api-key-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
@@ -251,14 +253,16 @@ const GenericOpenAIModelForm = ({
             name="model"
             render={({ field }) => (
               <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">Model</FormLabel>
+                <FormLabel className="text-right">
+                  {t('page-models:label:model')}
+                </FormLabel>
                 <FormControl>
                   <Input className="col-span-3" {...field} />
                 </FormControl>
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
                   <FormDescription>
-                    This is the model of your OpenAI API.
+                    {t('page-models:message:model-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
@@ -312,7 +316,6 @@ const NewAzureModelForm = forwardRef<ModelFormHandler, NewFormProps>(
         deploymentId: '',
       },
     });
-    const { t } = useTranslation(['generic']);
 
     useImperativeHandle(ref, () => ({
       reset: () => {
@@ -363,7 +366,6 @@ const NewOpenAIModelForm = forwardRef<ModelFormHandler, NewFormProps>(
         model: '',
       },
     });
-    const { t } = useTranslation(['generic']);
 
     useImperativeHandle(ref, () => ({
       reset: () => {

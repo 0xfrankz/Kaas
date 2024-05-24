@@ -19,7 +19,8 @@
         "start-new-conversation": "开始新对话",
         "choose-a-model": "选择模型",
         "use-this-model": "使用此模型",
-        "create-a-model": "创建模型"
+        "create-a-model": "创建模型",
+        "create-prompt": "创建新提示词模板"
     },
     "select": {
         "language-en": "英文",

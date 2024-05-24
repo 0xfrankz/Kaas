@@ -11,7 +11,8 @@
         "api-key": "API Key",
         "endpoint": "Endpoint",
         "api-version": "API version",
-        "deployment-id": "Deployment ID"
+        "deployment-id": "Deployment ID",
+        "model": "Model"
     },
     "message": {
         "no-model": "You have no models yet",
@@ -23,9 +24,10 @@
         "update-model-tips": "Give your model an alias to make it easier to identify.",
         "delete-model-warning": "Deleted model cannot be recovered.\nDo you still want to proceed?",
         "alias-tips": "Alias helps you identify your model",
-        "api-key-tips": "The key for your Azure API",
-        "endpoint-tips": "The endpoint of your Azure API",
-        "api-version-tips": "The version of your Azure API",
-        "deployment-id-tips": "The deployment name of your Azure API"
+        "api-key-tips": "The key for your model's API",
+        "endpoint-tips": "The endpoint of your model's API",
+        "api-version-tips": "The version of your model's API",
+        "deployment-id-tips": "The deployment name of your model's API",
+        "model-tips": "The model type of your model's API"
     }
 }
