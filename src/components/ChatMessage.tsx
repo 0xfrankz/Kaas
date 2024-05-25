@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Bot as BotIcon, SquarePen, UserRound } from 'lucide-react';
+import { Bot as BotIcon, RefreshCw, SquarePen, UserRound } from 'lucide-react';
 import { createContext, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -120,6 +120,17 @@ const ActionBar = () => {
   );
 };
 
+const BotActionBar = () => {
+  const { hover } = useContext(HoverContext);
+  return (
+    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
+      <div className={cn(hover ? null : 'hidden')}>
+        <RefreshCw className="size-[14px]" />
+      </div>
+    </div>
+  );
+};
+
 const User = ({ message }: MessageProps) => {
   const userName = useAppStateStore(
     (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
@@ -153,7 +164,7 @@ const Bot = ({ message }: MessageProps) => {
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <MarkdownContent content={message.content} />
-        <ActionBar />
+        <BotActionBar />
       </div>
     </HoverContextProvider>
   );
