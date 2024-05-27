@@ -122,7 +122,6 @@ export const SystemMessageDialog = forwardRef<
   }));
 
   const onClick = useCallback(() => {
-    console.log('onclick', conversation, message);
     // create, update or deleter
     if (conversation) {
       if (message) {
@@ -149,7 +148,6 @@ export const SystemMessageDialog = forwardRef<
       }
     }
   }, [conversation, message]);
-  console.log('SystemMessageDialog', message);
   return conversation ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
