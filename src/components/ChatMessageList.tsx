@@ -4,8 +4,7 @@ import { useMessageListContext } from '@/lib/hooks';
 import ChatMessage from './ChatMessage';
 
 export function ChatMessageList() {
-  const { messages } = useMessageListContext();
-  console.log('ChatMessageList', messages);
+  const { messages, onRegenerateClick } = useMessageListContext();
   // Render functions
   const renderMessages = () => {
     const inner = messages ? (
@@ -21,7 +20,13 @@ export function ChatMessageList() {
             case MESSAGE_BOT:
               return (
                 <li key={message.id}>
-                  <ChatMessage.Bot key={message.id} message={message} />
+                  <ChatMessage.Bot
+                    key={message.id}
+                    message={message}
+                    onRegenerateClick={() => {
+                      onRegenerateClick(message);
+                    }}
+                  />
                 </li>
               );
             default:

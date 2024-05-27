@@ -24,6 +24,10 @@ type MessageProps = {
   message: Message;
 };
 
+type BotMessageProps = MessageProps & {
+  onRegenerateClick: () => void;
+};
+
 type ContentProps = {
   content: string;
 };
@@ -120,12 +124,16 @@ const ActionBar = () => {
   );
 };
 
-const BotActionBar = () => {
+const BotActionBar = ({
+  onRegenerateClick,
+}: {
+  onRegenerateClick: () => void;
+}) => {
   const { hover } = useContext(HoverContext);
   return (
     <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
       <div className={cn(hover ? null : 'hidden')}>
-        <RefreshCw className="size-[14px]" />
+        <RefreshCw className="size-[14px]" onClick={onRegenerateClick} />
       </div>
     </div>
   );
@@ -150,7 +158,7 @@ const User = ({ message }: MessageProps) => {
   );
 };
 
-const Bot = ({ message }: MessageProps) => {
+const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
   const model = useAppStateStore((state) =>
     state.models.find((m) => m.id === message.modelId)
   );
@@ -164,7 +172,7 @@ const Bot = ({ message }: MessageProps) => {
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <MarkdownContent content={message.content} />
-        <BotActionBar />
+        <BotActionBar onRegenerateClick={onRegenerateClick} />
       </div>
     </HoverContextProvider>
   );
