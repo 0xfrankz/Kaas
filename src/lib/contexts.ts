@@ -1,6 +1,10 @@
 import { createContext } from 'react';
 
-import type { TConversationsContext, TFilledPromptContext } from './types';
+import type {
+  TConversationsContext,
+  TFilledPromptContext,
+  TMessageListContext,
+} from './types';
 
 export const ConversationsContext = createContext<
   TConversationsContext | undefined
@@ -8,4 +12,8 @@ export const ConversationsContext = createContext<
 
 export const FilledPromptContext = createContext<
   TFilledPromptContext | undefined
+>(undefined);
+
+export const MessageListContext = createContext<
+  TMessageListContext | undefined
 >(undefined);

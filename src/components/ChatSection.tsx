@@ -18,6 +18,7 @@ import {
   useSubjectUpdater,
 } from '@/lib/hooks';
 import log from '@/lib/log';
+import { MessageListContextProvider } from '@/lib/providers';
 import { useAppStateStore } from '@/lib/store';
 import type {
   ConversationDetails,
@@ -238,11 +239,23 @@ export function ChatSection({ conversation }: Props) {
     return (
       <ScrollArea className="w-full grow" viewportRef={viewportRef}>
         <div className="relative mx-auto w-[640px] pb-4">
-          {isSuccess && <MemoizedMessageList messages={messagesWithModelId} />}
+          {isSuccess && (
+            <MessageListContextProvider
+              messages={messagesWithModelId}
+              onRegenerateClick={(msg) => {
+                console.log('regenerate', msg);
+              }}
+            >
+              <MemoizedMessageList />
+            </MessageListContextProvider>
+          )}
           <BotMessageReceiver
             onMessageReceived={onNewBotMessage}
             onReceivingChange={onReceivingChange}
             onReady={() => setListenerReady(true)}
+            onError={(errMsg) => {
+              toast.error(`Bot Error: ${errMsg}`);
+            }}
           />
           <div className="h-[104px]" />
           <ScrollBottom scrollContainerRef={viewportRef} />

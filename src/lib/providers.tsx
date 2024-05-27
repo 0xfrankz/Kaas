@@ -4,7 +4,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { SETTING_DISPLAY_LANGUAGE, SETTING_DISPLAY_THEME } from './constants';
-import { ConversationsContext, FilledPromptContext } from './contexts';
+import {
+  ConversationsContext,
+  FilledPromptContext,
+  MessageListContext,
+} from './contexts';
 import { AppError, ERROR_TYPE_APP_STATE } from './error';
 import {
   useListConversationsQuery,
@@ -12,7 +16,7 @@ import {
   useListSettingsQuery,
 } from './hooks';
 import { useAppStateStore } from './store';
-import type { FilledPrompt, TConversationsContext } from './types';
+import type { FilledPrompt, Message, TConversationsContext } from './types';
 
 export function RQProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -152,5 +156,28 @@ export function FilledPromptContextProvider({
     <FilledPromptContext.Provider value={context}>
       {children}
     </FilledPromptContext.Provider>
+  );
+}
+
+export function MessageListContextProvider({
+  messages,
+  onRegenerateClick,
+  children,
+}: {
+  messages: Message[];
+  onRegenerateClick: (message: Message) => void;
+  children: React.ReactNode;
+}) {
+  const messageListContext = useMemo(() => {
+    return {
+      messages,
+      onRegenerateClick,
+    };
+  }, [messages, onRegenerateClick]);
+
+  return (
+    <MessageListContext.Provider value={messageListContext}>
+      {children}
+    </MessageListContext.Provider>
   );
 }

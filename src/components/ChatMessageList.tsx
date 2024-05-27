@@ -1,9 +1,11 @@
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
-import type { Message } from '@/lib/types';
+import { useMessageListContext } from '@/lib/hooks';
 
 import ChatMessage from './ChatMessage';
 
-export function ChatMessageList({ messages }: { messages: Message[] }) {
+export function ChatMessageList() {
+  const { messages } = useMessageListContext();
+  console.log('ChatMessageList', messages);
   // Render functions
   const renderMessages = () => {
     const inner = messages ? (

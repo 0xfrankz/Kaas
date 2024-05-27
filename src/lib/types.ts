@@ -137,6 +137,11 @@ export type TFilledPromptContext = {
   setPrompt: (prompt: FilledPrompt) => void;
 };
 
+export type TMessageListContext = {
+  messages: Message[];
+  onRegenerateClick: (message: Message) => void;
+};
+
 // Errors
 export type CommandError = {
   type: string;

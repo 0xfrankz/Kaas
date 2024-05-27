@@ -6,6 +6,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { produce } from 'immer';
 import type { HTMLAttributes } from 'react';
 import {
@@ -46,8 +47,19 @@ import {
   invokeUpdateSubject,
   invokeUpsertSetting,
 } from './commands';
-import { MESSAGE_USER, SETTING_NETWORK_PROXY } from './constants';
-import { ConversationsContext, FilledPromptContext } from './contexts';
+import {
+  MESSAGE_USER,
+  SETTING_NETWORK_PROXY,
+  STREAM_DONE,
+  STREAM_ERROR,
+  STREAM_START,
+  STREAM_STOPPED,
+} from './constants';
+import {
+  ConversationsContext,
+  FilledPromptContext,
+  MessageListContext,
+} from './contexts';
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
 import type {
@@ -66,6 +78,7 @@ import type {
   Setting,
   TConversationsContext,
   TFilledPromptContext,
+  TMessageListContext,
   UpdateConversation,
 } from './types';
 
@@ -559,6 +572,96 @@ export function useScrollToBottom(
   };
 }
 
+/**
+ * Hook for receiving message from backend
+ */
+export function useBotCaller() {
+  const [ready, setReady] = useState(false);
+  const [receiving, setReceiving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState<string>();
+  const acceptingRef = useRef<boolean>(false);
+  const listenerRef = useRef<UnlistenFn>();
+  const mountedRef = useRef(false);
+
+  const startStreaming = () => {
+    setReceiving(true);
+    acceptingRef.current = true;
+    setMessage('');
+  };
+
+  const endStreaming = () => {
+    setReceiving(false);
+    acceptingRef.current = false;
+  };
+
+  const unbindListener = () => {
+    if (listenerRef.current) {
+      listenerRef.current();
+      listenerRef.current = undefined;
+    }
+  };
+
+  const bindListener = async () => {
+    listenerRef.current = await listen<string>('bot-reply', (event) => {
+      const nextMsg = event.payload;
+      console.log(`Listener received: ${nextMsg}`);
+      switch (true) {
+        case nextMsg === STREAM_START:
+          startStreaming();
+          break;
+        case nextMsg === STREAM_DONE:
+          endStreaming();
+          break;
+        case nextMsg === STREAM_STOPPED:
+          endStreaming();
+          break;
+        case nextMsg.startsWith(STREAM_ERROR):
+          setError(nextMsg.split(STREAM_ERROR).at(-1) ?? '');
+          endStreaming();
+          break;
+        default:
+          if (acceptingRef.current) {
+            setMessage((state) => {
+              return `${state}${nextMsg}`;
+            });
+          }
+          break;
+      }
+    });
+  };
+
+  const mount = async () => {
+    // stop bot when entering the page
+    // in case it was left running before
+    await emit('stop-bot');
+    await bindListener();
+    setReady(true);
+  };
+
+  const unmount = () => {
+    unbindListener();
+    // stop bot when leaving the page
+    emit('stop-bot');
+  };
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      // when not mounted
+      mount();
+      mountedRef.current = true; // avoid binding listener twice in strict mode
+    }
+    return unmount;
+  }, []);
+
+  return {
+    ready,
+    receiving,
+    message,
+    error,
+  };
+}
+
 // Context hooks
 export function useConversationsContext(): TConversationsContext {
   const context = useContext(ConversationsContext);
@@ -576,6 +679,16 @@ export function useFilledPromptContext(): TFilledPromptContext {
   if (context === undefined) {
     throw new Error(
       'useFilledPromptContext must be used within a FilledPromptContextProvider'
+    );
+  }
+  return context;
+}
+
+export function useMessageListContext(): TMessageListContext {
+  const context = useContext(MessageListContext);
+  if (context === undefined) {
+    throw new Error(
+      'useMessageListContext must be used within a MessageListContextProvider'
     );
   }
   return context;
