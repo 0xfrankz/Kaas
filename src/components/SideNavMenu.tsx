@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
 type MenuProps = {
@@ -87,6 +88,9 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         className="mt-auto"
         to="/settings"
       />
+      <Badge className="mx-auto my-6 rounded-full border-none bg-gradient-to-br from-[#f0d55d] via-[#FFD000] to-[#FFB800]">
+        Pro
+      </Badge>
     </ul>
   );
 }
