@@ -6,7 +6,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { produce } from 'immer';
 import type { HTMLAttributes } from 'react';
 import {
@@ -382,7 +382,14 @@ export function useMessageHardDeleter(
   }).mutate;
 }
 
-export function useCallBot(): UseMutationResult<void, CommandError, number> {
+export function useCallBot(): UseMutationResult<
+  void,
+  CommandError,
+  {
+    conversationId: number;
+    tag: string;
+  }
+> {
   return useMutation({
     mutationFn: invokeCallBot,
   });
@@ -575,7 +582,7 @@ export function useScrollToBottom(
 /**
  * Hook for receiving message from backend
  */
-export function useBotCaller() {
+export function useMessageListener(tag: string) {
   const [ready, setReady] = useState(false);
   const [receiving, setReceiving] = useState(false);
   const [message, setMessage] = useState('');
@@ -585,6 +592,7 @@ export function useBotCaller() {
   const mountedRef = useRef(false);
 
   const startStreaming = () => {
+    console.log('startStreaming');
     setReceiving(true);
     acceptingRef.current = true;
     setMessage('');
@@ -603,9 +611,9 @@ export function useBotCaller() {
   };
 
   const bindListener = async () => {
-    listenerRef.current = await listen<string>('bot-reply', (event) => {
+    listenerRef.current = await listen<string>(tag, (event) => {
       const nextMsg = event.payload;
-      console.log(`Listener received: ${nextMsg}`);
+      console.log(`Listener ${tag} received: ${nextMsg}`);
       switch (true) {
         case nextMsg === STREAM_START:
           startStreaming();
@@ -634,7 +642,7 @@ export function useBotCaller() {
   const mount = async () => {
     // stop bot when entering the page
     // in case it was left running before
-    await emit('stop-bot');
+    // await emit('stop-bot');
     await bindListener();
     setReady(true);
   };
@@ -642,7 +650,7 @@ export function useBotCaller() {
   const unmount = () => {
     unbindListener();
     // stop bot when leaving the page
-    emit('stop-bot');
+    // emit('stop-bot');
   };
 
   useEffect(() => {

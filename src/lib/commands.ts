@@ -204,9 +204,16 @@ export async function invokeHardDeleteMessage(
   return result;
 }
 
-export async function invokeCallBot(conversationId: number): Promise<void> {
+export async function invokeCallBot({
+  conversationId,
+  tag,
+}: {
+  conversationId: number;
+  tag: string;
+}): Promise<void> {
   await invoke<Message>('call_bot', {
     conversationId,
+    tag,
   });
 }
 

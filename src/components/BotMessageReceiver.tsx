@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 
-import { useBotCaller } from '@/lib/hooks';
-
-import ChatMessage from './ChatMessage';
+import { useMessageListener } from '@/lib/hooks';
 
 type Props = {
   onReady: () => void;
@@ -17,7 +15,7 @@ export function BotMessageReceiver({
   onMessageReceived,
   onError,
 }: Props) {
-  const { ready, receiving, message, error } = useBotCaller();
+  const { ready, receiving, message, error } = useMessageListener('deprecated');
 
   useEffect(() => {
     onReceivingChange(receiving);
@@ -38,11 +36,12 @@ export function BotMessageReceiver({
   }, [message, receiving]);
 
   const render = () => {
-    return message.length > 0 ? (
-      <ChatMessage.BotReceiving message={message} />
-    ) : (
-      <ChatMessage.BotLoading />
-    );
+    // return message.length > 0 ? (
+    //   <ChatMessage.BotReceiving message={message} />
+    // ) : (
+    //   <ChatMessage.BotLoading />
+    // );
+    return <h1>deprecated</h1>;
   };
 
   return receiving ? render() : null;

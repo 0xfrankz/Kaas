@@ -1,11 +1,26 @@
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import { useMessageListContext } from '@/lib/hooks';
+import type { Message } from '@/lib/types';
 
 import ChatMessage from './ChatMessage';
 
 export function ChatMessageList() {
   const { messages, onRegenerateClick } = useMessageListContext();
   // Render functions
+  const renderBotMessage = (msg: Message) => {
+    if (msg.receiving) {
+      return <ChatMessage.BotReceiving message={msg} />;
+    }
+    return (
+      <ChatMessage.Bot
+        key={msg.id}
+        message={msg}
+        onRegenerateClick={() => {
+          onRegenerateClick(msg);
+        }}
+      />
+    );
+  };
   const renderMessages = () => {
     const inner = messages ? (
       <ul className="box-border pt-6">
@@ -18,17 +33,7 @@ export function ChatMessageList() {
                 </li>
               );
             case MESSAGE_BOT:
-              return (
-                <li key={message.id}>
-                  <ChatMessage.Bot
-                    key={message.id}
-                    message={message}
-                    onRegenerateClick={() => {
-                      onRegenerateClick(message);
-                    }}
-                  />
-                </li>
-              );
+              return <li key={message.id}>{renderBotMessage(message)}</li>;
             default:
               return (
                 <li key={message.id}>

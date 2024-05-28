@@ -258,7 +258,7 @@ pub async fn hard_delete_message(message: Message, repo: State<'_, Repository>) 
 }
 
 #[tauri::command]
-pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
+pub async fn call_bot(conversation_id: i32, tag: String, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
     let now = Instant::now();
     // Retrieve options, config and settings
     let options = repo
@@ -329,10 +329,10 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
     let is_stream_enabled = utils::is_stream_enabled(&options);
     if is_stream_enabled {
         // stream response
-        call_bot_stream(window, context, options, config, proxy_setting, max_token_setting).await;
+        call_bot_stream(tag, window, context, options, config, proxy_setting, max_token_setting).await;
     } else {
         // one-off response
-        call_bot_one_off(window, context, options, config, proxy_setting, max_token_setting).await;
+        call_bot_one_off(tag, window, context, options, config, proxy_setting, max_token_setting).await;
     }
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
@@ -381,27 +381,28 @@ pub async fn delete_prompt(prompt_id: i32, repo: State<'_, Repository>) -> Comma
 }
 
 /***** Functions for calling model API START *****/
-async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
+    let tag_clone = tag.clone();
     let task_handle = tokio::spawn(async move {
         // handle non-stream response
-        // start receiving in frontend
-        emit_stream_start(&window);
         log::info!("call_bot_one_off: thread start");
         let result = ws::complete_chat(messages, options, config, proxy_setting, Some(max_token_setting))
             .await;
         match result {
             Ok(reply) => {
+                // start receiving in frontend
+                emit_stream_start(&tag, &window);
                 log::info!("Bot call received: {}", reply);
-                emit_stream_data(&window, reply);
-                emit_stream_done(&window);
+                emit_stream_data(&tag, &window, reply);
+                emit_stream_done(&tag, &window);
                 log::info!("call_bot_one_off: thread done");
             },
             Err(msg) => {
                 let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&window, &err_reply);
+                emit_stream_error(&tag, &window, &err_reply);
                 log::error!("call_bot_one_off: {}", &err_reply);
             }
         }
@@ -411,7 +412,7 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
     let event_handle = window_clone.listen("stop-bot", move |_| {
         log::info!("Bot call stopped!");
         abort_handle.abort();
-        emit_stream_stopped(&window_clone_2);
+        emit_stream_stopped(&tag_clone, &window_clone_2);
     });
     // Run task
     let _ = task_handle.await;
@@ -420,19 +421,20 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
 
 }
 
-async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
     let log_tag = "call_bot_stream";
     trace(log_tag, "entrant");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
+    let tag_clone = tag.clone();
     let task_handle = tokio::spawn(async move {
         // handle stream response
-        // start receiving in frontend
-        emit_stream_start(&window);
-        trace(log_tag, "Thread sp[awned");
+        trace(log_tag, "Thread spawned");
         let stream_result = ws::complete_chat_stream(messages, options, config, proxy_setting, Some(max_token_setting)).await;
         match stream_result {
             Ok(mut stream) => {
+                // start receiving in frontend
+                emit_stream_start(&tag, &window);
                 trace(log_tag, "Streaming started!");
                 while let Some(result) = stream.next().await {
                     trace(log_tag, "Streaming data...");
@@ -440,13 +442,13 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
                         Ok(response) => {
                             response.choices.iter().for_each(|chat_choice| {
                                 if let Some(ref content) = chat_choice.delta.content {
-                                    emit_stream_data(&window, content.to_owned());
+                                    emit_stream_data(&tag, &window, content.to_owned());
                                 }
                             });
                         }
                         Err(err) => {
                             let err_reply = format!("[[ERROR]]{}", err);
-                            emit_stream_error(&window, &err_reply);
+                            emit_stream_error(&tag, &window, &err_reply);
                             error(log_tag, &format!("Error during stream: {}", &err_reply));
                             break;
                         }
@@ -454,11 +456,11 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
                 }
                 trace(log_tag, "Streaming finished!");
                 // stop receiving in frontend
-                emit_stream_done(&window);
+                emit_stream_done(&tag, &window);
             },
             Err(msg) => {
                 let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&window, &err_reply);
+                emit_stream_error(&tag, &window, &err_reply);
                 error(log_tag, &format!("Error starting stream: {}", &err_reply));
             }
         }
@@ -468,7 +470,7 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
     let event_handle = window_clone.listen("stop-bot", move |_| {
         trace(log_tag, "call stopped");
         abort_handle.abort();
-        emit_stream_stopped(&window_clone_2);
+        emit_stream_stopped(&tag_clone, &window_clone_2);
     });
     // Run task
     let _ = task_handle.await;
@@ -479,51 +481,52 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
 /***** Functions for calling model API END *****/
 
 /***** Helper functions for emitting events to frontend START *****/
-fn emit_stream_start(window: &tauri::Window) {
-    match window.emit("bot-reply", "[[START]]") {
+fn emit_stream_start(tag: &str, window: &tauri::Window) {
+    log::info!("emit_stream_start: {}", tag);
+    match window.emit(tag, "[[START]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // simple retry
-            let _ = window.emit("bot-reply", "[[START]]");
+            let _ = window.emit(tag, "[[START]]");
         },
         _ => {}
     }
 }
 
-fn emit_stream_done(window: &tauri::Window) {
-    match window.emit("bot-reply", "[[DONE]]") {
+fn emit_stream_done(tag: &str, window: &tauri::Window) {
+    match window.emit(tag, "[[DONE]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // simple retry
-            let _ = window.emit("bot-reply", "[[DONE]]");
+            let _ = window.emit(tag, "[[DONE]]");
         },
         _ => {}
     }
 }
 
-fn emit_stream_stopped(window: &tauri::Window) {
-    match window.emit("bot-reply", "[[STOPPED]]") {
+fn emit_stream_stopped(tag: &str, window: &tauri::Window) {
+    match window.emit(tag, "[[STOPPED]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // simple retry
-            let _ = window.emit("bot-reply", "[[STOPPED]]");
+            let _ = window.emit(tag, "[[STOPPED]]");
         },
         _ => {}
     }
 }
 
-fn emit_stream_error(window: &tauri::Window, err_message: &String) {
-    match window.emit("bot-reply", err_message) {
+fn emit_stream_error(tag: &str, window: &tauri::Window, err_message: &String) {
+    match window.emit(tag, err_message) {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // retry
-            let _ = window.emit("bot-reply", err_message);
+            let _ = window.emit(tag, err_message);
         },
         _ => {}
     }
 }
 
-fn emit_stream_data(window: &tauri::Window, data: String) {
-    let _ = window.emit("bot-reply", data);
+fn emit_stream_data(tag: &str, window: &tauri::Window, data: String) {
+    let _ = window.emit(tag, data);
 }
 /***** Helper functions for emitting events to frontend END *****/

@@ -26,9 +26,8 @@ import type {
   Model,
   StatefulDialogHandler,
 } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, getMessageTag } from '@/lib/utils';
 
-import { BotMessageReceiver } from './BotMessageReceiver';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ChatStop } from './ChatStop';
@@ -45,7 +44,6 @@ type Props = {
 };
 
 export function ChatSection({ conversation }: Props) {
-  const [listenerReady, setListenerReady] = useState(false); // mark to make sure listener is ready before calling bot
   const [receiving, setReceiving] = useState(false);
   const [atBottom, setAtBottom] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -84,17 +82,42 @@ export function ChatSection({ conversation }: Props) {
 
   // Callbacks
   const onNewUserMessage = async (_message: Message) => {
+    const placeholder = {
+      conversationId: conversation.id,
+      role: MESSAGE_BOT,
+      content: '',
+      id: -1,
+      receiving: true,
+    };
+    // listener's tag
+    const tag = getMessageTag(placeholder);
+    console.log('Listening to tag', tag);
+    // add placeholder message
+    queryClient.setQueryData<Message[]>(
+      [
+        ...LIST_MESSAGES_KEY,
+        {
+          conversationId: conversation.id,
+        },
+      ],
+      (old) => {
+        return old ? [...old, placeholder] : [placeholder];
+      }
+    );
     // call bot
-    callBotMutation.mutate(conversation.id, {
-      onSuccess: async () => {
-        callBotMutation.reset();
-      },
-      onError: async (error) => {
-        const errMsg = `Bot call failed: ${error.message}`;
-        await log.error(errMsg);
-        toast.error(errMsg);
-      },
-    });
+    callBotMutation.mutate(
+      { conversationId: conversation.id, tag },
+      {
+        onSuccess: async () => {
+          callBotMutation.reset();
+        },
+        onError: async (error) => {
+          const errMsg = `Bot call failed: ${error.message}`;
+          await log.error(errMsg);
+          toast.error(errMsg);
+        },
+      }
+    );
   };
 
   const onNewBotMessage = (msg: string) => {
@@ -146,13 +169,14 @@ export function ChatSection({ conversation }: Props) {
   }, []);
 
   useEffect(() => {
-    if (isSuccess && messages?.length > 0 && listenerReady) {
+    if (isSuccess && messages?.length > 0) {
       const lastMsg = messages.at(-1);
+      console.log('Last msg', lastMsg);
       if (lastMsg?.role === MESSAGE_USER) {
         onNewUserMessage(lastMsg);
       }
     }
-  }, [isSuccess, messages, listenerReady]);
+  }, [isSuccess, messages]);
 
   useEffect(() => {
     if (viewportRef.current) {
@@ -249,14 +273,14 @@ export function ChatSection({ conversation }: Props) {
               <MemoizedMessageList />
             </MessageListContextProvider>
           )}
-          <BotMessageReceiver
+          {/* <BotMessageReceiver
             onMessageReceived={onNewBotMessage}
             onReceivingChange={onReceivingChange}
             onReady={() => setListenerReady(true)}
             onError={(errMsg) => {
               toast.error(`Bot Error: ${errMsg}`);
             }}
-          />
+          /> */}
           <div className="h-[104px]" />
           <ScrollBottom scrollContainerRef={viewportRef} />
           <div

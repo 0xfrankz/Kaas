@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { Fallback } from '@/components/Fallback';
 
 import { PROVIDER_STYLES } from './constants';
-import type { AllProviders, ProviderStyles } from './types';
+import type { AllProviders, Message, ProviderStyles } from './types';
 
 export function debounce<T>(
   callback: (args: T) => void,
@@ -59,4 +59,8 @@ export function errorGuard(component: React.ReactNode) {
 
 export function getProviderStyles(provider: AllProviders): ProviderStyles {
   return PROVIDER_STYLES[provider];
+}
+
+export function getMessageTag(message: Message): string {
+  return `${message.conversationId}::${message.id}`;
 }

@@ -10,9 +10,10 @@ import {
   DEFAULT_PROFILE_NAME,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
+import { useMessageListener } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type { Message } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, getMessageTag } from '@/lib/utils';
 
 import { LoadingIcon } from './ui/icons/LoadingIcon';
 
@@ -178,11 +179,18 @@ const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
   );
 };
 
-const BotReceiving = ({ message }: { message: string }) => {
+const BotReceiving = ({ message }: { message: Message }) => {
+  const tag = getMessageTag(message);
+  const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
+  console.log('BotReceiving', msgStr);
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-      <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
-      <MarkdownContent content={message} />
+      <MetaBar avatar={BOT_AVATAR} name="To be updated" />
+      {msgStr.length > 0 ? (
+        <MarkdownContent content={msgStr} />
+      ) : (
+        <LoadingIcon className="mt-2 h-6 self-start" />
+      )}
     </div>
   );
 };
