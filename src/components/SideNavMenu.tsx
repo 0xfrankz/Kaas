@@ -88,7 +88,12 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         className="mt-auto"
         to="/settings"
       />
-      <Badge className="mx-auto my-6 rounded-full bg-muted text-muted-foreground">
+      <Badge
+        className={cn(
+          'w-12 flex justify-center my-6 rounded-full bg-muted text-muted-foreground transition-all',
+          expanded ? 'ml-4' : 'ml-2'
+        )}
+      >
         Free
       </Badge>
     </ul>
