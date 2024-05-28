@@ -162,16 +162,19 @@ export function FilledPromptContextProvider({
 export function MessageListContextProvider({
   messages,
   onRegenerateClick,
+  onMessageReceived,
   children,
 }: {
   messages: Message[];
   onRegenerateClick: (message: Message) => void;
+  onMessageReceived: (message: Message) => void;
   children: React.ReactNode;
 }) {
   const messageListContext = useMemo(() => {
     return {
       messages,
       onRegenerateClick,
+      onMessageReceived,
     };
   }, [messages, onRegenerateClick]);
 

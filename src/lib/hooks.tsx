@@ -48,6 +48,7 @@ import {
   invokeUpsertSetting,
 } from './commands';
 import {
+  MESSAGE_BOT,
   MESSAGE_USER,
   SETTING_NETWORK_PROXY,
   STREAM_DONE,
@@ -346,11 +347,27 @@ export function useMessageCreator(
     mutationFn: invokeCreateMessage,
     onSuccess: (msg) => {
       // Update cache
-      // Add to list if it is a user message
       if (msg.role === MESSAGE_USER) {
+        // Add to list if it is a user message
         queryClient.setQueryData<Message[]>(
           [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
           (messages) => (messages ? [...messages, msg] : [msg])
+        );
+      } else if (msg.role === MESSAGE_BOT) {
+        // Replace placeholder if it is a bot message
+        queryClient.setQueryData<Message[]>(
+          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+          (messages) => {
+            if (messages) {
+              const lastMsg = messages.at(-1);
+              if (lastMsg && lastMsg.id < 0) {
+                // remove last placeholder message
+                messages.pop();
+              }
+              return [...messages, msg];
+            }
+            return [msg];
+          }
         );
       }
     },
@@ -592,7 +609,6 @@ export function useMessageListener(tag: string) {
   const mountedRef = useRef(false);
 
   const startStreaming = () => {
-    console.log('startStreaming');
     setReceiving(true);
     acceptingRef.current = true;
     setMessage('');
@@ -613,7 +629,6 @@ export function useMessageListener(tag: string) {
   const bindListener = async () => {
     listenerRef.current = await listen<string>(tag, (event) => {
       const nextMsg = event.payload;
-      console.log(`Listener ${tag} received: ${nextMsg}`);
       switch (true) {
         case nextMsg === STREAM_START:
           startStreaming();

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { Bot as BotIcon, RefreshCw, SquarePen, UserRound } from 'lucide-react';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -10,7 +10,7 @@ import {
   DEFAULT_PROFILE_NAME,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
-import { useMessageListener } from '@/lib/hooks';
+import { useMessageListContext, useMessageListener } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type { Message } from '@/lib/types';
 import { cn, getMessageTag } from '@/lib/utils';
@@ -182,7 +182,15 @@ const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
 const BotReceiving = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
   const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
-  console.log('BotReceiving', msgStr);
+  const { onMessageReceived } = useMessageListContext();
+
+  useEffect(() => {
+    if (!receiving && msgStr.length > 0) {
+      message.content = msgStr;
+      onMessageReceived(message);
+    }
+  }, [receiving]);
+
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
       <MetaBar avatar={BOT_AVATAR} name="To be updated" />

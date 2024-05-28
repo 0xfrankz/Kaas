@@ -13,8 +13,8 @@ import {
   OPTIONS_CONVERSATION_KEY,
   useCallBot,
   useConversationModelUpdater,
-  useCreateMessageMutation,
   useListMessagesQuery,
+  useMessageCreator,
   useSubjectUpdater,
 } from '@/lib/hooks';
 import log from '@/lib/log';
@@ -58,7 +58,7 @@ export function ChatSection({ conversation }: Props) {
   const queryClient = useQueryClient();
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
   const callBotMutation = useCallBot();
-  const createMsgMutation = useCreateMessageMutation();
+  const creator = useMessageCreator({});
   const subjectUpdater = useSubjectUpdater();
   const modelUpdater = useConversationModelUpdater({
     onSettled(c) {
@@ -91,7 +91,6 @@ export function ChatSection({ conversation }: Props) {
     };
     // listener's tag
     const tag = getMessageTag(placeholder);
-    console.log('Listening to tag', tag);
     // add placeholder message
     queryClient.setQueryData<Message[]>(
       [
@@ -120,29 +119,16 @@ export function ChatSection({ conversation }: Props) {
     );
   };
 
-  const onNewBotMessage = (msg: string) => {
-    createMsgMutation.mutate(
-      {
+  const onMessageReceived = useCallback((message: Message) => {
+    if (message.id < 0) {
+      // new message
+      creator({
         conversationId: conversation.id,
-        role: MESSAGE_BOT,
-        content: msg,
-      },
-      {
-        onSuccess(message) {
-          // Update cache
-          queryClient.setQueryData<Message[]>(
-            [...LIST_MESSAGES_KEY, { conversationId: conversation.id }],
-            (msgList) => (msgList ? [...msgList, message] : [message])
-          );
-        },
-      }
-    );
-  };
-
-  const onReceivingChange = useCallback(
-    (isReceiving: boolean) => setReceiving(isReceiving),
-    []
-  );
+        role: message.role,
+        content: message.content,
+      });
+    }
+  }, []);
 
   const onToBottomClick = useCallback(() => {
     if (viewportRef.current) {
@@ -171,7 +157,6 @@ export function ChatSection({ conversation }: Props) {
   useEffect(() => {
     if (isSuccess && messages?.length > 0) {
       const lastMsg = messages.at(-1);
-      console.log('Last msg', lastMsg);
       if (lastMsg?.role === MESSAGE_USER) {
         onNewUserMessage(lastMsg);
       }
@@ -269,6 +254,7 @@ export function ChatSection({ conversation }: Props) {
               onRegenerateClick={(msg) => {
                 console.log('regenerate', msg);
               }}
+              onMessageReceived={onMessageReceived}
             >
               <MemoizedMessageList />
             </MessageListContextProvider>

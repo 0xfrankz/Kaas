@@ -482,7 +482,6 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
 
 /***** Helper functions for emitting events to frontend START *****/
 fn emit_stream_start(tag: &str, window: &tauri::Window) {
-    log::info!("emit_stream_start: {}", tag);
     match window.emit(tag, "[[START]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
