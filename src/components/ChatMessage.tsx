@@ -92,11 +92,7 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
 
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
-    <div
-      className={cn(
-        'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
-      )}
-    >
+    <div className={cn('mt-2 prose max-w-none text-foreground')}>
       <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
     </div>
   );
@@ -180,6 +176,10 @@ const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
 };
 
 const BotReceiver = ({ message }: { message: Message }) => {
+  const model = useAppStateStore((state) =>
+    state.models.find((m) => m.id === message.modelId)
+  );
+  const { t } = useTranslation(['generic']);
   const tag = getMessageTag(message);
   const { ready, receiving, message: msgStr } = useMessageListener(tag);
   const { onMessageReceived, onReceiverReady } = useMessageListContext();
@@ -198,7 +198,10 @@ const BotReceiver = ({ message }: { message: Message }) => {
 
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-      <MetaBar avatar={BOT_AVATAR} name="To be updated" />
+      <MetaBar
+        avatar={BOT_AVATAR}
+        name={model ? `${model.provider}` : t('generic:model:unknown')}
+      />
       {msgStr.length > 0 ? (
         <MarkdownContent content={msgStr} />
       ) : (
