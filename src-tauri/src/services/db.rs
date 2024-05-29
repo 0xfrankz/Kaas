@@ -529,11 +529,11 @@ impl Repository {
     /**
      * Get the last n messages of a conversation
      */
-    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, last_message_id: Option<i32>) -> Result<Vec<Message>, String> {
+    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<Message>, String> {
         let mut query = messages::Entity::find()
             .filter(messages::Column::ConversationId.eq(conversation_id));
-        if let Some(mid) = last_message_id {
-            query = query.filter(messages::Column::Id.lte(mid));
+        if let Some(mid) = before_message_id {
+            query = query.filter(messages::Column::Id.lt(mid));
         }
         let messages = query
             .cursor_by(messages::Column::Id)

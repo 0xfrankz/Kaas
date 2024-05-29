@@ -258,7 +258,7 @@ pub async fn hard_delete_message(message: Message, repo: State<'_, Repository>) 
 }
 
 #[tauri::command]
-pub async fn call_bot(conversation_id: i32, tag: String, last_message_id: Option<i32>, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
+pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Option<i32>, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
     let now = Instant::now();
     // Retrieve options, config and settings
     let options = repo
@@ -318,7 +318,7 @@ pub async fn call_bot(conversation_id: i32, tag: String, last_message_id: Option
         .map_err(|message| DbError { message })?;
     // Retrieve message list as context
     let mut context = repo
-        .get_last_messages(conversation_id, context_length + 1, last_message_id) // plus one to get the last user's message
+        .get_last_messages(conversation_id, context_length + 1, before_message_id) // plus one to get the last user's message
         .await
         .map_err(|message| DbError { message })?;
     if let Some(sys_m) = sys_message {
