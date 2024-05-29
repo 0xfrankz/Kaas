@@ -179,17 +179,22 @@ const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
   );
 };
 
-const BotReceiving = ({ message }: { message: Message }) => {
+const BotReceiver = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
-  const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
-  const { onMessageReceived } = useMessageListContext();
-
+  const { ready, receiving, message: msgStr } = useMessageListener(tag);
+  const { onMessageReceived, onReceiverReady } = useMessageListContext();
   useEffect(() => {
     if (!receiving && msgStr.length > 0) {
       message.content = msgStr;
       onMessageReceived(message);
     }
-  }, [receiving]);
+  }, [message, msgStr, onMessageReceived, receiving]);
+
+  useEffect(() => {
+    if (ready) {
+      onReceiverReady();
+    }
+  }, [onReceiverReady, ready]);
 
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
@@ -211,19 +216,9 @@ const System = ({ message }: MessageProps) => {
   );
 };
 
-const BotLoading = () => {
-  return (
-    <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-      <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
-      <LoadingIcon className="mt-2 h-6 self-start" />
-    </div>
-  );
-};
-
 export default {
   User,
   Bot,
   System,
-  BotLoading,
-  BotReceiving,
+  BotReceiver,
 };

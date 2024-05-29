@@ -3,7 +3,6 @@ import { animate, motion } from 'framer-motion';
 import { Package } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
@@ -11,13 +10,12 @@ import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
   OPTIONS_CONVERSATION_KEY,
-  useCallBot,
+  useBotCaller,
   useConversationModelUpdater,
   useListMessagesQuery,
   useMessageCreator,
   useSubjectUpdater,
 } from '@/lib/hooks';
-import log from '@/lib/log';
 import { MessageListContextProvider } from '@/lib/providers';
 import { useAppStateStore } from '@/lib/store';
 import type {
@@ -44,7 +42,6 @@ type Props = {
 };
 
 export function ChatSection({ conversation }: Props) {
-  const [receiving, setReceiving] = useState(false);
   const [atBottom, setAtBottom] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<StatefulDialogHandler<string>>(null);
@@ -57,8 +54,9 @@ export function ChatSection({ conversation }: Props) {
   // Queries
   const queryClient = useQueryClient();
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
-  const callBotMutation = useCallBot();
-  const creator = useMessageCreator({});
+  // const callBotMutation = useCallBot();
+  const botCaller = useBotCaller();
+  const creator = useMessageCreator();
   const subjectUpdater = useSubjectUpdater();
   const modelUpdater = useConversationModelUpdater({
     onSettled(c) {
@@ -69,6 +67,11 @@ export function ChatSection({ conversation }: Props) {
     },
   });
 
+  // Derived states
+  const receiving = useMemo(() => {
+    return messages?.some((m) => m.receiving) ?? false;
+  }, [messages]);
+
   const messagesWithModelId = useMemo(() => {
     return (
       messages?.map((msg) => {
@@ -78,7 +81,7 @@ export function ChatSection({ conversation }: Props) {
         };
       }) ?? []
     );
-  }, [messages]);
+  }, [conversation.modelId, messages]);
 
   // Callbacks
   const onNewUserMessage = async (_message: Message) => {
@@ -89,8 +92,7 @@ export function ChatSection({ conversation }: Props) {
       id: -1,
       receiving: true,
     };
-    // listener's tag
-    const tag = getMessageTag(placeholder);
+
     // add placeholder message
     queryClient.setQueryData<Message[]>(
       [
@@ -103,32 +105,33 @@ export function ChatSection({ conversation }: Props) {
         return old ? [...old, placeholder] : [placeholder];
       }
     );
-    // call bot
-    callBotMutation.mutate(
-      { conversationId: conversation.id, tag },
-      {
-        onSuccess: async () => {
-          callBotMutation.reset();
-        },
-        onError: async (error) => {
-          const errMsg = `Bot call failed: ${error.message}`;
-          await log.error(errMsg);
-          toast.error(errMsg);
-        },
-      }
-    );
   };
 
-  const onMessageReceived = useCallback((message: Message) => {
-    if (message.id < 0) {
-      // new message
-      creator({
+  const onMessageReceived = useCallback(
+    (message: Message) => {
+      if (message.id < 0) {
+        // new message
+        creator({
+          conversationId: conversation.id,
+          role: message.role,
+          content: message.content,
+        });
+      }
+    },
+    [conversation.id, creator]
+  );
+
+  const onReceiverReady = useCallback(() => {
+    const placeholder = messages?.find((m) => m.receiving);
+    if (placeholder) {
+      // listener's tag
+      const tag = getMessageTag(placeholder);
+      botCaller({
         conversationId: conversation.id,
-        role: message.role,
-        content: message.content,
+        tag,
       });
     }
-  }, []);
+  }, [messages, botCaller, conversation.id]);
 
   const onToBottomClick = useCallback(() => {
     if (viewportRef.current) {
@@ -139,20 +142,26 @@ export function ChatSection({ conversation }: Props) {
     }
   }, []);
 
-  const onTitleChange = useCallback((newTitle: string) => {
-    subjectUpdater({ conversationId: conversation.id, subject: newTitle });
-  }, []);
+  const onTitleChange = useCallback(
+    (newTitle: string) => {
+      subjectUpdater({ conversationId: conversation.id, subject: newTitle });
+    },
+    [conversation.id, subjectUpdater]
+  );
 
   const onChooseClick = useCallback(() => {
     dialogRef.current?.open(conversation.subject);
-  }, [dialogRef]);
+  }, [conversation.subject]);
 
-  const onChooseSubmit = useCallback((selectedModel: Model) => {
-    modelUpdater({
-      conversationId: conversation.id,
-      modelId: selectedModel.id,
-    });
-  }, []);
+  const onChooseSubmit = useCallback(
+    (selectedModel: Model) => {
+      modelUpdater({
+        conversationId: conversation.id,
+        modelId: selectedModel.id,
+      });
+    },
+    [conversation.id, modelUpdater]
+  );
 
   useEffect(() => {
     if (isSuccess && messages?.length > 0) {
@@ -161,7 +170,7 @@ export function ChatSection({ conversation }: Props) {
         onNewUserMessage(lastMsg);
       }
     }
-  }, [isSuccess, messages]);
+  }, [isSuccess, messages, onNewUserMessage]);
 
   useEffect(() => {
     if (viewportRef.current) {
@@ -181,7 +190,7 @@ export function ChatSection({ conversation }: Props) {
         setAtBottom(true);
       }
     }
-  }, [viewportRef.current]);
+  }, []);
 
   useEffect(() => {
     if (!receiving) {
@@ -216,7 +225,7 @@ export function ChatSection({ conversation }: Props) {
       // when model is not set, open picker dialog by default
       dialogRef.current.open(conversation.subject);
     }
-  }, [model, dialogRef.current]);
+  }, [model, conversation.subject]);
 
   const renderBottomSection = () => {
     if (receiving)
@@ -255,18 +264,11 @@ export function ChatSection({ conversation }: Props) {
                 console.log('regenerate', msg);
               }}
               onMessageReceived={onMessageReceived}
+              onReceiverReady={onReceiverReady}
             >
               <MemoizedMessageList />
             </MessageListContextProvider>
           )}
-          {/* <BotMessageReceiver
-            onMessageReceived={onNewBotMessage}
-            onReceivingChange={onReceivingChange}
-            onReady={() => setListenerReady(true)}
-            onError={(errMsg) => {
-              toast.error(`Bot Error: ${errMsg}`);
-            }}
-          /> */}
           <div className="h-[104px]" />
           <ScrollBottom scrollContainerRef={viewportRef} />
           <div

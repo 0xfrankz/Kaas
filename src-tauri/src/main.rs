@@ -52,7 +52,7 @@ fn main() {
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::Stdout, LogTarget::Webview])
-                .level(LevelFilter::Trace)
+                .level(LevelFilter::Debug)
                 .format(move |out, message, record| {
                     out.finish(format_args!(
                         "[{}][{}][{}] {}",

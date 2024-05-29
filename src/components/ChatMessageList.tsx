@@ -9,7 +9,7 @@ export function ChatMessageList() {
   // Render functions
   const renderBotMessage = (msg: Message) => {
     if (msg.receiving) {
-      return <ChatMessage.BotReceiving message={msg} />;
+      return <ChatMessage.BotReceiver message={msg} />;
     }
     return (
       <ChatMessage.Bot

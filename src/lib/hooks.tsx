@@ -412,6 +412,25 @@ export function useCallBot(): UseMutationResult<
   });
 }
 
+export function useBotCaller(
+  options?: Omit<
+    UseMutationOptions<
+      void,
+      CommandError,
+      {
+        conversationId: number;
+        tag: string;
+      }
+    >,
+    'mutationFn'
+  >
+) {
+  return useMutation({
+    mutationFn: invokeCallBot,
+    ...options,
+  }).mutate;
+}
+
 export function useUpdateOptionsMutation(): UseMutationResult<
   void,
   CommandError,
@@ -565,13 +584,14 @@ export function useScrollToBottom(
         threshold: 0,
       }
     );
-  }, [isSticky]);
+  }, [containerRef, scrollToBottom, sticky]);
 
   // Hook: attach observer && monitor scroll
   useEffect(() => {
-    if (anchorRef.current) {
+    const el = anchorRef.current;
+    if (el) {
       // Start oberserving for intersection
-      observer.observe(anchorRef.current);
+      observer.observe(el);
     } else {
       throw Error(
         "The Anchor element hasn't been mounted. Make sure the Anchor element returned by the hook is mounted in your scrolling container."
@@ -579,9 +599,9 @@ export function useScrollToBottom(
     }
     return () => {
       // Release observer
-      if (anchorRef.current) observer.unobserve(anchorRef.current);
+      if (el) observer.unobserve(el);
     };
-  }, [anchorRef, containerRef]);
+  }, [anchorRef, containerRef, observer]);
 
   // Anchor element with ref set
   const anchorEl = useMemo(() => {
@@ -675,6 +695,7 @@ export function useMessageListener(tag: string) {
       mountedRef.current = true; // avoid binding listener twice in strict mode
     }
     return unmount;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

@@ -16,7 +16,11 @@ import {
   useListSettingsQuery,
 } from './hooks';
 import { useAppStateStore } from './store';
-import type { FilledPrompt, Message, TConversationsContext } from './types';
+import type {
+  FilledPrompt,
+  TConversationsContext,
+  TMessageListContext,
+} from './types';
 
 export function RQProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -77,7 +81,17 @@ export function InitializationProvider({
 
       setInitialized(true);
     }
-  }, [isModelsSuccess, isSettingsSuccess, modelList, settingList]);
+  }, [
+    i18n,
+    isModelsSuccess,
+    isSettingsSuccess,
+    modelList,
+    refreshModels,
+    setSettings,
+    setTheme,
+    settingList,
+    theme,
+  ]);
 
   if (initialized) {
     // Successfully initialized
@@ -163,11 +177,9 @@ export function MessageListContextProvider({
   messages,
   onRegenerateClick,
   onMessageReceived,
+  onReceiverReady,
   children,
-}: {
-  messages: Message[];
-  onRegenerateClick: (message: Message) => void;
-  onMessageReceived: (message: Message) => void;
+}: TMessageListContext & {
   children: React.ReactNode;
 }) {
   const messageListContext = useMemo(() => {
@@ -175,8 +187,9 @@ export function MessageListContextProvider({
       messages,
       onRegenerateClick,
       onMessageReceived,
+      onReceiverReady,
     };
-  }, [messages, onRegenerateClick]);
+  }, [messages, onRegenerateClick, onMessageReceived, onReceiverReady]);
 
   return (
     <MessageListContext.Provider value={messageListContext}>
