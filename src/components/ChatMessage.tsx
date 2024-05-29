@@ -15,6 +15,7 @@ import { useAppStateStore } from '@/lib/store';
 import type { Message } from '@/lib/types';
 import { cn, getMessageTag } from '@/lib/utils';
 
+import { Button } from './ui/button';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
 
 type WrapperProps = {
@@ -127,11 +128,20 @@ const BotActionBar = ({
   onRegenerateClick: () => void;
 }) => {
   const { hover } = useContext(HoverContext);
+  const { t } = useTranslation();
   return (
     <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
-      <div className={cn(hover ? null : 'hidden')}>
-        <RefreshCw className="size-[14px]" onClick={onRegenerateClick} />
-      </div>
+      <Button
+        variant="ghost"
+        className={cn(
+          'flex gap-1 px-2 py-1 h-fit text-sm',
+          hover ? null : 'hidden'
+        )}
+        onClick={onRegenerateClick}
+      >
+        <RefreshCw className="size-[14px]" />
+        {t('generic:action:regenerate')}
+      </Button>
     </div>
   );
 };
@@ -142,14 +152,13 @@ const User = ({ message }: MessageProps) => {
   );
   return (
     <HoverContextProvider>
-      <div className="flex w-auto flex-col rounded-2xl p-6">
+      <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
         <MetaBar
           avatar={USER_AVATAR}
           name={userName}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <Content content={message.content} />
-        <ActionBar />
       </div>
     </HoverContextProvider>
   );

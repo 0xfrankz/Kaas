@@ -20,7 +20,8 @@
         "choose-a-model": "选择模型",
         "use-this-model": "使用此模型",
         "create-a-model": "创建模型",
-        "create-prompt": "创建新提示词模板"
+        "create-prompt": "创建新提示词模板",
+        "regenerate": "重新生成"
     },
     "select": {
         "language-en": "英文",

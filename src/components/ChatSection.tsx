@@ -84,28 +84,31 @@ export function ChatSection({ conversation }: Props) {
   }, [conversation.modelId, messages]);
 
   // Callbacks
-  const onNewUserMessage = async (_message: Message) => {
-    const placeholder = {
-      conversationId: conversation.id,
-      role: MESSAGE_BOT,
-      content: '',
-      id: -1,
-      receiving: true,
-    };
+  const onNewUserMessage = useCallback(
+    async (_message: Message) => {
+      const placeholder = {
+        conversationId: conversation.id,
+        role: MESSAGE_BOT,
+        content: '',
+        id: -1,
+        receiving: true,
+      };
 
-    // add placeholder message
-    queryClient.setQueryData<Message[]>(
-      [
-        ...LIST_MESSAGES_KEY,
-        {
-          conversationId: conversation.id,
-        },
-      ],
-      (old) => {
-        return old ? [...old, placeholder] : [placeholder];
-      }
-    );
-  };
+      // add placeholder message
+      queryClient.setQueryData<Message[]>(
+        [
+          ...LIST_MESSAGES_KEY,
+          {
+            conversationId: conversation.id,
+          },
+        ],
+        (old) => {
+          return old ? [...old, placeholder] : [placeholder];
+        }
+      );
+    },
+    [conversation.id, queryClient]
+  );
 
   const onMessageReceived = useCallback(
     (message: Message) => {
@@ -132,6 +135,10 @@ export function ChatSection({ conversation }: Props) {
       });
     }
   }, [messages, botCaller, conversation.id]);
+
+  const onRegenerateClick = useCallback((msg: Message) => {
+    console.log('onRegenerateClick', msg);
+  }, []);
 
   const onToBottomClick = useCallback(() => {
     if (viewportRef.current) {
@@ -260,9 +267,7 @@ export function ChatSection({ conversation }: Props) {
           {isSuccess && (
             <MessageListContextProvider
               messages={messagesWithModelId}
-              onRegenerateClick={(msg) => {
-                console.log('regenerate', msg);
-              }}
+              onRegenerateClick={onRegenerateClick}
               onMessageReceived={onMessageReceived}
               onReceiverReady={onReceiverReady}
             >

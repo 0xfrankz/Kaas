@@ -20,7 +20,8 @@
         "choose-a-model": "Choose a model",
         "use-this-model": "Use this model",
         "create-a-model": "Create a model",
-        "create-prompt": "Create new prompt template"
+        "create-prompt": "Create new prompt template",
+        "regenerate": "regenerate"
     },
     "select": {
         "language-en": "English",
