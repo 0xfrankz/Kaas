@@ -72,6 +72,8 @@ export function ChatSection({ conversation }: Props) {
     return messages?.some((m) => m.receiving) ?? false;
   }, [messages]);
 
+  console.log(`ChatSection receiving=${receiving}, atBottom=${atBottom}`);
+
   const messagesWithModelId = useMemo(() => {
     return (
       messages?.map((msg) => {
@@ -263,7 +265,7 @@ export function ChatSection({ conversation }: Props) {
   const render = () => {
     return (
       <ScrollArea className="w-full grow" viewportRef={viewportRef}>
-        <div className="relative mx-auto w-[640px] pb-4">
+        <div className="relative mx-auto w-[640px]">
           {isSuccess && (
             <MessageListContextProvider
               messages={messagesWithModelId}
@@ -274,7 +276,8 @@ export function ChatSection({ conversation }: Props) {
               <MemoizedMessageList />
             </MessageListContextProvider>
           )}
-          <div className="h-[104px]" />
+          {/* Spacer */}
+          <div className="mt-4 h-[104px]" />
           <ScrollBottom scrollContainerRef={viewportRef} />
           <div
             className={cn(

@@ -514,7 +514,7 @@ export function usePromptDeleter(
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;
 const Anchor = forwardRef<HTMLDivElement, AnchorAttributesProps>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={className} {...props} />
+    <div ref={ref} className={className} id="buttom-anchor" {...props} />
   )
 );
 
@@ -530,61 +530,58 @@ type UseScrollToBottomResult = {
  * @returns
  */
 export function useScrollToBottom(
-  containerRef: React.RefObject<HTMLDivElement>,
-  isSticky: boolean = true
+  containerRef: React.RefObject<HTMLDivElement>
 ): UseScrollToBottomResult {
-  const [sticky, setSticky] = useState(isSticky);
+  const toScrollRef = useRef<boolean>(true);
   const bottomScrollTopRef = useRef<number>(0);
   const anchorRef = useRef<HTMLDivElement>(null);
 
   // Imperative function to scroll to anchor
   const scrollToBottom = useCallback(() => {
-    if (anchorRef.current) {
-      anchorRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest',
-      });
-    }
+    setTimeout(() => {
+      if (toScrollRef.current && anchorRef.current) {
+        anchorRef.current.scrollIntoView({
+          behavior: 'instant',
+          block: 'end',
+          inline: 'end',
+        });
+        // try to scroll again to make sure
+        // the anchor indeed appears in viewport
+        scrollToBottom();
+      }
+    }, 100);
   }, [anchorRef]);
 
   // 创建IntersectionObserver
   const observer = useMemo(() => {
     return new IntersectionObserver(
       (entries) => {
-        if (sticky) {
-          entries.forEach((entry) => {
-            // when anchor enters viewport
-            if (entry.isIntersecting) {
-              setSticky(true);
-              bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
-            } else if (
-              containerRef.current?.scrollTop &&
-              containerRef.current.scrollTop < bottomScrollTopRef.current
-            ) {
-              // element exits viewport and user scrolled up
-              setSticky(false);
-            } else {
-              // element exits viewport and user didn't scroll up
-              // up initialization, this branch will auto scroll to bottom
-              // by using a short delay, js can get the write position to scroll to
-              setTimeout(() => {
-                if (sticky) {
-                  scrollToBottom();
-                  bottomScrollTopRef.current =
-                    containerRef.current?.scrollTop ?? 0;
-                }
-              }, 100);
-            }
-          });
-        }
+        entries.forEach((entry) => {
+          // when anchor enters viewport
+          if (entry.isIntersecting) {
+            toScrollRef.current = false;
+            bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
+          } else if (
+            containerRef.current?.scrollTop &&
+            containerRef.current.scrollTop < bottomScrollTopRef.current
+          ) {
+            // element exits viewport and user scrolled up
+            toScrollRef.current = false;
+          } else {
+            // element exits viewport and user didn't scroll up
+            // up initialization, this branch will auto scroll to bottom
+            // by using a short delay, js can get the write position to scroll to
+            toScrollRef.current = true;
+            scrollToBottom();
+          }
+        });
       },
       {
         root: null,
         threshold: 0,
       }
     );
-  }, [containerRef, scrollToBottom, sticky]);
+  }, [containerRef, scrollToBottom]);
 
   // Hook: attach observer && monitor scroll
   useEffect(() => {
