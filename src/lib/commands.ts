@@ -207,13 +207,16 @@ export async function invokeHardDeleteMessage(
 export async function invokeCallBot({
   conversationId,
   tag,
+  beforeMessageId,
 }: {
   conversationId: number;
   tag: string;
+  beforeMessageId?: number;
 }): Promise<void> {
   await invoke<Message>('call_bot', {
     conversationId,
     tag,
+    beforeMessageId,
   });
 }
 

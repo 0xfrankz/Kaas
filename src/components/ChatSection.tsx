@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { animate, motion } from 'framer-motion';
+import { produce } from 'immer';
 import { Package } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ import {
   useConversationModelUpdater,
   useListMessagesQuery,
   useMessageCreator,
+  useMessageUpdater,
   useSubjectUpdater,
 } from '@/lib/hooks';
 import { MessageListContextProvider } from '@/lib/providers';
@@ -57,6 +59,7 @@ export function ChatSection({ conversation }: Props) {
   // const callBotMutation = useCallBot();
   const botCaller = useBotCaller();
   const creator = useMessageCreator();
+  const updater = useMessageUpdater();
   const subjectUpdater = useSubjectUpdater();
   const modelUpdater = useConversationModelUpdater({
     onSettled(c) {
@@ -87,7 +90,7 @@ export function ChatSection({ conversation }: Props) {
 
   // Callbacks
   const onNewUserMessage = useCallback(
-    async (_message: Message) => {
+    (_message: Message) => {
       const placeholder = {
         conversationId: conversation.id,
         role: MESSAGE_BOT,
@@ -112,6 +115,8 @@ export function ChatSection({ conversation }: Props) {
     [conversation.id, queryClient]
   );
 
+  // Callback when bot's reply is fully received
+  // create or update message here
   const onMessageReceived = useCallback(
     (message: Message) => {
       if (message.id < 0) {
@@ -121,9 +126,11 @@ export function ChatSection({ conversation }: Props) {
           role: message.role,
           content: message.content,
         });
+      } else {
+        updater(message);
       }
     },
-    [conversation.id, creator]
+    [conversation.id, creator, updater]
   );
 
   const onReceiverReady = useCallback(() => {
@@ -131,16 +138,34 @@ export function ChatSection({ conversation }: Props) {
     if (placeholder) {
       // listener's tag
       const tag = getMessageTag(placeholder);
-      botCaller({
+      const data = {
         conversationId: conversation.id,
         tag,
-      });
+        beforeMessageId: placeholder.id > 0 ? placeholder.id : undefined,
+      };
+      botCaller(data);
     }
   }, [messages, botCaller, conversation.id]);
 
-  const onRegenerateClick = useCallback((msg: Message) => {
-    console.log('onRegenerateClick', msg);
-  }, []);
+  const onRegenerateClick = useCallback(
+    (msg: Message) => {
+      // set message to receive
+      queryClient.setQueryData<Message[]>(
+        [
+          ...LIST_MESSAGES_KEY,
+          {
+            conversationId: conversation.id,
+          },
+        ],
+        (old) =>
+          produce(old, (draft) => {
+            const target = draft?.find((m) => m.id === msg.id);
+            if (target) target.receiving = true;
+          })
+      );
+    },
+    [conversation.id, queryClient]
+  );
 
   const onToBottomClick = useCallback(() => {
     if (viewportRef.current) {

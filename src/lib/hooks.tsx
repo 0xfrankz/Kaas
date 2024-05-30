@@ -381,8 +381,27 @@ export function useMessageUpdater(
     'mutationFn'
   >
 ) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: invokeUpdateMessage,
+    onSuccess: (msg) => {
+      // Update cache
+      if (msg.role === MESSAGE_BOT) {
+        // Update existing bot message
+        queryClient.setQueryData<Message[]>(
+          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+          (old) =>
+            produce(old, (draft) => {
+              const target = draft?.find((m) => m.id === msg.id);
+              if (target) {
+                target.content = msg.content;
+                target.updatedAt = msg.updatedAt;
+                target.receiving = false;
+              }
+            })
+        );
+      }
+    },
     ...options,
   }).mutate;
 }
@@ -399,19 +418,6 @@ export function useMessageHardDeleter(
   }).mutate;
 }
 
-export function useCallBot(): UseMutationResult<
-  void,
-  CommandError,
-  {
-    conversationId: number;
-    tag: string;
-  }
-> {
-  return useMutation({
-    mutationFn: invokeCallBot,
-  });
-}
-
 export function useBotCaller(
   options?: Omit<
     UseMutationOptions<
@@ -420,6 +426,7 @@ export function useBotCaller(
       {
         conversationId: number;
         tag: string;
+        beforeMessageId?: number;
       }
     >,
     'mutationFn'
