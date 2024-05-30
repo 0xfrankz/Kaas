@@ -14,6 +14,7 @@
         "set-system-message-success": "已设置系统消息",
         "set-system-message-error": "设置系统消息失败: {{errorMsg}}",
         "unset-system-message-success": "已清除系统消息",
-        "unset-system-message-error": "清除系统消息失败: {{errorMsg}}"
+        "unset-system-message-error": "清除系统消息失败: {{errorMsg}}",
+        "input-placeholder": "可以为你做点什么？"
     }
 }

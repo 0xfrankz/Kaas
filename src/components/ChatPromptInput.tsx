@@ -58,9 +58,7 @@ export function ChatPromptInput({ conversationId }: Props) {
   const onClick = () => {
     const promptStr = promptRef.current?.value ?? '';
     if (promptStr.trim().length === 0) {
-      toast.error(
-        'You prompt is blank. Blank prompt is a waste of your tokens quota.'
-      );
+      toast.error(t('error:validation:empty-prompt'));
     } else {
       createMsgMutation.mutate(
         {
@@ -123,7 +121,7 @@ export function ChatPromptInput({ conversationId }: Props) {
       >
         <div className="my-auto grow">
           <Textarea
-            placeholder="How can I help?"
+            placeholder={t('page-conversation:message:input-placeholder')}
             className="resize-none overflow-y-hidden border-0 px-2"
             rows={1}
             onChange={onChange}

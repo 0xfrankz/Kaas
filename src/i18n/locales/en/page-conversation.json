@@ -14,6 +14,7 @@
         "set-system-message-success": "System messge has been set",
         "set-system-message-error": "Failed to set system message: {{errorMsg}}",
         "unset-system-message-success": "System messge has been unset",
-        "unset-system-message-error": "Failed to unset system message: {{errorMsg}}"
+        "unset-system-message-error": "Failed to unset system message: {{errorMsg}}",
+        "input-placeholder": "How can I help?"
     }
 }

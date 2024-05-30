@@ -3,6 +3,7 @@
         "invalid-proxy-url": "Invalid proxy URL",
         "empty-proxy-url": "Proxy URL cannot be empty",
         "empty-traffic-type": "At least one protocol must be selected",
-        "invalid-int-minmax": "{{value}} should be an integer between {{min}} and {{max}}"
+        "invalid-int-minmax": "{{value}} should be an integer between {{min}} and {{max}}",
+        "empty-prompt": "You prompt is blank. Blank prompt is a waste of your tokens quota."
     }
 }
