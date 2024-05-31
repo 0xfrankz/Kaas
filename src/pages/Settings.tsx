@@ -407,7 +407,7 @@ function SettingProxy() {
         value: JSON.stringify(form.getValues()),
       });
     }
-  }, [useProxy]);
+  }, [form, proxySetting.on, updater, useProxy]);
 
   return (
     <Card className="mt-1 flex flex-col px-4 py-6">
