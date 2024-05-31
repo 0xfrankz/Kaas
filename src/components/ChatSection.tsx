@@ -38,6 +38,8 @@ import { ToBottom } from './ToBottom';
 import { Button } from './ui/button';
 
 const MemoizedMessageList = memo(ChatMessageList);
+const MemoizedTitleBar = memo(ConversationTitleBar);
+const MemoizedScrollBottom = memo(ScrollBottom);
 
 type Props = {
   conversation: ConversationDetails;
@@ -303,7 +305,7 @@ export function ChatSection({ conversation }: Props) {
           )}
           {/* Spacer */}
           <div className="mt-4 h-[104px]" />
-          <ScrollBottom scrollContainerRef={viewportRef} />
+          <MemoizedScrollBottom scrollContainerRef={viewportRef} />
           <div
             className={cn(
               'fixed bottom-0 mt-4 flex min-h-[104px] w-[640px]',
@@ -337,7 +339,7 @@ export function ChatSection({ conversation }: Props) {
   return (
     <TwoRows className="max-h-screen">
       <TwoRows.Top>
-        <ConversationTitleBar
+        <MemoizedTitleBar
           conversation={conversation}
           model={model}
           onEditDone={onTitleChange}
