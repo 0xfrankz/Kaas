@@ -210,6 +210,12 @@
   src: url("../fonts/Inter-Variable.ttf");
 }
 
+@font-face {
+  font-family: "Noto Sans SC";
+  src: url("../fonts/NotoSansSC-Variable.ttf");
+}
+
+
 /* This line ensures markdown code in a prose block has correct font-size */
 .prose-sm :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
   font-size: 1em;

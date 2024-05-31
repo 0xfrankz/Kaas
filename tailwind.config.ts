@@ -97,6 +97,7 @@ const config = {
       },
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
+        noto_sans_sc: ['Noto Sans SC', 'sans-serif'],
       },
     },
   },
