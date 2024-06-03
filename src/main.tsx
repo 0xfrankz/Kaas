@@ -24,6 +24,7 @@ import {
 } from '@/lib/providers';
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
+import DebugPage from '@/pages/Debug';
 import ModelsPage from '@/pages/Models';
 import PromptsPage from '@/pages/Prompts';
 import SettingsPage from '@/pages/Settings';
@@ -85,6 +86,10 @@ const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SettingsPage />,
+      },
+      {
+        path: 'debug',
+        element: <DebugPage />,
       },
     ],
   },

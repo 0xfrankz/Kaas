@@ -27,6 +27,7 @@ fn main() {
             commands::list_models,
             commands::update_model,
             commands::delete_model,
+            commands::list_remote_models,
             commands::list_settings,
             commands::upsert_setting,
             commands::create_conversation,
