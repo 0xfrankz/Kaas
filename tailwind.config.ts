@@ -29,6 +29,7 @@ const config = {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'var(--gray-12)',
+        subtle: 'var(--gray-a1)',
         primary: {
           DEFAULT: 'var(--yellow-9)',
           hover: 'var(--yellow-10)',
