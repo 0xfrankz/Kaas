@@ -5518,6 +5518,11 @@ react-style-singleton@^2.2.1:
     invariant "^2.2.4"
     tslib "^2.0.0"
 
+react18-json-view@^0.2.8-canary.6:
+  version "0.2.8-canary.6"
+  resolved "https://registry.npmjs.org/react18-json-view/-/react18-json-view-0.2.8-canary.6.tgz#fd7a111dbb257f3512e57faf3feb17aaada85e40"
+  integrity sha512-8/TFnfx9uedfKEl0fIQhVsKxYtKgxxnrn96Z1BrhTqm4RhrmeGrQIheviCO5+neEzJ0ysBxSzeBJpM2BYaor8w==
+
 react@^18:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
