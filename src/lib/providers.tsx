@@ -45,7 +45,7 @@ export function InitializationProvider({
 }) {
   const [initialized, setInitialized] = useState(false);
   const { i18n } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const { refreshModels, setSettings } = useAppStateStore();
   const {
     data: modelList,
@@ -75,9 +75,7 @@ export function InitializationProvider({
       const themeSetting = settingList.find(
         (s) => s.key === SETTING_DISPLAY_THEME
       )?.value as string;
-      if (themeSetting !== theme) {
-        setTheme(themeSetting);
-      }
+      setTheme(themeSetting);
 
       setInitialized(true);
     }
@@ -90,7 +88,6 @@ export function InitializationProvider({
     setSettings,
     setTheme,
     settingList,
-    theme,
   ]);
 
   if (initialized) {
