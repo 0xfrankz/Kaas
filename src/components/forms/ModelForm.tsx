@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
@@ -32,6 +32,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
+import { RemoteModelsSelector } from './RemoteModelsSelector';
 
 type NewFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
   onSubmit: (model: NewModel) => void;
@@ -204,6 +205,8 @@ const GenericOpenAIModelForm = ({
 }: GenericFormProps<NewModel | Model>) => {
   const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
+  const apiKey = useWatch({ name: 'apiKey', control: form.control });
+  const provider = useWatch({ name: 'provider', control: form.control });
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -248,7 +251,19 @@ const GenericOpenAIModelForm = ({
               </FormItem>
             )}
           />
-          <FormField
+          <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+            <span className="text-right text-sm font-medium">模型</span>
+            <div className="col-span-3 col-start-2">
+              <RemoteModelsSelector provider={provider} apiKey={apiKey} />
+            </div>
+            <div className="col-span-3 col-start-2">
+              <FormMessage />
+              <FormDescription>
+                {t('page-models:message:model-tips')}
+              </FormDescription>
+            </div>
+          </div>
+          {/* <FormField
             control={form.control}
             name="model"
             render={({ field }) => (
@@ -267,7 +282,7 @@ const GenericOpenAIModelForm = ({
                 </div>
               </FormItem>
             )}
-          />
+          /> */}
           <FormField
             control={form.control}
             name="provider"
@@ -310,6 +325,7 @@ const NewAzureModelForm = forwardRef<ModelFormHandler, NewFormProps>(
       resolver: zodResolver(newAzureModelFormSchema),
       defaultValues: {
         provider: PROVIDER_AZURE,
+        alias: '',
         apiKey: '',
         endpoint: '',
         apiVersion: '',
@@ -362,6 +378,7 @@ const NewOpenAIModelForm = forwardRef<ModelFormHandler, NewFormProps>(
       resolver: zodResolver(newOpenAIModelFormSchema),
       defaultValues: {
         provider: PROVIDER_OPENAI,
+        alias: '',
         apiKey: '',
         model: '',
       },

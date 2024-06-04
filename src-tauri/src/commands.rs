@@ -59,6 +59,28 @@ pub async fn delete_model(model_id: i32, repo: State<'_, Repository>) -> Command
 }
 
 #[tauri::command]
+pub async fn list_remote_models(provider: String, api_key: String, repo: State<'_, Repository>) -> CommandResult<Vec<async_openai::types::Model>> {
+    let now = Instant::now();
+    let proxy_setting = repo
+        .get_setting(SETTING_NETWORK_PROXY)
+        .await
+        .map(|setting| {
+            if let Ok(p_setting) = serde_json::from_str::<ProxySetting>(&setting.value) {
+                Some(p_setting)
+            } else { 
+                None
+            }
+        })
+        .unwrap_or(None);
+    let result = ws::list_models(provider, api_key, proxy_setting)
+        .await
+        .map_err(|message| ApiError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::list_remote_models]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
 pub async fn list_settings(repo: State<'_, Repository>) -> CommandResult<Vec<Setting>> {
     let result = repo
         .list_settings()

@@ -21,6 +21,13 @@ export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
 
 export type NewModel = NewAzureModel | NewOpenAIModel;
 
+export type RemoteModel = {
+  id: string;
+  created: number;
+  object: string;
+  owned_by: string;
+};
+
 type SavedModelAttrs = {
   id: number;
   createdAt?: string;

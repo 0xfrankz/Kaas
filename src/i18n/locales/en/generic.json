@@ -21,8 +21,9 @@
         "use-this-model": "Use this model",
         "create-a-model": "Create a model",
         "create-prompt": "Create new prompt template",
-        "regenerate": "regenerate",
-        "debug": "Debug"
+        "regenerate": "Regenerate",
+        "debug": "Debug",
+        "load-models": "Load from API"
     },
     "select": {
         "language-en": "English",

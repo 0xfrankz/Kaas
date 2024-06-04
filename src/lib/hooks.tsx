@@ -37,6 +37,7 @@ import {
   invokeListMessages,
   invokeListModels,
   invokeListPrompts,
+  invokeListRemoteModels,
   invokeListSettings,
   invokeUpdateConversation,
   invokeUpdateConversationModel,
@@ -76,6 +77,7 @@ import type {
   Options,
   Prompt,
   ProxySetting,
+  RemoteModel,
   Setting,
   TConversationsContext,
   TFilledPromptContext,
@@ -84,6 +86,7 @@ import type {
 } from './types';
 
 export const LIST_MODELS_KEY = ['list-models'];
+export const LIST_REMOTE_MODELS_KEY = ['list-remote-models'];
 export const LIST_SETTINGS_KEY = ['list-settings'];
 export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
@@ -125,6 +128,24 @@ export function useModelDeleter(
     mutationFn: invokeDeleteModel,
     ...options,
   }).mutate;
+}
+
+export function useListRemoteModelsQuery({
+  provider,
+  apiKey,
+  ...options
+}: Omit<
+  UseQueryOptions<RemoteModel[], CommandError>,
+  'queryKey' | 'queryFn'
+> & {
+  provider: string;
+  apiKey: string;
+}) {
+  return useQuery({
+    queryKey: LIST_REMOTE_MODELS_KEY,
+    queryFn: () => invokeListRemoteModels(provider, apiKey),
+    ...options,
+  });
 }
 
 export function useListSettingsQuery(): UseQueryResult<

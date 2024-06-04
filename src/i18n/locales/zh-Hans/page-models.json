@@ -20,7 +20,7 @@
         "update-model-success": "已创建模型",
         "delete-model-success": "已删除模型",
         "delete-model-error": "删除模型失败: {{errorMsg}}",
-        "create-model-tips": "填写你的$t(generic:model:{{provider}})API信息。",
+        "create-model-tips": "填写你的$t(generic:model:{{provider}}) API信息。",
         "update-model-tips": "为模型起一个别名以便查找",
         "delete-model-warning": "模型删除后无法回复\n你确定要继续吗？",
         "alias-tips": "别名有助于查找模型",

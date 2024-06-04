@@ -4,6 +4,7 @@
         "empty-proxy-url": "代理地址不应为空",
         "empty-traffic-type": "请选择至少一项协议",
         "invalid-int-minmax": "{{value}}应介于{{min}}到{{max}}之间",
-        "empty-prompt": "你输入了空的提示词。空提示词只会浪费你的接口资源。"
+        "empty-prompt": "你输入了空的提示词。空提示词只会浪费你的接口资源。",
+        "empty-api-key": "API密钥不能为空"
     }
 }

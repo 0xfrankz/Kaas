@@ -14,6 +14,7 @@ import type {
   Options,
   Prompt,
   ProviderOptions,
+  RemoteModel,
   Setting,
   UpdateConversation,
 } from './types';
@@ -51,6 +52,17 @@ export async function invokeDeleteModel(modelId: number): Promise<Model> {
     modelId,
   });
   return fromGenericModel(result);
+}
+
+export async function invokeListRemoteModels(
+  provider: string,
+  apiKey: string
+): Promise<RemoteModel[]> {
+  const result = await invoke<RemoteModel[]>('list_remote_models', {
+    provider,
+    apiKey,
+  });
+  return result;
 }
 
 export async function invokeListSettings(): Promise<Setting[]> {

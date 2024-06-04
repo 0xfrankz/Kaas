@@ -106,9 +106,46 @@ pub async fn complete_chat_stream(messages: Vec<Message>, options: ProviderOptio
             let (client, request) = build_openai_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
             let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
             return Ok(stream);
-        }
+        },
         _ => {
-            return Err("Complete chat with OpenAI not implemented yet".to_owned());
+            return Err(format!("Complete chat with {} not supported yet", config.provider.as_str()));
+        }
+    }
+}
+
+pub async fn list_models(provider: String, api_key: String, proxy_setting: Option<ProxySetting>) -> Result<Vec<async_openai::types::Model>, String> {
+    let http_client = build_http_client(proxy_setting);
+    match provider.as_str().into() {
+        Providers::Azure => {
+            let config = AzureConfig::default().with_api_key(api_key);
+            let client = Client::with_config(config).with_http_client(http_client);
+            let result = client
+                .models()
+                .list()
+                .await
+                .map_err(|err| {
+                    log::error!("list_models: {}", err);
+                    String::from("Failed to list models")
+                })?;
+            log::info!("list_models Azure result {:?}", result);
+            Ok(result.data)
+        },
+        Providers::OpenAI => {
+            let config = OpenAIConfig::default().with_api_key(api_key);
+            let client = Client::with_config(config).with_http_client(http_client);
+            let result = client
+                .models()
+                .list()
+                .await
+                .map_err(|err| {
+                    log::error!("list_models: {}", err);
+                    String::from("Failed to list models")
+                })?;
+            log::info!("list_models OpenAI result {:?}", result);
+            Ok(result.data)
+        },
+        _ => {
+            Err(format!("List models with {} not supported yet", provider))
         }
     }
 }
