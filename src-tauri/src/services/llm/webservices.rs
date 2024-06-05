@@ -119,35 +119,30 @@ pub async fn list_models(provider: String, api_key: String, proxy_setting: Optio
         Providers::Azure => {
             let config = AzureConfig::default().with_api_key(api_key);
             let client = Client::with_config(config).with_http_client(http_client);
-            let result = client
-                .models()
-                .list()
-                .await
-                .map_err(|err| {
-                    log::error!("list_models: {}", err);
-                    String::from("Failed to list models")
-                })?;
-            log::info!("list_models Azure result {:?}", result);
-            Ok(result.data)
+            list_models_with_client(client).await
         },
         Providers::OpenAI => {
             let config = OpenAIConfig::default().with_api_key(api_key);
             let client = Client::with_config(config).with_http_client(http_client);
-            let result = client
-                .models()
-                .list()
-                .await
-                .map_err(|err| {
-                    log::error!("list_models: {}", err);
-                    String::from("Failed to list models")
-                })?;
-            log::info!("list_models OpenAI result {:?}", result);
-            Ok(result.data)
+            list_models_with_client(client).await
         },
         _ => {
             Err(format!("List models with {} not supported yet", provider))
         }
     }
+}
+
+async fn list_models_with_client<C: Config>(client: Client<C>) -> Result<Vec<async_openai::types::Model>, String> {
+    let result = client
+        .models()
+        .list()
+        .await
+        .map_err(|err| {
+            log::error!("list_models: {}", err);
+            String::from("Failed to list models")
+        })?
+        .data;
+    Ok(result)
 }
 
 /**
