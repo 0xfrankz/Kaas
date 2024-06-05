@@ -18,6 +18,7 @@ import { FilledPromptContextProvider } from '@/lib/providers';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { DialogHandler, NewConversation, Prompt } from '@/lib/types';
+import { getModelAlias } from '@/lib/utils';
 
 import PromptForm from './forms/PromptForm';
 import { PromptPreviewer } from './PromptPreviewer';
@@ -114,7 +115,7 @@ const LocalNewConversationForm = forwardRef<
                   <SelectContent>
                     {models.map((model) => (
                       <SelectItem value={model.id.toString()} key={model.id}>
-                        {model.provider}
+                        {getModelAlias(model)}
                       </SelectItem>
                     ))}
                   </SelectContent>

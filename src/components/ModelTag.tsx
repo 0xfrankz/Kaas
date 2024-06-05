@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Model } from '@/lib/types';
-import { cn, getProviderStyles } from '@/lib/utils';
+import { cn, getModelAlias, getProviderStyles } from '@/lib/utils';
 
 import { ProviderIcon } from './ProviderIcon';
 
@@ -22,7 +22,7 @@ const NormalModelTag = forwardRef<
     <div
       ref={ref}
       className={cn(
-        'text-xs flex h-6 items-center px-2 gap-2 w-fit rounded-full bg-background border-2',
+        'flex h-6 items-center px-2 gap-2 w-fit rounded-full bg-background border-2',
         className
       )}
       {...prop}
@@ -31,7 +31,7 @@ const NormalModelTag = forwardRef<
       }}
     >
       <ProviderIcon provider={model.provider} />
-      {model.alias}
+      <span className="max-w-24 truncate text-xs">{getModelAlias(model)}</span>
     </div>
   );
 });

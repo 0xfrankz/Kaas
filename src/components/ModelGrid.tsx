@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
 import { useAppStateStore } from '@/lib/store';
 import type { Model } from '@/lib/types';
+import { getModelAlias } from '@/lib/utils';
 
 import { ProviderTag } from './ProviderTag';
 import { Button } from './ui/button';
@@ -27,10 +28,13 @@ function ModelGridItem({
       onDefaultChange(model.id);
     }
   };
+
   return (
     <Card className="min-h-32 border border-border">
       <CardHeader className="items-center space-y-2 pb-2">
-        <CardTitle className="mx-auto">{model.alias}</CardTitle>
+        <CardTitle className="mx-auto max-w-48 truncate text-base">
+          {getModelAlias(model)}
+        </CardTitle>
         <ProviderTag provider={model.provider} />
       </CardHeader>
       <CardFooter className="mt-6">

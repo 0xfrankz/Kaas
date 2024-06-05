@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { Fallback } from '@/components/Fallback';
 
 import { PROVIDER_STYLES } from './constants';
-import type { AllProviders, Message, ProviderStyles } from './types';
+import type { AllProviders, Message, Model, ProviderStyles } from './types';
 
 export function debounce<T>(
   callback: (args: T) => void,
@@ -63,4 +63,18 @@ export function getProviderStyles(provider: AllProviders): ProviderStyles {
 
 export function getMessageTag(message: Message): string {
   return `${message.conversationId}::${message.id}`;
+}
+
+export function getModelAlias(model: Model): string {
+  let alias = '';
+  if (model.alias && model.alias.length > 0) {
+    alias = model.alias;
+  } else if ('model' in model) {
+    alias = `${model.provider} | ${model.model}`;
+  } else if ('deploymentId' in model) {
+    alias = `${model.provider} | ${model.deploymentId}`;
+  } else {
+    alias = `${(model as Model).provider} | {${(model as Model).id}`;
+  }
+  return alias;
 }
