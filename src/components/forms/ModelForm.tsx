@@ -49,6 +49,7 @@ type GenericFormProps<T extends NewModel | Model> = Omit<
 > & {
   form: UseFormReturn<T, any, T>;
   onSubmit: (model: T) => void;
+  loadModelsOnInit?: boolean;
 };
 
 const GenericAzureModelForm = ({
@@ -201,6 +202,7 @@ const GenericAzureModelForm = ({
 const GenericOpenAIModelForm = ({
   form,
   onSubmit,
+  loadModelsOnInit,
   ...props
 }: GenericFormProps<NewModel | Model>) => {
   const { t } = useTranslation(['page-models']);
@@ -252,12 +254,28 @@ const GenericOpenAIModelForm = ({
             )}
           />
           <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-            <span className="text-right text-sm font-medium">模型</span>
+            <FormField
+              control={form.control}
+              name="model"
+              render={() => (
+                <FormLabel className="text-right">
+                  {t('page-models:label:model')}
+                </FormLabel>
+              )}
+            />
             <div className="col-span-3 col-start-2">
-              <RemoteModelsSelector provider={provider} apiKey={apiKey} />
+              <RemoteModelsSelector
+                provider={provider}
+                apiKey={apiKey}
+                enabledByDefault={!!loadModelsOnInit}
+              />
             </div>
             <div className="col-span-3 col-start-2">
-              <FormMessage />
+              <FormField
+                control={form.control}
+                name="model"
+                render={() => <FormMessage />}
+              />
               <FormDescription>
                 {t('page-models:message:model-tips')}
               </FormDescription>
@@ -417,6 +435,7 @@ const EditOpenAIModelForm = forwardRef<ModelFormHandler, EditFormProps>(
       <GenericOpenAIModelForm
         form={form as UseFormReturn<NewModel | Model, any, NewModel | Model>}
         onSubmit={onSubmit as (model: NewModel | Model) => void}
+        loadModelsOnInit
         {...props}
       />
     );

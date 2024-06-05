@@ -19,12 +19,17 @@ import {
 type Props = {
   provider: string;
   apiKey: string;
+  enabledByDefault: boolean;
 };
 
-export function RemoteModelsSelector({ provider, apiKey }: Props) {
+export function RemoteModelsSelector({
+  provider,
+  apiKey,
+  enabledByDefault,
+}: Props) {
   const { t } = useTranslation(['error']);
   const form = useFormContext();
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(enabledByDefault);
   const { data, isLoading, error } = useListRemoteModelsQuery({
     provider,
     apiKey,
@@ -97,7 +102,6 @@ export function RemoteModelsSelector({ provider, apiKey }: Props) {
       queryKey: LIST_REMOTE_MODELS_KEY,
       exact: true,
     });
-    setEnabled(false);
   }, [provider, apiKey, queryClient]);
 
   useEffect(() => {
