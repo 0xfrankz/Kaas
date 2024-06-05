@@ -47,7 +47,7 @@ function ConversationGridItem({
           </div>
         </CardHeader>
         <CardContent className="grow px-4 py-0">
-          <p className="">{conversation.subject}</p>
+          <p className="line-clamp-4">{conversation.subject}</p>
         </CardContent>
         <CardFooter className="p-4">
           <ProviderTag

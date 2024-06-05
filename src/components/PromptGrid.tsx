@@ -43,9 +43,7 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
         <CardTitle>{prompt.alias}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="max-h-96 truncate whitespace-pre-wrap">
-          {prompt.content}
-        </p>
+        <p className="line-clamp-[16] whitespace-pre-wrap">{prompt.content}</p>
       </CardContent>
       <CardFooter className="items-center justify-start">
         <div className="flex items-center text-xs text-muted-foreground">
