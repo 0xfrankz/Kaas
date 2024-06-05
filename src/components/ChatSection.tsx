@@ -77,8 +77,6 @@ export function ChatSection({ conversation }: Props) {
     return messages?.some((m) => m.receiving) ?? false;
   }, [messages]);
 
-  console.log(`ChatSection receiving=${receiving}, atBottom=${atBottom}`);
-
   const messagesWithModelId = useMemo(() => {
     return (
       messages?.map((msg) => {
