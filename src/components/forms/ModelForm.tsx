@@ -116,7 +116,7 @@ const GenericAzureModelForm = ({
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
                   <FormDescription>
-                    {t('page-models:message:endpoint-tips')}
+                    {t('page-models:message:endpoint-tips-azure')}
                   </FormDescription>
                 </div>
               </FormItem>
