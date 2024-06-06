@@ -5,8 +5,14 @@ import { z } from 'zod';
 
 import { Fallback } from '@/components/Fallback';
 
-import { PROVIDER_STYLES } from './constants';
-import type { AllProviders, Message, Model, ProviderStyles } from './types';
+import { CONTENT_ITEM_TYPE_TEXT, PROVIDER_STYLES } from './constants';
+import type {
+  AllProviders,
+  ContentItemList,
+  Message,
+  Model,
+  ProviderStyles,
+} from './types';
 
 export function debounce<T>(
   callback: (args: T) => void,
@@ -77,4 +83,17 @@ export function getModelAlias(model: Model): string {
     alias = `${(model as Model).provider} | {${(model as Model).id}`;
   }
   return alias;
+}
+
+export function buildTextContent(text: string): ContentItemList {
+  return { items: [{ type: CONTENT_ITEM_TYPE_TEXT, data: text }] };
+}
+
+export function getTextFromContent(content: ContentItemList): string {
+  const item = content.items.find((ci) => ci.type === CONTENT_ITEM_TYPE_TEXT);
+  return item?.data ?? '';
+}
+
+export function getTextFromMessage(message: Message): string {
+  return getTextFromContent(message.content);
 }

@@ -94,7 +94,7 @@ export function ChatSection({ conversation }: Props) {
       const placeholder = {
         conversationId: conversation.id,
         role: MESSAGE_BOT,
-        content: '',
+        content: { items: [] },
         id: -1,
         receiving: true,
       };

@@ -113,7 +113,7 @@ fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage
         Roles::User => {
             return ChatCompletionRequestMessage::User(
                 ChatCompletionRequestUserMessage {
-                    content: ChatCompletionRequestUserMessageContent::Text(message.content.clone()),
+                    content: ChatCompletionRequestUserMessageContent::Text(message.content.items[0].data.clone()),
                     role: Role::User,
                     name: None
                 }
@@ -122,7 +122,7 @@ fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage
         Roles::System => {
             return ChatCompletionRequestMessage::System(
                 ChatCompletionRequestSystemMessage {
-                    content: message.content.clone(),
+                    content: message.content.items[0].data.clone(),
                     role: Role::System,
                     name: None
                 }
@@ -131,7 +131,7 @@ fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage
         _ => {
             return ChatCompletionRequestMessage::Assistant(
                 ChatCompletionRequestAssistantMessage {
-                    content: Some(message.content.clone()),
+                    content: Some(message.content.items[0].data.clone()),
                     role: Role::Assistant,
                     name: None,
                     tool_calls: None,

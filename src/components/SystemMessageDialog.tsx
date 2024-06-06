@@ -23,6 +23,7 @@ import type {
   DialogHandler,
   Message,
 } from '@/lib/types';
+import { buildTextContent, getTextFromMessage } from '@/lib/utils';
 
 import { AutoFitTextarea } from './AutoFitTextarea';
 import { Button } from './ui/button';
@@ -72,7 +73,7 @@ export const SystemMessageDialog = forwardRef<
         );
       }
     },
-    []
+    [queryClient, t]
   );
   const creator = useMessageCreator({
     onSuccess: () => {
@@ -129,7 +130,7 @@ export const SystemMessageDialog = forwardRef<
         const mStr = taRef.current?.value ?? '';
         const mData = {
           id: message.id,
-          content: mStr,
+          content: buildTextContent(mStr),
           conversationId: conversation?.id,
           role: MESSAGE_SYSTEM,
         };
@@ -141,13 +142,13 @@ export const SystemMessageDialog = forwardRef<
       } else {
         // create
         creator({
-          content: taRef.current?.value ?? '',
+          content: buildTextContent(taRef.current?.value ?? ''),
           conversationId: conversation?.id,
           role: MESSAGE_SYSTEM,
         });
       }
     }
-  }, [conversation, message]);
+  }, [conversation, creator, deleter, message, updater]);
   return conversation ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
@@ -166,7 +167,7 @@ export const SystemMessageDialog = forwardRef<
             ref={taRef}
             className="rounded-xl p-2"
             rows={5}
-            defaultValue={message?.content ?? ''}
+            defaultValue={message ? getTextFromMessage(message) : ''}
           />
         </div>
         <div className="flex h-fit items-center justify-end gap-2">

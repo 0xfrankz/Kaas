@@ -1,6 +1,10 @@
 import type { z } from 'zod';
 
-import type { ALL_PROVIDERS, SUPPORTED_PROVIDERS } from './constants';
+import type {
+  ALL_PROVIDERS,
+  CONTENT_ITEM_TYPES,
+  SUPPORTED_PROVIDERS,
+} from './constants';
 import type {
   azureOptionsFormSchema,
   conversationFormSchema,
@@ -86,10 +90,19 @@ export type UpdateConversation = Omit<
   subject?: string;
 };
 
+export type ContentItem = {
+  type: (typeof CONTENT_ITEM_TYPES)[number];
+  data: string;
+};
+
+export type ContentItemList = {
+  items: ContentItem[];
+};
+
 export type NewMessage = {
   conversationId: number;
   role: number;
-  content: string;
+  content: ContentItemList;
 };
 
 export type Message = NewMessage & {

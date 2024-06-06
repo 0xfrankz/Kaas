@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use entity::entities::{
     conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
-    messages::{self, Model as Message, NewMessage, Roles}, 
+    messages::{self, ContentItem, ContentItemList, Model as Message, NewMessage, Roles}, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
@@ -114,7 +114,7 @@ pub async fn create_conversation(
     };
     let message = Message {
         role: messages::Roles::from(0).into(), // first messge must be User message
-        content: new_conversation.message,
+        content: ContentItemList::new(ContentItem::text(new_conversation.message)),
         ..Default::default()
     };
     let (conversation, _) = repo

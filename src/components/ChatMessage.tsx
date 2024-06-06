@@ -12,8 +12,14 @@ import {
 } from '@/lib/constants';
 import { useMessageListContext, useMessageListener } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { Message } from '@/lib/types';
-import { cn, getMessageTag } from '@/lib/utils';
+import type { ContentItemList, Message } from '@/lib/types';
+import {
+  buildTextContent,
+  cn,
+  getMessageTag,
+  getTextFromContent,
+  getTextFromMessage,
+} from '@/lib/utils';
 
 import { Button } from './ui/button';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
@@ -31,7 +37,7 @@ type BotMessageProps = MessageProps & {
 };
 
 type ContentProps = {
-  content: string;
+  content: ContentItemList;
 };
 
 type MetaBarProps = {
@@ -94,7 +100,9 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
     <div className={cn('mt-2 prose max-w-none text-foreground')}>
-      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]}>
+        {getTextFromContent(content)}
+      </Markdown>
     </div>
   );
 };
@@ -106,7 +114,7 @@ const Content = ({ content }: ContentProps) => {
         'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
       )}
     >
-      {content}
+      {getTextFromContent(content)}
     </div>
   );
 };
@@ -194,7 +202,7 @@ const BotReceiver = ({ message }: { message: Message }) => {
   const { onMessageReceived, onReceiverReady } = useMessageListContext();
   useEffect(() => {
     if (!receiving && msgStr.length > 0) {
-      message.content = msgStr;
+      message.content = buildTextContent(msgStr);
       onMessageReceived(message);
     }
   }, [message, msgStr, onMessageReceived, receiving]);
@@ -212,7 +220,7 @@ const BotReceiver = ({ message }: { message: Message }) => {
         name={model ? `${model.provider}` : t('generic:model:unknown')}
       />
       {msgStr.length > 0 ? (
-        <MarkdownContent content={msgStr} />
+        <MarkdownContent content={buildTextContent(msgStr)} />
       ) : (
         <LoadingIcon className="mt-2 h-6 self-start" />
       )}
@@ -223,7 +231,7 @@ const BotReceiver = ({ message }: { message: Message }) => {
 const System = ({ message }: MessageProps) => {
   return (
     <div className="bg-gray-100">
-      <div>{message.content}</div>
+      <div>{getTextFromMessage(message)}</div>
     </div>
   );
 };

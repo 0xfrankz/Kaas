@@ -2,6 +2,10 @@
 
 use sea_orm::entity::prelude::*;
 use sea_orm::entity::Linked;
+use sea_orm::ActiveValue;
+use sea_orm::FromJsonQueryResult;
+use sea_orm::IntoActiveModel;
+use sea_orm::IntoActiveValue;
 use serde::{Deserialize, Serialize};
 
 pub enum Roles {
@@ -39,7 +43,7 @@ pub struct Model {
     pub id: i32,
     pub conversation_id: i32,
     pub role: i32,
-    pub content: String,
+    pub content: ContentItemList,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,6 +52,40 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
     pub deleted_at: Option<DateTimeLocal>,
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+pub struct ContentItemList {
+    pub items: Vec<ContentItem>
+}
+
+impl ContentItemList {
+    pub fn new(item: ContentItem) -> Self {
+        ContentItemList {
+            items: vec![item]
+        }
+    }
+}
+
+impl IntoActiveValue<String> for ContentItemList {
+    fn into_active_value(self) -> ActiveValue<String> {
+        ActiveValue::Set(serde_json::to_string(&self).unwrap_or(String::default()))
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+pub struct ContentItem {
+    pub r#type: String,
+    pub data: String
+}
+
+impl ContentItem {
+    pub fn text(text: String) -> Self {
+        ContentItem {
+            r#type: "text".to_string(),
+            data: text
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -87,10 +125,21 @@ impl Linked for MessageToModel {
     }
 }
 
-#[derive(DeriveIntoActiveModel, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewMessage {
     pub conversation_id: i32,
     pub role: i32,
-    pub content: String,
+    pub content: ContentItemList,
+}
+
+impl IntoActiveModel<ActiveModel> for NewMessage {
+    fn into_active_model(self) -> ActiveModel {
+        ActiveModel {
+            conversation_id: ActiveValue::Set(self.conversation_id),
+            role: ActiveValue::Set(self.role),
+            content: ActiveValue::Set(self.content),
+            ..Default::default()
+        }
+    }
 }

@@ -49,6 +49,10 @@ export const MESSAGE_USER = 0;
 export const MESSAGE_BOT = 1;
 export const MESSAGE_SYSTEM = 2;
 
+// Message content item type
+export const CONTENT_ITEM_TYPE_TEXT = 'text';
+export const CONTENT_ITEM_TYPES = [CONTENT_ITEM_TYPE_TEXT] as const;
+
 // Stream keywords
 export const STREAM_START = '[[START]]';
 export const STREAM_DONE = '[[DONE]]';
