@@ -22,10 +22,12 @@ function ImageDropTarget({ onDrop }: ImageDropTargetProps) {
       console.log('drop', item);
       onDrop(item.files);
     },
-    // canDrop(item: any) {
-    //   console.log('canDrop', item.files, item.items);
-    //   return true;
-    // },
+    canDrop(item: { files: File[] }) {
+      console.log('canDrop', item.files);
+      const imgTypeReg = /^image\/[\w]+$/;
+      const allImages = item.files.every((file) => imgTypeReg.test(file.type));
+      return allImages;
+    },
     // hover(item: any) {
     //   console.log('hover', item.files, item.items);
     // },
