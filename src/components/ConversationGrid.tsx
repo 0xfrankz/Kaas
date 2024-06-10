@@ -120,9 +120,11 @@ export function ConversationGrid({
     <div className="flex grow flex-col">
       <div className="flex justify-between">
         <h2 className="text-3xl font-semibold tracking-tight">
-          {t('page-conversations:label:num-of-conversations', {
-            num: conversations.length,
-          })}
+          {conversations.length > 0
+            ? t('page-conversations:label:num-of-conversations', {
+                num: conversations.length,
+              })
+            : t('page-conversations:message:no-conversation')}
         </h2>
         <Button onClick={onCreateClick}>
           <Plus className="size-4" />

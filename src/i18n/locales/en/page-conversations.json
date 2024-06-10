@@ -6,7 +6,7 @@
     },
     "message": {
         "no-model": "You need to create a model first",
-        "no-conversation": "You have no conversations yet",
+        "no-conversation": "No conversations yet",
         "delete-conversation-warning": "Deleted conversation cannot be recovered.\nDo you still want to proceed?",
         "delete-conversation-success": "Conversation has been deleted",
         "delete-conversation-error": "Failed to delete conversation: {{errorMsg}}",

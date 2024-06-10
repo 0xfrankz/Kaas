@@ -44,13 +44,13 @@ export default function ConversationsPage() {
           <NewConversationForm />
         </div>
         <div className="mt-12 flex grow">
-          {hasConversations ? (
-            <ConversationGrid conversations={conversations} />
-          ) : (
-            <h2 className="m-auto text-3xl font-semibold tracking-tight">
-              {t('page-conversations:message:no-conversation')}
-            </h2>
-          )}
+          {/* {hasConversations ? ( */}
+          <ConversationGrid conversations={conversations} />
+          {/* // ) : (
+          //   <h2 className="m-auto text-3xl font-semibold tracking-tight">
+          //     {t('page-conversations:message:no-conversation')}
+          //   </h2>
+          // )} */}
         </div>
       </>
     );
