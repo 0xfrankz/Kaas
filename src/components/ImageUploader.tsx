@@ -1,42 +1,34 @@
-import { useCallback, useState } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { NativeTypes } from 'react-dnd-html5-backend';
+
+import type { ImageData, ImageUploaderHandler } from '@/lib/types';
 
 type ImageDropTargetProps = {
   onDrop: (files: File[]) => void;
 };
 
 type ImagePreviwerProps = {
-  files: File[];
+  dataList: ImageData[];
 };
 
 type ImageThumbnailProps = {
-  file: File;
+  data: ImageData;
 };
 
 function ImageDropTarget({ onDrop }: ImageDropTargetProps) {
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: [NativeTypes.FILE],
     drop(item: { files: File[] }) {
-      console.log('drop', item);
       onDrop(item.files);
     },
     canDrop(item: { files: File[] }) {
-      console.log('canDrop', item.files);
       const imgTypeReg = /^image\/[\w]+$/;
       const allImages = item.files.every((file) => imgTypeReg.test(file.type));
       return allImages;
     },
-    // hover(item: any) {
-    //   console.log('hover', item.files, item.items);
-    // },
     collect: (monitor: DropTargetMonitor) => {
-      // const item = monitor.getItem() as any;
-      // if (item) {
-      //   console.log('collect', item.files, item.items);
-      // }
-
       return {
         isOver: monitor.isOver(),
         canDrop: monitor.canDrop(),
@@ -52,21 +44,28 @@ function ImageDropTarget({ onDrop }: ImageDropTargetProps) {
   );
 }
 
-function ImageThumbnail({ file }: ImageThumbnailProps) {
-  const imageObject = URL.createObjectURL(file);
-  return <img src={imageObject} alt={file.name} className="size-16" />;
+function ImageThumbnail({ data }: ImageThumbnailProps) {
+  return data.dataUrl ? (
+    <div className="size-16">
+      <img
+        src={data.dataUrl}
+        alt={data.name}
+        className="size-full object-cover"
+      />
+    </div>
+  ) : null;
 }
 
-function ImagePreviwer({ files }: ImagePreviwerProps) {
+function ImagePreviwer({ dataList }: ImagePreviwerProps) {
   const render = () => {
-    if (files.length > 0) {
+    if (dataList.length > 0) {
       return (
         <ul className="flex gap-2">
-          {files.map((file, idx) => {
-            const key = `${file.name}_${idx}`;
+          {dataList.map((d, idx) => {
+            const key = `${d.name}_${idx}`;
             return (
-              <li key={file.name}>
-                <ImageThumbnail file={file} />
+              <li key={key}>
+                <ImageThumbnail data={d} />
               </li>
             );
           })}
@@ -78,17 +77,39 @@ function ImagePreviwer({ files }: ImagePreviwerProps) {
   return <div className="h-[100px] w-full bg-green-800">{render()}</div>;
 }
 
-export function ImageUploader() {
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+export const ImageUploader = forwardRef<ImageUploaderHandler, {}>((_, ref) => {
+  const [imageDataList, setImageDataList] = useState<ImageData[]>([]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getImageDataList: () => {
+        return imageDataList;
+      },
+    }),
+    [imageDataList]
+  );
 
   const onDrop = useCallback((files: File[]) => {
-    setImageFiles((old) => [...old, ...files]);
+    files.forEach((file) => {
+      const fr = new FileReader();
+      fr.onload = () => {
+        setImageDataList((old) => [
+          ...old,
+          {
+            name: file.name,
+            dataUrl: fr.result as string,
+          },
+        ]);
+      };
+      fr.readAsDataURL(file);
+    });
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 flex h-[400px] w-full flex-col bg-red-800 p-6">
-      <ImagePreviwer files={imageFiles} />
+    <div className="fixed bottom-1/3 right-0 flex h-[400px] w-[200px] flex-col bg-red-800 p-6">
+      <ImagePreviwer dataList={imageDataList} />
       <ImageDropTarget onDrop={onDrop} />
     </div>
   );
-}
+});

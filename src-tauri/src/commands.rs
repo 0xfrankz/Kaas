@@ -8,7 +8,6 @@ use entity::entities::{
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
 
-use reqwest::Response;
 use tauri::State;
 use tokio_stream::StreamExt;
 
@@ -222,10 +221,12 @@ pub async fn update_conversation(conversation: UpdateConversationDTO, repo: Stat
 #[tauri::command]
 pub async fn create_message(message: NewMessage, repo: State<'_, Repository>) -> CommandResult<Message> {
     let now = Instant::now();
+    log::info!("create_message: message = {:?}", message);
     let result = repo
         .create_message(message)
         .await
         .map_err(|message| DbError { message })?;
+    log::info!("create_message: result = {:?}", result);
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::create_message]: {:.2?}", elapsed);
     Ok(result)
@@ -471,6 +472,7 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
                         Err(err) => {
                             let err_reply = format!("[[ERROR]]{}", err);
                             emit_stream_error(&tag, &window, &err_reply);
+                            log::error!("Error during stream: {:?}", err);
                             error(log_tag, &format!("Error during stream: {}", &err_reply));
                             break;
                         }

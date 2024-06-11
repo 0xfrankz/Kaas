@@ -1,19 +1,22 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { SendHorizonal } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { MESSAGE_USER, SETTING_USER_ENTER_TO_SEND } from '@/lib/constants';
 import {
-  LIST_MESSAGES_KEY,
-  useCreateMessageMutation,
-  useSettingUpserter,
-} from '@/lib/hooks';
+  CONTENT_ITEM_TYPE_IMAGE,
+  CONTENT_ITEM_TYPE_TEXT,
+  MESSAGE_USER,
+  SETTING_USER_ENTER_TO_SEND,
+} from '@/lib/constants';
+import { useMessageCreator, useSettingUpserter } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { Message } from '@/lib/types';
+import type { ContentItemTypes, ImageUploaderHandler } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { ImageUploader } from './ImageUploader';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
@@ -27,8 +30,8 @@ type Props = {
 export function ChatPromptInput({ conversationId }: Props) {
   const [focused, setFocused] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
-  const queryClient = useQueryClient();
-  const createMsgMutation = useCreateMessageMutation();
+  const uploaderRef = useRef<ImageUploaderHandler>(null);
+  const creator = useMessageCreator();
   const enterToSend = useAppStateStore(
     (state) => state.settings[SETTING_USER_ENTER_TO_SEND] !== 'false'
   );
@@ -55,32 +58,34 @@ export function ChatPromptInput({ conversationId }: Props) {
     }
   };
 
-  const onClick = () => {
+  const onClick = useCallback(() => {
     const promptStr = promptRef.current?.value ?? '';
     if (promptStr.trim().length === 0) {
       toast.error(t('error:validation:empty-prompt'));
     } else {
-      createMsgMutation.mutate(
-        {
-          conversationId,
-          role: MESSAGE_USER,
-          content: promptStr,
-        },
-        {
-          onSuccess(message) {
-            // Update cache
-            queryClient.setQueryData<Message[]>(
-              [...LIST_MESSAGES_KEY, { conversationId }],
-              (messages) => (messages ? [...messages, message] : [message])
-            );
+      const images = uploaderRef.current?.getImageDataList() ?? [];
+      const content = {
+        items: [
+          {
+            type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
+            data: promptStr,
           },
-        }
-      );
+          ...images.map((image) => ({
+            type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+            data: image.dataUrl ?? '',
+          })),
+        ],
+      };
+      creator({
+        conversationId,
+        role: MESSAGE_USER,
+        content,
+      });
       if (promptRef.current) {
         promptRef.current.value = '';
       }
     }
-  };
+  }, [conversationId, creator, t]);
 
   const onCheckedChange = (checked: boolean) => {
     upserter({
@@ -100,7 +105,7 @@ export function ChatPromptInput({ conversationId }: Props) {
         onClick();
       }
     },
-    [enterToSend]
+    [enterToSend, onClick]
   );
 
   const onFocus = () => {
@@ -148,6 +153,9 @@ export function ChatPromptInput({ conversationId }: Props) {
           <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
         </div>
       </div>
+      <DndProvider backend={HTML5Backend}>
+        <ImageUploader ref={uploaderRef} />
+      </DndProvider>
     </>
   );
 }

@@ -3,8 +3,6 @@ import { animate, motion } from 'framer-motion';
 import { produce } from 'immer';
 import { Package } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useTranslation } from 'react-i18next';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -34,7 +32,6 @@ import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
 import { ChatStop } from './ChatStop';
 import { ConversationTitleBar } from './ConversationTitleBar';
-import { ImageUploader } from './ImageUploader';
 import { ModelPickerDialog } from './ModelPickerDialog';
 import { ScrollBottom } from './ScrollBottom';
 import { ToBottom } from './ToBottom';
@@ -317,9 +314,6 @@ export function ChatSection({ conversation }: Props) {
               {renderBottomSection()}
             </div>
           </div>
-          <DndProvider backend={HTML5Backend}>
-            <ImageUploader />
-          </DndProvider>
         </div>
       </ScrollArea>
     );

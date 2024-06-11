@@ -1,68 +1,7 @@
 use async_openai::{
-    config::{AzureConfig, OpenAIConfig},
-    types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, Role},
-    Client,
+    config::{AzureConfig, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, ImageUrlArgs, ImageUrlDetail, Role}, Client
 };
 use entity::entities::{conversations::{AzureOptions, OpenAIOptions, Options, ProviderOptions}, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
-use serde::Deserialize;
-
-// /**
-//  * Convert a Model entity to async_openai's Azure Client
-//  */
-// pub fn model_to_azure_client(model: &Model) -> Result<Client<AzureConfig>, String> {
-//     match model.provider.as_str().into() {
-//         Providers::Azure => {
-//             let config_json: RawAzureConfig = serde_json::from_str(&model.config)
-//                 .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
-//             let config: AzureConfig = config_json.into();
-//             let client = Client::with_config(config);
-//             return Ok(client);
-//         },
-//         _ => {
-//             Err("Model is not an Azure model".to_owned())
-//         }
-//     }
-// }
-
-// /**
-//  * Convert a Model entity to async_openai's OpenAI Client
-//  */
-// pub fn model_to_openai_client(model: &Model) -> Result<Client<OpenAIConfig>, String> {
-//     match model.provider.as_str().into() {
-//         Providers::OpenAI => {
-//             let config_json: RawOpenAIConfig = serde_json::from_str(&model.config)
-//                 .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
-//             let config: OpenAIConfig = config_json.into();
-//             let client = Client::with_config(config);
-//             return Ok(client);
-//         },
-//         _ => {
-//             return Err("Model is not an OpenAI model".to_owned());
-//         }
-//     }
-// }
-
-// /**
-//  * Convert a ProviderConfig to async_openai's Azure Client
-//  */
-// pub fn config_to_azure_client(config: &ProviderConfig) -> Result<Client<AzureConfig>, String> {
-//     let config_json: RawAzureConfig = serde_json::from_str(&config.config)
-//         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-//     let config: AzureConfig = config_json.into();
-//     let client = Client::with_config(config);
-//     return Ok(client);
-// }
-
-// /**
-//  * Convert a Model entity to async_openai's OpenAI Client
-//  */
-// pub fn config_to_openai_client(config: &ProviderConfig) -> Result<Client<OpenAIConfig>, String> {
-//     let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
-//         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-//     let config: OpenAIConfig = config_json.into();
-//     let client = Client::with_config(config);
-//     return Ok(client);
-// }
 
 pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions, default_max_tokens: Option<u16>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
@@ -109,11 +48,34 @@ pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &Provid
 }
 
 fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage {
+    let content_parts = message
+        .content.items
+        .iter()
+        .map(|item| {
+            let part: ChatCompletionRequestMessageContentPart = match item.r#type.as_str() {
+                "image" => ChatCompletionRequestMessageContentPartImageArgs::default()
+                    .image_url(
+                        ImageUrlArgs::default()
+                            .url(item.data.clone())
+                            .detail(ImageUrlDetail::Auto)
+                            .build()?
+                    )
+                    .build()?
+                    .into(),
+                _ => ChatCompletionRequestMessageContentPartTextArgs::default()
+                    .text(item.data.clone())
+                    .build()?
+                    .into()
+            };
+            Ok(part)
+        })
+        .collect::<Result<Vec<ChatCompletionRequestMessageContentPart>, OpenAIError>>()
+        .expect("Failed to build user message content");
     match message.role.into() {
         Roles::User => {
             return ChatCompletionRequestMessage::User(
                 ChatCompletionRequestUserMessage {
-                    content: ChatCompletionRequestUserMessageContent::Text(message.content.items[0].data.clone()),
+                    content: ChatCompletionRequestUserMessageContent::Array(content_parts),
                     role: Role::User,
                     name: None
                 }

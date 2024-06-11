@@ -125,7 +125,7 @@ impl Linked for MessageToModel {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewMessage {
     pub conversation_id: i32,

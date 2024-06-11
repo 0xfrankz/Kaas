@@ -347,16 +347,6 @@ export function useGetSystemMessageQuery({
   });
 }
 
-export function useCreateMessageMutation(): UseMutationResult<
-  Message,
-  CommandError,
-  NewMessage
-> {
-  return useMutation({
-    mutationFn: invokeCreateMessage,
-  });
-}
-
 export function useMessageCreator(
   options?: Omit<
     UseMutationOptions<Message, CommandError, NewMessage>,

@@ -77,7 +77,7 @@ async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: Cr
         .await
         .map_err(|err| {
             log::error!("execute_chat_complete_request: {}", err);
-            String::from("Failed to get chat completion response")
+            format!("Failed to get chat completion response: {}", err)
         })?;
 
     let choice = response

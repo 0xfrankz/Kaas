@@ -58,6 +58,7 @@ export type Setting = {
 
 export type AllProviders = (typeof ALL_PROVIDERS)[number];
 export type SupportedProviders = (typeof SUPPORTED_PROVIDERS)[number];
+export type ContentItemTypes = (typeof CONTENT_ITEM_TYPES)[number];
 
 export type NewConversation = z.infer<typeof conversationFormSchema>;
 
@@ -91,7 +92,7 @@ export type UpdateConversation = Omit<
 };
 
 export type ContentItem = {
-  type: (typeof CONTENT_ITEM_TYPES)[number];
+  type: ContentItemTypes;
   data: string;
 };
 
@@ -146,6 +147,11 @@ export type ProviderStyles = {
   };
 };
 
+export type ImageData = {
+  name: string;
+  dataUrl: string | null;
+};
+
 // Contexts
 export type TConversationsContext = {
   conversations: ConversationDetails[];
@@ -187,6 +193,10 @@ export type DialogHandler<T> = {
 
 export type StatefulDialogHandler<T> = DialogHandler<T> & {
   isOpen: () => boolean;
+};
+
+export type ImageUploaderHandler = {
+  getImageDataList: () => ImageData[];
 };
 
 // Functions
