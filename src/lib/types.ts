@@ -168,7 +168,6 @@ export type TFilledPromptContext = {
 export type TMessageListContext = {
   messages: Message[];
   onRegenerateClick: (message: Message) => void;
-  onMessageReceived: (message: Message) => void;
   onReceiverReady: () => void;
 };
 

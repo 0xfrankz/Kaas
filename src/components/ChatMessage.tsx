@@ -1,4 +1,6 @@
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { produce } from 'immer';
 import {
   Bot as BotIcon,
   CircleAlert,
@@ -17,7 +19,13 @@ import {
   DEFAULT_PROFILE_NAME,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
-import { useMessageListContext, useMessageListener } from '@/lib/hooks';
+import {
+  LIST_MESSAGES_KEY,
+  useMessageCreator,
+  useMessageListContext,
+  useMessageListener,
+  useMessageUpdater,
+} from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type { ContentItemList, Message } from '@/lib/types';
 import {
@@ -195,13 +203,15 @@ const BotActionBar = ({
 const ContentReceiver = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
   const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
-  const { onMessageReceived, onReceiverReady } = useMessageListContext();
-  const hasError = error && error.length > 0;
+  const { onReceiverReady } = useMessageListContext();
+  const creator = useMessageCreator();
+  const updater = useMessageUpdater();
+  const queryClient = useQueryClient();
 
   const renderContent = () => {
-    if (hasError) {
-      return <ErrorContent error={error} />;
-    }
+    // if (hasError) {
+    //   return <ErrorContent error={error} />;
+    // }
     if (msgStr.length > 0) {
       return <MarkdownContent content={buildTextContent(msgStr)} />;
     }
@@ -209,11 +219,40 @@ const ContentReceiver = ({ message }: { message: Message }) => {
   };
 
   useEffect(() => {
+    // When bot's reply is fully received
+    // create or update message here
     if (!receiving && msgStr.length > 0) {
       message.content = buildTextContent(msgStr);
-      onMessageReceived(message);
+      if (message.id < 0) {
+        // new message
+        creator({
+          conversationId: message.conversationId,
+          role: message.role,
+          content: message.content,
+        });
+      } else {
+        updater(message);
+      }
     }
-  }, [message, msgStr, onMessageReceived, receiving]);
+  }, [creator, message, msgStr, receiving, updater]);
+
+  useEffect(() => {
+    // handle BE errors
+    if (error && error.length > 0) {
+      queryClient.setQueryData<Message[]>(
+        [...LIST_MESSAGES_KEY, { conversationId: message.conversationId }],
+        (old) =>
+          produce(old, (draft) => {
+            const target = draft?.find((m) => m.id === message.id);
+            if (target) {
+              target.content = buildTextContent(error);
+              target.isError = true;
+              target.receiving = false;
+            }
+          })
+      );
+    }
+  }, [error, message.conversationId, message.id, queryClient]);
 
   useEffect(() => {
     if (ready) {
@@ -263,7 +302,7 @@ const Bot = ({ message }: MessageProps) => {
     <HoverContextProvider>
       <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
         <MetaBar
-          avatar={BOT_AVATAR}
+          avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
           name={model ? `${model.provider}` : t('generic:model:unknown')}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />

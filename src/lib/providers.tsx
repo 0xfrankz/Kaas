@@ -173,7 +173,6 @@ export function FilledPromptContextProvider({
 export function MessageListContextProvider({
   messages,
   onRegenerateClick,
-  onMessageReceived,
   onReceiverReady,
   children,
 }: TMessageListContext & {
@@ -183,10 +182,9 @@ export function MessageListContextProvider({
     return {
       messages,
       onRegenerateClick,
-      onMessageReceived,
       onReceiverReady,
     };
-  }, [messages, onRegenerateClick, onMessageReceived, onReceiverReady]);
+  }, [messages, onRegenerateClick, onReceiverReady]);
 
   return (
     <MessageListContext.Provider value={messageListContext}>

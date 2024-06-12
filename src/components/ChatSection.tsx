@@ -14,8 +14,6 @@ import {
   useBotCaller,
   useConversationModelUpdater,
   useListMessagesQuery,
-  useMessageCreator,
-  useMessageUpdater,
   useSubjectUpdater,
 } from '@/lib/hooks';
 import { MessageListContextProvider } from '@/lib/providers';
@@ -58,10 +56,7 @@ export function ChatSection({ conversation }: Props) {
   // Queries
   const queryClient = useQueryClient();
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
-  // const callBotMutation = useCallBot();
   const botCaller = useBotCaller();
-  const creator = useMessageCreator();
-  const updater = useMessageUpdater();
   const subjectUpdater = useSubjectUpdater();
   const modelUpdater = useConversationModelUpdater({
     onSettled(c) {
@@ -113,24 +108,6 @@ export function ChatSection({ conversation }: Props) {
       );
     },
     [conversation.id, queryClient]
-  );
-
-  // Callback when bot's reply is fully received
-  // create or update message here
-  const onMessageReceived = useCallback(
-    (message: Message) => {
-      if (message.id < 0) {
-        // new message
-        creator({
-          conversationId: conversation.id,
-          role: message.role,
-          content: message.content,
-        });
-      } else {
-        updater(message);
-      }
-    },
-    [conversation.id, creator, updater]
   );
 
   const onReceiverReady = useCallback(() => {
@@ -310,7 +287,6 @@ export function ChatSection({ conversation }: Props) {
             <MessageListContextProvider
               messages={messagesWithModelId}
               onRegenerateClick={onRegenerateClick}
-              onMessageReceived={onMessageReceived}
               onReceiverReady={onReceiverReady}
             >
               <MemoizedMessageList />
