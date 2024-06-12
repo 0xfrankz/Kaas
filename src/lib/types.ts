@@ -113,6 +113,7 @@ export type Message = NewMessage & {
   deletedAt?: string;
   modelId?: number;
   receiving?: boolean;
+  isError?: boolean;
 };
 
 export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;

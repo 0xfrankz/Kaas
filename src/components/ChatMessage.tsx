@@ -192,51 +192,7 @@ const BotActionBar = ({
   );
 };
 
-const User = ({ message }: MessageProps) => {
-  const userName = useAppStateStore(
-    (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
-  );
-  return (
-    <HoverContextProvider>
-      <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
-        <MetaBar
-          avatar={USER_AVATAR}
-          name={userName}
-          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
-        />
-        <Content content={message.content} />
-      </div>
-    </HoverContextProvider>
-  );
-};
-
-const Bot = ({ message }: MessageProps) => {
-  const model = useAppStateStore((state) =>
-    state.models.find((m) => m.id === message.modelId)
-  );
-  const { t } = useTranslation(['generic']);
-  const { onRegenerateClick } = useMessageListContext();
-  return (
-    <HoverContextProvider>
-      <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-        <MetaBar
-          avatar={BOT_AVATAR}
-          name={model ? `${model.provider}` : t('generic:model:unknown')}
-          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
-        />
-        <MarkdownContent content={message.content} />
-        <BotActionBar onRegenerateClick={() => onRegenerateClick(message)} />
-      </div>
-    </HoverContextProvider>
-  );
-};
-
-const BotReceiver = ({ message }: { message: Message }) => {
-  const model = useAppStateStore((state) =>
-    state.models.find((m) => m.id === message.modelId)
-  );
-  const { t } = useTranslation(['generic']);
-  const { onRegenerateClick } = useMessageListContext();
+const ContentReceiver = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
   const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
   const { onMessageReceived, onReceiverReady } = useMessageListContext();
@@ -265,17 +221,62 @@ const BotReceiver = ({ message }: { message: Message }) => {
     }
   }, [onReceiverReady, ready]);
 
+  return renderContent();
+};
+
+const User = ({ message }: MessageProps) => {
+  const userName = useAppStateStore(
+    (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
+  );
   return (
-    <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-      <MetaBar
-        avatar={hasError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
-        name={model ? `${model.provider}` : t('generic:model:unknown')}
-      />
-      {renderContent()}
-      {hasError ? (
-        <ErrorActionBar onRegenerateClick={() => onRegenerateClick(message)} />
-      ) : null}
-    </div>
+    <HoverContextProvider>
+      <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
+        <MetaBar
+          avatar={USER_AVATAR}
+          name={userName}
+          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+        />
+        <Content content={message.content} />
+      </div>
+    </HoverContextProvider>
+  );
+};
+
+const Bot = ({ message }: MessageProps) => {
+  const model = useAppStateStore((state) =>
+    state.models.find((m) => m.id === message.modelId)
+  );
+  const { t } = useTranslation(['generic']);
+  const { onRegenerateClick } = useMessageListContext();
+
+  const renderContent = () => {
+    if (message.isError) {
+      return <ErrorContent error={getTextFromMessage(message)} />;
+    }
+    if (message.receiving) {
+      return <ContentReceiver message={message} />;
+    }
+    return <MarkdownContent content={message.content} />;
+  };
+
+  return (
+    <HoverContextProvider>
+      <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
+        <MetaBar
+          avatar={BOT_AVATAR}
+          name={model ? `${model.provider}` : t('generic:model:unknown')}
+          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+        />
+        {renderContent()}
+        {message.isError ? (
+          <ErrorActionBar
+            onRegenerateClick={() => onRegenerateClick(message)}
+          />
+        ) : (
+          <BotActionBar onRegenerateClick={() => onRegenerateClick(message)} />
+        )}
+      </div>
+    </HoverContextProvider>
   );
 };
 
@@ -291,5 +292,4 @@ export default {
   User,
   Bot,
   System,
-  BotReceiver,
 };
