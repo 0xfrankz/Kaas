@@ -1,5 +1,12 @@
 import dayjs from 'dayjs';
-import { Bot as BotIcon, RefreshCw, SquarePen, UserRound } from 'lucide-react';
+import {
+  Bot as BotIcon,
+  CircleAlert,
+  RefreshCw,
+  RotateCw,
+  SquarePen,
+  UserRound,
+} from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -32,10 +39,6 @@ type MessageProps = {
   message: Message;
 };
 
-type BotMessageProps = MessageProps & {
-  onRegenerateClick: () => void;
-};
-
 type ContentProps = {
   content: ContentItemList;
 };
@@ -56,6 +59,15 @@ const HoverContext = createContext<THoverContext>({
 
 const BOT_AVATAR = (
   <BotIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
+);
+
+const BOT_AVATAR_WITH_ERROR = (
+  <div className="relative size-fit">
+    <BotIcon className="box-border size-6 rounded-full border border-red-500 stroke-foreground stroke-1 p-1" />
+    <div className="absolute -right-2 -top-2 size-4 rounded-full bg-red-500 ">
+      <CircleAlert className="size-full text-white" />
+    </div>
+  </div>
 );
 
 const USER_AVATAR = (
@@ -107,6 +119,12 @@ const MarkdownContent = ({ content }: ContentProps) => {
   );
 };
 
+const ErrorContent = ({ error }: { error: string }) => {
+  return (
+    <div className="prose mt-2 flex max-w-none gap-2 text-red-600">{error}</div>
+  );
+};
+
 const Content = ({ content }: ContentProps) => {
   return (
     <div
@@ -126,6 +144,26 @@ const ActionBar = () => {
       <div className={cn(hover ? null : 'hidden')}>
         <SquarePen className="size-[14px]" />
       </div>
+    </div>
+  );
+};
+
+const ErrorActionBar = ({
+  onRegenerateClick,
+}: {
+  onRegenerateClick: () => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-4 flex h-fit justify-end text-muted-foreground">
+      <Button
+        variant="secondary"
+        className="flex gap-2"
+        onClick={onRegenerateClick}
+      >
+        <RotateCw className="size-[14px]" />
+        {t('generic:action:retry')}
+      </Button>
     </div>
   );
 };
@@ -172,11 +210,12 @@ const User = ({ message }: MessageProps) => {
   );
 };
 
-const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
+const Bot = ({ message }: MessageProps) => {
   const model = useAppStateStore((state) =>
     state.models.find((m) => m.id === message.modelId)
   );
   const { t } = useTranslation(['generic']);
+  const { onRegenerateClick } = useMessageListContext();
   return (
     <HoverContextProvider>
       <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
@@ -186,7 +225,7 @@ const Bot = ({ message, onRegenerateClick }: BotMessageProps) => {
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <MarkdownContent content={message.content} />
-        <BotActionBar onRegenerateClick={onRegenerateClick} />
+        <BotActionBar onRegenerateClick={() => onRegenerateClick(message)} />
       </div>
     </HoverContextProvider>
   );
@@ -197,9 +236,22 @@ const BotReceiver = ({ message }: { message: Message }) => {
     state.models.find((m) => m.id === message.modelId)
   );
   const { t } = useTranslation(['generic']);
+  const { onRegenerateClick } = useMessageListContext();
   const tag = getMessageTag(message);
-  const { ready, receiving, message: msgStr } = useMessageListener(tag);
+  const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
   const { onMessageReceived, onReceiverReady } = useMessageListContext();
+  const hasError = error && error.length > 0;
+
+  const renderContent = () => {
+    if (hasError) {
+      return <ErrorContent error={error} />;
+    }
+    if (msgStr.length > 0) {
+      return <MarkdownContent content={buildTextContent(msgStr)} />;
+    }
+    return <LoadingIcon className="mt-2 h-6 self-start" />;
+  };
+
   useEffect(() => {
     if (!receiving && msgStr.length > 0) {
       message.content = buildTextContent(msgStr);
@@ -216,14 +268,13 @@ const BotReceiver = ({ message }: { message: Message }) => {
   return (
     <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
       <MetaBar
-        avatar={BOT_AVATAR}
+        avatar={hasError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
         name={model ? `${model.provider}` : t('generic:model:unknown')}
       />
-      {msgStr.length > 0 ? (
-        <MarkdownContent content={buildTextContent(msgStr)} />
-      ) : (
-        <LoadingIcon className="mt-2 h-6 self-start" />
-      )}
+      {renderContent()}
+      {hasError ? (
+        <ErrorActionBar onRegenerateClick={() => onRegenerateClick(message)} />
+      ) : null}
     </div>
   );
 };

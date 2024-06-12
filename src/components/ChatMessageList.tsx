@@ -5,21 +5,13 @@ import type { Message } from '@/lib/types';
 import ChatMessage from './ChatMessage';
 
 export function ChatMessageList() {
-  const { messages, onRegenerateClick } = useMessageListContext();
+  const { messages } = useMessageListContext();
   // Render functions
   const renderBotMessage = (msg: Message) => {
     if (msg.receiving) {
       return <ChatMessage.BotReceiver message={msg} />;
     }
-    return (
-      <ChatMessage.Bot
-        key={msg.id}
-        message={msg}
-        onRegenerateClick={() => {
-          onRegenerateClick(msg);
-        }}
-      />
-    );
+    return <ChatMessage.Bot key={msg.id} message={msg} />;
   };
   const renderMessages = () => {
     const inner = messages ? (

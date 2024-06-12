@@ -424,9 +424,8 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
                 log::info!("call_bot_one_off: thread done");
             },
             Err(msg) => {
-                let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&tag, &window, &err_reply);
-                log::error!("call_bot_one_off: {}", &err_reply);
+                emit_stream_error(&tag, &window, &msg);
+                log::error!("call_bot_one_off: {}", &msg);
             }
         }
     });
@@ -540,7 +539,7 @@ fn emit_stream_stopped(tag: &str, window: &tauri::Window) {
 }
 
 fn emit_stream_error(tag: &str, window: &tauri::Window, err_message: &String) {
-    match window.emit(tag, err_message) {
+    match window.emit(tag, format!("[[ERROR]]{}", err_message)) {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // retry

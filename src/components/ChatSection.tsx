@@ -149,6 +149,7 @@ export function ChatSection({ conversation }: Props) {
 
   const onRegenerateClick = useCallback(
     (msg: Message) => {
+      console.log('onRegenerateClick:', msg);
       // set message to receive
       queryClient.setQueryData<Message[]>(
         [
@@ -159,8 +160,22 @@ export function ChatSection({ conversation }: Props) {
         ],
         (old) =>
           produce(old, (draft) => {
-            const target = draft?.find((m) => m.id === msg.id);
-            if (target) target.receiving = true;
+            if (msg.id < 0) {
+              // regenerating the lastest bot message
+              // normally happens when the last bot call failed
+              const placeholder = {
+                conversationId: conversation.id,
+                role: MESSAGE_BOT,
+                content: { items: [] },
+                id: -1,
+                receiving: true,
+              };
+              draft?.pop();
+              draft?.push(placeholder);
+            } else {
+              const target = draft?.find((m) => m.id === msg.id);
+              if (target) target.receiving = true;
+            }
           })
       );
     },
