@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { SendHorizonal } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -8,12 +9,21 @@ import { toast } from 'sonner';
 import {
   CONTENT_ITEM_TYPE_IMAGE,
   CONTENT_ITEM_TYPE_TEXT,
+  MESSAGE_BOT,
   MESSAGE_USER,
   SETTING_USER_ENTER_TO_SEND,
 } from '@/lib/constants';
-import { useMessageCreator, useSettingUpserter } from '@/lib/hooks';
+import {
+  LIST_MESSAGES_KEY,
+  useMessageCreator,
+  useSettingUpserter,
+} from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItemTypes, ImageUploaderHandler } from '@/lib/types';
+import type {
+  ContentItemTypes,
+  ImageUploaderHandler,
+  Message,
+} from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { ImageUploader } from './ImageUploader';
@@ -31,7 +41,32 @@ export function ChatPromptInput({ conversationId }: Props) {
   const [focused, setFocused] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const uploaderRef = useRef<ImageUploaderHandler>(null);
-  const creator = useMessageCreator();
+  const queryClient = useQueryClient();
+  const creator = useMessageCreator({
+    onSettled: () => {
+      // insert placeholder to trigger generation
+      const placeholder = {
+        conversationId,
+        role: MESSAGE_BOT,
+        content: { items: [] },
+        id: -1,
+        isReceiving: true,
+      };
+
+      // add placeholder message
+      queryClient.setQueryData<Message[]>(
+        [
+          ...LIST_MESSAGES_KEY,
+          {
+            conversationId,
+          },
+        ],
+        (old) => {
+          return old ? [...old, placeholder] : [placeholder];
+        }
+      );
+    },
+  });
   const enterToSend = useAppStateStore(
     (state) => state.settings[SETTING_USER_ENTER_TO_SEND] !== 'false'
   );

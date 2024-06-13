@@ -559,13 +559,10 @@ export function useScrollToBottom(
     setTimeout(() => {
       if (toScrollRef.current && anchorRef.current) {
         anchorRef.current.scrollIntoView({
-          behavior: 'instant',
+          behavior: 'smooth',
           block: 'end',
           inline: 'end',
         });
-        // try to scroll again to make sure
-        // the anchor indeed appears in viewport
-        scrollToBottom();
       }
     }, 100);
   }, [anchorRef]);
@@ -575,19 +572,19 @@ export function useScrollToBottom(
     return new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // when anchor enters viewport
           if (entry.isIntersecting) {
+            // anchor enters viewport
             toScrollRef.current = false;
             bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
           } else if (
             containerRef.current?.scrollTop &&
             containerRef.current.scrollTop < bottomScrollTopRef.current
           ) {
-            // element exits viewport and user scrolled up
+            // element exits viewport because user scrolled up
             toScrollRef.current = false;
           } else {
             // element exits viewport and user didn't scroll up
-            // up initialization, this branch will auto scroll to bottom
+            // upon initialization, this branch will auto scroll to bottom
             // by using a short delay, js can get the write position to scroll to
             toScrollRef.current = true;
             scrollToBottom();

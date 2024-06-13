@@ -48,7 +48,8 @@ export function ChatSection({ conversation }: Props) {
   const [atBottom, setAtBottom] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<StatefulDialogHandler<string>>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // const showContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
   const model = useAppStateStore((state) =>
     state.models.find((m) => m.id === conversation.modelId)
   );
@@ -72,7 +73,8 @@ export function ChatSection({ conversation }: Props) {
   const receiving = useMemo(() => {
     return messages?.some((m) => m.isReceiving) ?? false;
   }, [messages]);
-
+  const isLastMessageFromUser =
+    isSuccess && messages?.length > 0 && messages.at(-1)?.role === MESSAGE_USER;
   const messagesWithModelId = useMemo(() => {
     return (
       messages?.map((msg) => {
@@ -85,32 +87,6 @@ export function ChatSection({ conversation }: Props) {
   }, [conversation.modelId, messages]);
 
   // Callbacks
-  const onNewUserMessage = useCallback(
-    (_message: Message) => {
-      const placeholder = {
-        conversationId: conversation.id,
-        role: MESSAGE_BOT,
-        content: { items: [] },
-        id: -1,
-        isReceiving: true,
-      };
-
-      // add placeholder message
-      queryClient.setQueryData<Message[]>(
-        [
-          ...LIST_MESSAGES_KEY,
-          {
-            conversationId: conversation.id,
-          },
-        ],
-        (old) => {
-          return old ? [...old, placeholder] : [placeholder];
-        }
-      );
-    },
-    [conversation.id, queryClient]
-  );
-
   const onReceiverReady = useCallback(() => {
     const placeholder = messages?.find((m) => m.isReceiving);
     if (placeholder) {
@@ -127,7 +103,6 @@ export function ChatSection({ conversation }: Props) {
 
   const onRegenerateClick = useCallback(
     (msg: Message) => {
-      console.log('onRegenerateClick', msg);
       // set message to receive
       queryClient.setQueryData<Message[]>(
         [
@@ -210,14 +185,32 @@ export function ChatSection({ conversation }: Props) {
     );
   }, [conversation.id, queryClient]);
 
-  useEffect(() => {
-    if (isSuccess && messages?.length > 0) {
-      const lastMsg = messages.at(-1);
-      if (lastMsg?.role === MESSAGE_USER) {
-        onNewUserMessage(lastMsg);
+  const onContinueClick = useCallback(() => {
+    // insert placeholder to trigger generation
+    // then scroll to bottom
+    const placeholder = {
+      conversationId: conversation.id,
+      role: MESSAGE_BOT,
+      content: { items: [] },
+      id: -1,
+      isReceiving: true,
+    };
+
+    // add placeholder message
+    queryClient.setQueryData<Message[]>(
+      [
+        ...LIST_MESSAGES_KEY,
+        {
+          conversationId: conversation.id,
+        },
+      ],
+      (old) => {
+        return old ? [...old, placeholder] : [placeholder];
       }
-    }
-  }, [isSuccess, messages, onNewUserMessage]);
+    );
+
+    onToBottomClick();
+  }, [conversation.id, onToBottomClick, queryClient]);
 
   useEffect(() => {
     if (viewportRef.current) {
@@ -241,20 +234,27 @@ export function ChatSection({ conversation }: Props) {
 
   useEffect(() => {
     if (!receiving) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
+      if (showBottomTimerRef.current) {
+        clearTimeout(showBottomTimerRef.current);
+        showBottomTimerRef.current = null;
       }
       if (atBottom) {
+        // at bottom, show continue button or prompt input
         document.getElementById('to-bottom')?.classList.add('hidden');
-        const el = document.getElementById('prompt-input');
+        let el = null;
+        if (isLastMessageFromUser) {
+          el = document.getElementById('continue');
+        } else {
+          el = document.getElementById('prompt-input');
+        }
         if (el) {
           el.classList.remove('hidden');
           animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
         }
       } else {
-        if (timerRef.current === null) {
-          timerRef.current = setTimeout(() => {
+        // not at bottom, show to-bottom button
+        if (showBottomTimerRef.current === null) {
+          showBottomTimerRef.current = setTimeout(() => {
             const el = document.getElementById('to-bottom');
             if (el) {
               el.classList.remove('hidden');
@@ -263,9 +263,10 @@ export function ChatSection({ conversation }: Props) {
           }, 600);
         }
         document.getElementById('prompt-input')?.classList.add('hidden');
+        document.getElementById('continue')?.classList.add('hidden');
       }
     }
-  }, [atBottom, receiving]);
+  }, [atBottom, isLastMessageFromUser, receiving]);
 
   useEffect(() => {
     if (!model && dialogRef.current && !dialogRef.current.isOpen()) {
@@ -273,6 +274,20 @@ export function ChatSection({ conversation }: Props) {
       dialogRef.current.open(conversation.subject);
     }
   }, [model, conversation.subject]);
+
+  useEffect(() => {
+    return () => {
+      // reset message list when leaving
+      queryClient.invalidateQueries({
+        queryKey: [
+          ...LIST_MESSAGES_KEY,
+          {
+            conversationId: conversation.id,
+          },
+        ],
+      });
+    };
+  }, [conversation.id, queryClient]);
 
   const renderBottomSection = () => {
     if (receiving)
@@ -290,6 +305,15 @@ export function ChatSection({ conversation }: Props) {
       );
     return (
       <>
+        <div id="continue" className="hidden">
+          <Button
+            variant="secondary"
+            className="rounded-full drop-shadow-lg"
+            onClick={onContinueClick}
+          >
+            {t('generic:action:continue')}
+          </Button>
+        </div>
         <div id="to-bottom" className="hidden">
           <ToBottom onClick={onToBottomClick} />
         </div>
