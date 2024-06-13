@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { emit } from '@tauri-apps/api/event';
 import { animate, motion } from 'framer-motion';
 import { produce } from 'immer';
 import { Package } from 'lucide-react';
@@ -69,7 +70,7 @@ export function ChatSection({ conversation }: Props) {
 
   // Derived states
   const receiving = useMemo(() => {
-    return messages?.some((m) => m.receiving) ?? false;
+    return messages?.some((m) => m.isReceiving) ?? false;
   }, [messages]);
 
   const messagesWithModelId = useMemo(() => {
@@ -91,7 +92,7 @@ export function ChatSection({ conversation }: Props) {
         role: MESSAGE_BOT,
         content: { items: [] },
         id: -1,
-        receiving: true,
+        isReceiving: true,
       };
 
       // add placeholder message
@@ -111,7 +112,7 @@ export function ChatSection({ conversation }: Props) {
   );
 
   const onReceiverReady = useCallback(() => {
-    const placeholder = messages?.find((m) => m.receiving);
+    const placeholder = messages?.find((m) => m.isReceiving);
     if (placeholder) {
       // listener's tag
       const tag = getMessageTag(placeholder);
@@ -126,7 +127,7 @@ export function ChatSection({ conversation }: Props) {
 
   const onRegenerateClick = useCallback(
     (msg: Message) => {
-      console.log('onRegenerateClick:', msg);
+      console.log('onRegenerateClick', msg);
       // set message to receive
       queryClient.setQueryData<Message[]>(
         [
@@ -145,13 +146,13 @@ export function ChatSection({ conversation }: Props) {
                 role: MESSAGE_BOT,
                 content: { items: [] },
                 id: -1,
-                receiving: true,
+                isReceiving: true,
               };
               draft?.pop();
               draft?.push(placeholder);
             } else {
               const target = draft?.find((m) => m.id === msg.id);
-              if (target) target.receiving = true;
+              if (target) target.isReceiving = true;
             }
           })
       );
@@ -188,6 +189,26 @@ export function ChatSection({ conversation }: Props) {
     },
     [conversation.id, modelUpdater]
   );
+
+  const onStopClick = useCallback(async () => {
+    await emit('stop-bot');
+    // update message list data
+    queryClient.setQueryData<Message[]>(
+      [...LIST_MESSAGES_KEY, { conversationId: conversation.id }],
+      (old) =>
+        produce(old, (draft) => {
+          const target = draft?.find((m) => m.isReceiving);
+          if (target) {
+            if (target.id < 0) {
+              // remove placeholder, which is the last item
+              draft?.pop();
+            } else {
+              target.isReceiving = false;
+            }
+          }
+        })
+    );
+  }, [conversation.id, queryClient]);
 
   useEffect(() => {
     if (isSuccess && messages?.length > 0) {
@@ -264,7 +285,7 @@ export function ChatSection({ conversation }: Props) {
             transition: { duration: 0.2, type: 'tween' },
           }}
         >
-          <ChatStop />
+          <ChatStop onClick={onStopClick} />
         </motion.div>
       );
     return (

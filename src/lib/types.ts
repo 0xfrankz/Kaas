@@ -112,7 +112,7 @@ export type Message = NewMessage & {
   updatedAt?: string;
   deletedAt?: string;
   modelId?: number;
-  receiving?: boolean;
+  isReceiving?: boolean;
   isError?: boolean;
 };
 

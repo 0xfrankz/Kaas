@@ -247,7 +247,7 @@ const ContentReceiver = ({ message }: { message: Message }) => {
             if (target) {
               target.content = buildTextContent(error);
               target.isError = true;
-              target.receiving = false;
+              target.isReceiving = false;
             }
           })
       );
@@ -292,7 +292,7 @@ const Bot = ({ message }: MessageProps) => {
     if (message.isError) {
       return <ErrorContent error={getTextFromMessage(message)} />;
     }
-    if (message.receiving) {
+    if (message.isReceiving) {
       return <ContentReceiver message={message} />;
     }
     return <MarkdownContent content={message.content} />;

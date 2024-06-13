@@ -407,7 +407,7 @@ export function useMessageUpdater(
               if (target) {
                 target.content = msg.content;
                 target.updatedAt = msg.updatedAt;
-                target.receiving = false;
+                target.isReceiving = false;
               }
             })
         );
