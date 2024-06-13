@@ -60,21 +60,23 @@ export function ImagePreviwer({ dataList }: ImagePreviwerProps) {
   const render = () => {
     if (dataList.length > 0) {
       return (
-        <ul className="m-0 flex list-none gap-2 p-0">
-          {dataList.map((d, idx) => {
-            const key = `${d.name}_${idx}`;
-            return (
-              <li key={key} className="size-16">
-                <ImageThumbnail data={d} />
-              </li>
-            );
-          })}
-        </ul>
+        <div className="w-full">
+          <ul className="m-0 flex list-none gap-2 p-0">
+            {dataList.map((d, idx) => {
+              const key = `${d.name}_${idx}`;
+              return (
+                <li key={key} className="size-16">
+                  <ImageThumbnail data={d} />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       );
     }
-    return <span>No files to preview yet</span>;
+    return null;
   };
-  return <div className="w-full">{render()}</div>;
+  return render();
 }
 
 export const ImageUploader = forwardRef<ImageUploaderHandler, {}>((_, ref) => {
