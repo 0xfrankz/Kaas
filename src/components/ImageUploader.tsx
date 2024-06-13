@@ -44,27 +44,27 @@ function ImageDropTarget({ onDrop }: ImageDropTargetProps) {
   );
 }
 
-function ImageThumbnail({ data }: ImageThumbnailProps) {
+export function ImageThumbnail({ data }: ImageThumbnailProps) {
   return data.dataUrl ? (
-    <div className="size-16">
+    <div className="size-16 overflow-hidden rounded-xl">
       <img
         src={data.dataUrl}
         alt={data.name}
-        className="size-full object-cover"
+        className="m-0 size-full object-cover"
       />
     </div>
   ) : null;
 }
 
-function ImagePreviwer({ dataList }: ImagePreviwerProps) {
+export function ImagePreviwer({ dataList }: ImagePreviwerProps) {
   const render = () => {
     if (dataList.length > 0) {
       return (
-        <ul className="flex gap-2">
+        <ul className="m-0 flex list-none gap-2 p-0">
           {dataList.map((d, idx) => {
             const key = `${d.name}_${idx}`;
             return (
-              <li key={key}>
+              <li key={key} className="size-16">
                 <ImageThumbnail data={d} />
               </li>
             );
@@ -74,7 +74,7 @@ function ImagePreviwer({ dataList }: ImagePreviwerProps) {
     }
     return <span>No files to preview yet</span>;
   };
-  return <div className="h-[100px] w-full bg-green-800">{render()}</div>;
+  return <div className="w-full">{render()}</div>;
 }
 
 export const ImageUploader = forwardRef<ImageUploaderHandler, {}>((_, ref) => {

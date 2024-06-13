@@ -36,6 +36,7 @@ import {
   getTextFromMessage,
 } from '@/lib/utils';
 
+import { ImagePreviwer } from './ImageUploader';
 import { Button } from './ui/button';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
 
@@ -134,13 +135,22 @@ const ErrorContent = ({ error }: { error: string }) => {
 };
 
 const Content = ({ content }: ContentProps) => {
+  const imageDataList = content.items
+    .filter((item) => item.type === 'image')
+    .map((image, index) => ({
+      name: `image-${index}`,
+      dataUrl: image.data,
+    }));
   return (
-    <div
-      className={cn(
-        'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
-      )}
-    >
-      {getTextFromContent(content)}
+    <div className="flex flex-col gap-4">
+      <div
+        className={cn(
+          'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
+        )}
+      >
+        {getTextFromContent(content)}
+      </div>
+      <ImagePreviwer dataList={imageDataList} />
     </div>
   );
 };
@@ -264,6 +274,7 @@ const ContentReceiver = ({ message }: { message: Message }) => {
 };
 
 const User = ({ message }: MessageProps) => {
+  console.log('User message:', message);
   const userName = useAppStateStore(
     (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
   );

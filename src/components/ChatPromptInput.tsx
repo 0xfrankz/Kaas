@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { SendHorizonal } from 'lucide-react';
+import { ImagePlus, SendHorizonal } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -155,14 +155,17 @@ export function ChatPromptInput({ conversationId }: Props) {
     <>
       <div
         className={cn(
-          'mb-2 flex min-h-15 w-full items-end rounded-xl px-2 py-3 text-sm',
+          'mb-2 flex min-h-15 w-full items-end rounded-xl px-2 py-3 text-sm gap-2',
           focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
         )}
       >
+        <Button className="size-9 rounded-full p-0" variant="secondary">
+          <ImagePlus className="size-4" />
+        </Button>
         <div className="my-auto grow">
           <Textarea
             placeholder={t('page-conversation:message:input-placeholder')}
-            className="resize-none overflow-y-hidden border-0 px-2"
+            className="no-scrollbar resize-none overflow-y-hidden border-0 px-2"
             rows={1}
             onChange={onChange}
             ref={promptRef}
@@ -171,7 +174,7 @@ export function ChatPromptInput({ conversationId }: Props) {
             onBlur={onBlur}
           />
         </div>
-        <Button onClick={onClick}>
+        <Button onClick={onClick} className="size-9 rounded-full p-0">
           <SendHorizonal className="size-4" />
         </Button>
       </div>

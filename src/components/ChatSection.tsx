@@ -244,8 +244,10 @@ export function ChatSection({ conversation }: Props) {
         let el = null;
         if (isLastMessageFromUser) {
           el = document.getElementById('continue');
+          document.getElementById('prompt-input')?.classList.add('hidden');
         } else {
           el = document.getElementById('prompt-input');
+          document.getElementById('continue')?.classList.add('hidden');
         }
         if (el) {
           el.classList.remove('hidden');
