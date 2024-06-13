@@ -362,7 +362,7 @@ export function ChatSection({ conversation }: Props) {
           {t('page-conversation:message:no-model')}
         </h2>
         <Button onClick={onChooseClick}>
-          <Package className="size-4 text-foreground" />
+          <Package className="size-4" />
           <span className="ml-2">{t('generic:action:choose-a-model')}</span>
         </Button>
         <ModelPickerDialog ref={dialogRef} onSubmit={onChooseSubmit} />
