@@ -1,25 +1,32 @@
-import { forwardRef, type HtmlHTMLAttributes } from 'react';
+import { useHover } from 'ahooks';
+import { X } from 'lucide-react';
+import { forwardRef, type HtmlHTMLAttributes, useRef } from 'react';
 
 import { useFileUploaderContext } from '@/lib/hooks';
 import type { FileData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-type ImagePreviwerProps = {
-  dataList: FileData[];
-};
+import { Button } from './ui/button';
 
 type ImageThumbnailProps = {
   imageData: FileData;
 };
 
 export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
+  const ref = useRef(null);
+  const isHovering = useHover(ref);
   return (
-    <div className="size-12 overflow-hidden rounded-lg">
+    <div className="relative size-12" ref={ref}>
       <img
         src={imageData.data}
         alt={imageData.name}
-        className="m-0 size-full object-cover"
+        className="m-0 size-full rounded-lg object-cover"
       />
+      {isHovering ? (
+        <Button className="absolute -right-1 -top-1 size-3 rounded-full bg-white p-0">
+          <X className="size-full text-black" />
+        </Button>
+      ) : null}
     </div>
   );
 }
