@@ -17,7 +17,10 @@ import {
   useListMessagesQuery,
   useSubjectUpdater,
 } from '@/lib/hooks';
-import { MessageListContextProvider } from '@/lib/providers';
+import {
+  FileUploaderContextProvider,
+  MessageListContextProvider,
+} from '@/lib/providers';
 import { useAppStateStore } from '@/lib/store';
 import type {
   ConversationDetails,
@@ -320,7 +323,9 @@ export function ChatSection({ conversation }: Props) {
           <ToBottom onClick={onToBottomClick} />
         </div>
         <div id="prompt-input" className="size-full">
-          <ChatPromptInput conversationId={conversation.id} />
+          <FileUploaderContextProvider>
+            <ChatPromptInput conversationId={conversation.id} />
+          </FileUploaderContextProvider>
         </div>
       </>
     );

@@ -38,7 +38,9 @@
     "message": {
         "last-message": "Last message: {{lastMessage}}",
         "created-at": "Created at: {{createdAt}}",
-        "are-you-sure": "Are you absolutely sure?"
+        "are-you-sure": "Are you absolutely sure?",
+        "drag-file-here": "Drag file here to upload",
+        "release-to-upload": "Release to upload"
     },
     "label": {
         "default": "Default",

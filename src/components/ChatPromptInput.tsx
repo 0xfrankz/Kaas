@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, SendHorizonal } from 'lucide-react';
+import { ImagePlus, SendHorizonal, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import {
-  CONTENT_ITEM_TYPE_IMAGE,
   CONTENT_ITEM_TYPE_TEXT,
   MESSAGE_BOT,
   MESSAGE_USER,
@@ -15,19 +14,18 @@ import {
 } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
+  useFileUploaderContext,
   useMessageCreator,
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type {
-  ContentItemTypes,
-  ImageUploaderHandler,
-  Message,
-} from '@/lib/types';
+import type { ContentItemTypes, Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { ImagePreviwer } from './ImagePreviewer';
 import { ImageUploader } from './ImageUploader';
 import { Button } from './ui/button';
+import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 
@@ -39,8 +37,9 @@ type Props = {
 
 export function ChatPromptInput({ conversationId }: Props) {
   const [focused, setFocused] = useState(false);
+  const [showDropZone, setShowDropZone] = useState(false);
+  const { files } = useFileUploaderContext();
   const promptRef = useRef<HTMLTextAreaElement>(null);
-  const uploaderRef = useRef<ImageUploaderHandler>(null);
   const queryClient = useQueryClient();
   const creator = useMessageCreator({
     onSettled: () => {
@@ -98,17 +97,17 @@ export function ChatPromptInput({ conversationId }: Props) {
     if (promptStr.trim().length === 0) {
       toast.error(t('error:validation:empty-prompt'));
     } else {
-      const images = uploaderRef.current?.getImageDataList() ?? [];
+      // const images = uploaderRef.current?.getImageDataList() ?? [];
       const content = {
         items: [
           {
             type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
             data: promptStr,
           },
-          ...images.map((image) => ({
-            type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
-            data: image.dataUrl ?? '',
-          })),
+          // ...images.map((image) => ({
+          //   type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+          //   data: image.dataUrl ?? '',
+          // })),
         ],
       };
       creator({
@@ -155,28 +154,43 @@ export function ChatPromptInput({ conversationId }: Props) {
     <>
       <div
         className={cn(
-          'mb-2 flex min-h-15 w-full items-end rounded-xl px-2 py-3 text-sm gap-2',
+          'mb-2 flex flex-col min-h-15 w-full items-end rounded-xl px-2 py-3 text-sm gap-2',
           focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
         )}
       >
-        <Button className="size-9 rounded-full p-0" variant="secondary">
-          <ImagePlus className="size-4" />
-        </Button>
-        <div className="my-auto grow">
-          <Textarea
-            placeholder={t('page-conversation:message:input-placeholder')}
-            className="no-scrollbar resize-none overflow-y-hidden border-0 px-2"
-            rows={1}
-            onChange={onChange}
-            ref={promptRef}
-            onKeyDown={onKeyDown}
-            onFocus={onFocus}
-            onBlur={onBlur}
-          />
+        <ImagePreviwer />
+        <DndProvider backend={HTML5Backend}>
+          {showDropZone ? <ImageUploader className="mt-2" /> : null}
+        </DndProvider>
+        {files.length > 0 ? <Separator className="my-2" /> : null}
+        <div className="flex w-full">
+          <Button
+            className="size-9 rounded-full p-0"
+            variant="secondary"
+            onClick={() => setShowDropZone((state) => !state)}
+          >
+            {showDropZone ? (
+              <X className="size-4" />
+            ) : (
+              <ImagePlus className="size-4" />
+            )}
+          </Button>
+          <div className="my-auto grow">
+            <Textarea
+              placeholder={t('page-conversation:message:input-placeholder')}
+              className="no-scrollbar resize-none overflow-y-hidden border-0 px-2"
+              rows={1}
+              onChange={onChange}
+              ref={promptRef}
+              onKeyDown={onKeyDown}
+              onFocus={onFocus}
+              onBlur={onBlur}
+            />
+          </div>
+          <Button onClick={onClick} className="size-9 rounded-full p-0">
+            <SendHorizonal className="size-4" />
+          </Button>
         </div>
-        <Button onClick={onClick} className="size-9 rounded-full p-0">
-          <SendHorizonal className="size-4" />
-        </Button>
       </div>
       <div className="mb-4 flex w-full items-center justify-between px-2 text-xs text-muted-foreground">
         <span>
@@ -191,9 +205,6 @@ export function ChatPromptInput({ conversationId }: Props) {
           <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
         </div>
       </div>
-      <DndProvider backend={HTML5Backend}>
-        <ImageUploader ref={uploaderRef} />
-      </DndProvider>
     </>
   );
 }

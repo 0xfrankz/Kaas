@@ -37,7 +37,9 @@
     "message": {
         "last-message": "最近一条消息: {{lastMessage}}",
         "created-at": "创建于: {{createdAt}}",
-        "are-you-sure": "你确定吗？"
+        "are-you-sure": "你确定吗？",
+        "drag-file-here": "拖拽图片到这里",
+        "release-to-upload": "松手进行上传"
     },
     "label": {
         "default": "默认",

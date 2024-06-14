@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { SETTING_DISPLAY_LANGUAGE, SETTING_DISPLAY_THEME } from './constants';
 import {
   ConversationsContext,
+  FileUploaderContext,
   FilledPromptContext,
   MessageListContext,
 } from './contexts';
@@ -17,6 +18,7 @@ import {
 } from './hooks';
 import { useAppStateStore } from './store';
 import type {
+  FileData,
   FilledPrompt,
   TConversationsContext,
   TMessageListContext,
@@ -190,5 +192,34 @@ export function MessageListContextProvider({
     <MessageListContext.Provider value={messageListContext}>
       {children}
     </MessageListContext.Provider>
+  );
+}
+
+export function FileUploaderContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [files, setFiles] = useState<FileData[]>([]);
+  const context = useMemo(
+    () => ({
+      files,
+      addFiles: (newFiles: FileData[]) => {
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      },
+      removeFile: (index: number) => {
+        setFiles((prevFiles) => {
+          const newFiles = [...prevFiles];
+          newFiles.splice(index, 1);
+          return newFiles;
+        });
+      },
+    }),
+    [files]
+  );
+  return (
+    <FileUploaderContext.Provider value={context}>
+      {children}
+    </FileUploaderContext.Provider>
   );
 }

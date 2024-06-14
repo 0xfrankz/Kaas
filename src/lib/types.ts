@@ -148,9 +148,12 @@ export type ProviderStyles = {
   };
 };
 
-export type ImageData = {
+export type FileData = {
   name: string;
-  dataUrl: string | null;
+  size: number;
+  type: string; // number of bytes
+  lastModified: number; // timestamp
+  data: string; // base64 encoded string
 };
 
 // Contexts
@@ -169,6 +172,12 @@ export type TMessageListContext = {
   messages: Message[];
   onRegenerateClick: (message: Message) => void;
   onReceiverReady: () => void;
+};
+
+export type TFileUploaderContext = {
+  files: FileData[];
+  addFiles: (newFiles: FileData[]) => void;
+  removeFile: (index: number) => void;
 };
 
 // Errors
@@ -193,10 +202,6 @@ export type DialogHandler<T> = {
 
 export type StatefulDialogHandler<T> = DialogHandler<T> & {
   isOpen: () => boolean;
-};
-
-export type ImageUploaderHandler = {
-  getImageDataList: () => ImageData[];
 };
 
 // Functions

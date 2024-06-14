@@ -36,7 +36,6 @@ import {
   getTextFromMessage,
 } from '@/lib/utils';
 
-import { ImagePreviwer } from './ImageUploader';
 import { Button } from './ui/button';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
 
@@ -150,7 +149,7 @@ const Content = ({ content }: ContentProps) => {
       >
         {getTextFromContent(content)}
       </div>
-      <ImagePreviwer dataList={imageDataList} />
+      {/* <ImagePreviwer dataList={imageDataList} /> */}
     </div>
   );
 };

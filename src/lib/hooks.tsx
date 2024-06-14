@@ -59,6 +59,7 @@ import {
 } from './constants';
 import {
   ConversationsContext,
+  FileUploaderContext,
   FilledPromptContext,
   MessageListContext,
 } from './contexts';
@@ -80,6 +81,7 @@ import type {
   RemoteModel,
   Setting,
   TConversationsContext,
+  TFileUploaderContext,
   TFilledPromptContext,
   TMessageListContext,
   UpdateConversation,
@@ -745,6 +747,16 @@ export function useMessageListContext(): TMessageListContext {
   if (context === undefined) {
     throw new Error(
       'useMessageListContext must be used within a MessageListContextProvider'
+    );
+  }
+  return context;
+}
+
+export function useFileUploaderContext(): TFileUploaderContext {
+  const context = useContext(FileUploaderContext);
+  if (context === undefined) {
+    throw new Error(
+      'useFileUploaderContext must be used within a FileUploaderContextProvider'
     );
   }
   return context;
