@@ -39,7 +39,7 @@
         "last-message": "Last message: {{lastMessage}}",
         "created-at": "Created at: {{createdAt}}",
         "are-you-sure": "Are you absolutely sure?",
-        "drag-file-here": "Drag file here to upload",
+        "drag-file-here": "Drop images here to upload\n\nPNG (.png), JPEG (.jpeg and .jpg) and WEBP (.webp) files are supported\n20MB max per file",
         "release-to-upload": "Release to upload"
     },
     "label": {

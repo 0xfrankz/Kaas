@@ -43,7 +43,7 @@ pub struct Model {
     pub id: i32,
     pub conversation_id: i32,
     pub role: i32,
-    pub content: ContentItemList,
+    // pub content: ContentItemList,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -98,11 +98,19 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Conversations,
+    #[sea_orm(has_many = "super::contents::Entity")]
+    Contents,
 }
 
 impl Related<super::conversations::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Conversations.def()
+    }
+}
+
+impl Related<super::contents::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Contents.def()
     }
 }
 
@@ -138,7 +146,7 @@ impl IntoActiveModel<ActiveModel> for NewMessage {
         ActiveModel {
             conversation_id: ActiveValue::Set(self.conversation_id),
             role: ActiveValue::Set(self.role),
-            content: ActiveValue::Set(self.content),
+            // content: ActiveValue::Set(self.content),
             ..Default::default()
         }
     }

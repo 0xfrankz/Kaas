@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import {
+  CONTENT_ITEM_TYPE_IMAGE,
   CONTENT_ITEM_TYPE_TEXT,
   MESSAGE_BOT,
   MESSAGE_USER,
@@ -104,10 +105,10 @@ export function ChatPromptInput({ conversationId }: Props) {
             type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
             data: promptStr,
           },
-          // ...images.map((image) => ({
-          //   type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
-          //   data: image.dataUrl ?? '',
-          // })),
+          ...files.map((file) => ({
+            type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+            data: file,
+          })),
         ],
       };
       creator({
@@ -119,7 +120,7 @@ export function ChatPromptInput({ conversationId }: Props) {
         promptRef.current.value = '';
       }
     }
-  }, [conversationId, creator, t]);
+  }, [conversationId, creator, files, t]);
 
   const onCheckedChange = (checked: boolean) => {
     upserter({

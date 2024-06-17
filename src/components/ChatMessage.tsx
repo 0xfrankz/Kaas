@@ -273,7 +273,6 @@ const ContentReceiver = ({ message }: { message: Message }) => {
 };
 
 const User = ({ message }: MessageProps) => {
-  console.log('User message:', message);
   const userName = useAppStateStore(
     (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
   );

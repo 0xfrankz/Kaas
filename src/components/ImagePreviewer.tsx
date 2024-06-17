@@ -15,10 +15,12 @@ type ImageThumbnailProps = {
 export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
   const ref = useRef(null);
   const isHovering = useHover(ref);
+  const blob = new Blob([imageData.data], { type: imageData.type });
+  const imageSrc = URL.createObjectURL(blob);
   return (
     <div className="relative size-12" ref={ref}>
       <img
-        src={imageData.data}
+        src={imageSrc}
         alt={imageData.name}
         className="m-0 size-full rounded-lg object-cover"
       />
@@ -36,6 +38,7 @@ export const ImagePreviwer = forwardRef<
   HtmlHTMLAttributes<HTMLDivElement>
 >(({ className }, ref) => {
   const { files } = useFileUploaderContext();
+  console.log('ImagePreviwer:', files);
   const render = () => {
     if (files.length > 0) {
       return (

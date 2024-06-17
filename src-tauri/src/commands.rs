@@ -5,7 +5,8 @@ use entity::entities::{
     messages::{self, ContentItem, ContentItemList, Model as Message, NewMessage, Roles}, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
-    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
+    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY},
+    contents::{Model as Content, ContentType}
 };
 
 use tauri::State;
@@ -111,13 +112,13 @@ pub async fn create_conversation(
         subject: new_conversation.message.clone(),
         ..Default::default()
     };
-    let message = Message {
-        role: messages::Roles::from(0).into(), // first messge must be User message
-        content: ContentItemList::new(ContentItem::text(new_conversation.message)),
+    let content = Content {
+        r#type: ContentType::Text,
+        text: Some(new_conversation.message),
         ..Default::default()
     };
-    let (conversation, _) = repo
-        .create_conversation_with_message(conversation, message)
+    let (conversation, _, _) = repo
+        .create_conversation_with_content(conversation, content)
         .await
         .map_err(|message| DbError { message })?;
 

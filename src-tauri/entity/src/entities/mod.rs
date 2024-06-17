@@ -7,3 +7,4 @@ pub mod conversations;
 pub mod messages;
 pub mod settings;
 pub mod prompts;
+pub mod contents;

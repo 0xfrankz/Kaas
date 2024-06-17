@@ -8,37 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { useFileUploaderContext } from '@/lib/hooks';
 import { cn } from '@/lib/utils';
 
-type ImageDropTargetProps = {
-  onDrop: (files: File[]) => void;
-};
-
-function ImageDropTarget({ onDrop }: ImageDropTargetProps) {
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    accept: [NativeTypes.FILE],
-    drop(item: { files: File[] }) {
-      onDrop(item.files);
-    },
-    canDrop(item: { files: File[] }) {
-      const imgTypeReg = /^image\/[\w]+$/;
-      const allImages = item.files.every((file) => imgTypeReg.test(file.type));
-      return allImages;
-    },
-    collect: (monitor: DropTargetMonitor) => {
-      return {
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-      };
-    },
-  }));
-  const isActive = canDrop && isOver;
-
-  return (
-    <div ref={drop} className="size-full">
-      {isActive ? 'Release to drop' : 'Drag file here'}
-    </div>
-  );
-}
-
 export const ImageUploader = forwardRef<
   HTMLDivElement,
   HtmlHTMLAttributes<HTMLDivElement>
@@ -57,17 +26,20 @@ export const ImageUploader = forwardRef<
               size: file.size,
               type: file.type,
               lastModified: file.lastModified,
-              data: fr.result as string,
+              data: new Uint8Array(fr.result as ArrayBuffer),
             },
           ]);
         };
-        fr.readAsDataURL(file);
+        fr.readAsArrayBuffer(file);
       });
     },
     canDrop(item: { files: File[] }) {
-      const imgTypeReg = /^image\/[\w]+$/;
-      const allImages = item.files.every((file) => imgTypeReg.test(file.type));
-      return allImages;
+      const imgTypeReg = /^image\/(jpe?g|png|webp)$/;
+      const typeCheck = item.files.every((file) => imgTypeReg.test(file.type));
+      const sizeCheck = item.files.every(
+        (file) => file.size < 1024 * 1024 * 20 // 20MB max per file
+      );
+      return typeCheck && sizeCheck;
     },
     collect: (monitor: DropTargetMonitor) => {
       return {
@@ -81,13 +53,16 @@ export const ImageUploader = forwardRef<
   return (
     <div
       className={cn(
-        'h-20 w-full overflow-hidden rounded-lg border border-dashed bg-subtle text-muted-foreground',
+        'h-28 w-full overflow-hidden rounded-lg border border-dashed bg-subtle text-muted-foreground',
         isActive ? 'border-solid' : null,
         className
       )}
       ref={ref}
     >
-      <div ref={drop} className="flex size-full items-center justify-center">
+      <div
+        ref={drop}
+        className="flex size-full items-center justify-center whitespace-pre-wrap text-center"
+      >
         {isActive
           ? t('generic:message:release-to-upload')
           : t('generic:message:drag-file-here')}

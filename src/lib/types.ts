@@ -93,7 +93,7 @@ export type UpdateConversation = Omit<
 
 export type ContentItem = {
   type: ContentItemTypes;
-  data: string;
+  data: FileData | string;
 };
 
 export type ContentItemList = {
@@ -153,7 +153,7 @@ export type FileData = {
   size: number;
   type: string; // number of bytes
   lastModified: number; // timestamp
-  data: string; // base64 encoded string
+  data: Uint8Array; // blob
 };
 
 // Contexts

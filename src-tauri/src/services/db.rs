@@ -4,10 +4,10 @@ use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Me
 use entity::entities::models::{self, Model, NewModel, ProviderConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
 use entity::entities::settings::{self, Model as Setting};
+use entity::entities::contents::{self, Model as Content, ActiveModel as ActiveContent};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::ActiveValue::NotSet;
-use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -206,43 +206,48 @@ impl Repository {
         Ok(result)
     }
 
-    pub async fn create_conversation_with_message(&self, conversation: Conversation, message: Message) -> Result<(Conversation, Message), String> {
+    pub async fn create_conversation_with_content(&self, conversation: Conversation, content: Content) -> Result<(Conversation, Message, Content), String> {
         // when created with a message
         // model id must be present
         let mode_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
         let model = self
                 .get_model(mode_id)
                 .await?;
-        let result = self.connection.transaction::<_, (Conversation, Message), DbErr>(|txn| {
+        let result = self.connection.transaction::<_, (Conversation, Message, Content), DbErr>(|txn| {
             Box::pin(async move {
-                let mut c_am: ActiveConversation = conversation.into();
-                c_am.id = ActiveValue::NotSet;
+                let mut conv_am: ActiveConversation = conversation.into();
+                conv_am.id = ActiveValue::NotSet;
                 match model.provider.into() {
                     Providers::Azure => {
                         let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
-                        c_am.options = Set(Some(options_str));
+                        conv_am.options = Set(Some(options_str));
                     }
                     _ => {
                         let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                        c_am.options = Set(Some(options_str));
+                        conv_am.options = Set(Some(options_str));
                     }
                 }
-                c_am.created_at = Set(chrono::Local::now());
+                conv_am.created_at = Set(chrono::Local::now());
 
-                let c_m: Conversation = c_am
+                let conv_m: Conversation = conv_am
                     .insert(txn)
                     .await?;
                 
-                let mut m_am: ActiveMessage = message.into();
-                m_am.id = ActiveValue::NotSet;
-                m_am.conversation_id = Set(c_m.id);
-                m_am.created_at = Set(chrono::Local::now());
-
-                let m_m: Message = m_am
+                let msg_m: Message = ActiveMessage {
+                        conversation_id: Set(conv_m.id),
+                        created_at: Set(chrono::Local::now()),
+                        ..Default::default()
+                    }
                     .insert(txn)
                     .await?;
-                
-                Ok((c_m, m_m))
+
+                let mut ctnt_am: ActiveContent = content.into();
+                ctnt_am.message_id = Set(msg_m.id);
+                let ctnt_m = ctnt_am
+                    .insert(txn)
+                    .await?;
+
+                Ok((conv_m, msg_m, ctnt_m))
             })
         })
         .await
@@ -604,7 +609,7 @@ impl Repository {
      */
     pub async fn update_message(&self, message: Message) -> Result<Message, String> {
         let mut active_model = message.into_active_model();
-        active_model.reset(messages::Column::Content);
+        // active_model.reset(messages::Column::Content);
         active_model.updated_at = Set(Some(chrono::Local::now()));
         let result = active_model
             .update(&self.connection)
