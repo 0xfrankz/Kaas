@@ -8,7 +8,8 @@ import { Fallback } from '@/components/Fallback';
 import { CONTENT_ITEM_TYPE_TEXT, PROVIDER_STYLES } from './constants';
 import type {
   AllProviders,
-  ContentItemList,
+  ContentItem,
+  ContentItemText,
   Message,
   Model,
   ProviderStyles,
@@ -85,13 +86,16 @@ export function getModelAlias(model: Model): string {
   return alias;
 }
 
-export function buildTextContent(text: string): ContentItemList {
-  return { items: [{ type: CONTENT_ITEM_TYPE_TEXT, data: text }] };
+export function buildTextContent(text: string): ContentItem[] {
+  return [{ type: CONTENT_ITEM_TYPE_TEXT, data: text }];
 }
 
-export function getTextFromContent(content: ContentItemList): string {
-  const item = content.items.find((ci) => ci.type === CONTENT_ITEM_TYPE_TEXT);
-  return item?.data ?? '';
+export function getTextFromContent(contentItems: ContentItem[]): string {
+  const item = contentItems.find((ci) => ci.type === CONTENT_ITEM_TYPE_TEXT);
+  if (item) {
+    return (item as ContentItemText).data;
+  }
+  return '';
 }
 
 export function getTextFromMessage(message: Message): string {

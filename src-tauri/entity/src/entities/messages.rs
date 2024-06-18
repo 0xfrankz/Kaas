@@ -6,7 +6,10 @@ use sea_orm::ActiveValue;
 use sea_orm::FromJsonQueryResult;
 use sea_orm::IntoActiveModel;
 use sea_orm::IntoActiveValue;
+use sea_orm::Set;
 use serde::{Deserialize, Serialize};
+
+use super::contents::ContentType;
 
 pub enum Roles {
     User,
@@ -73,21 +76,6 @@ impl IntoActiveValue<String> for ContentItemList {
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ContentItem {
-    pub r#type: String,
-    pub data: String
-}
-
-impl ContentItem {
-    pub fn text(text: String) -> Self {
-        ContentItem {
-            r#type: "text".to_string(),
-            data: text
-        }
-    }
-}
-
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
@@ -133,21 +121,118 @@ impl Linked for MessageToModel {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NewMessage {
-    pub conversation_id: i32,
-    pub role: i32,
-    pub content: ContentItemList,
+// #[derive(Clone, Debug, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct NewMessage {
+//     pub conversation_id: i32,
+//     pub role: i32,
+//     pub content: ContentItemList,
+// }
+
+// impl IntoActiveModel<ActiveModel> for NewMessage {
+//     fn into_active_model(self) -> ActiveModel {
+//         ActiveModel {
+//             conversation_id: ActiveValue::Set(self.conversation_id),
+//             role: ActiveValue::Set(self.role),
+//             // content: ActiveValue::Set(self.content),
+//             ..Default::default()
+//         }
+//     }
+// }
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum ContentItem {
+    Text { data: String },
+    Image { file_name: String, file_size: u32, file_type: String, file_last_modified: u32, file_data: Vec<u8> }
 }
 
-impl IntoActiveModel<ActiveModel> for NewMessage {
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MessageDTO {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<i32>,
+    pub conversation_id: i32,
+    pub role: i32,
+    // pub content: ContentItemList,
+    #[serde(skip_deserializing)]
+    pub created_at: DateTimeLocal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub updated_at: Option<DateTimeLocal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub deleted_at: Option<DateTimeLocal>,
+    pub content: Vec<ContentItem>,
+}
+
+impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
+    fn from(value: (Model, Vec<super::contents::Model>)) -> Self {
+        let message = value.0;
+        let contents = value.1;
+        MessageDTO {
+            id: Some(message.id),
+            conversation_id: message.conversation_id,
+            role: message.role,
+            created_at: message.created_at,
+            updated_at: message.updated_at,
+            deleted_at: message.deleted_at,
+            content: contents.into_iter().map(|content| content.into()).collect(),
+        }
+    }
+}
+
+impl IntoActiveModel<ActiveModel> for MessageDTO {
     fn into_active_model(self) -> ActiveModel {
         ActiveModel {
             conversation_id: ActiveValue::Set(self.conversation_id),
             role: ActiveValue::Set(self.role),
             // content: ActiveValue::Set(self.content),
             ..Default::default()
+        }
+    }
+}
+
+impl From<super::contents::Model> for ContentItem {
+    fn from(value: super::contents::Model) -> Self {
+        match value.r#type {
+            ContentType::Text => {
+                ContentItem::Text {
+                    data: value.text.unwrap_or_default()
+                }
+            },
+            ContentType::Image => {
+                ContentItem::Image {
+                    file_name: value.file_name.unwrap_or_default(),
+                    file_size: value.file_size.unwrap_or_default(),
+                    file_type: value.file_type.unwrap_or_default(),
+                    file_last_modified: value.file_last_modified.unwrap_or_default(),
+                    file_data: value.file_data.unwrap_or_default(),
+                }
+            },
+        }
+    }
+}
+
+impl IntoActiveModel<super::contents::ActiveModel> for ContentItem {
+    fn into_active_model(self) -> super::contents::ActiveModel {
+        match self {
+            ContentItem::Text { data } => {
+                super::contents::ActiveModel {
+                    r#type: Set(ContentType::Text),
+                    text: Set(Some(data)),
+                    ..Default::default()
+                }
+            },
+            ContentItem::Image { file_name, file_size, file_type, file_last_modified, file_data } => {
+                super::contents::ActiveModel {
+                    r#type: Set(ContentType::Image),
+                    file_name: Set(Some(file_name)),
+                    file_size: Set(Some(file_size)),
+                    file_type: Set(Some(file_type)),
+                    file_last_modified: Set(Some(file_last_modified)),
+                    ..Default::default()
+                }
+            },
         }
     }
 }

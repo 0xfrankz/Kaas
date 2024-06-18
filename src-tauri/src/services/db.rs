@@ -1,13 +1,13 @@
 
 use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, ProviderOptions, UpdateConversationDTO};
-use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
+use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
 use entity::entities::models::{self, Model, NewModel, ProviderConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
 use entity::entities::settings::{self, Model as Setting};
 use entity::entities::contents::{self, Model as Content, ActiveModel as ActiveContent};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QuerySelect};
+use sea_orm::{DbErr, IntoActiveModel, JoinType, LoaderTrait, QueryFilter, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -534,7 +534,7 @@ impl Repository {
     /**
      * Get the last n messages of a conversation
      */
-    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<Message>, String> {
+    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<(Message, Vec<Content>)>, String> {
         let mut query = messages::Entity::find()
             .filter(messages::Column::ConversationId.eq(conversation_id));
         if let Some(mid) = before_message_id {
@@ -549,22 +549,55 @@ impl Repository {
                 error!("{}", err);
                 format!("Failed to find last {} messages with conversation id = {}", n,conversation_id)
             })?;
-        Ok(messages)
+        let contents = messages
+            .load_many(contents::Entity, &self.connection)
+            .await
+            .map_err(|err| { 
+                error!("{}", err);
+                format!("Failed to find contents of the last {} messages with conversation id = {}", n,conversation_id)
+            })?;
+        let result: Vec<(Message, Vec<Content>)> = messages.into_iter().zip(contents.into_iter()).collect();
+        Ok(result)
     }
 
     /**
      * Insert a new message
      */
-    pub async fn create_message(&self, new_message: NewMessage) -> Result<Message, String> {
-        let mut active_model = new_message.into_active_model();
-        active_model.created_at  = Set(chrono::Local::now());
-        let result = active_model
-            .insert(&self.connection)
-            .await
-            .map_err(|err| {
-                error!("{}", err);
-                "Failed to create new message".to_string()
-            })?;
+    pub async fn create_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        let contents = message.content.clone();
+        let mut msg_am = message.into_active_model();
+        msg_am.created_at  = Set(chrono::Local::now());
+        let result = self.connection.transaction::<_, MessageDTO, DbErr>(|txn| {
+            Box::pin(async move {
+                // Insert message first
+                let msg_m = msg_am
+                    .insert(txn)
+                    .await?;
+                let ctnt_ams: Vec<contents::ActiveModel> = contents.into_iter().map(|content| {
+                    let mut ctnt_am: contents::ActiveModel = content.into_active_model();
+                    ctnt_am.message_id = Set(msg_m.id);
+                    ctnt_am
+                }).collect();
+                // Insert contents
+                contents::Entity::insert_many(ctnt_ams)
+                    .exec(txn)
+                    .await?;
+                // Retrieve newly inserted contents
+                let contents = msg_m
+                    .find_related(contents::Entity)
+                    .all(txn)
+                    .await?;
+                // Return DTO
+                let dto = MessageDTO::from((msg_m, contents));
+                Ok(dto)
+            })
+        })
+        .await
+        .map_err(|err| {
+            error!("Failed to create message with contents: {}", err);
+            err.to_string()
+        })?;
+        
         Ok(result)
     }
 
@@ -591,17 +624,18 @@ impl Repository {
     /**
      * Get the system message of a conversation
      */
-    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<Message>, String> {
-        let result: Result<Option<Message>, String> = messages::Entity::find()
+    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<(Message, Vec<Content>)>, String> {
+        let mut result = messages::Entity::find()
+            .find_with_related(contents::Entity)
             .filter(messages::Column::ConversationId.eq(conversation_id))
             .filter(messages::Column::Role.eq(Into::<i32>::into(messages::Roles::System)))
-            .one(&self.connection)
+            .all(&self.connection)
             .await
             .map_err(|err| {
                 error!("{}", err);
                 format!("Failed to get system message of conversation with id = {}", conversation_id)
-            });
-        result
+            })?;
+        Ok(result.pop())
     }
 
     /**

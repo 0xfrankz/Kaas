@@ -2,6 +2,8 @@ import type { z } from 'zod';
 
 import type {
   ALL_PROVIDERS,
+  CONTENT_ITEM_TYPE_IMAGE,
+  CONTENT_ITEM_TYPE_TEXT,
   CONTENT_ITEM_TYPES,
   SUPPORTED_PROVIDERS,
 } from './constants';
@@ -91,19 +93,26 @@ export type UpdateConversation = Omit<
   subject?: string;
 };
 
-export type ContentItem = {
-  type: ContentItemTypes;
-  data: FileData | string;
+export type ContentItemText = {
+  type: typeof CONTENT_ITEM_TYPE_TEXT;
+  data: string;
 };
 
-export type ContentItemList = {
-  items: ContentItem[];
+export type ContentItemImage = {
+  type: typeof CONTENT_ITEM_TYPE_IMAGE;
+  data: FileData;
 };
+
+export type ContentItem = ContentItemText | ContentItemImage;
+
+// export type ContentItemList = {
+//   items: ContentItem[];
+// };
 
 export type NewMessage = {
   conversationId: number;
   role: number;
-  content: ContentItemList;
+  content: ContentItem[];
 };
 
 export type Message = NewMessage & {

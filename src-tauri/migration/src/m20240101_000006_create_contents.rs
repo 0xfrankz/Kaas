@@ -36,9 +36,9 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Contents::Type).integer().not_null())
                     .col(ColumnDef::new(Contents::Text).text().null())
                     .col(ColumnDef::new(Contents::FileName).string().null())
-                    .col(ColumnDef::new(Contents::FileSize).integer().null())
+                    .col(ColumnDef::new(Contents::FileSize).unsigned().null())
                     .col(ColumnDef::new(Contents::FileType).string().null())
-                    .col(ColumnDef::new(Contents::FileLastModified).timestamp().null())
+                    .col(ColumnDef::new(Contents::FileLastModified).unsigned().null())
                     .col(ColumnDef::new(Contents::FileData).binary().null())
                     .foreign_key(
                         ForeignKey::create()

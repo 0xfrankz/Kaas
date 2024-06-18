@@ -1,12 +1,7 @@
 use std::time::Instant;
 
 use entity::entities::{
-    conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
-    messages::{self, ContentItem, ContentItemList, Model as Message, NewMessage, Roles}, 
-    models::{Model, NewModel, ProviderConfig}, 
-    prompts::{Model as Prompt, NewPrompt}, 
-    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY},
-    contents::{Model as Content, ContentType}
+    contents::{ContentType, Model as Content}, conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, messages::{self, ContentItem, ContentItemList, MessageDTO, Model as Message, Roles}, models::{Model, NewModel, ProviderConfig}, prompts::{Model as Prompt, NewPrompt}, settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
 
 use tauri::State;
@@ -220,7 +215,7 @@ pub async fn update_conversation(conversation: UpdateConversationDTO, repo: Stat
 }
 
 #[tauri::command]
-pub async fn create_message(message: NewMessage, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn create_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<Message> {
     let now = Instant::now();
     log::info!("create_message: message = {:?}", message);
     let result = repo
@@ -246,12 +241,13 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Option<Message>> {
+pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Option<MessageDTO>> {
     let now = Instant::now();
-    let result = repo
+    let result: Option<MessageDTO> = repo
         .get_system_message(conversation_id)
         .await
-        .map_err(|message| DbError { message })?;
+        .map_err(|message| DbError { message })?
+        .and_then(|inner| Some(MessageDTO::from(inner)));
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::get_system_message]: {:.2?}", elapsed);
     Ok(result)
