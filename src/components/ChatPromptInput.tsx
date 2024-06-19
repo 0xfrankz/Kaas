@@ -101,7 +101,7 @@ export function ChatPromptInput({ conversationId }: Props) {
   const onClick = useCallback(async () => {
     // TEST: save files
     const tasks = files.map(async (file) => {
-      await writeBinaryFile(file.fileName, file.fileData, {
+      await writeBinaryFile(`cache/${file.fileName}`, file.fileData, {
         dir: BaseDirectory.AppData,
       });
     });
