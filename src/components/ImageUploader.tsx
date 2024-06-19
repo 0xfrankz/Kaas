@@ -22,11 +22,11 @@ export const ImageUploader = forwardRef<
         fr.onload = () => {
           addFiles([
             {
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              lastModified: file.lastModified,
-              data: new Uint8Array(fr.result as ArrayBuffer),
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+              fileLastModified: file.lastModified,
+              fileData: new Uint8Array(fr.result as ArrayBuffer),
             },
           ]);
         };

@@ -15,6 +15,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import {
+  CONTENT_ITEM_TYPE_IMAGE,
   DEFAULT_DATETIME_FORMAT,
   DEFAULT_PROFILE_NAME,
   SETTING_PROFILE_NAME,
@@ -27,7 +28,7 @@ import {
   useMessageUpdater,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItemList, Message } from '@/lib/types';
+import type { ContentItem, Message } from '@/lib/types';
 import {
   buildTextContent,
   cn,
@@ -48,7 +49,7 @@ type MessageProps = {
 };
 
 type ContentProps = {
-  content: ContentItemList;
+  content: ContentItem[];
 };
 
 type MetaBarProps = {
@@ -134,8 +135,8 @@ const ErrorContent = ({ error }: { error: string }) => {
 };
 
 const Content = ({ content }: ContentProps) => {
-  const imageDataList = content.items
-    .filter((item) => item.type === 'image')
+  const imageDataList = content
+    .filter((item) => item.type === CONTENT_ITEM_TYPE_IMAGE)
     .map((image, index) => ({
       name: `image-${index}`,
       dataUrl: image.data,

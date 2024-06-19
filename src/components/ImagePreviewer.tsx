@@ -15,13 +15,13 @@ type ImageThumbnailProps = {
 export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
   const ref = useRef(null);
   const isHovering = useHover(ref);
-  const blob = new Blob([imageData.data], { type: imageData.type });
+  const blob = new Blob([imageData.fileData], { type: imageData.fileType });
   const imageSrc = URL.createObjectURL(blob);
   return (
     <div className="relative size-12" ref={ref}>
       <img
         src={imageSrc}
-        alt={imageData.name}
+        alt={imageData.fileName}
         className="m-0 size-full rounded-lg object-cover"
       />
       {isHovering ? (
@@ -45,7 +45,7 @@ export const ImagePreviwer = forwardRef<
         <div className={cn('w-full', className)} ref={ref}>
           <ul className="m-0 flex list-none gap-2 p-0">
             {files.map((f, idx) => {
-              const key = `${f.name}_${idx}`;
+              const key = `${f.fileName}_${idx}`;
               return (
                 <li key={key}>
                   <ImageThumbnail imageData={f} />

@@ -158,11 +158,11 @@ export type ProviderStyles = {
 };
 
 export type FileData = {
-  name: string;
-  size: number;
-  type: string; // number of bytes
-  lastModified: number; // timestamp
-  data: Uint8Array; // blob
+  fileName: string;
+  fileSize: number;
+  fileType: string; // number of bytes
+  fileLastModified: number; // timestamp
+  fileData: Uint8Array; // blob
 };
 
 // Contexts

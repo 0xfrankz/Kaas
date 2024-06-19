@@ -140,14 +140,25 @@ impl Linked for MessageToModel {
 //     }
 // }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub struct FileData {
+    pub file_name: String, 
+    pub file_size: u32, 
+    pub file_type: String,
+    pub file_last_modified: u32, 
+    pub file_data: Vec<u8>
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum ContentItem {
     Text { data: String },
-    Image { file_name: String, file_size: u32, file_type: String, file_last_modified: u32, file_data: Vec<u8> }
+    Image { data: FileData }
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub struct MessageDTO {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<i32>,
@@ -216,11 +227,13 @@ impl From<super::contents::Model> for ContentItem {
             },
             ContentType::Image => {
                 ContentItem::Image {
-                    file_name: value.file_name.unwrap_or_default(),
-                    file_size: value.file_size.unwrap_or_default(),
-                    file_type: value.file_type.unwrap_or_default(),
-                    file_last_modified: value.file_last_modified.unwrap_or_default(),
-                    file_data: value.file_data.unwrap_or_default(),
+                    data: FileData {
+                        file_name: value.file_name.unwrap_or_default(),
+                        file_size: value.file_size.unwrap_or_default(),
+                        file_type: value.file_type.unwrap_or_default(),
+                        file_last_modified: value.file_last_modified.unwrap_or_default(),
+                        file_data: value.file_data.unwrap_or_default(),
+                    }
                 }
             },
         }
@@ -237,13 +250,13 @@ impl IntoActiveModel<super::contents::ActiveModel> for ContentItem {
                     ..Default::default()
                 }
             },
-            ContentItem::Image { file_name, file_size, file_type, file_last_modified, file_data } => {
+            ContentItem::Image { data } => {
                 super::contents::ActiveModel {
                     r#type: Set(ContentType::Image),
-                    file_name: Set(Some(file_name)),
-                    file_size: Set(Some(file_size)),
-                    file_type: Set(Some(file_type)),
-                    file_last_modified: Set(Some(file_last_modified)),
+                    file_name: Set(Some(data.file_name)),
+                    file_size: Set(Some(data.file_size)),
+                    file_type: Set(Some(data.file_type)),
+                    file_last_modified: Set(Some(data.file_last_modified)),
                     ..Default::default()
                 }
             },

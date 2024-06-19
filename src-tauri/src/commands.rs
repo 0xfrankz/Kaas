@@ -229,7 +229,7 @@ pub async fn create_message(message: MessageDTO, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<Message>> {
+pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<MessageDTO>> {
     let now = Instant::now();
     let result = repo
         .list_messages(conversation_id)

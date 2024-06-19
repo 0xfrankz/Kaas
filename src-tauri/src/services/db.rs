@@ -608,10 +608,11 @@ impl Repository {
     /**
      * List all messages of a conversation
      */
-    pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<Message>, String> {
+    pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<MessageDTO>, String> {
         // Retrieve all Messages from DB with conversation_id
         // By default, filter out all system messages
         let result= messages::Entity::find()
+            .find_with_related(contents::Entity)
             .filter(messages::Column::ConversationId.eq(conversation_id))
             .filter(messages::Column::Role.ne(Into::<i32>::into(messages::Roles::System)))
             .filter(messages::Column::DeletedAt.is_null())
@@ -621,7 +622,10 @@ impl Repository {
             .map_err(|err| {
                 error!("{}", err);
                 format!("Failed to list messages of conversation with id = {}", conversation_id)
-            })?;
+            })?
+            .into_iter()
+            .map(|data| MessageDTO::from(data))
+            .collect();
         Ok(result)
     }
 

@@ -122,7 +122,7 @@ export function ChatSection({ conversation }: Props) {
               const placeholder = {
                 conversationId: conversation.id,
                 role: MESSAGE_BOT,
-                content: { items: [] },
+                content: [],
                 id: -1,
                 isReceiving: true,
               };
@@ -191,10 +191,10 @@ export function ChatSection({ conversation }: Props) {
   const onContinueClick = useCallback(() => {
     // insert placeholder to trigger generation
     // then scroll to bottom
-    const placeholder = {
+    const placeholder: Message = {
       conversationId: conversation.id,
       role: MESSAGE_BOT,
-      content: { items: [] },
+      content: [],
       id: -1,
       isReceiving: true,
     };

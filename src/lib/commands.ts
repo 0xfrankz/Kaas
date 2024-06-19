@@ -181,14 +181,24 @@ export async function invokeListMessages(
   conversationId: number
 ): Promise<Message[]> {
   const result = await invoke<Message[]>('list_messages', { conversationId });
+  console.log('invokeListMessages result:', result);
   return result;
 }
 
 export async function invokeCreateMessage(
   message: NewMessage
 ): Promise<Message> {
-  const result = await invoke<Message>('create_message', { message });
-  return result;
+  console.log('invokeCreateMessage', message);
+  try {
+    const result = await invoke<Message>('create_message', { message });
+    return result;
+  } catch (e) {
+    console.log('invokeCreateMessage error', e);
+    if (typeof e === 'string') {
+      return Promise.reject(new Error(e));
+    }
+    return Promise.reject(e);
+  }
 }
 
 export async function invokeGetSystemMessage(

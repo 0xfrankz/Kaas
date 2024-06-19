@@ -1,7 +1,7 @@
 use async_openai::{
-    config::{AzureConfig, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, ImageUrlArgs, ImageUrlDetail, Role}, Client
+    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageUrlArgs, ImageUrlDetail, Role, ChatCompletionRequestAssistantMessageArgs}
 };
-use entity::entities::{conversations::{AzureOptions, OpenAIOptions, Options, ProviderOptions}, messages::{ContentItem, MessageDTO, Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
+use entity::entities::{conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{ContentItem, MessageDTO, Roles}, models::Providers};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u16>) -> Result<CreateChatCompletionRequest, String> {
@@ -56,10 +56,10 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
                 .into_iter()
                 .map(|item| {
                     let part: ChatCompletionRequestMessageContentPart = match item {
-                        ContentItem::Image{file_name, file_size, file_type, file_last_modified, file_data} => ChatCompletionRequestMessageContentPartImageArgs::default()
+                        ContentItem::Image{data} => ChatCompletionRequestMessageContentPartImageArgs::default()
                             .image_url(
                                 ImageUrlArgs::default()
-                                    .url(STANDARD.encode(file_data))
+                                    .url(STANDARD.encode(data.file_data))
                                     .detail(ImageUrlDetail::Auto)
                                     .build()?
                             )
@@ -93,13 +93,10 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
         },
         _ => {
             return ChatCompletionRequestMessage::Assistant(
-                ChatCompletionRequestAssistantMessage {
-                    content: message.get_text(),
-                    role: Role::Assistant,
-                    name: None,
-                    tool_calls: None,
-                    function_call: None,
-                }
+                ChatCompletionRequestAssistantMessageArgs::default()
+                    .content(message.get_text().unwrap_or(String::default()))
+                    .build()
+                    .unwrap_or(ChatCompletionRequestAssistantMessage::default())
             );
         }
     }

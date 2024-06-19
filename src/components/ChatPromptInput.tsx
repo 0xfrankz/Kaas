@@ -20,7 +20,12 @@ import {
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItemTypes, Message } from '@/lib/types';
+import type {
+  ContentItemImage,
+  ContentItemText,
+  ContentItemTypes,
+  Message,
+} from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
@@ -43,28 +48,33 @@ export function ChatPromptInput({ conversationId }: Props) {
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const creator = useMessageCreator({
-    onSettled: () => {
-      // insert placeholder to trigger generation
-      const placeholder = {
-        conversationId,
-        role: MESSAGE_BOT,
-        content: { items: [] },
-        id: -1,
-        isReceiving: true,
-      };
+    onSettled: (_, error) => {
+      if (error) {
+        console.log(error);
+        toast.error(error.message);
+      } else {
+        // insert placeholder to trigger generation
+        const placeholder: Message = {
+          conversationId,
+          role: MESSAGE_BOT,
+          content: [],
+          id: -1,
+          isReceiving: true,
+        };
 
-      // add placeholder message
-      queryClient.setQueryData<Message[]>(
-        [
-          ...LIST_MESSAGES_KEY,
-          {
-            conversationId,
-          },
-        ],
-        (old) => {
-          return old ? [...old, placeholder] : [placeholder];
-        }
-      );
+        // add placeholder message
+        queryClient.setQueryData<Message[]>(
+          [
+            ...LIST_MESSAGES_KEY,
+            {
+              conversationId,
+            },
+          ],
+          (old) => {
+            return old ? [...old, placeholder] : [placeholder];
+          }
+        );
+      }
     },
   });
   const enterToSend = useAppStateStore(
@@ -93,29 +103,31 @@ export function ChatPromptInput({ conversationId }: Props) {
     }
   };
 
-  const onClick = useCallback(() => {
+  const onClick = useCallback(async () => {
     const promptStr = promptRef.current?.value ?? '';
     if (promptStr.trim().length === 0) {
       toast.error(t('error:validation:empty-prompt'));
     } else {
       // const images = uploaderRef.current?.getImageDataList() ?? [];
-      const content = {
-        items: [
-          {
-            type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
-            data: promptStr,
-          },
-          ...files.map((file) => ({
-            type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
-            data: file,
-          })),
-        ],
-      };
+      const content = [
+        {
+          type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
+          data: promptStr,
+        } as ContentItemText,
+        ...files.map(
+          (file) =>
+            ({
+              type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+              data: file,
+            }) as ContentItemImage
+        ),
+      ];
       creator({
         conversationId,
         role: MESSAGE_USER,
         content,
       });
+      console.log('After creator call');
       if (promptRef.current) {
         promptRef.current.value = '';
       }
