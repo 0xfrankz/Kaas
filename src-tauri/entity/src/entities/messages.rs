@@ -165,6 +165,20 @@ pub struct MessageDTO {
     pub content: Vec<ContentItem>,
 }
 
+impl MessageDTO {
+    pub fn get_text(&self) -> Option<String> {
+        self.content
+            .iter()
+            .find_map(|item| {
+                if let ContentItem::Text{data} = item {
+                    Some(data.clone())
+                } else {
+                    None
+                }
+            })
+    }
+}
+
 impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
     fn from(value: (Model, Vec<super::contents::Model>)) -> Self {
         let message = value.0;

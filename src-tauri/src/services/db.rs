@@ -534,7 +534,7 @@ impl Repository {
     /**
      * Get the last n messages of a conversation
      */
-    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<(Message, Vec<Content>)>, String> {
+    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<(MessageDTO)>, String> {
         let mut query = messages::Entity::find()
             .filter(messages::Column::ConversationId.eq(conversation_id));
         if let Some(mid) = before_message_id {
@@ -557,7 +557,11 @@ impl Repository {
                 format!("Failed to find contents of the last {} messages with conversation id = {}", n,conversation_id)
             })?;
         let result: Vec<(Message, Vec<Content>)> = messages.into_iter().zip(contents.into_iter()).collect();
-        Ok(result)
+        let dtos: Vec<MessageDTO> = result.into_iter().map(|data| {
+            data.into()
+        }).collect();
+
+        Ok(dtos)
     }
 
     /**
@@ -624,7 +628,7 @@ impl Repository {
     /**
      * Get the system message of a conversation
      */
-    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<(Message, Vec<Content>)>, String> {
+    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<MessageDTO>, String> {
         let mut result = messages::Entity::find()
             .find_with_related(contents::Entity)
             .filter(messages::Column::ConversationId.eq(conversation_id))
@@ -635,7 +639,11 @@ impl Repository {
                 error!("{}", err);
                 format!("Failed to get system message of conversation with id = {}", conversation_id)
             })?;
-        Ok(result.pop())
+        let dto = result.pop()
+            .map(|data| {
+                MessageDTO::from(data)
+            });
+        Ok(dto)
     }
 
     /**

@@ -36,6 +36,7 @@ tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", br
 thiserror = "1.0"
 tokio = "1.36.0"
 tokio-stream = "0.1.15"
+base64 = "0.22.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
