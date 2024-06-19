@@ -25,7 +25,6 @@ export const ImageUploader = forwardRef<
               fileName: file.name,
               fileSize: file.size,
               fileType: file.type,
-              fileLastModified: file.lastModified,
               fileData: new Uint8Array(fr.result as ArrayBuffer),
             },
           ]);

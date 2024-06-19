@@ -29,8 +29,6 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub file_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub file_last_modified: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[sea_orm(column_type = "Binary(BlobSize::Blob(None))")]
     pub file_data: Option<Vec<u8>>,
 }

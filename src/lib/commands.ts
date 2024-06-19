@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api';
 
+import { CONTENT_ITEM_TYPE_TEXT } from './constants';
 import log from './log';
 import type {
   Conversation,
@@ -190,7 +191,25 @@ export async function invokeCreateMessage(
 ): Promise<Message> {
   console.log('invokeCreateMessage', message);
   try {
-    const result = await invoke<Message>('create_message', { message });
+    // Have to convert Uint8Array to a normal Array here
+    // because JSON.stringy would serialize Uint8Array into a map
+    // thus causing error on the Rust command
+    const { content, ...rest } = message;
+    const contentWithNormalArray = content.map((item) => {
+      return {
+        type: item.type,
+        data:
+          item.type === CONTENT_ITEM_TYPE_TEXT
+            ? item.data
+            : {
+                ...item.data,
+                fileData: Array.from(item.data.fileData),
+              },
+      };
+    });
+    const result = await invoke<Message>('create_message', {
+      message: { content: contentWithNormalArray, ...rest },
+    });
     return result;
   } catch (e) {
     console.log('invokeCreateMessage error', e);

@@ -161,7 +161,6 @@ export type FileData = {
   fileName: string;
   fileSize: number;
   fileType: string; // number of bytes
-  fileLastModified: number; // timestamp
   fileData: Uint8Array; // blob
 };
 
