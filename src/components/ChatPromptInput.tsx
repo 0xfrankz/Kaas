@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
 import { ImagePlus, SendHorizonal, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -7,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import {
-  CONTENT_ITEM_TYPE_IMAGE,
   CONTENT_ITEM_TYPE_TEXT,
   MESSAGE_BOT,
   MESSAGE_USER,
@@ -20,12 +20,7 @@ import {
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type {
-  ContentItemImage,
-  ContentItemText,
-  ContentItemTypes,
-  Message,
-} from '@/lib/types';
+import type { ContentItemText, ContentItemTypes, Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
@@ -104,6 +99,16 @@ export function ChatPromptInput({ conversationId }: Props) {
   };
 
   const onClick = useCallback(async () => {
+    // TEST: save files
+    const tasks = files.map(async (file) => {
+      await writeBinaryFile(file.fileName, file.fileData, {
+        dir: BaseDirectory.AppData,
+      });
+    });
+    Promise.all(tasks).then(() => {
+      console.log('All files are saved!');
+    });
+
     const promptStr = promptRef.current?.value ?? '';
     if (promptStr.trim().length === 0) {
       toast.error(t('error:validation:empty-prompt'));
@@ -114,13 +119,13 @@ export function ChatPromptInput({ conversationId }: Props) {
           type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
           data: promptStr,
         } as ContentItemText,
-        ...files.map(
-          (file) =>
-            ({
-              type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
-              data: file,
-            }) as ContentItemImage
-        ),
+        // ...files.map(
+        //   (file) =>
+        //     ({
+        //       type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+        //       data: file,
+        //     }) as ContentItemImage
+        // ),
       ];
       creator({
         conversationId,

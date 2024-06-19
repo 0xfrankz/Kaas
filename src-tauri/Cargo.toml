@@ -31,7 +31,7 @@ serde = { version = "1.0", features = ["derive"] }
 sqlx = { version = "0.7", features = [ "sqlite", "runtime-tokio", "tls-native-tls" ] }
 strum = "0.26"
 strum_macros = "0.26"
-tauri = { version = "1.5.4", features = [] }
+tauri = { version = "1.5.4", features = [ "fs-write-file", "fs-remove-dir", "fs-read-dir", "fs-exists", "fs-copy-file", "fs-read-file", "fs-rename-file", "fs-create-dir", "fs-remove-file"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1", features = ["colored"] }
 thiserror = "1.0"
 tokio = "1.36.0"

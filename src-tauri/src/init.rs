@@ -10,6 +10,8 @@ pub fn init(app: &App) -> Result<(), String> {
   init_handle(app)?;
   // Init database
   init_db(app)?;
+  // Init cache dir
+  init_cache_dir(app)?;
   Ok(())
 }
 
@@ -42,6 +44,27 @@ fn init_db(app: &App) -> Result<(), String> {
   // Manage repo as a Tauri state
   app.handle().manage(repo);
   
+  Ok(())
+}
+
+// Initialize the cache dir for files such as images, pdfs, etc.
+fn init_cache_dir(app: &App) -> Result<(), String> {
+  // get app data path
+  let mut cache_dir = app_data_dir(&*app.config()).expect("App data path does't exist!");
+  cache_dir.push("cache");
+  let cache_dir_str = cache_dir.to_str().expect("Cache path is not a valid string!").to_string();
+  
+  if !cache_dir.exists() {
+    if let Ok(()) = fs::create_dir(cache_dir) {
+      log::info!("Cache directory created at {}", &cache_dir_str);
+    } else {
+      log::error!("Failed to create cache directory at {}", &cache_dir_str);
+      panic!("Failed to create cache directory");
+    }
+  } else {
+    log::info!("Cache directory {} already exists", &cache_dir_str);
+  }
+
   Ok(())
 }
 
