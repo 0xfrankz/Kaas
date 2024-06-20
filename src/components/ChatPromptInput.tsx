@@ -170,7 +170,7 @@ export function ChatPromptInput({ conversationId }: Props) {
           focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
         )}
       >
-        <ImagePreviwer />
+        <ImagePreviwer files={files} />
         <DndProvider backend={HTML5Backend}>
           {showDropZone ? <ImageUploader className="mt-2" /> : null}
         </DndProvider>

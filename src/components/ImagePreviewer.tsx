@@ -2,11 +2,14 @@ import { useHover } from 'ahooks';
 import { X } from 'lucide-react';
 import { forwardRef, type HtmlHTMLAttributes, useRef } from 'react';
 
-import { useFileUploaderContext } from '@/lib/hooks';
 import type { FileData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { Button } from './ui/button';
+
+type ImagePreviewerProps = {
+  files: FileData[];
+};
 
 type ImageThumbnailProps = {
   imageData: FileData;
@@ -36,9 +39,8 @@ export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
 
 export const ImagePreviwer = forwardRef<
   HTMLDivElement,
-  HtmlHTMLAttributes<HTMLDivElement>
->(({ className }, ref) => {
-  const { files } = useFileUploaderContext();
+  HtmlHTMLAttributes<HTMLDivElement> & ImagePreviewerProps
+>(({ className, files }, ref) => {
   const render = () => {
     if (files.length > 0) {
       return (

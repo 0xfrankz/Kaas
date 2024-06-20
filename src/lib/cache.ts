@@ -2,7 +2,7 @@
  * Util methods for file manipulations in cache folder of App Data
  */
 import type { FileEntry } from '@tauri-apps/api/fs';
-import { readDir, writeBinaryFile } from '@tauri-apps/api/fs';
+import { readBinaryFile, readDir, writeBinaryFile } from '@tauri-apps/api/fs';
 import { BaseDirectory, sep } from '@tauri-apps/api/path';
 
 const BASE_PATH = `cache${sep}`;
@@ -21,7 +21,7 @@ async function list(recursive: boolean = false): Promise<FileEntry[]> {
 }
 
 /**
- * Write a file to cache dir with given file name
+ * Write a file, of the form of bytes array, to cache dir with given file name
  * @param name file name
  * @param data binary data as Uint8Array
  */
@@ -31,7 +31,20 @@ async function write(fileName: string, data: Uint8Array) {
   });
 }
 
+/**
+ * Read a file from cache as bytes array
+ * @param fileName
+ * @returns
+ */
+async function read(fileName: string): Promise<Uint8Array> {
+  const data = await readBinaryFile(`${BASE_PATH}${fileName}`, {
+    dir: BaseDirectory.AppData,
+  });
+  return data;
+}
+
 export default {
   list,
   write,
+  read,
 };
