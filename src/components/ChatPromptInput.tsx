@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
 import { ImagePlus, SendHorizonal, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -7,7 +6,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import cache from '@/lib/cache';
 import {
+  CONTENT_ITEM_TYPE_IMAGE,
   CONTENT_ITEM_TYPE_TEXT,
   MESSAGE_BOT,
   MESSAGE_USER,
@@ -20,8 +21,8 @@ import {
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItemText, ContentItemTypes, Message } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import type { ContentItemTypes, Message } from '@/lib/types';
+import { cn, getFileExt } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
 import { ImageUploader } from './ImageUploader';
@@ -99,40 +100,33 @@ export function ChatPromptInput({ conversationId }: Props) {
   };
 
   const onClick = useCallback(async () => {
-    // TEST: save files
-    const tasks = files.map(async (file) => {
-      await writeBinaryFile(`cache/${file.fileName}`, file.fileData, {
-        dir: BaseDirectory.AppData,
-      });
+    // Save files to cache
+    const tasks = files.map(async (file, index) => {
+      const filename = `${Date.now()}-${index}.${getFileExt(file.fileName)}`;
+      await cache.write(filename, file.fileData);
+      file.fileName = filename;
     });
-    Promise.all(tasks).then(() => {
-      console.log('All files are saved!');
-    });
+    await Promise.all(tasks);
 
     const promptStr = promptRef.current?.value ?? '';
     if (promptStr.trim().length === 0) {
       toast.error(t('error:validation:empty-prompt'));
     } else {
-      // const images = uploaderRef.current?.getImageDataList() ?? [];
       const content = [
         {
           type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
           data: promptStr,
-        } as ContentItemText,
-        // ...files.map(
-        //   (file) =>
-        //     ({
-        //       type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
-        //       data: file,
-        //     }) as ContentItemImage
-        // ),
+        },
+        ...files.map((file) => ({
+          type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+          data: file.fileName,
+        })),
       ];
       creator({
         conversationId,
         role: MESSAGE_USER,
         content,
       });
-      console.log('After creator call');
       if (promptRef.current) {
         promptRef.current.value = '';
       }

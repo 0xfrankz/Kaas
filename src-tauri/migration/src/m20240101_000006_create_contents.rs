@@ -6,12 +6,7 @@ enum Contents {
     Id,
     MessageId,
     Type,
-    Text,
-    FileName,
-    FileSize,
-    FileType,
-    FileLastModified,
-    FileData
+    Data,
 }
 
 #[derive(DeriveMigrationName)]
@@ -33,12 +28,8 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Contents::MessageId).integer().not_null())
-                    .col(ColumnDef::new(Contents::Type).integer().not_null())
-                    .col(ColumnDef::new(Contents::Text).text().null())
-                    .col(ColumnDef::new(Contents::FileName).string().null())
-                    .col(ColumnDef::new(Contents::FileSize).unsigned().null())
-                    .col(ColumnDef::new(Contents::FileType).string().null())
-                    .col(ColumnDef::new(Contents::FileData).binary().null())
+                    .col(ColumnDef::new(Contents::Type).tiny_unsigned().not_null())
+                    .col(ColumnDef::new(Contents::Data).text().null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("FK__contents_messages")

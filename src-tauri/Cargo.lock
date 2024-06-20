@@ -1317,6 +1317,7 @@ dependencies = [
  "sea-orm",
  "serde",
  "serde_json",
+ "serde_repr",
 ]
 
 [[package]]
@@ -2304,6 +2305,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "infer"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc150e5ce2330295b8616ce0e3f53250e53af31759a9dbedad1621ba29151847"
+dependencies = [
+ "cfb",
+]
+
+[[package]]
 name = "inherent"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2444,6 +2454,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "entity",
+ "infer 0.16.0",
  "log",
  "migration",
  "once_cell",
@@ -4157,9 +4168,9 @@ dependencies = [
 
 [[package]]
 name = "serde_repr"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b2e6b945e9d3df726b65d6ee24060aff8e3533d431f677a9695db04eff9dfdb"
+checksum = "6c64451ba24fc7a6a2d60fc75dd9c83c90903b19028d4eff35e88fc1e86564e9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5063,7 +5074,7 @@ dependencies = [
  "glob",
  "heck 0.4.1",
  "html5ever",
- "infer",
+ "infer 0.13.0",
  "json-patch",
  "kuchikiki",
  "log",

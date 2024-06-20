@@ -50,8 +50,8 @@ export const MESSAGE_BOT = 1;
 export const MESSAGE_SYSTEM = 2;
 
 // Message content item type
-export const CONTENT_ITEM_TYPE_TEXT = 'text';
-export const CONTENT_ITEM_TYPE_IMAGE = 'image';
+export const CONTENT_ITEM_TYPE_TEXT = 0;
+export const CONTENT_ITEM_TYPE_IMAGE = 1;
 export const CONTENT_ITEM_TYPES = [
   CONTENT_ITEM_TYPE_TEXT,
   CONTENT_ITEM_TYPE_IMAGE,

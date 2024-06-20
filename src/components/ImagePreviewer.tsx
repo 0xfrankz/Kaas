@@ -17,6 +17,7 @@ export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
   const isHovering = useHover(ref);
   const blob = new Blob([imageData.fileData], { type: imageData.fileType });
   const imageSrc = URL.createObjectURL(blob);
+
   return (
     <div className="relative size-12" ref={ref}>
       <img
@@ -38,7 +39,6 @@ export const ImagePreviwer = forwardRef<
   HtmlHTMLAttributes<HTMLDivElement>
 >(({ className }, ref) => {
   const { files } = useFileUploaderContext();
-  console.log('ImagePreviwer:', files);
   const render = () => {
     if (files.length > 0) {
       return (

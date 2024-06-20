@@ -3,7 +3,7 @@ use std::time::Instant;
 use entity::entities::{
     contents::{ContentType, Model as Content}, 
     conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
-    messages::{self, ContentItem, ContentItemList, MessageDTO, Model as Message, Roles}, 
+    messages::{MessageDTO, Model as Message}, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
@@ -13,7 +13,9 @@ use tauri::State;
 use tokio_stream::StreamExt;
 
 use crate::{
-    errors::CommandError::{self, ApiError, DbError, StateError}, log_utils::{error, trace, info}, services::{db::Repository, llm::{utils, webservices as ws}}
+    errors::CommandError::{self, ApiError, DbError},
+    log_utils::{error, trace, info}, 
+    services::{db::Repository, llm::{utils, webservices as ws}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -114,7 +116,7 @@ pub async fn create_conversation(
     };
     let content = Content {
         r#type: ContentType::Text,
-        text: Some(new_conversation.message),
+        data: new_conversation.message,
         ..Default::default()
     };
     let (conversation, _, _) = repo

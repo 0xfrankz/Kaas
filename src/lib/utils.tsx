@@ -101,3 +101,9 @@ export function getTextFromContent(contentItems: ContentItem[]): string {
 export function getTextFromMessage(message: Message): string {
   return getTextFromContent(message.content);
 }
+
+export function getFileExt(fileName: string): string {
+  const regex = /\.([^./\\]+)$/;
+  const matches = fileName.match(regex);
+  return matches ? matches[1] : '';
+}

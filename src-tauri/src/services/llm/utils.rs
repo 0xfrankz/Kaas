@@ -1,8 +1,12 @@
 use async_openai::{
     error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageUrlArgs, ImageUrlDetail, Role, ChatCompletionRequestAssistantMessageArgs}
 };
-use entity::entities::{conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{ContentItem, MessageDTO, Roles}, models::Providers};
+use entity::entities::{
+    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers
+};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
+
+use crate::services::cache;
 
 pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u16>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
@@ -55,18 +59,18 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
                 .content
                 .into_iter()
                 .map(|item| {
-                    let part: ChatCompletionRequestMessageContentPart = match item {
-                        ContentItem::Image{data} => ChatCompletionRequestMessageContentPartImageArgs::default()
+                    let part: ChatCompletionRequestMessageContentPart = match item.r#type {
+                        ContentType::Image => ChatCompletionRequestMessageContentPartImageArgs::default()
                             .image_url(
                                 ImageUrlArgs::default()
-                                    .url(STANDARD.encode(data.file_data))
+                                    .url(cache::read_as_base64(item.data.as_str()).unwrap_or(String::default()))
                                     .detail(ImageUrlDetail::Auto)
                                     .build()?
                             )
                             .build()?
                             .into(),
-                        ContentItem::Text{data} => ChatCompletionRequestMessageContentPartTextArgs::default()
-                            .text(data.to_string())
+                        ContentType::Text => ChatCompletionRequestMessageContentPartTextArgs::default()
+                            .text(item.data)
                             .build()?
                             .into()
                     };

@@ -23,6 +23,9 @@
         "renameFile": true,
         "exists": true,
         "scope": ["$APPDATA/*", "$APPDATA/cache/*"]
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {

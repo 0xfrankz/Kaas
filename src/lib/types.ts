@@ -2,8 +2,6 @@ import type { z } from 'zod';
 
 import type {
   ALL_PROVIDERS,
-  CONTENT_ITEM_TYPE_IMAGE,
-  CONTENT_ITEM_TYPE_TEXT,
   CONTENT_ITEM_TYPES,
   SUPPORTED_PROVIDERS,
 } from './constants';
@@ -93,21 +91,10 @@ export type UpdateConversation = Omit<
   subject?: string;
 };
 
-export type ContentItemText = {
-  type: typeof CONTENT_ITEM_TYPE_TEXT;
-  data: string;
+export type ContentItem = {
+  type: (typeof CONTENT_ITEM_TYPES)[number];
+  data: string; // actual text if type === text, cache filename otherwise
 };
-
-export type ContentItemImage = {
-  type: typeof CONTENT_ITEM_TYPE_IMAGE;
-  data: FileData;
-};
-
-export type ContentItem = ContentItemText | ContentItemImage;
-
-// export type ContentItemList = {
-//   items: ContentItem[];
-// };
 
 export type NewMessage = {
   conversationId: number;
