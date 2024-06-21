@@ -3,7 +3,7 @@ import { emit } from '@tauri-apps/api/event';
 import { animate, motion } from 'framer-motion';
 import { produce } from 'immer';
 import { Package } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -28,7 +28,7 @@ import type {
   Model,
   StatefulDialogHandler,
 } from '@/lib/types';
-import { cn, getMessageTag } from '@/lib/utils';
+import { getMessageTag } from '@/lib/utils';
 
 import { ChatMessageList } from './ChatMessageList';
 import { ChatPromptInput } from './ChatPromptInput';
@@ -48,10 +48,10 @@ type Props = {
 };
 
 export function ChatSection({ conversation }: Props) {
-  const [atBottom, setAtBottom] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<StatefulDialogHandler<string>>(null);
   const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const atBottomRef = useRef<boolean>(false);
   // const showContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
   const model = useAppStateStore((state) =>
     state.models.find((m) => m.id === conversation.modelId)
@@ -211,67 +211,58 @@ export function ChatSection({ conversation }: Props) {
         return old ? [...old, placeholder] : [placeholder];
       }
     );
-
     onToBottomClick();
   }, [conversation.id, onToBottomClick, queryClient]);
 
   useEffect(() => {
     if (viewportRef.current) {
       viewportRef.current.onscroll = () => {
-        setAtBottom(
+        if (
           (viewportRef.current?.scrollTop ?? 0) +
             (viewportRef.current?.clientHeight ?? 0) ===
-            viewportRef.current?.scrollHeight
-        );
-      };
-      if (
-        (viewportRef.current?.clientHeight ?? 0) ===
-        viewportRef.current?.scrollHeight
-      ) {
-        // clientHeight is less than screen height
-        // no scroll bar shown and we're at the bottom
-        setAtBottom(true);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!receiving) {
-      if (showBottomTimerRef.current) {
-        clearTimeout(showBottomTimerRef.current);
-        showBottomTimerRef.current = null;
-      }
-      if (atBottom) {
-        // at bottom, show continue button or prompt input
-        document.getElementById('to-bottom')?.classList.add('hidden');
-        let el = null;
-        if (isLastMessageFromUser) {
-          el = document.getElementById('continue');
-          document.getElementById('prompt-input')?.classList.add('hidden');
+          viewportRef.current?.scrollHeight
+        ) {
+          // at bottom, show continue button or prompt input
+          document.getElementById('to-bottom')?.classList.add('hidden');
+          atBottomRef.current = true;
+          // let el = null;
+          // if (isLastMessageFromUser) {
+          //   el = document.getElementById('continue');
+          //   document.getElementById('prompt-input')?.classList.add('hidden');
+          // } else {
+          //   el = document.getElementById('prompt-input');
+          //   document.getElementById('continue')?.classList.add('hidden');
+          // }
+          // if (el) {
+          //   el.classList.remove('hidden');
+          //   animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
+          // }
         } else {
-          el = document.getElementById('prompt-input');
+          // not at bottom, show to-bottom button
+          atBottomRef.current = false;
+          if (showBottomTimerRef.current === null) {
+            showBottomTimerRef.current = setTimeout(() => {
+              if (!atBottomRef.current) {
+                // scroll if not at bottom when timeout
+                const el = document.getElementById('to-bottom');
+                if (el) {
+                  el.classList.remove('hidden');
+                  animate(
+                    el,
+                    { opacity: [0, 1], y: [30, 0] },
+                    { duration: 0.2 }
+                  );
+                }
+              }
+              showBottomTimerRef.current = null;
+            }, 600);
+          }
+          // document.getElementById('prompt-input')?.classList.add('hidden');
           document.getElementById('continue')?.classList.add('hidden');
         }
-        if (el) {
-          el.classList.remove('hidden');
-          animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
-        }
-      } else {
-        // not at bottom, show to-bottom button
-        if (showBottomTimerRef.current === null) {
-          showBottomTimerRef.current = setTimeout(() => {
-            const el = document.getElementById('to-bottom');
-            if (el) {
-              el.classList.remove('hidden');
-              animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
-            }
-          }, 600);
-        }
-        document.getElementById('prompt-input')?.classList.add('hidden');
-        document.getElementById('continue')?.classList.add('hidden');
-      }
+      };
     }
-  }, [atBottom, isLastMessageFromUser, receiving]);
+  }, [isLastMessageFromUser]);
 
   useEffect(() => {
     if (!model && dialogRef.current && !dialogRef.current.isOpen()) {
@@ -319,10 +310,10 @@ export function ChatSection({ conversation }: Props) {
             {t('generic:action:continue')}
           </Button>
         </div>
-        <div id="to-bottom" className="hidden">
+        <div id="to-bottom" className="absolute -top-12 mx-auto">
           <ToBottom onClick={onToBottomClick} />
         </div>
-        <div id="prompt-input" className="size-full">
+        <div id="prompt-input" className="h-fit w-full">
           <FileUploaderContextProvider>
             <ChatPromptInput conversationId={conversation.id} />
           </FileUploaderContextProvider>
@@ -333,32 +324,29 @@ export function ChatSection({ conversation }: Props) {
 
   const render = () => {
     return (
-      <ScrollArea className="w-full grow" viewportRef={viewportRef}>
-        <div className="relative mx-auto w-[640px]">
-          {isSuccess && (
-            <MessageListContextProvider
-              messages={messagesWithModelId}
-              onRegenerateClick={onRegenerateClick}
-              onReceiverReady={onReceiverReady}
-            >
-              <MemoizedMessageList />
-            </MessageListContextProvider>
-          )}
-          {/* Spacer */}
-          <div className="mt-4 h-[104px]" />
-          <MemoizedScrollBottom scrollContainerRef={viewportRef} />
-          <div
-            className={cn(
-              'fixed bottom-0 mt-4 flex min-h-[104px] w-[640px]',
-              atBottom ? ' bg-background' : 'bg-transparent'
+      <>
+        <ScrollArea className="w-full" viewportRef={viewportRef}>
+          <div className="relative mx-auto w-[640px]">
+            {isSuccess && (
+              <MessageListContextProvider
+                messages={messagesWithModelId}
+                onRegenerateClick={onRegenerateClick}
+                onReceiverReady={onReceiverReady}
+              >
+                <MemoizedMessageList />
+              </MessageListContextProvider>
             )}
-          >
-            <div className="flex w-full flex-col items-center justify-center">
-              {renderBottomSection()}
-            </div>
+            {/* Spacer */}
+            <div className="mt-4 h-8" />
+            <MemoizedScrollBottom scrollContainerRef={viewportRef} />
+          </div>
+        </ScrollArea>
+        <div className="h-fit w-[640px] flex-auto bg-background">
+          <div className="relative flex w-full flex-col items-center justify-center">
+            {renderBottomSection()}
           </div>
         </div>
-      </ScrollArea>
+      </>
     );
   };
 
