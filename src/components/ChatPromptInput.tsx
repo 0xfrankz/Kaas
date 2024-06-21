@@ -40,7 +40,7 @@ type Props = {
 export function ChatPromptInput({ conversationId }: Props) {
   const [focused, setFocused] = useState(false);
   const [showDropZone, setShowDropZone] = useState(false);
-  const { files } = useFileUploaderContext();
+  const { files, removeFile } = useFileUploaderContext();
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const creator = useMessageCreator({
@@ -171,7 +171,13 @@ export function ChatPromptInput({ conversationId }: Props) {
           focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
         )}
       >
-        <ImagePreviwer files={files} />
+        <ImagePreviwer
+          files={files}
+          deletable
+          onDelete={(index) => {
+            removeFile(index);
+          }}
+        />
         <DndProvider backend={HTML5Backend}>
           {showDropZone ? <ImageUploader className="mt-2" /> : null}
         </DndProvider>

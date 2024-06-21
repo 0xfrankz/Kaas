@@ -9,13 +9,21 @@ import { Button } from './ui/button';
 
 type ImagePreviewerProps = {
   files: FileData[];
+  deletable: boolean;
+  onDelete: (index: number) => void;
 };
 
 type ImageThumbnailProps = {
   imageData: FileData;
+  deletable: boolean;
+  onDelete: () => void;
 };
 
-export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
+export function ImageThumbnail({
+  imageData,
+  deletable = true,
+  onDelete,
+}: ImageThumbnailProps) {
   const ref = useRef(null);
   const isHovering = useHover(ref);
   const blob = new Blob([imageData.fileData], { type: imageData.fileType });
@@ -28,8 +36,11 @@ export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
         alt={imageData.fileName}
         className="m-0 size-full rounded-lg object-cover"
       />
-      {isHovering ? (
-        <Button className="absolute -right-1 -top-1 size-3 rounded-full bg-white p-0">
+      {isHovering && deletable ? (
+        <Button
+          className="absolute -right-1 -top-1 size-3 rounded-full bg-white p-0"
+          onClick={onDelete}
+        >
           <X className="size-full text-black" />
         </Button>
       ) : null}
@@ -40,7 +51,7 @@ export function ImageThumbnail({ imageData }: ImageThumbnailProps) {
 export const ImagePreviwer = forwardRef<
   HTMLDivElement,
   HtmlHTMLAttributes<HTMLDivElement> & ImagePreviewerProps
->(({ className, files }, ref) => {
+>(({ className, files, deletable = true, onDelete }, ref) => {
   const render = () => {
     if (files.length > 0) {
       return (
@@ -50,7 +61,11 @@ export const ImagePreviwer = forwardRef<
               const key = `${f.fileName}_${idx}`;
               return (
                 <li key={key}>
-                  <ImageThumbnail imageData={f} />
+                  <ImageThumbnail
+                    imageData={f}
+                    deletable={deletable}
+                    onDelete={() => onDelete(idx)}
+                  />
                 </li>
               );
             })}

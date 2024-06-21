@@ -163,7 +163,7 @@ const Content = ({ content }: ContentProps) => {
       >
         {getTextFromContent(content)}
       </div>
-      <ImagePreviwer files={images} />
+      <ImagePreviwer files={images} deletable={false} onDelete={() => {}} />
     </div>
   );
 };
