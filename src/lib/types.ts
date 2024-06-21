@@ -93,6 +93,7 @@ export type UpdateConversation = Omit<
 
 export type ContentItem = {
   type: (typeof CONTENT_ITEM_TYPES)[number];
+  mimetype?: string; // MIME type of the data
   data: string; // actual text if type === text, cache filename otherwise
 };
 

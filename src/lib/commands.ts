@@ -188,6 +188,7 @@ export async function invokeListMessages(
 export async function invokeCreateMessage(
   message: NewMessage
 ): Promise<Message> {
+  console.log('invokeCreateMessage message:', message);
   try {
     const result = await invoke<Message>('create_message', {
       message,

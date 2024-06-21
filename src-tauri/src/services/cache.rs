@@ -5,7 +5,7 @@ use infer;
 
 use crate::core::handle::Handle;
 
-pub fn read_as_base64(file_name: &str) -> Result<String, String> {
+pub fn read_as_data_url(file_name: &str, mimetype: Option<&str>) -> Result<String, String> {
     let mut file_path = get_cache_dir()?;
     file_path.push(file_name);
     let mut data = vec![];
@@ -13,9 +13,15 @@ pub fn read_as_base64(file_name: &str) -> Result<String, String> {
         .map_err(|_| format!("Failed to open file {} in cache", file_name))?
         .read_to_end(&mut data)
         .map_err(|_| format!("Failed to read file {} in cache", file_name))?;
-    let mime = infer::get(&data)
-        .map(|t| t.mime_type())
-        .unwrap_or("");
+    // Infer MIME from binary data
+    let mime = match mimetype {
+        Some(m) => m,
+        None => {
+            infer::get(&data)
+                .map(|m| m.mime_type())
+                .unwrap_or("application/octet-stream")
+        }
+    };
     let result = format!("data:{};base64,{}", mime, STANDARD.encode(data));
     Ok(result)
 }

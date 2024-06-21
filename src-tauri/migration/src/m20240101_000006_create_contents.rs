@@ -6,6 +6,7 @@ enum Contents {
     Id,
     MessageId,
     Type,
+    Mimetype,
     Data,
 }
 
@@ -29,6 +30,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Contents::MessageId).integer().not_null())
                     .col(ColumnDef::new(Contents::Type).tiny_unsigned().not_null())
+                    .col(ColumnDef::new(Contents::Mimetype).string().null())
                     .col(ColumnDef::new(Contents::Data).text().null())
                     .foreign_key(
                         ForeignKey::create()

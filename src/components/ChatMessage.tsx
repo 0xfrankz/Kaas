@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import cache from '@/lib/cache';
 import {
   CONTENT_ITEM_TYPE_IMAGE,
   DEFAULT_DATETIME_FORMAT,
@@ -28,7 +29,7 @@ import {
   useMessageUpdater,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItem, Message } from '@/lib/types';
+import type { ContentItem, FileData, Message } from '@/lib/types';
 import {
   buildTextContent,
   cn,
@@ -136,12 +137,23 @@ const ErrorContent = ({ error }: { error: string }) => {
 };
 
 const Content = ({ content }: ContentProps) => {
-  const imageDataList = content
-    .filter((item) => item.type === CONTENT_ITEM_TYPE_IMAGE)
-    .map((image, index) => ({
-      name: `image-${index}`,
-      dataUrl: image.data,
-    }));
+  const [images, setImages] = useState<FileData[]>([]);
+  useEffect(() => {
+    const imageItems = content.filter((item) => {
+      return item.type === CONTENT_ITEM_TYPE_IMAGE;
+    });
+    const tasks: Promise<FileData>[] = imageItems.map(async (item) => {
+      const data = await cache.read(item.data);
+      return {
+        fileName: item.data,
+        fileSize: 0,
+        fileType: item.mimetype ?? 'image/jpeg',
+        fileData: data,
+      };
+    });
+    Promise.all(tasks).then((imageData) => setImages(imageData));
+  }, [content]);
+
   return (
     <div className="flex flex-col gap-4">
       <div
@@ -151,7 +163,7 @@ const Content = ({ content }: ContentProps) => {
       >
         {getTextFromContent(content)}
       </div>
-      <ImagePreviwer files={[]} />
+      <ImagePreviwer files={images} />
     </div>
   );
 };

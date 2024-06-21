@@ -63,7 +63,7 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
                         ContentType::Image => ChatCompletionRequestMessageContentPartImageArgs::default()
                             .image_url(
                                 ImageUrlArgs::default()
-                                    .url(cache::read_as_base64(item.data.as_str()).unwrap_or(String::default()))
+                                    .url(cache::read_as_data_url(item.data.as_str(), item.mimetype.as_deref()).unwrap_or(String::default()))
                                     .detail(ImageUrlDetail::Auto)
                                     .build()?
                             )

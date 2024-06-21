@@ -21,7 +21,7 @@ import {
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItemTypes, Message } from '@/lib/types';
+import type { ContentItem, ContentItemTypes, Message } from '@/lib/types';
 import { cn, getFileExt } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
@@ -112,13 +112,14 @@ export function ChatPromptInput({ conversationId }: Props) {
     if (promptStr.trim().length === 0) {
       toast.error(t('error:validation:empty-prompt'));
     } else {
-      const content = [
+      const content: ContentItem[] = [
         {
           type: CONTENT_ITEM_TYPE_TEXT as ContentItemTypes,
           data: promptStr,
         },
         ...files.map((file) => ({
           type: CONTENT_ITEM_TYPE_IMAGE as ContentItemTypes,
+          mimetype: file.fileType,
           data: file.fileName,
         })),
       ];

@@ -43,8 +43,25 @@ async function read(fileName: string): Promise<Uint8Array> {
   return data;
 }
 
+/**
+ * Read a file from cache as object url
+ * @param fileName
+ * @param mimetype
+ * @returns
+ */
+async function readObjectUrl(
+  fileName: string,
+  mimetype: string
+): Promise<string> {
+  const data = await read(fileName);
+  const blob = new Blob([data], { type: mimetype });
+  const url = URL.createObjectURL(blob);
+  return url;
+}
+
 export default {
   list,
   write,
   read,
+  readObjectUrl,
 };

@@ -6,7 +6,7 @@ use sea_orm::ActiveValue;
 use sea_orm::IntoActiveModel;
 use serde::{Deserialize, Serialize};
 
-use super::contents::{Model as Content, ContentDTO, ContentType};
+use super::contents::{ContentDTO, ContentType};
 
 pub enum Roles {
     User,
