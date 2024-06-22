@@ -52,7 +52,7 @@ export function ChatSection({ conversation }: Props) {
   const dialogRef = useRef<StatefulDialogHandler<string>>(null);
   const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
   const atBottomRef = useRef<boolean>(false);
-  // const showContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const showContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
   const model = useAppStateStore((state) =>
     state.models.find((m) => m.id === conversation.modelId)
   );
@@ -214,55 +214,67 @@ export function ChatSection({ conversation }: Props) {
     onToBottomClick();
   }, [conversation.id, onToBottomClick, queryClient]);
 
-  useEffect(() => {
-    if (viewportRef.current) {
-      viewportRef.current.onscroll = () => {
-        if (
-          (viewportRef.current?.scrollTop ?? 0) +
-            (viewportRef.current?.clientHeight ?? 0) ===
-          viewportRef.current?.scrollHeight
-        ) {
-          // at bottom, show continue button or prompt input
-          document.getElementById('to-bottom')?.classList.add('hidden');
-          atBottomRef.current = true;
-          // let el = null;
-          // if (isLastMessageFromUser) {
-          //   el = document.getElementById('continue');
-          //   document.getElementById('prompt-input')?.classList.add('hidden');
-          // } else {
-          //   el = document.getElementById('prompt-input');
-          //   document.getElementById('continue')?.classList.add('hidden');
-          // }
-          // if (el) {
-          //   el.classList.remove('hidden');
-          //   animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
-          // }
-        } else {
-          // not at bottom, show to-bottom button
-          atBottomRef.current = false;
-          if (showBottomTimerRef.current === null) {
-            showBottomTimerRef.current = setTimeout(() => {
-              if (!atBottomRef.current) {
-                // scroll if not at bottom when timeout
-                const el = document.getElementById('to-bottom');
-                if (el) {
-                  el.classList.remove('hidden');
-                  animate(
-                    el,
-                    { opacity: [0, 1], y: [30, 0] },
-                    { duration: 0.2 }
-                  );
-                }
-              }
-              showBottomTimerRef.current = null;
-            }, 600);
+  const checkBottom = useCallback(() => {
+    if (
+      (viewportRef.current?.scrollTop ?? 0) +
+        (viewportRef.current?.clientHeight ?? 0) ===
+      viewportRef.current?.scrollHeight
+    ) {
+      // at bottom, show continue button or prompt input
+      document.getElementById('to-bottom')?.classList.add('hidden');
+      atBottomRef.current = true;
+      const cEl = document.getElementById('continue');
+      const pEl = document.getElementById('prompt-input');
+      let el = null;
+      if (showContinueTimerRef.current === null) {
+        showContinueTimerRef.current = setTimeout(() => {
+          if (isLastMessageFromUser) {
+            cEl?.classList.remove('hidden');
+            pEl?.classList.add('hidden');
+            el = cEl;
+          } else {
+            cEl?.classList.add('hidden');
+            pEl?.classList.remove('hidden');
+            el = pEl;
           }
-          // document.getElementById('prompt-input')?.classList.add('hidden');
-          document.getElementById('continue')?.classList.add('hidden');
-        }
-      };
+          if (el)
+            animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
+          showContinueTimerRef.current = null;
+        }, 600);
+      }
+    } else {
+      // not at bottom and button not shown, show to-bottom button
+      const el = document.getElementById('to-bottom');
+      atBottomRef.current = false;
+      if (
+        el?.classList.contains('hidden') &&
+        showBottomTimerRef.current === null
+      ) {
+        showBottomTimerRef.current = setTimeout(() => {
+          if (!atBottomRef.current) {
+            // scroll if still not at bottom when timeout
+            if (el) {
+              el.classList.remove('hidden');
+              animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
+            }
+          }
+          showBottomTimerRef.current = null;
+        }, 600);
+      }
+      // document.getElementById('prompt-input')?.classList.add('hidden');
+      document.getElementById('continue')?.classList.add('hidden');
     }
   }, [isLastMessageFromUser]);
+
+  useEffect(() => {
+    // check position upon initialization
+    checkBottom();
+    if (viewportRef.current) {
+      viewportRef.current.onscroll = () => {
+        checkBottom();
+      };
+    }
+  }, [checkBottom]);
 
   useEffect(() => {
     if (!model && dialogRef.current && !dialogRef.current.isOpen()) {
@@ -296,12 +308,14 @@ export function ChatSection({ conversation }: Props) {
             transition: { duration: 0.2, type: 'tween' },
           }}
         >
-          <ChatStop onClick={onStopClick} />
+          <div className="mb-9">
+            <ChatStop onClick={onStopClick} />
+          </div>
         </motion.div>
       );
     return (
       <>
-        <div id="continue" className="hidden">
+        <div id="continue" className="mb-9 hidden">
           <Button
             variant="secondary"
             className="rounded-full drop-shadow-lg"
@@ -341,7 +355,7 @@ export function ChatSection({ conversation }: Props) {
             <MemoizedScrollBottom scrollContainerRef={viewportRef} />
           </div>
         </ScrollArea>
-        <div className="h-fit w-[640px] flex-auto bg-background">
+        <div className="w-[640px] bg-background">
           <div className="relative flex w-full flex-col items-center justify-center">
             {renderBottomSection()}
           </div>
@@ -374,7 +388,7 @@ export function ChatSection({ conversation }: Props) {
           onEditDone={onTitleChange}
         />
       </TwoRows.Top>
-      <TwoRows.Bottom className="flex size-full flex-col items-center overflow-hidden bg-background">
+      <TwoRows.Bottom className="flex size-full flex-col items-center justify-between overflow-hidden bg-background">
         {model ? render() : renderNoModel()}
       </TwoRows.Bottom>
     </TwoRows>
