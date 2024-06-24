@@ -3,7 +3,7 @@ use std::time::Instant;
 use entity::entities::{
     contents::{ContentType, Model as Content}, 
     conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
-    messages::{MessageDTO, Model as Message}, 
+    messages::MessageDTO, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
@@ -261,7 +261,7 @@ pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository
 }
 
 #[tauri::command]
-pub async fn update_message(message: Message, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn update_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .update_message(message)
@@ -273,7 +273,7 @@ pub async fn update_message(message: Message, repo: State<'_, Repository>) -> Co
 }
 
 #[tauri::command]
-pub async fn hard_delete_message(message: Message, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn hard_delete_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .hard_delete_message(message)

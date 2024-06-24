@@ -34,7 +34,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Contents::Data).text().null())
                     .foreign_key(
                         ForeignKey::create()
-                            .name("FK__contents_messages")
+                            .name("FK_contents_messages")
                             .from(Contents::Table, Contents::MessageId)
                             .to(super::m20240101_000004_create_messages::Messages::Table, super::m20240101_000004_create_messages::Messages::Id)
                             .on_delete(ForeignKeyAction::Cascade)

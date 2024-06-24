@@ -2,7 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use sea_orm::entity::Linked;
-use sea_orm::ActiveValue;
+use sea_orm::ActiveValue::{Set, NotSet};
 use sea_orm::IntoActiveModel;
 use serde::{Deserialize, Serialize};
 
@@ -54,25 +54,6 @@ pub struct Model {
     pub deleted_at: Option<DateTimeLocal>,
 }
 
-// #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-// pub struct ContentItemList {
-//     pub items: Vec<ContentItem>
-// }
-
-// impl ContentItemList {
-//     pub fn new(item: ContentItem) -> Self {
-//         ContentItemList {
-//             items: vec![item]
-//         }
-//     }
-// }
-
-// impl IntoActiveValue<String> for ContentItemList {
-//     fn into_active_value(self) -> ActiveValue<String> {
-//         ActiveValue::Set(serde_json::to_string(&self).unwrap_or(String::default()))
-//     }
-// }
-
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
@@ -118,41 +99,6 @@ impl Linked for MessageToModel {
     }
 }
 
-// #[derive(Clone, Debug, Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct NewMessage {
-//     pub conversation_id: i32,
-//     pub role: i32,
-//     pub content: ContentItemList,
-// }
-
-// impl IntoActiveModel<ActiveModel> for NewMessage {
-//     fn into_active_model(self) -> ActiveModel {
-//         ActiveModel {
-//             conversation_id: ActiveValue::Set(self.conversation_id),
-//             role: ActiveValue::Set(self.role),
-//             // content: ActiveValue::Set(self.content),
-//             ..Default::default()
-//         }
-//     }
-// }
-
-// #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-// #[serde(tag = "type", rename_all = "camelCase")]
-// pub struct FileData {
-//     pub file_name: String, 
-//     pub file_size: u32, 
-//     pub file_type: String,
-//     pub file_data: Vec<u8>
-// }
-
-// #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-// #[serde(tag = "type", rename_all = "lowercase")]
-// pub enum ContentItem {
-//     Text { data: String },
-//     Image { data: String }
-// }
-
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub struct MessageDTO {
@@ -160,7 +106,6 @@ pub struct MessageDTO {
     pub id: Option<i32>,
     pub conversation_id: i32,
     pub role: i32,
-    // pub content: ContentItemList,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -205,8 +150,9 @@ impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
 impl IntoActiveModel<ActiveModel> for MessageDTO {
     fn into_active_model(self) -> ActiveModel {
         ActiveModel {
-            conversation_id: ActiveValue::Set(self.conversation_id),
-            role: ActiveValue::Set(self.role),
+            id: self.id.map_or(NotSet, |id| Set(id)),
+            conversation_id: Set(self.conversation_id),
+            role: Set(self.role),
             ..Default::default()
         }
     }

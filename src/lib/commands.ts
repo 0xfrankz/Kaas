@@ -212,6 +212,7 @@ export async function invokeGetSystemMessage(
 }
 
 export async function invokeUpdateMessage(message: Message): Promise<Message> {
+  console.log('invokeUpdateMessage', message);
   const result = await invoke<Message>('update_message', {
     message,
   });

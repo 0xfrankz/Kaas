@@ -653,25 +653,67 @@ impl Repository {
     /**
      * Update the system message of a conversation
      */
-    pub async fn update_message(&self, message: Message) -> Result<Message, String> {
-        let mut active_model = message.into_active_model();
-        // active_model.reset(messages::Column::Content);
-        active_model.updated_at = Set(Some(chrono::Local::now()));
-        let result = active_model
-            .update(&self.connection)
-            .await
-            .map_err(|err| {
-                error!("{}", err);
-                "Failed to update message".to_string()
-            })?;
+    pub async fn update_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        let message_id = message.id.ok_or("Message id is missing")?;
+        let contents = message.content.clone();
+        let mut msg_am = message.into_active_model();
+        msg_am.updated_at = Set(Some(chrono::Local::now()));
+        let result = self.connection.transaction::<_, MessageDTO, DbErr>(|txn| {
+            Box::pin(async move {
+                // Update messge first
+                let msg_m = msg_am
+                    .update(txn)
+                    .await?;
+                // Delete old content (hard delete)
+                contents::Entity::delete_many()
+                    .filter(contents::Column::MessageId.eq(msg_m.id))
+                    .exec(txn)
+                    .await?;
+                // Insert new content
+                let ctnt_ams: Vec<contents::ActiveModel> = contents
+                    .into_iter()
+                    .map(|content| {
+                        let mut ctnt_am: contents::ActiveModel = content.into_active_model();
+                        ctnt_am.message_id = Set(msg_m.id);
+                        ctnt_am
+                    }).collect();
+                contents::Entity::insert_many(ctnt_ams)
+                    .exec(txn)
+                    .await?;
+                // Retrieve newly inserted contents
+                let contents = msg_m
+                    .find_related(contents::Entity)
+                    .all(txn)
+                    .await?;
+                // Return DTO
+                let dto = MessageDTO::from((msg_m, contents));
+                Ok(dto)
+            })
+        })
+        .await
+        .map_err(|err| {
+            error!("Failed to update message with contents (id={}): {}", message_id, err);
+            err.to_string()
+        })?;
+        // let mut active_model = message.into_active_model();
+        // // active_model.reset(messages::Column::Content);
+        // active_model.updated_at = Set(Some(chrono::Local::now()));
+        // let result = active_model
+        //     .update(&self.connection)
+        //     .await
+        //     .map_err(|err| {
+        //         error!("{}", err);
+        //         "Failed to update message".to_string()
+        //     })?;
         Ok(result)
     }
 
     /**
      * Hard delete a message
      */
-    pub async fn hard_delete_message(&self, message: Message) -> Result<Message, String> {
-        messages::Entity::delete_by_id(message.id)
+    pub async fn hard_delete_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        let message_id = message.id.ok_or("Message id is missing")?;
+        messages::Entity::delete_by_id(message_id)
             .exec(&self.connection)
             .await
             .map_err(|err| {
