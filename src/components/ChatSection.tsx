@@ -215,36 +215,16 @@ export function ChatSection({ conversation }: Props) {
   }, [conversation.id, onToBottomClick, queryClient]);
 
   const checkBottom = useCallback(() => {
+    const el = document.getElementById('to-bottom');
     if (
       (viewportRef.current?.scrollTop ?? 0) +
         (viewportRef.current?.clientHeight ?? 0) ===
       viewportRef.current?.scrollHeight
     ) {
-      // at bottom, show continue button or prompt input
-      document.getElementById('to-bottom')?.classList.add('hidden');
-      atBottomRef.current = true;
-      const cEl = document.getElementById('continue');
-      const pEl = document.getElementById('prompt-input');
-      let el = null;
-      if (showContinueTimerRef.current === null) {
-        showContinueTimerRef.current = setTimeout(() => {
-          if (isLastMessageFromUser) {
-            cEl?.classList.remove('hidden');
-            pEl?.classList.add('hidden');
-            el = cEl;
-          } else {
-            cEl?.classList.add('hidden');
-            pEl?.classList.remove('hidden');
-            el = pEl;
-          }
-          if (el)
-            animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
-          showContinueTimerRef.current = null;
-        }, 600);
-      }
+      // at bottom, hide go-to-bottom button
+      el?.classList.add('hidden');
     } else {
-      // not at bottom and button not shown, show to-bottom button
-      const el = document.getElementById('to-bottom');
+      // not at bottom and button not shown, show go-to-bottom button
       atBottomRef.current = false;
       if (
         el?.classList.contains('hidden') &&
@@ -261,10 +241,8 @@ export function ChatSection({ conversation }: Props) {
           showBottomTimerRef.current = null;
         }, 600);
       }
-      // document.getElementById('prompt-input')?.classList.add('hidden');
-      document.getElementById('continue')?.classList.add('hidden');
     }
-  }, [isLastMessageFromUser]);
+  }, []);
 
   useEffect(() => {
     // check position upon initialization
@@ -298,6 +276,7 @@ export function ChatSection({ conversation }: Props) {
   }, [conversation.id, queryClient]);
 
   const renderBottomSection = () => {
+    // when receiving, display stop button
     if (receiving)
       return (
         <motion.div
@@ -313,9 +292,10 @@ export function ChatSection({ conversation }: Props) {
           </div>
         </motion.div>
       );
-    return (
-      <>
-        <div id="continue" className="mb-9 hidden">
+    // when the last user message is not replied, display continue button
+    if (isLastMessageFromUser)
+      return (
+        <div id="continue-or-input" className="mb-9">
           <Button
             variant="secondary"
             className="rounded-full drop-shadow-lg"
@@ -324,10 +304,14 @@ export function ChatSection({ conversation }: Props) {
             {t('generic:action:continue')}
           </Button>
         </div>
+      );
+    // other wise, display input & go-to-bottom button
+    return (
+      <>
         <div id="to-bottom" className="absolute -top-12 mx-auto">
           <ToBottom onClick={onToBottomClick} />
         </div>
-        <div id="prompt-input" className="h-fit w-full">
+        <div id="continue-or-input" className="h-fit w-full">
           <FileUploaderContextProvider>
             <ChatPromptInput conversationId={conversation.id} />
           </FileUploaderContextProvider>
