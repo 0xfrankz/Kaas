@@ -1,4 +1,4 @@
-// Supported API providers
+// Type related constants
 export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
 export const PROVIDER_UNKNOWN = 'Unknown';
@@ -79,3 +79,6 @@ export const DEFAULT_DATETIME_FORMAT = 'HH:mm MMM D, YYYY';
 export const DEFAULT_PROFILE_NAME = 'ME';
 export const DEFAULT_CONTEXT_LENGTH = 1;
 export const DEFAULT_MAX_TOKENS = 256;
+
+// Constatns
+export const MAX_NUM_OF_UPLOAD_FILES = 10;

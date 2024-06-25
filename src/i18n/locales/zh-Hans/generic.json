@@ -38,8 +38,9 @@
         "last-message": "最近一条消息: {{lastMessage}}",
         "created-at": "创建于: {{createdAt}}",
         "are-you-sure": "你确定吗？",
-        "drag-file-here": "拖拽图片到这里\n支持PNG (.png)，JPEG (.jpeg and .jpg)及WEBP (.webp)图片\n单个文件最大20MB",
-        "release-to-upload": "松手进行上传"
+        "drag-file-here": "拖拽图片到这里\n支持PNG (.png)，JPEG (.jpeg and .jpg)及WEBP (.webp)图片\n可上传最多{{maxNumOfUploadFiles}}个文件，单个文件不超过20MB",
+        "release-to-upload": "松手进行上传",
+        "max-upload-files-warning": "仅可上传最多{{maxNumOfUploadFiles}}个文件"
     },
     "label": {
         "default": "默认",
