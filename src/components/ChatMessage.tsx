@@ -69,12 +69,12 @@ const HoverContext = createContext<THoverContext>({
 });
 
 const BOT_AVATAR = (
-  <BotIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
+  <BotIcon className="border-border-yellow stroke-foreground box-border size-6 rounded-full border stroke-1 p-1" />
 );
 
 const BOT_AVATAR_WITH_ERROR = (
   <div className="relative size-fit">
-    <BotIcon className="box-border size-6 rounded-full border border-red-500 stroke-foreground stroke-1 p-1" />
+    <BotIcon className="stroke-foreground box-border size-6 rounded-full border border-red-500 stroke-1 p-1" />
     <div className="absolute -right-2 -top-2 size-4 rounded-full bg-red-500 ">
       <CircleAlert className="size-full text-white" />
     </div>
@@ -82,7 +82,7 @@ const BOT_AVATAR_WITH_ERROR = (
 );
 
 const USER_AVATAR = (
-  <UserRound className="box-border size-6 rounded-full border border-border-yellow p-1" />
+  <UserRound className="border-border-yellow box-border size-6 rounded-full border p-1" />
 );
 
 const HoverContextProvider = ({ children }: WrapperProps) => {
@@ -138,9 +138,13 @@ const ErrorContent = ({ error }: { error: string }) => {
 
 const Content = ({ content }: ContentProps) => {
   const [images, setImages] = useState<FileData[]>([]);
-  const imageItems = content.filter((item) => {
-    return item.type === CONTENT_ITEM_TYPE_IMAGE;
-  });
+  const imageItems = useMemo(
+    () =>
+      content.filter((item) => {
+        return item.type === CONTENT_ITEM_TYPE_IMAGE;
+      }),
+    [content]
+  );
   useEffect(() => {
     const tasks: Promise<FileData>[] = imageItems.map(async (item) => {
       const data = await cache.read(item.data);
@@ -173,7 +177,7 @@ const Content = ({ content }: ContentProps) => {
 const ActionBar = () => {
   const { hover } = useContext(HoverContext);
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
+    <div className="text-muted-foreground mt-4 flex h-[14px] justify-end">
       <div className={cn(hover ? null : 'hidden')}>
         <SquarePen className="size-[14px]" />
       </div>
@@ -188,7 +192,7 @@ const ErrorActionBar = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-fit justify-end text-muted-foreground">
+    <div className="text-muted-foreground mt-4 flex h-fit justify-end">
       <Button
         variant="secondary"
         className="flex gap-2"
@@ -209,7 +213,7 @@ const BotActionBar = ({
   const { hover } = useContext(HoverContext);
   const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
+    <div className="text-muted-foreground mt-4 flex h-[14px] justify-end">
       <Button
         variant="ghost"
         className={cn(
