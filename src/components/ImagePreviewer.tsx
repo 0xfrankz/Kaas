@@ -52,28 +52,22 @@ export const ImagePreviwer = forwardRef<
   HTMLDivElement,
   HtmlHTMLAttributes<HTMLDivElement> & ImagePreviewerProps
 >(({ className, files, deletable = true, onDelete }, ref) => {
-  const render = () => {
-    if (files.length > 0) {
-      return (
-        <div className={cn('w-full', className)} ref={ref}>
-          <ul className="m-0 flex list-none gap-2 p-0">
-            {files.map((f, idx) => {
-              const key = `${f.fileName}_${idx}`;
-              return (
-                <li key={key}>
-                  <ImageThumbnail
-                    imageData={f}
-                    deletable={deletable}
-                    onDelete={() => onDelete(idx)}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      );
-    }
-    return null;
-  };
-  return render();
+  return (
+    <div className={cn('w-full', className)} ref={ref}>
+      <ul className="m-0 flex min-h-12 list-none gap-2 p-0">
+        {files.map((f, idx) => {
+          const key = `${f.fileName}_${idx}`;
+          return (
+            <li key={key}>
+              <ImageThumbnail
+                imageData={f}
+                deletable={deletable}
+                onDelete={() => onDelete(idx)}
+              />
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 });

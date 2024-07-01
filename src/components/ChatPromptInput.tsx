@@ -171,13 +171,15 @@ export function ChatPromptInput({ conversationId }: Props) {
           focused ? 'shadow-yellow-border-2' : 'shadow-gray-border-1'
         )}
       >
-        <ImagePreviwer
-          files={files}
-          deletable
-          onDelete={(index) => {
-            removeFile(index);
-          }}
-        />
+        {files.length > 0 ? (
+          <ImagePreviwer
+            files={files}
+            deletable
+            onDelete={(index) => {
+              removeFile(index);
+            }}
+          />
+        ) : null}
         <DndProvider backend={HTML5Backend}>
           {showDropZone ? <ImageUploader className="mt-2" /> : null}
         </DndProvider>

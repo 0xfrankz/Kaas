@@ -566,7 +566,7 @@ export function useScrollToBottom(
           inline: 'end',
         });
       }
-    }, 100);
+    }, 200);
   }, [anchorRef]);
 
   // 创建IntersectionObserver
@@ -575,7 +575,7 @@ export function useScrollToBottom(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            console.log('anchor enters viewport');
+            // console.log('anchor enters viewport');
             // anchor enters viewport
             toScrollRef.current = false;
             bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
@@ -583,11 +583,11 @@ export function useScrollToBottom(
             containerRef.current?.scrollTop &&
             containerRef.current.scrollTop < bottomScrollTopRef.current
           ) {
-            console.log('element exits viewport because user scrolled up');
+            // console.log('element exits viewport because user scrolled up');
             // element exits viewport because user scrolled up
             toScrollRef.current = false;
           } else {
-            console.log('scrollToBottom');
+            // console.log('scrollToBottom');
             // element exits viewport and user didn't scroll up
             // upon initialization, this branch will auto scroll to bottom
             // by using a short delay, js can get the write position to scroll to

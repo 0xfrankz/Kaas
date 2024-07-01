@@ -181,7 +181,6 @@ export async function invokeListMessages(
   conversationId: number
 ): Promise<Message[]> {
   const result = await invoke<Message[]>('list_messages', { conversationId });
-  console.log('invokeListMessages result:', result);
   return result;
 }
 

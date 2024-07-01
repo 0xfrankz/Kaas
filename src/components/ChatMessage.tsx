@@ -138,10 +138,10 @@ const ErrorContent = ({ error }: { error: string }) => {
 
 const Content = ({ content }: ContentProps) => {
   const [images, setImages] = useState<FileData[]>([]);
+  const imageItems = content.filter((item) => {
+    return item.type === CONTENT_ITEM_TYPE_IMAGE;
+  });
   useEffect(() => {
-    const imageItems = content.filter((item) => {
-      return item.type === CONTENT_ITEM_TYPE_IMAGE;
-    });
     const tasks: Promise<FileData>[] = imageItems.map(async (item) => {
       const data = await cache.read(item.data);
       return {
@@ -152,7 +152,7 @@ const Content = ({ content }: ContentProps) => {
       };
     });
     Promise.all(tasks).then((imageData) => setImages(imageData));
-  }, [content]);
+  }, [imageItems]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -163,7 +163,9 @@ const Content = ({ content }: ContentProps) => {
       >
         {getTextFromContent(content)}
       </div>
-      <ImagePreviwer files={images} deletable={false} onDelete={() => {}} />
+      {imageItems.length > 0 ? (
+        <ImagePreviwer files={images} deletable={false} onDelete={() => {}} />
+      ) : null}
     </div>
   );
 };
