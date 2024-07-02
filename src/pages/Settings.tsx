@@ -1,10 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { open } from '@tauri-apps/api/shell';
+import { Heart } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, Suspense, useEffect, useRef, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, useWatch } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -638,11 +640,41 @@ function AboutUs() {
             <span className="mr-2 font-medium">
               {t('page-settings:label:version')}:
             </span>
-            {import.meta.env.VITE_APP_VERSION} {import.meta.env.COMMIT_HASH}
+            {import.meta.env.VITE_APP_VERSION}_{import.meta.env.COMMIT_HASH}
           </li>
           <li>
-            Built by Frank Zhang with ❤️ and{' '}
-            <Link to="/dependencies">these great open-source softwares</Link>.
+            {/* {t('page-settings:message:built-by-1')}{' '}
+            <Heart className="mx-1 inline-block size-4 fill-red-600" />
+            {t('page-settings:message:built-by-2')}{' '}
+            <Link
+              to="/dependencies"
+              className="ml-1 text-primary underline-offset-4 hover:underline"
+            >
+              {t('page-settings:message:built-by-3')}
+            </Link>
+            . */}
+            <Trans
+              i18nKey="page-settings:message:built-by"
+              values={{ name: 'Frank Zhang' }}
+              components={{
+                userLink: (
+                  <Button
+                    variant="link"
+                    onClick={() => open('https://github.com/cranezhang')}
+                    className="mx-1 inline p-0"
+                  />
+                ),
+                icon: (
+                  <Heart className="mx-1 inline-block size-4 fill-red-600" />
+                ),
+                depsLink: (
+                  <Link
+                    to="/dependencies"
+                    className="ml-1 text-primary underline-offset-4 hover:underline"
+                  />
+                ),
+              }}
+            />
           </li>
         </ul>
       </Card>

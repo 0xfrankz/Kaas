@@ -35,6 +35,7 @@
     },
     "message": {
         "change-setting-success": "{{setting}} has been changed",
-        "change-setting-failure": "Failed to change {{setting}}"
+        "change-setting-failure": "Failed to change {{setting}}",
+        "built-by": "Built by <userLink>{{name}}</userLink> with <icon/> and <depsLink>many great open-source softwares</depsLink>"
     }
 }
