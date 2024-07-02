@@ -31,6 +31,7 @@ import SettingsPage from '@/pages/Settings';
 import { GlobalFallback } from './components/GlobalFallback';
 import { PageSkeleton } from './components/placeholders/WholePage';
 import { TooltipProvider } from './components/ui/tooltip';
+import Dependencies from './pages/Dependencies';
 
 const AnimatedOutlet = (): React.JSX.Element => {
   const location = useLocation();
@@ -85,6 +86,10 @@ const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SettingsPage />,
+      },
+      {
+        path: 'dependencies',
+        element: <Dependencies />,
       },
       {
         path: 'debug',

@@ -1,0 +1,9 @@
+{
+    "title": "依赖",
+    "label": {
+        "name": "名称",
+        "link": "链接",
+        "license": "许可",
+        "author": "作者"
+    }
+}
