@@ -48,8 +48,13 @@ export function ChatSectionHasModel({
   const receiving = useMemo(() => {
     return messages?.some((m) => m.isReceiving) ?? false;
   }, [messages]);
-  const isLastMessageFromUser =
-    isSuccess && messages?.length > 0 && messages.at(-1)?.role === MESSAGE_USER;
+  const isLastMessageFromUser = useMemo(() => {
+    return (
+      isSuccess &&
+      messages?.length > 0 &&
+      messages.at(-1)?.role === MESSAGE_USER
+    );
+  }, [isSuccess, messages]);
   const messagesWithModelId = useMemo(() => {
     return (
       messages?.map((msg) => {
@@ -220,6 +225,19 @@ export function ChatSectionHasModel({
       });
     };
   }, [conversation.id, queryClient]);
+
+  useEffect(() => {
+    if (isLastMessageFromUser && !receiving) {
+      const storedValue = localStorage.getItem('autoContinue');
+      localStorage.removeItem('autoContinue'); // try to remove
+      // Auto-continue if the stored conversation ID equal current conversation ID
+      // and the last message is from user
+      // and we are not currently receiving message from backend
+      if (!!storedValue && parseInt(storedValue, 10) === conversation.id) {
+        onContinueClick();
+      }
+    }
+  }, [conversation.id, isLastMessageFromUser, onContinueClick, receiving]);
 
   // Render functions
   const renderBottomSection = () => {

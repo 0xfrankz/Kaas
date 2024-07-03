@@ -236,12 +236,14 @@ impl Repository {
                 let msg_m: Message = ActiveMessage {
                         conversation_id: Set(conv_m.id),
                         created_at: Set(chrono::Local::now()),
+                        role: Set(messages::Roles::User.into()),
                         ..Default::default()
                     }
                     .insert(txn)
                     .await?;
 
                 let mut ctnt_am: ActiveContent = content.into();
+                ctnt_am.id = ActiveValue::NotSet;
                 ctnt_am.message_id = Set(msg_m.id);
                 let ctnt_m = ctnt_am
                     .insert(txn)

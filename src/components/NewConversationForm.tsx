@@ -43,10 +43,18 @@ export function NewConversationForm() {
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {
         onSuccess: async (conversation) => {
-          navigate(`/conversations/${conversation.id}`);
-          return queryClient.invalidateQueries({
+          localStorage.setItem('autoContinue', String(conversation.id));
+          await queryClient.invalidateQueries({
             queryKey: LIST_CONVERSATIONS_KEY,
           });
+          navigate(`/conversations/${conversation.id}`);
+        },
+        onError: (err) => {
+          toast.error(
+            t('page-conversations:message:create-conversation-error', {
+              errorMsg: err.message,
+            })
+          );
         },
       });
     } else {
