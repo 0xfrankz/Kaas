@@ -98,8 +98,9 @@ export default function Dependencies() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dependencies.map((dep) => (
-                    <TableRow>
+                  {dependencies.map((dep, index) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <TableRow key={`${dep.name}_${index}`}>
                       <TableCell>{dep.name}</TableCell>
                       <TableCell>{dep.author}</TableCell>
                       <TableCell>{dep.license}</TableCell>
