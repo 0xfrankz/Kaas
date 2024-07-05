@@ -1,7 +1,8 @@
 {
     "section": {
         "choose-model": "Choose a model for {{subject}}",
-        "set-system-message": "Set the system message for {{subject}}"
+        "set-system-message": "Set the system message for {{subject}}",
+        "conversation-history": "Conversation History"
     },
     "label": {
         "enter-to-send": "Press Enter to send",

@@ -1,7 +1,8 @@
 {
     "section": {
         "choose-model": "为{{subject}}选择一个模型",
-        "set-system-message": "为{{subject}}设置系统消息"
+        "set-system-message": "为{{subject}}设置系统消息",
+        "conversation-history": "对话历史"
     },
     "label": {
         "enter-to-send": "按回车发送",
