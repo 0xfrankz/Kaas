@@ -29,7 +29,7 @@ import {
 } from './ui/select';
 
 export function NewConversationForm() {
-  const { models } = useAppStateStore();
+  const { models, getDefaultModel } = useAppStateStore();
   const form = useForm<NewConversation>();
   const inputRef = useRef<HTMLInputElement>(null);
   const createConversationMutation = useCreateConversationMutation();
@@ -92,7 +92,7 @@ export function NewConversationForm() {
             <FormField
               control={form.control}
               name="modelId"
-              defaultValue={models[0].id}
+              defaultValue={getDefaultModel()?.id ?? models[0].id}
               render={({ field }) => (
                 <FormItem className="ml-4 w-40">
                   <Select

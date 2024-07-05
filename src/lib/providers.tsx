@@ -48,7 +48,7 @@ export function InitializationProvider({
   const [initialized, setInitialized] = useState(false);
   const { i18n } = useTranslation();
   const { setTheme } = useTheme();
-  const { refreshModels, setSettings } = useAppStateStore();
+  const { setModels, setSettings } = useAppStateStore();
   const {
     data: modelList,
     isSuccess: isModelsSuccess,
@@ -64,7 +64,7 @@ export function InitializationProvider({
 
   useEffect(() => {
     if (isModelsSuccess && isSettingsSuccess) {
-      refreshModels(modelList);
+      setModels(modelList);
       setSettings(settingList);
       // apply language setting
       const language = settingList.find(
@@ -86,7 +86,7 @@ export function InitializationProvider({
     isModelsSuccess,
     isSettingsSuccess,
     modelList,
-    refreshModels,
+    setModels,
     setSettings,
     setTheme,
     settingList,

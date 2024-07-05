@@ -54,7 +54,7 @@ const LocalNewConversationForm = forwardRef<
     prompt.variables?.map((v) => [v.label, v.value]) ?? []
   );
   const promptStr = interpolate(prompt.prompt, promptCtx);
-  const { models } = useAppStateStore();
+  const { models, getDefaultModel } = useAppStateStore();
   const form = useForm<NewConversation>();
   const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
@@ -100,7 +100,7 @@ const LocalNewConversationForm = forwardRef<
           <FormField
             control={form.control}
             name="modelId"
-            defaultValue={models[0].id}
+            defaultValue={getDefaultModel()?.id ?? models[0].id}
             render={({ field }) => (
               <FormItem className="w-40">
                 <Select
