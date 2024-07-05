@@ -17,7 +17,6 @@ export default function ConversationsPage() {
   const { conversations, isLoading } = useConversationsContext();
   const { t } = useTranslation(['page-conversations']);
   const hasModels = models.length > 0;
-  const hasConversations = conversations.length > 0;
 
   const renderEmptyModels = () => {
     return (
@@ -44,13 +43,7 @@ export default function ConversationsPage() {
           <NewConversationForm />
         </div>
         <div className="mt-12 flex grow">
-          {/* {hasConversations ? ( */}
           <ConversationGrid conversations={conversations} />
-          {/* // ) : (
-          //   <h2 className="m-auto text-3xl font-semibold tracking-tight">
-          //     {t('page-conversations:message:no-conversation')}
-          //   </h2>
-          // )} */}
         </div>
       </>
     );
