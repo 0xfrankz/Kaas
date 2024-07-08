@@ -2,7 +2,8 @@
     "section": {
         "choose-model": "为{{subject}}选择一个模型",
         "set-system-message": "为{{subject}}设置系统消息",
-        "conversation-history": "对话历史"
+        "conversation-history": "对话历史",
+        "use-prompt": "使用prompt模板"
     },
     "label": {
         "enter-to-send": "按回车发送",
@@ -16,6 +17,7 @@
         "set-system-message-error": "设置系统消息失败: {{errorMsg}}",
         "unset-system-message-success": "已清除系统消息",
         "unset-system-message-error": "清除系统消息失败: {{errorMsg}}",
-        "input-placeholder": "可以为你做点什么？"
+        "input-placeholder": "可以为你做点什么？",
+        "use-prompt-tips": "将模板中的变量替换为真实值。"
     }
 }

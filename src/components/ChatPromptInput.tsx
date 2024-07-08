@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, SendHorizonal, X } from 'lucide-react';
+import { ImagePlus, Puzzle, SendHorizonal, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -21,11 +21,17 @@ import {
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItem, ContentItemTypes, Message } from '@/lib/types';
+import type {
+  ContentItem,
+  ContentItemTypes,
+  DialogHandler,
+  Message,
+} from '@/lib/types';
 import { cn, getFileExt } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
 import { ImageUploader } from './ImageUploader';
+import { PromptGridDialog } from './PromptGridDialog';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
@@ -42,11 +48,11 @@ export function ChatPromptInput({ conversationId }: Props) {
   const [showDropZone, setShowDropZone] = useState(false);
   const { files, removeFile } = useFileUploaderContext();
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const promptGridDialogRef = useRef<DialogHandler<void>>(null);
   const queryClient = useQueryClient();
   const creator = useMessageCreator({
     onSettled: (_, error) => {
       if (error) {
-        console.log(error);
         toast.error(error.message);
       } else {
         // insert placeholder to trigger generation
@@ -57,7 +63,6 @@ export function ChatPromptInput({ conversationId }: Props) {
           id: -1,
           isReceiving: true,
         };
-
         // add placeholder message
         queryClient.setQueryData<Message[]>(
           [
@@ -155,6 +160,10 @@ export function ChatPromptInput({ conversationId }: Props) {
     [enterToSend, onClick]
   );
 
+  const onUsePromptClick = useCallback(() => {
+    promptGridDialogRef.current?.open();
+  }, []);
+
   const onFocus = () => {
     setFocused(true);
   };
@@ -184,18 +193,27 @@ export function ChatPromptInput({ conversationId }: Props) {
           {showDropZone ? <ImageUploader className="mt-2" /> : null}
         </DndProvider>
         {files.length > 0 ? <Separator className="my-2" /> : null}
-        <div className="flex w-full">
+        <div className="flex w-full gap-2 px-2">
           <Button
-            className="size-9 rounded-full p-0"
+            className="size-6 p-0"
             variant="secondary"
             onClick={() => setShowDropZone((state) => !state)}
           >
             {showDropZone ? (
-              <X className="size-4" />
+              <X className="size-[14px]" />
             ) : (
-              <ImagePlus className="size-4" />
+              <ImagePlus className="size-[14px]" />
             )}
           </Button>
+          <Button
+            className="size-6 p-0"
+            variant="secondary"
+            onClick={onUsePromptClick}
+          >
+            <Puzzle className="size-[14px]" />
+          </Button>
+        </div>
+        <div className="flex w-full">
           <div className="my-auto grow">
             <Textarea
               placeholder={t('page-conversation:message:input-placeholder')}
@@ -226,6 +244,12 @@ export function ChatPromptInput({ conversationId }: Props) {
           <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
         </div>
       </div>
+      <PromptGridDialog
+        ref={promptGridDialogRef}
+        onConfirm={() => {
+          console.log('onConfirm');
+        }}
+      />
     </>
   );
 }
