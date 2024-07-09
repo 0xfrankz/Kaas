@@ -31,7 +31,7 @@ import { cn, getFileExt } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
 import { ImageUploader } from './ImageUploader';
-import { PromptGridDialog } from './PromptGridDialog';
+import { PromptApplyDialog } from './PromptApplyDialog';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
@@ -85,24 +85,26 @@ export function ChatPromptInput({ conversationId }: Props) {
   const { t } = useTranslation(['generic', 'page-conversation']);
 
   // Callbacks
-  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const ta = e.target as HTMLTextAreaElement;
-    // Set overflowY to hidden and height to fit-content
-    // so we can get a correct scrollHeight
-    ta.style.overflowY = 'hidden';
-    ta.style.height = 'fit-content';
-    const { scrollHeight } = ta;
-    if (scrollHeight > HEIGHT_LIMIT) {
-      // Enable scroll when height limitation is reached
-      ta.style.overflowY = 'scroll';
-      ta.style.height = `${HEIGHT_LIMIT}px`;
-    } else {
-      // set overflowY back to hidden when height limitation is not reached
+  const fitTextareaHeight = useCallback(() => {
+    if (promptRef.current) {
+      const ta = promptRef.current;
+      // Set overflowY to hidden and height to fit-content
+      // so we can get a correct scrollHeight
       ta.style.overflowY = 'hidden';
-      // Set height to scrollHeight
-      ta.style.height = `${scrollHeight}px`;
+      ta.style.height = 'fit-content';
+      const { scrollHeight } = ta;
+      if (scrollHeight > HEIGHT_LIMIT) {
+        // Enable scroll when height limitation is reached
+        ta.style.overflowY = 'scroll';
+        ta.style.height = `${HEIGHT_LIMIT}px`;
+      } else {
+        // set overflowY back to hidden when height limitation is not reached
+        ta.style.overflowY = 'hidden';
+        // Set height to scrollHeight
+        ta.style.height = `${scrollHeight}px`;
+      }
     }
-  };
+  }, []);
 
   const onClick = useCallback(async () => {
     // Save files to cache
@@ -172,6 +174,28 @@ export function ChatPromptInput({ conversationId }: Props) {
     setFocused(false);
   };
 
+  const onUseClick = (promptStr: string) => {
+    if (promptRef.current) {
+      const cursorPosition = promptRef.current.selectionStart;
+      const textBeforeCursor = promptRef.current.value.substring(
+        0,
+        cursorPosition
+      );
+      const textAfterCursor = promptRef.current.value.substring(cursorPosition); // 光标之后的文本
+      promptRef.current.value = `${textBeforeCursor}${promptStr}${textAfterCursor}`;
+      promptGridDialogRef.current?.close(); // close dialog
+      setTimeout(() => {
+        if (promptRef.current) {
+          fitTextareaHeight();
+          promptRef.current.focus();
+          // set cursor to the end of newly inserted text
+          promptRef.current.selectionStart = cursorPosition + promptStr.length;
+          promptRef.current.selectionEnd = cursorPosition + promptStr.length;
+        }
+      }, 200);
+    }
+  };
+
   return (
     <>
       <div
@@ -219,7 +243,7 @@ export function ChatPromptInput({ conversationId }: Props) {
               placeholder={t('page-conversation:message:input-placeholder')}
               className="no-scrollbar resize-none overflow-y-hidden border-0 px-2"
               rows={1}
-              onChange={onChange}
+              onChange={fitTextareaHeight}
               ref={promptRef}
               onKeyDown={onKeyDown}
               onFocus={onFocus}
@@ -244,12 +268,7 @@ export function ChatPromptInput({ conversationId }: Props) {
           <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
         </div>
       </div>
-      <PromptGridDialog
-        ref={promptGridDialogRef}
-        onConfirm={() => {
-          console.log('onConfirm');
-        }}
-      />
+      <PromptApplyDialog ref={promptGridDialogRef} onUseClick={onUseClick} />
     </>
   );
 }
