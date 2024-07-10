@@ -37,12 +37,14 @@ type GridItemProps = {
 function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
   const { t } = useTranslation(['generic']);
   return (
-    <Card className={cn('mb-6 flex break-inside-avoid flex-col')}>
+    <Card className={cn('flex flex-col')}>
       <CardHeader>
-        <CardTitle>{prompt.alias}</CardTitle>
+        <CardTitle className="max-h-4 truncate">{prompt.alias}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-[16] whitespace-pre-wrap">{prompt.content}</p>
+        <p className="h-20 max-h-20 truncate whitespace-pre-wrap text-sm text-muted-foreground">
+          {prompt.content}
+        </p>
       </CardContent>
       <CardFooter className="items-center justify-start">
         <div className="flex items-center text-xs text-muted-foreground">
@@ -74,18 +76,6 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
     </Card>
   );
 }
-
-// function AddPromptItem({ onClick }: { onClick: () => void }) {
-//   const { t } = useTranslation();
-//   return (
-//     <Button className="mb-6 h-fit w-full" onClick={onClick}>
-//       {/* <div className="flex grow flex-col items-center justify-center space-y-1.5 py-4"> */}
-//       <Plus className="size-4" />
-//       <span>{t('generic:action:create-prompt')}</span>
-//       {/* </div> */}
-//     </Button>
-//   );
-// }
 
 export function PromptGrid() {
   const queryClient = useQueryClient();
@@ -165,7 +155,7 @@ export function PromptGrid() {
 
   return (
     <>
-      <div className="mx-auto mt-6 w-full columns-3 gap-8 text-foreground">
+      <div className="mx-auto mt-6 grid w-full grid-cols-3 gap-8 text-foreground">
         {isSuccess &&
           prompts.map((prompt) => (
             <PromptGridItem
