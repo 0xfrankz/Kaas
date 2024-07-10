@@ -66,6 +66,8 @@ const LocalNewConversationForm = forwardRef<
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {
         onSuccess: async (conversation) => {
+          // mark for auto-continue
+          localStorage.setItem('autoContinue', String(conversation.id));
           navigate(`/conversations/${conversation.id}`);
           return queryClient.invalidateQueries({
             queryKey: LIST_CONVERSATIONS_KEY,
