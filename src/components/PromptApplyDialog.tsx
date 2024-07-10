@@ -1,4 +1,3 @@
-import { SendHorizonal } from 'lucide-react';
 import {
   forwardRef,
   useCallback,
@@ -26,6 +25,7 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
+import { Separator } from './ui/separator';
 
 type FilledPrompt = {
   prompt: string;
@@ -94,21 +94,23 @@ function NewPromptMaker({
     prompt.variables?.map((v) => [v.label, v.value]) ?? []
   );
   const promptStr = interpolate(prompt.prompt, promptCtx);
+  const { t } = useTranslation();
 
   const onClick = useCallback(() => {
     onUseClick(promptStr);
-  }, [prompt]);
+  }, [onUseClick, promptStr]);
 
   return (
     <Button onClick={onClick}>
-      <SendHorizonal className="size-4" />
+      {/* <SendHorizonal className="size-4" /> */}
+      {t('generic:action:insert')}
     </Button>
   );
 }
 
 function PromptEditor({ prompt, onCancel, onUseClick }: EditorProps) {
   const [filledPrompt, setFilledPrompt] = useState<FilledPrompt | null>(null);
-  const { t } = useTranslation(['page-conversation']);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setFilledPrompt({
@@ -124,7 +126,46 @@ function PromptEditor({ prompt, onCancel, onUseClick }: EditorProps) {
 
   return filledPrompt ? (
     <FilledPromptContextProvider defaultValue={filledPrompt}>
-      <div className="flex max-h-[600px] gap-4 overflow-hidden">
+      {/* Template section */}
+      <div className="flex items-center">
+        <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+          1
+        </div>
+        <span className="ml-2">
+          {t('page-prompts:message:fill-the-template')}
+        </span>
+      </div>
+      <div className="flex grow gap-8 overflow-hidden">
+        <ScrollArea className="flex-1">
+          <h3 className="mb-2 text-muted-foreground">
+            {t('page-prompts:section:template')}
+          </h3>
+          <PromptForm.Use id="promptForm" />
+        </ScrollArea>
+        <ScrollArea className="flex-1">
+          <h3 className="mb-2 text-muted-foreground">
+            {t('page-prompts:section:preview')}
+          </h3>
+          <PromptPreviewer />
+        </ScrollArea>
+      </div>
+      <Separator />
+      {/* Actions section */}
+      <div className="flex items-center">
+        <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+          2
+        </div>
+        <span className="ml-2">
+          {t('page-conversation:message:insert-into-prompt')}
+        </span>
+      </div>
+      <div className="flex h-fit items-center gap-2">
+        <Button variant="secondary" onClick={onCancel}>
+          {t('generic:action:cancel')}
+        </Button>
+        <NewPromptMaker onUseClick={onUseClick} />
+      </div>
+      {/* <div className="flex max-h-[600px] gap-4 overflow-hidden">
         <ScrollArea className="flex-1">
           {prompt.alias}
           <PromptForm.Use id="promptForm" />
@@ -140,7 +181,7 @@ function PromptEditor({ prompt, onCancel, onUseClick }: EditorProps) {
             <NewPromptMaker onUseClick={onUseClick} />
           </div>
         </div>
-      </div>
+      </div> */}
     </FilledPromptContextProvider>
   ) : null;
 }
@@ -175,14 +216,9 @@ export const PromptApplyDialog = forwardRef<
       if (selectedPrompt) {
         // return fill prompt view
         return (
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
             <DialogHeader>
-              <DialogTitle>
-                {t('page-conversation:section:use-prompt')}
-              </DialogTitle>
-              <DialogDescription>
-                {t('page-conversation:message:use-prompt-tips')}
-              </DialogDescription>
+              <DialogTitle>{selectedPrompt.alias}</DialogTitle>
             </DialogHeader>
             <PromptEditor
               prompt={selectedPrompt}

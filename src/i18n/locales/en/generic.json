@@ -24,7 +24,8 @@
         "create-prompt": "Create new prompt template",
         "regenerate": "Regenerate",
         "debug": "Debug",
-        "load-models": "Load from API"
+        "load-models": "Load from API",
+        "insert": "Insert"
     },
     "select": {
         "language-en": "English",

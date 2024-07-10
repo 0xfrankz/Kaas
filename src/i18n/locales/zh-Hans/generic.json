@@ -23,7 +23,9 @@
         "create-a-model": "创建模型",
         "create-prompt": "创建新提示词模板",
         "regenerate": "重新生成",
-        "debug": "调试"
+        "debug": "调试",
+        "load-models": "从API加载",
+        "insert": "插入"
     },
     "select": {
         "language-en": "英文",

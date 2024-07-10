@@ -18,6 +18,7 @@
         "unset-system-message-success": "已清除系统消息",
         "unset-system-message-error": "清除系统消息失败: {{errorMsg}}",
         "input-placeholder": "可以为你做点什么？",
-        "use-prompt-tips": "将模板中的变量替换为真实值。"
+        "use-prompt-tips": "将模板中的变量替换为真实值。",
+        "insert-into-prompt": "插入prompt"
     }
 }
