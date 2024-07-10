@@ -153,7 +153,7 @@ export const SystemMessageDialog = forwardRef<
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="line-clamp-2 whitespace-pre-wrap leading-5">
             {t('page-conversation:section:set-system-message', {
               subject: conversation.subject,
             })}

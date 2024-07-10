@@ -69,12 +69,12 @@ const HoverContext = createContext<THoverContext>({
 });
 
 const BOT_AVATAR = (
-  <BotIcon className="border-border-yellow stroke-foreground box-border size-6 rounded-full border stroke-1 p-1" />
+  <BotIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
 );
 
 const BOT_AVATAR_WITH_ERROR = (
   <div className="relative size-fit">
-    <BotIcon className="stroke-foreground box-border size-6 rounded-full border border-red-500 stroke-1 p-1" />
+    <BotIcon className="box-border size-6 rounded-full border border-red-500 stroke-foreground stroke-1 p-1" />
     <div className="absolute -right-2 -top-2 size-4 rounded-full bg-red-500 ">
       <CircleAlert className="size-full text-white" />
     </div>
@@ -82,7 +82,7 @@ const BOT_AVATAR_WITH_ERROR = (
 );
 
 const USER_AVATAR = (
-  <UserRound className="border-border-yellow box-border size-6 rounded-full border p-1" />
+  <UserRound className="box-border size-6 rounded-full border border-border-yellow p-1" />
 );
 
 const HoverContextProvider = ({ children }: WrapperProps) => {
@@ -177,7 +177,7 @@ const Content = ({ content }: ContentProps) => {
 const ActionBar = () => {
   const { hover } = useContext(HoverContext);
   return (
-    <div className="text-muted-foreground mt-4 flex h-[14px] justify-end">
+    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
       <div className={cn(hover ? null : 'hidden')}>
         <SquarePen className="size-[14px]" />
       </div>
@@ -192,7 +192,7 @@ const ErrorActionBar = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <div className="text-muted-foreground mt-4 flex h-fit justify-end">
+    <div className="mt-4 flex h-fit justify-end text-muted-foreground">
       <Button
         variant="secondary"
         className="flex gap-2"
@@ -213,7 +213,7 @@ const BotActionBar = ({
   const { hover } = useContext(HoverContext);
   const { t } = useTranslation();
   return (
-    <div className="text-muted-foreground mt-4 flex h-[14px] justify-end">
+    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
       <Button
         variant="ghost"
         className={cn(
@@ -317,14 +317,26 @@ const Bot = ({ message }: MessageProps) => {
   const { t } = useTranslation(['generic']);
   const { onRegenerateClick } = useMessageListContext();
 
-  const renderContent = () => {
+  const render = () => {
     if (message.isError) {
-      return <ErrorContent error={getTextFromMessage(message)} />;
+      return (
+        <>
+          <ErrorContent error={getTextFromMessage(message)} />
+          <ErrorActionBar
+            onRegenerateClick={() => onRegenerateClick(message)}
+          />
+        </>
+      );
     }
     if (message.isReceiving) {
       return <ContentReceiver message={message} />;
     }
-    return <MarkdownContent content={message.content} />;
+    return (
+      <>
+        <MarkdownContent content={message.content} />
+        <BotActionBar onRegenerateClick={() => onRegenerateClick(message)} />
+      </>
+    );
   };
 
   return (
@@ -335,14 +347,7 @@ const Bot = ({ message }: MessageProps) => {
           name={model ? `${model.provider}` : t('generic:model:unknown')}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
-        {renderContent()}
-        {message.isError ? (
-          <ErrorActionBar
-            onRegenerateClick={() => onRegenerateClick(message)}
-          />
-        ) : (
-          <BotActionBar onRegenerateClick={() => onRegenerateClick(message)} />
-        )}
+        {render()}
       </div>
     </HoverContextProvider>
   );

@@ -39,10 +39,10 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
   return (
     <Card className={cn('flex flex-col')}>
       <CardHeader>
-        <CardTitle className="max-h-4 truncate">{prompt.alias}</CardTitle>
+        <CardTitle className="line-clamp-1">{prompt.alias}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="h-20 max-h-20 truncate whitespace-pre-wrap text-sm text-muted-foreground">
+        <p className="line-clamp-4 whitespace-pre-wrap text-sm text-muted-foreground">
           {prompt.content}
         </p>
       </CardContent>
