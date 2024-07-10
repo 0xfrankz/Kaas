@@ -18,6 +18,7 @@
         "use-prompt-tips": "Replace variables in your prompt template with real values, then pick a model to start a new conversation.",
         "delete-prompt-warning": "Deleted prompt cannot be recovered.\nDo you still want to proceed?",
         "fill-the-template": "Fill the template",
-        "pick-a-model": "Pick a model"
+        "pick-a-model": "Pick a model",
+        "start-conversation": "Start conversation"
     }
 }

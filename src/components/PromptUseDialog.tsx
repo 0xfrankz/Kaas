@@ -182,7 +182,7 @@ export const PromptUseDialog = forwardRef<
         <FilledPromptContextProvider defaultValue={filledPrompt}>
           {/* Template section */}
           <div className="flex items-center">
-            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground">
+            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
               1
             </div>
             <span className="ml-2">
@@ -211,7 +211,7 @@ export const PromptUseDialog = forwardRef<
           <Separator />
           {/* Model section */}
           <div className="flex items-center">
-            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground">
+            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
               2
             </div>
             <span className="ml-2">
@@ -223,7 +223,15 @@ export const PromptUseDialog = forwardRef<
           </div>
           <Separator />
           {/* Actions section */}
-          <div className="flex h-fit items-center justify-end gap-2">
+          <div className="flex items-center">
+            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+              3
+            </div>
+            <span className="ml-2">
+              {t('page-prompts:message:start-conversation')}
+            </span>
+          </div>
+          <div className="flex h-fit items-center gap-2">
             <Button variant="secondary" onClick={() => setShowDialog(false)}>
               {t('generic:action:cancel')}
             </Button>

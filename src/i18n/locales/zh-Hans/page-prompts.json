@@ -18,6 +18,7 @@
         "use-prompt-tips": "将模板中的变量替换为真实值，然后选择一个模型开始新对话。",
         "delete-prompt-warning": "提示词模板删除后无法恢复\n你确定要继续吗？",
         "fill-the-template": "填充模板",
-        "pick-a-model": "选择模型"
+        "pick-a-model": "选择模型",
+        "start-conversation": "开始对话"
     }
 }
