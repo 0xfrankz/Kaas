@@ -4,7 +4,10 @@
         "your-prompts": "你的提示词",
         "create-prompt": "创建新提示词模板",
         "update-prompt": "编辑提示词模板",
-        "use-prompt": "使用此提示词开始新对话"
+        "use-prompt": "使用此提示词开始新对话",
+        "template": "模板",
+        "preview": "预览",
+        "variables": "变量"
     },
     "message": {
         "no-model": "你还没有创建模型",
@@ -13,6 +16,8 @@
         "update-prompt-success": "已更新提示词模板",
         "delete-prompt-success": "已删除提示词模板",
         "use-prompt-tips": "将模板中的变量替换为真实值，然后选择一个模型开始新对话。",
-        "delete-prompt-warning": "提示词模板删除后无法恢复\n你确定要继续吗？"
+        "delete-prompt-warning": "提示词模板删除后无法恢复\n你确定要继续吗？",
+        "fill-the-template": "填充模板",
+        "pick-a-model": "选择模型"
     }
 }
