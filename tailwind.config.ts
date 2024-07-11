@@ -101,6 +101,15 @@ const config = {
         noto_sans_sc: ['Noto Sans SC', 'sans-serif'],
       },
     },
+    typography: {
+      DEFAULT: {
+        css: {
+          strong: {
+            color: 'var(--gray-12)',
+          },
+        },
+      },
+    },
   },
   // eslint-disable-next-line global-require
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
