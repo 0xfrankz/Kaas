@@ -4,9 +4,9 @@ import { produce } from 'immer';
 import {
   Bot as BotIcon,
   CircleAlert,
+  Coins,
   RefreshCw,
   RotateCw,
-  SquarePen,
   UserRound,
 } from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -41,6 +41,7 @@ import {
 import { ImagePreviwer } from './ImagePreviewer';
 import { Button } from './ui/button';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 type WrapperProps = {
   children: React.ReactNode;
@@ -174,13 +175,29 @@ const Content = ({ content }: ContentProps) => {
   );
 };
 
-const ActionBar = () => {
+const ActionBar = ({ usage }: { usage?: number }) => {
   const { hover } = useContext(HoverContext);
+  const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
-      <div className={cn(hover ? null : 'hidden')}>
-        <SquarePen className="size-[14px]" />
-      </div>
+    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
+      {usage ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className={cn(
+                'flex items-center gap-1 text-xs',
+                hover ? null : 'hidden'
+              )}
+            >
+              <Coins className="size-[14px]" />
+              {usage}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <span>{t('page-conversation:message:token-usage', { usage })}</span>
+          </TooltipContent>
+        </Tooltip>
+      ) : null}
     </div>
   );
 };
@@ -206,18 +223,38 @@ const ErrorActionBar = ({
 };
 
 const BotActionBar = ({
+  usage,
   onRegenerateClick,
 }: {
+  usage?: number;
   onRegenerateClick: () => void;
 }) => {
   const { hover } = useContext(HoverContext);
   const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
+    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
+      {usage ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className={cn(
+                'flex items-center gap-1 text-xs',
+                hover ? null : 'hidden'
+              )}
+            >
+              <Coins className="size-[14px]" />
+              {usage}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <span>{t('page-conversation:message:token-usage', { usage })}</span>
+          </TooltipContent>
+        </Tooltip>
+      ) : null}
       <Button
         variant="ghost"
         className={cn(
-          'flex gap-1 px-2 py-1 h-fit text-sm',
+          'flex gap-1 px-2 py-1 h-fit text-xs',
           hover ? null : 'hidden'
         )}
         onClick={onRegenerateClick}
@@ -314,6 +351,7 @@ const User = ({ message }: MessageProps) => {
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <Content content={message.content} />
+        <ActionBar usage={message.promptToken} />
       </div>
     </HoverContextProvider>
   );
@@ -343,7 +381,10 @@ const Bot = ({ message }: MessageProps) => {
     return (
       <>
         <MarkdownContent content={message.content} />
-        <BotActionBar onRegenerateClick={() => onRegenerateClick(message)} />
+        <BotActionBar
+          onRegenerateClick={() => onRegenerateClick(message)}
+          usage={message.completionToken}
+        />
       </>
     );
   };

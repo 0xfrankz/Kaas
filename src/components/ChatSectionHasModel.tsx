@@ -171,20 +171,6 @@ export function ChatSectionHasModel({
   }, [conversation.id, onToBottomClick, queryClient]);
 
   const checkBottom = useCallback(() => {
-    console.log('======================================================');
-    console.log(
-      'checkBottom viewportRef.current?.scrollTop',
-      viewportRef.current?.scrollTop
-    );
-    console.log(
-      'checkBottom viewportRef.current?.clientHeight',
-      viewportRef.current?.clientHeight
-    );
-    console.log(
-      'checkBottom viewportRef.current?.scrollHeight',
-      viewportRef.current?.scrollHeight
-    );
-    console.log('======================================================');
     const el = document.getElementById('to-bottom');
     if (
       (viewportRef.current?.scrollTop ?? 0) +

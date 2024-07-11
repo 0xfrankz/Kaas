@@ -19,6 +19,7 @@
         "unset-system-message-error": "Failed to unset system message: {{errorMsg}}",
         "input-placeholder": "How can I help?",
         "use-prompt-tips": "Replace variables in your prompt template with real values.",
-        "insert-into-prompt": "Insert into prompt"
+        "insert-into-prompt": "Insert into prompt",
+        "token-usage": "Token used for this message: {{usage}}"
     }
 }
