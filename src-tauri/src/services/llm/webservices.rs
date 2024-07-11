@@ -52,7 +52,7 @@ impl Into<OpenAIConfig> for RawOpenAIConfig {
     }
 }
 
-pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u16>) -> Result<String, String> {
+pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<String, String> {
     match config.provider.as_str().into() {
         Providers::Azure => {
             let (client, request) = build_azure_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
@@ -93,7 +93,7 @@ async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: Cr
     Ok(message)
 }
 
-pub async fn complete_chat_stream(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u16>) -> Result<ChatCompletionResponseStream, String> {
+pub async fn complete_chat_stream(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<ChatCompletionResponseStream, String> {
     match config.provider.as_str().into() {
         Providers::Azure => {
             let (client, request) = build_azure_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
@@ -112,7 +112,7 @@ pub async fn complete_chat_stream(messages: Vec<MessageDTO>, options: ProviderOp
 }
 
 pub async fn list_models(provider: String, api_key: String, proxy_setting: Option<ProxySetting>) -> Result<Vec<async_openai::types::Model>, String> {
-    let http_client = build_http_client(proxy_setting);
+    let http_client: reqwest::Client = build_http_client(proxy_setting);
     match provider.as_str().into() {
         Providers::Azure => {
             let config = AzureConfig::default().with_api_key(api_key);
@@ -180,7 +180,7 @@ fn build_http_client(proxy_setting: Option<ProxySetting>) -> reqwest::Client {
     http_client_builder.build().unwrap_or(reqwest::Client::new())
 }
 
-fn build_azure_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u16>) -> Result<(Client<AzureConfig>, CreateChatCompletionRequest), String> {
+fn build_azure_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<(Client<AzureConfig>, CreateChatCompletionRequest), String> {
     let http_client = build_http_client(proxy_setting);
     let config_json: RawAzureConfig = serde_json::from_str(&config.config)
         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
@@ -190,7 +190,7 @@ fn build_azure_client_and_request(messages: Vec<MessageDTO>, options: ProviderOp
     Ok((client, request))
 }
 
-fn build_openai_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u16>) -> Result<(Client<OpenAIConfig>, CreateChatCompletionRequest), String> {
+fn build_openai_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<(Client<OpenAIConfig>, CreateChatCompletionRequest), String> {
     let http_client = build_http_client(proxy_setting);
     let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;

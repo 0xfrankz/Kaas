@@ -317,11 +317,11 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
             }
         })
         .unwrap_or(DEFAULT_CONTEXT_LENGTH);
-    let max_token_setting: u16 = repo
+    let max_token_setting: u32 = repo
         .get_setting(SETTING_MODELS_MAX_TOKENS)
         .await
         .map(|setting| {
-            match setting.value.parse::<u16>() {
+            match setting.value.parse::<u32>() {
                 Ok(value) => value,
                 Err(_) => DEFAULT_MAX_TOKENS,
             }
@@ -408,7 +408,7 @@ pub async fn delete_prompt(prompt_id: i32, repo: State<'_, Repository>) -> Comma
 }
 
 /***** Functions for calling model API START *****/
-async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
@@ -447,7 +447,7 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
 
 }
 
-async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     let log_tag = "call_bot_stream";
     trace(log_tag, "entrant");
     let window_clone = window.clone();

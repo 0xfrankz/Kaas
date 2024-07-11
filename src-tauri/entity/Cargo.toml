@@ -12,7 +12,7 @@ path = "src/lib.rs"
 
 [dependencies]
 # 3rd party crates
-async-openai = "0.18.2"
+async-openai = "0.23.4"
 chrono = "0.4.34"
 log = "0.4.20"
 sea-orm = { version = "0.12", features = [ "sqlx-sqlite", "runtime-tokio-native-tls", "macros", "with-chrono", "with-json" ] }

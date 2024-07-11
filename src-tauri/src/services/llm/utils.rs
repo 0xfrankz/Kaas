@@ -1,14 +1,13 @@
 use async_openai::{
-    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageUrlArgs, ImageUrlDetail, Role, ChatCompletionRequestAssistantMessageArgs}
+    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs}
 };
 use entity::entities::{
     contents::ContentType, conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers
 };
-use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 use crate::services::cache;
 
-pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u16>) -> Result<CreateChatCompletionRequest, String> {
+pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u32>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
     let request: CreateChatCompletionRequest;
     // set messages
@@ -64,7 +63,7 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
                             .image_url(
                                 ImageUrlArgs::default()
                                     .url(cache::read_as_data_url(item.data.as_str(), item.mimetype.as_deref()).unwrap_or(String::default()))
-                                    .detail(ImageUrlDetail::Auto)
+                                    .detail(ImageDetail::Auto)
                                     .build()?
                             )
                             .build()?
@@ -81,7 +80,6 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
             return ChatCompletionRequestMessage::User(
                 ChatCompletionRequestUserMessage {
                     content: ChatCompletionRequestUserMessageContent::Array(content_parts),
-                    role: Role::User,
                     name: None
                 }
             );
@@ -90,7 +88,6 @@ fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessa
             return ChatCompletionRequestMessage::System(
                 ChatCompletionRequestSystemMessage {
                     content: message.get_text().unwrap_or(String::default()),
-                    role: Role::System,
                     name: None
                 }
             );

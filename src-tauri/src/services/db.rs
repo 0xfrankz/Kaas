@@ -193,7 +193,7 @@ impl Repository {
                 }
                 _ => {
                     let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(None);
+                    active_model.options = Set(Some(options_str));
                 }
             }
         }
@@ -536,7 +536,7 @@ impl Repository {
     /**
      * Get the last n messages of a conversation
      */
-    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<(MessageDTO)>, String> {
+    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<MessageDTO>, String> {
         let mut query = messages::Entity::find()
             .filter(messages::Column::ConversationId.eq(conversation_id));
         if let Some(mid) = before_message_id {
