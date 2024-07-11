@@ -179,26 +179,7 @@ const ActionBar = ({ usage }: { usage?: number }) => {
   const { hover } = useContext(HoverContext);
   const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
-      {usage ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className={cn(
-                'flex items-center gap-1 text-xs',
-                hover ? null : 'hidden'
-              )}
-            >
-              <Coins className="size-[14px]" />
-              {usage}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <span>{t('page-conversation:message:token-usage', { usage })}</span>
-          </TooltipContent>
-        </Tooltip>
-      ) : null}
-    </div>
+    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground" />
   );
 };
 
@@ -233,6 +214,17 @@ const BotActionBar = ({
   const { t } = useTranslation();
   return (
     <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
+      <Button
+        variant="ghost"
+        className={cn(
+          'flex gap-1 px-2 py-1 h-fit text-xs',
+          hover ? null : 'hidden'
+        )}
+        onClick={onRegenerateClick}
+      >
+        <RefreshCw className="size-[14px]" />
+        {t('generic:action:regenerate')}
+      </Button>
       {usage ? (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -251,17 +243,6 @@ const BotActionBar = ({
           </TooltipContent>
         </Tooltip>
       ) : null}
-      <Button
-        variant="ghost"
-        className={cn(
-          'flex gap-1 px-2 py-1 h-fit text-xs',
-          hover ? null : 'hidden'
-        )}
-        onClick={onRegenerateClick}
-      >
-        <RefreshCw className="size-[14px]" />
-        {t('generic:action:regenerate')}
-      </Button>
     </div>
   );
 };
@@ -383,7 +364,7 @@ const Bot = ({ message }: MessageProps) => {
         <MarkdownContent content={message.content} />
         <BotActionBar
           onRegenerateClick={() => onRegenerateClick(message)}
-          usage={message.completionToken}
+          usage={message.totalToken}
         />
       </>
     );

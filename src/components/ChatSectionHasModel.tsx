@@ -286,18 +286,14 @@ export function ChatSectionHasModel({
   };
 
   return (
-    <>
+    <MessageListContextProvider
+      messages={messagesWithModelId}
+      onRegenerateClick={onRegenerateClick}
+      onReceiverReady={onReceiverReady}
+    >
       <ScrollArea className="w-full" viewportRef={viewportRef}>
         <div className="relative mx-auto w-[640px]">
-          {isSuccess && (
-            <MessageListContextProvider
-              messages={messagesWithModelId}
-              onRegenerateClick={onRegenerateClick}
-              onReceiverReady={onReceiverReady}
-            >
-              <MemoizedMessageList />
-            </MessageListContextProvider>
-          )}
+          {isSuccess && <MemoizedMessageList />}
           {/* Spacer */}
           <div className="mt-4 h-8" />
           <MemoizedScrollBottom scrollContainerRef={viewportRef} />
@@ -308,6 +304,6 @@ export function ChatSectionHasModel({
           {renderBottomSection()}
         </div>
       </div>
-    </>
+    </MessageListContextProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Puzzle, SendHorizonal, X } from 'lucide-react';
+import { Coins, ImagePlus, Puzzle, SendHorizonal, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -18,6 +18,7 @@ import {
   LIST_MESSAGES_KEY,
   useFileUploaderContext,
   useMessageCreator,
+  useMessageListContext,
   useSettingUpserter,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
@@ -36,6 +37,7 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 const HEIGHT_LIMIT = 20 * 20;
 
@@ -50,6 +52,12 @@ export function ChatPromptInput({ conversationId }: Props) {
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const promptGridDialogRef = useRef<DialogHandler<void>>(null);
   const queryClient = useQueryClient();
+  const { messages } = useMessageListContext();
+
+  const totalUsage = messages.reduce((acc, msg) => {
+    return acc + (msg.totalToken ?? 0);
+  }, 0);
+
   const creator = useMessageCreator({
     onSettled: (_, error) => {
       if (error) {
@@ -236,6 +244,21 @@ export function ChatPromptInput({ conversationId }: Props) {
           >
             <Puzzle className="size-[14px]" />
           </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="ml-auto flex items-center gap-1 text-xs">
+                <Coins className="size-[14px]" />
+                {totalUsage}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <span>
+                {t('page-conversation:message:total-token-usage', {
+                  totalUsage,
+                })}
+              </span>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <div className="flex w-full">
           <div className="my-auto grow">

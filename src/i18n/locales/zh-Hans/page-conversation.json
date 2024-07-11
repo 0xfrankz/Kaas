@@ -20,6 +20,7 @@
         "input-placeholder": "可以为你做点什么？",
         "use-prompt-tips": "将模板中的变量替换为真实值。",
         "insert-into-prompt": "插入prompt",
-        "token-usage": "此消息消耗: {{usage}} token"
+        "token-usage": "此消息消耗: {{usage}} tokens",
+        "total-token-usage": "此对话共消耗: {{totalUsage}} tokens"
     }
 }

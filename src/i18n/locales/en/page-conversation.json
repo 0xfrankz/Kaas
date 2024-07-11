@@ -20,6 +20,7 @@
         "input-placeholder": "How can I help?",
         "use-prompt-tips": "Replace variables in your prompt template with real values.",
         "insert-into-prompt": "Insert into prompt",
-        "token-usage": "Token used for this message: {{usage}}"
+        "token-usage": "Tokens used for this message: {{usage}}",
+        "total-token-usage": "Tokens used for this conversation: {{totalUsage}}"
     }
 }
