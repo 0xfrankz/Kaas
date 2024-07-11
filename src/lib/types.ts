@@ -101,6 +101,9 @@ export type NewMessage = {
   conversationId: number;
   role: number;
   content: ContentItem[];
+  promptToken?: number;
+  completionToken?: number;
+  totalToken?: number;
 };
 
 export type Message = NewMessage & {
@@ -111,6 +114,13 @@ export type Message = NewMessage & {
   modelId?: number;
   isReceiving?: boolean;
   isError?: boolean;
+};
+
+export type BotReply = {
+  message: string;
+  promptToken?: number;
+  completionToken?: number;
+  totalToken?: number;
 };
 
 export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;

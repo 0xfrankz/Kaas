@@ -43,7 +43,10 @@ pub struct Model {
     pub id: i32,
     pub conversation_id: i32,
     pub role: i32,
-    // pub content: ContentItemList,
+    // token usage
+    pub prompt_token: Option<u32>,
+    pub completion_token: Option<u32>,
+    pub total_token: Option<u32>,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -106,6 +109,12 @@ pub struct MessageDTO {
     pub id: Option<i32>,
     pub conversation_id: i32,
     pub role: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completion_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_token: Option<u32>,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -139,6 +148,9 @@ impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
             id: Some(message.id),
             conversation_id: message.conversation_id,
             role: message.role,
+            prompt_token: message.prompt_token,
+            completion_token: message.completion_token,
+            total_token: message.total_token,
             created_at: message.created_at,
             updated_at: message.updated_at,
             deleted_at: message.deleted_at,
@@ -153,6 +165,9 @@ impl IntoActiveModel<ActiveModel> for MessageDTO {
             id: self.id.map_or(NotSet, |id| Set(id)),
             conversation_id: Set(self.conversation_id),
             role: Set(self.role),
+            prompt_token: self.prompt_token.map_or(NotSet, |prompt_token| Set(Some(prompt_token))),
+            completion_token: self.completion_token.map_or(NotSet, |completion_token| Set(Some(completion_token))),
+            total_token: self.total_token.map_or(NotSet, |total_token| Set(Some(total_token))),
             ..Default::default()
         }
     }

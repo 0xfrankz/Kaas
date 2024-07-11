@@ -25,8 +25,8 @@ import {
   LIST_MESSAGES_KEY,
   useMessageCreator,
   useMessageListContext,
-  useMessageListener,
   useMessageUpdater,
+  useReplyListener,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type { ContentItem, FileData, Message } from '@/lib/types';
@@ -231,7 +231,7 @@ const BotActionBar = ({
 
 const ContentReceiver = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
-  const { ready, receiving, message: msgStr, error } = useMessageListener(tag);
+  const { ready, receiving, reply, error } = useReplyListener(tag);
   const { onReceiverReady } = useMessageListContext();
   const creator = useMessageCreator();
   const updater = useMessageUpdater();
@@ -241,8 +241,8 @@ const ContentReceiver = ({ message }: { message: Message }) => {
     // if (hasError) {
     //   return <ErrorContent error={error} />;
     // }
-    if (msgStr.length > 0) {
-      return <MarkdownContent content={buildTextContent(msgStr)} />;
+    if (reply && reply.message.length > 0) {
+      return <MarkdownContent content={buildTextContent(reply.message)} />;
     }
     return <LoadingIcon className="mt-2 h-6 self-start" />;
   };
@@ -250,20 +250,29 @@ const ContentReceiver = ({ message }: { message: Message }) => {
   useEffect(() => {
     // When bot's reply is fully received
     // create or update message here
-    if (!receiving && msgStr.length > 0) {
-      message.content = buildTextContent(msgStr);
+    if (!receiving && reply && reply.message.length > 0) {
+      const content = buildTextContent(reply.message);
       if (message.id < 0) {
         // new message
         creator({
           conversationId: message.conversationId,
           role: message.role,
-          content: message.content,
+          content,
+          promptToken: reply.promptToken,
+          completionToken: reply.completionToken,
+          totalToken: reply.totalToken,
         });
       } else {
-        updater(message);
+        updater({
+          ...message,
+          content,
+          promptToken: reply.promptToken,
+          completionToken: reply.completionToken,
+          totalToken: reply.totalToken,
+        });
       }
     }
-  }, [creator, message, msgStr, receiving, updater]);
+  }, [creator, message, reply, receiving, updater]);
 
   useEffect(() => {
     // handle BE errors

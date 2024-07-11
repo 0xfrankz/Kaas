@@ -5,7 +5,7 @@ use async_openai::{
 };
 use entity::entities::{conversations::ProviderOptions, messages::{MessageDTO, Model as Message}, models::{ProviderConfig, Providers}, settings::ProxySetting};
 use reqwest;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 use super::utils::messages_and_options_to_request;
 
@@ -52,7 +52,22 @@ impl Into<OpenAIConfig> for RawOpenAIConfig {
     }
 }
 
-pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<String, String> {
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub struct BotReply {
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub prompt_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub completion_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub total_token: Option<u32>,
+}
+
+pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<BotReply, String> {
     match config.provider.as_str().into() {
         Providers::Azure => {
             let (client, request) = build_azure_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
@@ -68,7 +83,7 @@ pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, 
     }
 }
 
-async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: CreateChatCompletionRequest) -> Result<String, String> {
+async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: CreateChatCompletionRequest) -> Result<BotReply, String> {
     let response = client
         .chat()
         .create(request)
@@ -90,7 +105,16 @@ async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: Cr
         .ok_or("Api returned empty message".to_string())?
         .to_string();
 
-    Ok(message)
+    let usage = response.usage;
+
+    let reply = BotReply {
+        message,
+        prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+        completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+        total_token: usage.as_ref().map(|usage| usage.total_tokens),
+    };
+
+    Ok(reply)
 }
 
 pub async fn complete_chat_stream(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<ChatCompletionResponseStream, String> {

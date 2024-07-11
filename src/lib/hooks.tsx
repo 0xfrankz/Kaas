@@ -66,6 +66,7 @@ import {
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
 import type {
+  BotReply,
   CommandError,
   ConversationDetails,
   GenericModel,
@@ -636,10 +637,10 @@ export function useScrollToBottom(
 /**
  * Hook for receiving message from backend
  */
-export function useMessageListener(tag: string) {
+export function useReplyListener(tag: string) {
   const [ready, setReady] = useState(false);
   const [receiving, setReceiving] = useState(false);
-  const [message, setMessage] = useState('');
+  const [reply, setReply] = useState<BotReply | null>(null);
   const [error, setError] = useState<string>();
   const acceptingRef = useRef<boolean>(false);
   const listenerRef = useRef<UnlistenFn>();
@@ -648,7 +649,7 @@ export function useMessageListener(tag: string) {
   const startStreaming = () => {
     setReceiving(true);
     acceptingRef.current = true;
-    setMessage('');
+    setReply(null);
   };
 
   const endStreaming = () => {
@@ -682,8 +683,20 @@ export function useMessageListener(tag: string) {
           break;
         default:
           if (acceptingRef.current) {
-            setMessage((state) => {
-              return `${state}${nextMsg}`;
+            console.log('useReplyListener data=', nextMsg);
+            const botReply = JSON.parse(nextMsg) as BotReply;
+            setReply((state) => {
+              if (state) {
+                // streaming mode, append to previous reply
+                return {
+                  ...state,
+                  message: state.message + botReply.message,
+                  promptToken: botReply.promptToken,
+                  completionToken: botReply.completionToken,
+                  totalToken: botReply.totalToken,
+                };
+              }
+              return botReply;
             });
           }
           break;
@@ -718,7 +731,7 @@ export function useMessageListener(tag: string) {
   return {
     ready,
     receiving,
-    message,
+    reply,
     error,
   };
 }

@@ -3,7 +3,7 @@ use std::time::Instant;
 use entity::entities::{
     contents::{ContentType, Model as Content}, 
     conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
-    messages::MessageDTO, 
+    messages::{MessageDTO, Roles}, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
@@ -422,7 +422,7 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
             Ok(reply) => {
                 // start receiving in frontend
                 emit_stream_start(&tag, &window);
-                log::info!("Bot call received: {}", reply);
+                log::info!("Bot call received: {:?}", reply);
                 emit_stream_data(&tag, &window, reply);
                 emit_stream_done(&tag, &window);
                 log::info!("call_bot_one_off: thread done");
@@ -468,7 +468,14 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
                         Ok(response) => {
                             response.choices.iter().for_each(|chat_choice| {
                                 if let Some(ref content) = chat_choice.delta.content {
-                                    emit_stream_data(&tag, &window, content.to_owned());
+                                    let usage = response.usage.clone();
+                                    let reply = ws::BotReply {
+                                        message: content.to_owned(),
+                                        prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                                        completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                                        total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                                    };
+                                    emit_stream_data(&tag, &window, reply);
                                 }
                             });
                         }
@@ -553,7 +560,9 @@ fn emit_stream_error(tag: &str, window: &tauri::Window, err_message: &String) {
     }
 }
 
-fn emit_stream_data(tag: &str, window: &tauri::Window, data: String) {
-    let _ = window.emit(tag, data);
+fn emit_stream_data(tag: &str, window: &tauri::Window, data: ws::BotReply) {
+    let data_str: String = serde_json::to_string(&data).unwrap_or(String::default());
+    log::info!("emit_stream_data: {}", data_str); // debug
+    let _ = window.emit(tag, data_str);
 }
 /***** Helper functions for emitting events to frontend END *****/
