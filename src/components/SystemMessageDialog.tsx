@@ -45,7 +45,6 @@ export const SystemMessageDialog = forwardRef<
   DialogProps
 >((_, ref) => {
   const [showDialog, setShowDialog] = useState(false);
-  const taRef = useRef<HTMLTextAreaElement>(null);
   const promptInputRef = useRef<PromptInputHandler>(null);
   const [conversation, setConversation] = useState<
     ConversationDetails | undefined
