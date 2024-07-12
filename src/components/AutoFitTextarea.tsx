@@ -1,18 +1,21 @@
-import { forwardRef, type TextareaHTMLAttributes } from 'react';
+import type { MutableRefObject, TextareaHTMLAttributes } from 'react';
+import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
 import { cn } from '@/lib/utils';
 
 import { Textarea } from './ui/textarea';
 
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  maxHeight?: number;
+  maxHeight: number;
 };
 
 export const AutoFitTextarea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ maxHeight = 400, className, onChange, ...props }, ref) => {
+  ({ maxHeight, className, onChange, ...props }, ref) => {
+    const taRef: MutableRefObject<HTMLTextAreaElement | null> = useRef(null);
     // Callbacks
-    const onValueChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const ta = e.target as HTMLTextAreaElement;
+    const fitHeight = useCallback(() => {
+      const ta = taRef.current;
+      if (!ta) return;
       // Set overflowY to hidden and height to fit-content
       // so we can get a correct scrollHeight
       ta.style.overflowY = 'hidden';
@@ -28,16 +31,27 @@ export const AutoFitTextarea = forwardRef<HTMLTextAreaElement, Props>(
         // Set height to scrollHeight
         ta.style.height = `${scrollHeight}px`;
       }
-      // bubble up event
-      onChange?.(e);
-    };
+    }, [maxHeight]);
+
+    useEffect(() => {
+      fitHeight();
+    }, [fitHeight]);
 
     return (
       <Textarea
-        ref={ref}
+        ref={(el) => {
+          if (ref) {
+            if (typeof ref === 'function') {
+              ref(el);
+            } else {
+              ref.current = el;
+            }
+          }
+          taRef.current = el;
+        }}
         className={cn('resize-none overflow-y-hidden border px-2', className)}
         {...props}
-        onChange={onValueChange}
+        onChange={fitHeight}
       />
     );
   }

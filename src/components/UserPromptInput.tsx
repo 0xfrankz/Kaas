@@ -11,6 +11,7 @@ import {
   useMessageListContext,
 } from '@/lib/hooks';
 import type { ContentItem, Message } from '@/lib/types';
+import { getTextFromContent } from '@/lib/utils';
 
 import PromptInput from './PromptInput';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -63,20 +64,25 @@ export function UserPromptInput({ conversationId }: Props) {
 
   const onSubmit = useCallback(
     async (content: ContentItem[]) => {
-      creator({
-        conversationId,
-        role: MESSAGE_USER,
-        content,
-      });
+      const promptStr = getTextFromContent(content);
+      if (promptStr.trim().length === 0) {
+        toast.error(t('error:validation:empty-prompt'));
+      } else {
+        creator({
+          conversationId,
+          role: MESSAGE_USER,
+          content,
+        });
+      }
     },
-    [conversationId, creator]
+    [conversationId, creator, t]
   );
 
   return (
     <div className="relative size-full">
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="absolute -top-6 right-4 overflow-hidden rounded-t bg-accent px-2 py-1 text-muted-foreground">
+          <div className="absolute -top-6 right-4 overflow-hidden rounded-t bg-muted px-2 py-1 text-muted-foreground">
             <div className="ml-auto flex items-center gap-1 text-xs">
               <Coins className="size-[14px]" />
               {totalUsage}
@@ -91,7 +97,10 @@ export function UserPromptInput({ conversationId }: Props) {
           </span>
         </TooltipContent>
       </Tooltip>
-      <PromptInput onSubmit={onSubmit} />
+      <PromptInput
+        onSubmit={onSubmit}
+        placeHolder={t('page-conversation:message:input-placeholder')}
+      />
     </div>
   );
 }

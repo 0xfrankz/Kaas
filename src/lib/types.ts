@@ -210,6 +210,10 @@ export type StatefulDialogHandler<T> = DialogHandler<T> & {
   isOpen: () => boolean;
 };
 
+export type PromptInputHandler = {
+  submit: () => void;
+};
+
 // Functions
 export function toGenericModel(model: NewModel | Model): GenericModel {
   if ('id' in model) {

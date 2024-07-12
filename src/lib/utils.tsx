@@ -9,7 +9,6 @@ import { CONTENT_ITEM_TYPE_TEXT, PROVIDER_STYLES } from './constants';
 import type {
   AllProviders,
   ContentItem,
-  ContentItemText,
   Message,
   Model,
   ProviderStyles,
@@ -93,7 +92,7 @@ export function buildTextContent(text: string): ContentItem[] {
 export function getTextFromContent(contentItems: ContentItem[]): string {
   const item = contentItems.find((ci) => ci.type === CONTENT_ITEM_TYPE_TEXT);
   if (item) {
-    return (item as ContentItemText).data;
+    return item.data;
   }
   return '';
 }
