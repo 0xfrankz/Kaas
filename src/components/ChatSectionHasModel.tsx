@@ -19,12 +19,12 @@ import type { ConversationDetails, Message } from '@/lib/types';
 import { getMessageTag } from '@/lib/utils';
 
 import { ChatMessageList } from './ChatMessageList';
-import { ChatPromptInput } from './ChatPromptInput';
 import { ChatStop } from './ChatStop';
 import { ScrollBottom } from './ScrollBottom';
 import { ToBottom } from './ToBottom';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
+import { UserPromptInput } from './UserPromptInput';
 
 const MemoizedMessageList = memo(ChatMessageList);
 const MemoizedScrollBottom = memo(ScrollBottom);
@@ -278,7 +278,7 @@ export function ChatSectionHasModel({
         </div>
         <div id="continue-or-input" className="h-fit w-full">
           <FileUploaderContextProvider>
-            <ChatPromptInput conversationId={conversation.id} />
+            <UserPromptInput conversationId={conversation.id} />
           </FileUploaderContextProvider>
         </div>
       </>

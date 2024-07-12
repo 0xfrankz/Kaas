@@ -1,5 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { Coins, ImagePlus, Puzzle, SendHorizonal, X } from 'lucide-react';
+import { ImagePlus, Puzzle, SendHorizonal, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -10,24 +9,11 @@ import cache from '@/lib/cache';
 import {
   CONTENT_ITEM_TYPE_IMAGE,
   CONTENT_ITEM_TYPE_TEXT,
-  MESSAGE_BOT,
-  MESSAGE_USER,
   SETTING_USER_ENTER_TO_SEND,
 } from '@/lib/constants';
-import {
-  LIST_MESSAGES_KEY,
-  useFileUploaderContext,
-  useMessageCreator,
-  useMessageListContext,
-  useSettingUpserter,
-} from '@/lib/hooks';
+import { useFileUploaderContext, useSettingUpserter } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type {
-  ContentItem,
-  ContentItemTypes,
-  DialogHandler,
-  Message,
-} from '@/lib/types';
+import type { ContentItem, ContentItemTypes, DialogHandler } from '@/lib/types';
 import { cn, getFileExt } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
@@ -37,60 +23,36 @@ import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-
-const HEIGHT_LIMIT = 20 * 20;
 
 type Props = {
-  conversationId: number;
+  enableUpload?: boolean;
+  enablePromptTemplate?: boolean;
+  enableSetting?: boolean;
+  maxHeight?: number;
+  onSubmit: (content: ContentItem[]) => void;
 };
 
-export function ChatPromptInput({ conversationId }: Props) {
+const MAX_HEIGHT = 20 * 20;
+export default function PromptInput({
+  enableUpload = true,
+  enablePromptTemplate = true,
+  enableSetting = true,
+  maxHeight = MAX_HEIGHT,
+  onSubmit,
+}: Props) {
+  // States
   const [focused, setFocused] = useState(false);
   const [showDropZone, setShowDropZone] = useState(false);
   const { files, removeFile } = useFileUploaderContext();
-  const promptRef = useRef<HTMLTextAreaElement>(null);
-  const promptGridDialogRef = useRef<DialogHandler<void>>(null);
-  const queryClient = useQueryClient();
-  const { messages } = useMessageListContext();
-
-  const totalUsage = messages.reduce((acc, msg) => {
-    return acc + (msg.totalToken ?? 0);
-  }, 0);
-
-  const creator = useMessageCreator({
-    onSettled: (_, error) => {
-      if (error) {
-        toast.error(error.message);
-      } else {
-        // insert placeholder to trigger generation
-        const placeholder: Message = {
-          conversationId,
-          role: MESSAGE_BOT,
-          content: [],
-          id: -1,
-          isReceiving: true,
-        };
-        // add placeholder message
-        queryClient.setQueryData<Message[]>(
-          [
-            ...LIST_MESSAGES_KEY,
-            {
-              conversationId,
-            },
-          ],
-          (old) => {
-            return old ? [...old, placeholder] : [placeholder];
-          }
-        );
-      }
-    },
-  });
   const enterToSend = useAppStateStore(
     (state) => state.settings[SETTING_USER_ENTER_TO_SEND] !== 'false'
   );
-  const upserter = useSettingUpserter();
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const promptGridDialogRef = useRef<DialogHandler<void>>(null);
   const { t } = useTranslation(['generic', 'page-conversation']);
+
+  // Queries
+  const upserter = useSettingUpserter();
 
   // Callbacks
   const fitTextareaHeight = useCallback(() => {
@@ -101,10 +63,10 @@ export function ChatPromptInput({ conversationId }: Props) {
       ta.style.overflowY = 'hidden';
       ta.style.height = 'fit-content';
       const { scrollHeight } = ta;
-      if (scrollHeight > HEIGHT_LIMIT) {
+      if (scrollHeight > maxHeight) {
         // Enable scroll when height limitation is reached
         ta.style.overflowY = 'scroll';
-        ta.style.height = `${HEIGHT_LIMIT}px`;
+        ta.style.height = `${maxHeight}px`;
       } else {
         // set overflowY back to hidden when height limitation is not reached
         ta.style.overflowY = 'hidden';
@@ -112,6 +74,10 @@ export function ChatPromptInput({ conversationId }: Props) {
         ta.style.height = `${scrollHeight}px`;
       }
     }
+  }, [maxHeight]);
+
+  const onUsePromptClick = useCallback(() => {
+    promptGridDialogRef.current?.open();
   }, []);
 
   const onClick = useCallback(async () => {
@@ -138,22 +104,19 @@ export function ChatPromptInput({ conversationId }: Props) {
           data: file.fileName,
         })),
       ];
-      creator({
-        conversationId,
-        role: MESSAGE_USER,
-        content,
-      });
+      onSubmit(content);
       if (promptRef.current) {
         promptRef.current.value = '';
       }
     }
-  }, [conversationId, creator, files, t]);
+  }, [files, onSubmit, t]);
 
-  const onCheckedChange = (checked: boolean) => {
-    upserter({
-      key: SETTING_USER_ENTER_TO_SEND,
-      value: checked.toString(),
-    });
+  const onFocus = () => {
+    setFocused(true);
+  };
+
+  const onBlur = () => {
+    setFocused(false);
   };
 
   const onKeyDown = useCallback(
@@ -170,16 +133,11 @@ export function ChatPromptInput({ conversationId }: Props) {
     [enterToSend, onClick]
   );
 
-  const onUsePromptClick = useCallback(() => {
-    promptGridDialogRef.current?.open();
-  }, []);
-
-  const onFocus = () => {
-    setFocused(true);
-  };
-
-  const onBlur = () => {
-    setFocused(false);
+  const onCheckedChange = (checked: boolean) => {
+    upserter({
+      key: SETTING_USER_ENTER_TO_SEND,
+      value: checked.toString(),
+    });
   };
 
   const onUseClick = (promptStr: string) => {
@@ -226,39 +184,28 @@ export function ChatPromptInput({ conversationId }: Props) {
         </DndProvider>
         {files.length > 0 ? <Separator className="my-2" /> : null}
         <div className="flex w-full gap-2 px-2">
-          <Button
-            className="size-6 p-0"
-            variant="secondary"
-            onClick={() => setShowDropZone((state) => !state)}
-          >
-            {showDropZone ? (
-              <X className="size-[14px]" />
-            ) : (
-              <ImagePlus className="size-[14px]" />
-            )}
-          </Button>
-          <Button
-            className="size-6 p-0"
-            variant="secondary"
-            onClick={onUsePromptClick}
-          >
-            <Puzzle className="size-[14px]" />
-          </Button>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="ml-auto flex items-center gap-1 text-xs">
-                <Coins className="size-[14px]" />
-                {totalUsage}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <span>
-                {t('page-conversation:message:total-token-usage', {
-                  totalUsage,
-                })}
-              </span>
-            </TooltipContent>
-          </Tooltip>
+          {enableUpload ? (
+            <Button
+              className="size-6 p-0"
+              variant="secondary"
+              onClick={() => setShowDropZone((state) => !state)}
+            >
+              {showDropZone ? (
+                <X className="size-[14px]" />
+              ) : (
+                <ImagePlus className="size-[14px]" />
+              )}
+            </Button>
+          ) : null}
+          {enablePromptTemplate ? (
+            <Button
+              className="size-6 p-0"
+              variant="secondary"
+              onClick={onUsePromptClick}
+            >
+              <Puzzle className="size-[14px]" />
+            </Button>
+          ) : null}
         </div>
         <div className="flex w-full">
           <div className="my-auto grow">
@@ -278,19 +225,21 @@ export function ChatPromptInput({ conversationId }: Props) {
           </Button>
         </div>
       </div>
-      <div className="mb-4 flex w-full items-center justify-between px-2 text-xs text-muted-foreground">
-        <span>
-          {enterToSend
-            ? t('page-conversation:label:enter-to-send')
-            : t('page-conversation:label:shift-enter-to-send')}
-        </span>
-        <div className="flex items-center">
-          <span className="mr-2">
-            {t('page-conversation:label:quick-send')}
+      {enableSetting ? (
+        <div className="mb-4 flex w-full items-center justify-between px-2 text-xs text-muted-foreground">
+          <span>
+            {enterToSend
+              ? t('page-conversation:label:enter-to-send')
+              : t('page-conversation:label:shift-enter-to-send')}
           </span>
-          <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
+          <div className="flex items-center">
+            <span className="mr-2">
+              {t('page-conversation:label:quick-send')}
+            </span>
+            <Switch checked={enterToSend} onCheckedChange={onCheckedChange} />
+          </div>
         </div>
-      </div>
+      ) : null}
       <PromptApplyDialog ref={promptGridDialogRef} onUseClick={onUseClick} />
     </>
   );
