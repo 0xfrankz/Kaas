@@ -205,10 +205,28 @@
   }
 }
 
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+      display: none;
+  }
+ /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+  }
+}
+
 @font-face {
   font-family: "Inter";
   src: url("../fonts/Inter-Variable.ttf");
 }
+
+@font-face {
+  font-family: "Noto Sans SC";
+  src: url("../fonts/NotoSansSC-Variable.ttf");
+}
+
 
 /* This line ensures markdown code in a prose block has correct font-size */
 .prose-sm :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *)) {

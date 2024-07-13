@@ -1,20 +1,16 @@
 import dayjs from 'dayjs';
-import { Calendar, MessageCircle, Play, Plus, Trash2 } from 'lucide-react';
+import { Calendar, MessageCircle, Play, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { DEFAULT_DATE_FORMAT, PROVIDER_UNKNOWN } from '@/lib/constants';
-import {
-  useBlankConversationCreator,
-  useConversationDeleter,
-} from '@/lib/hooks';
-import log from '@/lib/log';
+import { useConversationDeleter } from '@/lib/hooks';
 import { useConfirmationStateStore } from '@/lib/store';
 import type { ConversationDetails } from '@/lib/types';
 
+import { ConversationStarter } from './ConversationStarter';
 import { ProviderTag } from './ProviderTag';
-import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import {
   ContextMenu,
@@ -47,7 +43,7 @@ function ConversationGridItem({
           </div>
         </CardHeader>
         <CardContent className="grow px-4 py-0">
-          <p className="">{conversation.subject}</p>
+          <p className="line-clamp-4">{conversation.subject}</p>
         </CardContent>
         <CardFooter className="p-4">
           <ProviderTag
@@ -67,35 +63,15 @@ export function ConversationGrid({
   const navigate = useNavigate();
   const { open } = useConfirmationStateStore();
   const deleter = useConversationDeleter({
-    onSettled: async (ignored, error, variables) => {
+    onSettled: async (_data, error, _variables) => {
       if (!error) {
         toast.success(
           t('page-conversations:message:delete-conversation-success')
         );
       } else {
-        await log.error(
-          `Failed to delete conversation: data = ${JSON.stringify(variables)}, error = ${error.message}`
-        );
         toast.error(
           t('page-conversations:message:delete-conversation-error', {
             errorMsg: error.message,
-          })
-        );
-      }
-    },
-  });
-  const creator = useBlankConversationCreator({
-    onSettled: async (conversation, error) => {
-      if (!error && conversation) {
-        navigate(`/conversations/${conversation.id}`);
-      } else {
-        const errorMsg = error?.message ?? '';
-        await log.error(
-          `Failed to create bare conversation: , error = ${errorMsg}`
-        );
-        toast.error(
-          t('page-conversations:message:create-conversation-error', {
-            errorMsg,
           })
         );
       }
@@ -112,24 +88,17 @@ export function ConversationGrid({
     });
   };
 
-  const onCreateClick = () => {
-    creator(t('generic:label:new-conversation'));
-  };
-
   return (
     <div className="flex grow flex-col">
       <div className="flex justify-between">
         <h2 className="text-3xl font-semibold tracking-tight">
-          {t('page-conversations:label:num-of-conversations', {
-            num: conversations.length,
-          })}
+          {conversations.length > 0
+            ? t('page-conversations:label:num-of-conversations', {
+                num: conversations.length,
+              })
+            : t('page-conversations:message:no-conversation')}
         </h2>
-        <Button onClick={onCreateClick}>
-          <Plus className="size-4" />
-          <span className="ml-2">
-            {t('generic:action:start-new-conversation')}
-          </span>
-        </Button>
+        <ConversationStarter />
       </div>
       <div className="mt-6 grid grid-cols-3 gap-[26px]">
         {conversations.map((conversation) => {

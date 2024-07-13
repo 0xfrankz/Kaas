@@ -1,0 +1,8 @@
+{
+    "title": "调试",
+    "label": {
+        "be-invoker": "后端调用测试",
+        "provider": "供应商",
+        "api-key": "API Key"
+    }
+}

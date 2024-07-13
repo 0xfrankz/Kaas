@@ -12,7 +12,24 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "fs": {
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "copyFile": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "exists": true,
+        "scope": ["$APPDATA/*", "$APPDATA/cache/*", "$RESOURCE/*", "$RESOURCE/resources/*"]
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "open": true
+      }
     },
     "bundle": {
       "active": true,
@@ -38,7 +55,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": ["resources/*"],
       "shortDescription": "",
       "targets": "all",
       "windows": {
@@ -61,7 +78,8 @@
         "minWidth": 960,
         "resizable": true,
         "title": "Kaas",
-        "width": 1440
+        "width": 1440,
+        "fileDropEnabled": false
       }
     ]
   }

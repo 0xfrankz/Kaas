@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAppStateStore } from '@/lib/store';
 import type { Model, StatefulDialogHandler } from '@/lib/types';
+import { getModelAlias } from '@/lib/utils';
 
 import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
@@ -72,7 +73,7 @@ export const ModelPickerDialog = forwardRef<
                 <SelectItem value={model.id.toString()} key={model.id}>
                   <div className="flex gap-2">
                     <ProviderIcon provider={model.provider} />
-                    {model.alias}
+                    {getModelAlias(model)}
                   </div>
                 </SelectItem>
               ))}

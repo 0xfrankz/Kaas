@@ -6,8 +6,8 @@ pub enum CommandError {
     ApiError { message: String },
     #[error("DbError: {message}")]
     DbError { message: String },
-    #[error("StateError: {message}")]
-    StateError { message: String },
+    // #[error("StateError: {message}")]
+    // StateError { message: String },
     #[error("UnknownError: {message}")]
     #[allow(dead_code)]
     UnknownError { message: String },
@@ -28,10 +28,10 @@ impl Serialize for CommandError {
                 sv.serialize_entry("type", "DbError")?;
                 sv.serialize_entry("message", msg)?;
             }
-            CommandError::StateError { message: ref msg } => {
-                sv.serialize_entry("type", "StateError")?;
-                sv.serialize_entry("message", msg)?;
-            }
+            // CommandError::StateError { message: ref msg } => {
+            //     sv.serialize_entry("type", "StateError")?;
+            //     sv.serialize_entry("message", msg)?;
+            // }
             CommandError::UnknownError { message: ref msg } => {
                 sv.serialize_entry("type", "UnknownError")?;
                 sv.serialize_entry("message", msg)?;

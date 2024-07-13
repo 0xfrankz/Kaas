@@ -14,6 +14,7 @@ import type {
   Options,
   Prompt,
   ProviderOptions,
+  RemoteModel,
   Setting,
   UpdateConversation,
 } from './types';
@@ -51,6 +52,17 @@ export async function invokeDeleteModel(modelId: number): Promise<Model> {
     modelId,
   });
   return fromGenericModel(result);
+}
+
+export async function invokeListRemoteModels(
+  provider: string,
+  apiKey: string
+): Promise<RemoteModel[]> {
+  const result = await invoke<RemoteModel[]>('list_remote_models', {
+    provider,
+    apiKey,
+  });
+  return result;
 }
 
 export async function invokeListSettings(): Promise<Setting[]> {
@@ -175,8 +187,17 @@ export async function invokeListMessages(
 export async function invokeCreateMessage(
   message: NewMessage
 ): Promise<Message> {
-  const result = await invoke<Message>('create_message', { message });
-  return result;
+  try {
+    const result = await invoke<Message>('create_message', {
+      message,
+    });
+    return result;
+  } catch (e) {
+    if (typeof e === 'string') {
+      return Promise.reject(new Error(e));
+    }
+    return Promise.reject(e);
+  }
 }
 
 export async function invokeGetSystemMessage(
@@ -204,9 +225,19 @@ export async function invokeHardDeleteMessage(
   return result;
 }
 
-export async function invokeCallBot(conversationId: number): Promise<void> {
+export async function invokeCallBot({
+  conversationId,
+  tag,
+  beforeMessageId,
+}: {
+  conversationId: number;
+  tag: string;
+  beforeMessageId?: number;
+}): Promise<void> {
   await invoke<Message>('call_bot', {
     conversationId,
+    tag,
+    beforeMessageId,
   });
 }
 

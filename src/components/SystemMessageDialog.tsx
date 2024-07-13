@@ -17,14 +17,18 @@ import {
   useMessageHardDeleter,
   useMessageUpdater,
 } from '@/lib/hooks';
+import { FileUploaderContextProvider } from '@/lib/providers';
 import type {
   CommandError,
+  ContentItem,
   ConversationDetails,
   DialogHandler,
   Message,
+  PromptInputHandler,
 } from '@/lib/types';
+import { getTextFromContent, getTextFromMessage } from '@/lib/utils';
 
-import { AutoFitTextarea } from './AutoFitTextarea';
+import PromptInput from './PromptInput';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -41,7 +45,7 @@ export const SystemMessageDialog = forwardRef<
   DialogProps
 >((_, ref) => {
   const [showDialog, setShowDialog] = useState(false);
-  const taRef = useRef<HTMLTextAreaElement>(null);
+  const promptInputRef = useRef<PromptInputHandler>(null);
   const [conversation, setConversation] = useState<
     ConversationDetails | undefined
   >(undefined);
@@ -72,7 +76,7 @@ export const SystemMessageDialog = forwardRef<
         );
       }
     },
-    []
+    [queryClient, t]
   );
   const creator = useMessageCreator({
     onSuccess: () => {
@@ -121,40 +125,47 @@ export const SystemMessageDialog = forwardRef<
     },
   }));
 
-  const onClick = useCallback(() => {
-    console.log('onclick', conversation, message);
-    // create, update or deleter
-    if (conversation) {
-      if (message) {
-        // update or delete
-        const mStr = taRef.current?.value ?? '';
-        const mData = {
-          id: message.id,
-          content: mStr,
-          conversationId: conversation?.id,
-          role: MESSAGE_SYSTEM,
-        };
-        if (mStr.trim().length === 0) {
-          deleter(mData);
+  const onSubmit = useCallback(
+    (content: ContentItem[]) => {
+      // create, update or deleter
+      if (conversation) {
+        if (message) {
+          // update or delete
+          const mData = {
+            id: message.id,
+            content,
+            conversationId: conversation?.id,
+            role: MESSAGE_SYSTEM,
+          };
+          if (getTextFromContent(content).trim().length === 0) {
+            deleter(mData);
+          } else {
+            updater(mData);
+          }
         } else {
-          updater(mData);
+          // create
+          creator({
+            content,
+            conversationId: conversation?.id,
+            role: MESSAGE_SYSTEM,
+          });
         }
-      } else {
-        // create
-        creator({
-          content: taRef.current?.value ?? '',
-          conversationId: conversation?.id,
-          role: MESSAGE_SYSTEM,
-        });
       }
+    },
+    [conversation, creator, deleter, message, updater]
+  );
+
+  const onClick = () => {
+    if (promptInputRef.current) {
+      promptInputRef.current.submit();
     }
-  }, [conversation, message]);
-  console.log('SystemMessageDialog', message);
+  };
+
   return conversation ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="line-clamp-2 whitespace-pre-wrap leading-5">
             {t('page-conversation:section:set-system-message', {
               subject: conversation.subject,
             })}
@@ -163,13 +174,27 @@ export const SystemMessageDialog = forwardRef<
             {t('page-conversation:message:set-system-message-tips')}
           </DialogDescription>
         </DialogHeader>
-        <div>
+        {/* <div>
           <AutoFitTextarea
+            maxHeight={400}
             ref={taRef}
             className="rounded-xl p-2"
             rows={5}
-            defaultValue={message?.content ?? ''}
+            defaultValue={message ? getTextFromMessage(message) : ''}
           />
+        </div> */}
+
+        <div>
+          <FileUploaderContextProvider>
+            <PromptInput
+              ref={promptInputRef}
+              enableUpload={false}
+              enableSetting={false}
+              showSendButton={false}
+              onSubmit={onSubmit}
+              defaultValue={message ? getTextFromMessage(message) : ''}
+            />
+          </FileUploaderContextProvider>
         </div>
         <div className="flex h-fit items-center justify-end gap-2">
           <Button variant="secondary" onClick={() => setShowDialog(false)}>

@@ -192,6 +192,7 @@ export default function ModelsPage() {
                       <SupportedModelCard
                         provider={provider}
                         onClick={() => onCreateClick(provider)}
+                        key={`${provider}-model-card`}
                       />
                     ))}
                   </div>

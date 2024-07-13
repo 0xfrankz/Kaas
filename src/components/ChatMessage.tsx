@@ -1,20 +1,47 @@
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { Bot as BotIcon, RefreshCw, SquarePen, UserRound } from 'lucide-react';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { produce } from 'immer';
+import {
+  Bot as BotIcon,
+  CircleAlert,
+  Coins,
+  RefreshCw,
+  RotateCw,
+  UserRound,
+} from 'lucide-react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import cache from '@/lib/cache';
 import {
+  CONTENT_ITEM_TYPE_IMAGE,
   DEFAULT_DATETIME_FORMAT,
   DEFAULT_PROFILE_NAME,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
+import {
+  LIST_MESSAGES_KEY,
+  useMessageCreator,
+  useMessageListContext,
+  useMessageUpdater,
+  useReplyListener,
+} from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { Message } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import type { ContentItem, FileData, Message } from '@/lib/types';
+import {
+  buildTextContent,
+  cn,
+  getMessageTag,
+  getTextFromContent,
+  getTextFromMessage,
+} from '@/lib/utils';
 
+import { ImagePreviwer } from './ImagePreviewer';
+import { Button } from './ui/button';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 type WrapperProps = {
   children: React.ReactNode;
@@ -25,7 +52,7 @@ type MessageProps = {
 };
 
 type ContentProps = {
-  content: string;
+  content: ContentItem[];
 };
 
 type MetaBarProps = {
@@ -44,6 +71,15 @@ const HoverContext = createContext<THoverContext>({
 
 const BOT_AVATAR = (
   <BotIcon className="box-border size-6 rounded-full border border-border-yellow stroke-foreground stroke-1 p-1" />
+);
+
+const BOT_AVATAR_WITH_ERROR = (
+  <div className="relative size-fit">
+    <BotIcon className="box-border size-6 rounded-full border border-red-500 stroke-foreground stroke-1 p-1" />
+    <div className="absolute -right-2 -top-2 size-4 rounded-full bg-red-500 ">
+      <CircleAlert className="size-full text-white" />
+    </div>
+  </div>
 );
 
 const USER_AVATAR = (
@@ -87,48 +123,200 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
 
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
-    <div
-      className={cn(
-        'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
-      )}
-    >
-      <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>
+    <div className={cn('mt-2 prose max-w-none text-foreground')}>
+      <Markdown remarkPlugins={[remarkGfm]}>
+        {getTextFromContent(content)}
+      </Markdown>
     </div>
+  );
+};
+
+const ErrorContent = ({ error }: { error: string }) => {
+  return (
+    <div className="prose mt-2 flex max-w-none gap-2 text-red-600">{error}</div>
   );
 };
 
 const Content = ({ content }: ContentProps) => {
-  return (
-    <div
-      className={cn(
-        'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
-      )}
-    >
-      {content}
-    </div>
+  const [images, setImages] = useState<FileData[]>([]);
+  const imageItems = useMemo(
+    () =>
+      content.filter((item) => {
+        return item.type === CONTENT_ITEM_TYPE_IMAGE;
+      }),
+    [content]
   );
-};
+  useEffect(() => {
+    const tasks: Promise<FileData>[] = imageItems.map(async (item) => {
+      const data = await cache.read(item.data);
+      return {
+        fileName: item.data,
+        fileSize: 0,
+        fileType: item.mimetype ?? 'image/jpeg',
+        fileData: data,
+      };
+    });
+    Promise.all(tasks).then((imageData) => setImages(imageData));
+  }, [imageItems]);
 
-const ActionBar = () => {
-  const { hover } = useContext(HoverContext);
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
-      <div className={cn(hover ? null : 'hidden')}>
-        <SquarePen className="size-[14px]" />
+    <div className="flex flex-col gap-4">
+      <div
+        className={cn(
+          'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
+        )}
+      >
+        {getTextFromContent(content)}
       </div>
+      {imageItems.length > 0 ? (
+        <ImagePreviwer files={images} deletable={false} onDelete={() => {}} />
+      ) : null}
     </div>
   );
 };
 
-const BotActionBar = () => {
+const ActionBar = ({ usage }: { usage?: number }) => {
   const { hover } = useContext(HoverContext);
+  const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-[14px] justify-end text-muted-foreground">
-      <div className={cn(hover ? null : 'hidden')}>
+    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground" />
+  );
+};
+
+const ErrorActionBar = ({
+  onRegenerateClick,
+}: {
+  onRegenerateClick: () => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-4 flex h-fit justify-end text-muted-foreground">
+      <Button
+        variant="secondary"
+        className="flex gap-2"
+        onClick={onRegenerateClick}
+      >
+        <RotateCw className="size-[14px]" />
+        {t('generic:action:retry')}
+      </Button>
+    </div>
+  );
+};
+
+const BotActionBar = ({
+  usage,
+  onRegenerateClick,
+}: {
+  usage?: number;
+  onRegenerateClick: () => void;
+}) => {
+  const { hover } = useContext(HoverContext);
+  const { t } = useTranslation();
+  return (
+    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
+      <Button
+        variant="ghost"
+        className={cn(
+          'flex gap-1 px-2 py-1 h-fit text-xs',
+          hover ? null : 'hidden'
+        )}
+        onClick={onRegenerateClick}
+      >
         <RefreshCw className="size-[14px]" />
-      </div>
+        {t('generic:action:regenerate')}
+      </Button>
+      {usage ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className={cn(
+                'flex items-center gap-1 text-xs',
+                hover ? null : 'hidden'
+              )}
+            >
+              <Coins className="size-[14px]" />
+              {usage}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <span>{t('page-conversation:message:token-usage', { usage })}</span>
+          </TooltipContent>
+        </Tooltip>
+      ) : null}
     </div>
   );
+};
+
+const ContentReceiver = ({ message }: { message: Message }) => {
+  const tag = getMessageTag(message);
+  const { ready, receiving, reply, error } = useReplyListener(tag);
+  const { onReceiverReady } = useMessageListContext();
+  const creator = useMessageCreator();
+  const updater = useMessageUpdater();
+  const queryClient = useQueryClient();
+
+  const renderContent = () => {
+    // if (hasError) {
+    //   return <ErrorContent error={error} />;
+    // }
+    if (reply && reply.message.length > 0) {
+      return <MarkdownContent content={buildTextContent(reply.message)} />;
+    }
+    return <LoadingIcon className="mt-2 h-6 self-start" />;
+  };
+
+  useEffect(() => {
+    // When bot's reply is fully received
+    // create or update message here
+    if (!receiving && reply && reply.message.length > 0) {
+      const content = buildTextContent(reply.message);
+      if (message.id < 0) {
+        // new message
+        creator({
+          conversationId: message.conversationId,
+          role: message.role,
+          content,
+          promptToken: reply.promptToken,
+          completionToken: reply.completionToken,
+          totalToken: reply.totalToken,
+        });
+      } else {
+        updater({
+          ...message,
+          content,
+          promptToken: reply.promptToken,
+          completionToken: reply.completionToken,
+          totalToken: reply.totalToken,
+        });
+      }
+    }
+  }, [creator, message, reply, receiving, updater]);
+
+  useEffect(() => {
+    // handle BE errors
+    if (error && error.length > 0) {
+      queryClient.setQueryData<Message[]>(
+        [...LIST_MESSAGES_KEY, { conversationId: message.conversationId }],
+        (old) =>
+          produce(old, (draft) => {
+            const target = draft?.find((m) => m.id === message.id);
+            if (target) {
+              target.content = buildTextContent(error);
+              target.isError = true;
+              target.isReceiving = false;
+            }
+          })
+      );
+    }
+  }, [error, message.conversationId, message.id, queryClient]);
+
+  useEffect(() => {
+    if (ready) {
+      onReceiverReady();
+    }
+  }, [onReceiverReady, ready]);
+
+  return renderContent();
 };
 
 const User = ({ message }: MessageProps) => {
@@ -137,14 +325,14 @@ const User = ({ message }: MessageProps) => {
   );
   return (
     <HoverContextProvider>
-      <div className="flex w-auto flex-col rounded-2xl p-6">
+      <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
         <MetaBar
           avatar={USER_AVATAR}
           name={userName}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <Content content={message.content} />
-        <ActionBar />
+        <ActionBar usage={message.promptToken} />
       </div>
     </HoverContextProvider>
   );
@@ -155,43 +343,51 @@ const Bot = ({ message }: MessageProps) => {
     state.models.find((m) => m.id === message.modelId)
   );
   const { t } = useTranslation(['generic']);
+  const { onRegenerateClick } = useMessageListContext();
+
+  const render = () => {
+    if (message.isError) {
+      return (
+        <>
+          <ErrorContent error={getTextFromMessage(message)} />
+          <ErrorActionBar
+            onRegenerateClick={() => onRegenerateClick(message)}
+          />
+        </>
+      );
+    }
+    if (message.isReceiving) {
+      return <ContentReceiver message={message} />;
+    }
+    return (
+      <>
+        <MarkdownContent content={message.content} />
+        <BotActionBar
+          onRegenerateClick={() => onRegenerateClick(message)}
+          usage={message.totalToken}
+        />
+      </>
+    );
+  };
+
   return (
     <HoverContextProvider>
       <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
         <MetaBar
-          avatar={BOT_AVATAR}
+          avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
           name={model ? `${model.provider}` : t('generic:model:unknown')}
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
-        <MarkdownContent content={message.content} />
-        <BotActionBar />
+        {render()}
       </div>
     </HoverContextProvider>
-  );
-};
-
-const BotReceiving = ({ message }: { message: string }) => {
-  return (
-    <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-      <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
-      <MarkdownContent content={message} />
-    </div>
   );
 };
 
 const System = ({ message }: MessageProps) => {
   return (
     <div className="bg-gray-100">
-      <div>{message.content}</div>
-    </div>
-  );
-};
-
-const BotLoading = () => {
-  return (
-    <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-      <MetaBar avatar={BOT_AVATAR} name="Azure | gpt-3.5" />
-      <LoadingIcon className="mt-2 h-6 self-start" />
+      <div>{getTextFromMessage(message)}</div>
     </div>
   );
 };
@@ -200,6 +396,4 @@ export default {
   User,
   Bot,
   System,
-  BotLoading,
-  BotReceiving,
 };

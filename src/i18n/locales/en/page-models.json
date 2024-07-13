@@ -26,7 +26,8 @@
         "alias-tips": "Alias helps you identify your model",
         "api-key-tips": "The key for your model's API",
         "endpoint-tips": "The endpoint of your model's API",
-        "api-version-tips": "The version of your model's API",
+        "endpoint-tips-azure": "The endpoint of your model's API. Its format usually takes the form \"https://{your-resource-name}.openai.azure.com\".",
+        "api-version-tips": "The version of your model's API. It usually follows the YYYY-MM-DD format.",
         "deployment-id-tips": "The deployment name of your model's API",
         "model-tips": "The model type of your model's API"
     }

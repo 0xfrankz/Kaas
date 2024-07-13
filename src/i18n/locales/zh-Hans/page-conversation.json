@@ -1,0 +1,26 @@
+{
+    "section": {
+        "choose-model": "为{{subject}}选择一个模型",
+        "set-system-message": "为{{subject}}设置系统消息",
+        "conversation-history": "对话历史",
+        "use-prompt": "使用prompt模板"
+    },
+    "label": {
+        "enter-to-send": "按回车发送",
+        "shift-enter-to-send": "按Shift+回车发送",
+        "quick-send": "快捷发送"
+    },
+    "message": {
+        "no-model": "你需要先选择一个模型",
+        "set-system-message-tips": "定义机器人的一般行为。\n系统消息将随每一条用户消息一起发送给模型。",
+        "set-system-message-success": "已设置系统消息",
+        "set-system-message-error": "设置系统消息失败: {{errorMsg}}",
+        "unset-system-message-success": "已清除系统消息",
+        "unset-system-message-error": "清除系统消息失败: {{errorMsg}}",
+        "input-placeholder": "可以为你做点什么？",
+        "use-prompt-tips": "将模板中的变量替换为真实值。",
+        "insert-into-prompt": "插入prompt",
+        "token-usage": "此消息消耗: {{usage}} tokens",
+        "total-token-usage": "此对话共消耗: {{totalUsage}} tokens"
+    }
+}

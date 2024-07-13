@@ -32,7 +32,7 @@ export function ProxyIndicator({
       {...props}
     >
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button
             className="flex h-6 items-center rounded-full border-2 bg-background px-2 text-muted-foreground shadow-none hover:bg-background"
             onClick={onClick}

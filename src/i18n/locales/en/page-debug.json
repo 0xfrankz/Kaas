@@ -1,0 +1,8 @@
+{
+    "title": "Debug",
+    "label": {
+        "be-invoker": "Backend Invokers",
+        "provider": "Provider",
+        "api-key": "API Key"
+    }
+}

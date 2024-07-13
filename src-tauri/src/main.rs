@@ -27,6 +27,7 @@ fn main() {
             commands::list_models,
             commands::update_model,
             commands::delete_model,
+            commands::list_remote_models,
             commands::list_settings,
             commands::upsert_setting,
             commands::create_conversation,
@@ -52,7 +53,7 @@ fn main() {
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::Stdout, LogTarget::Webview])
-                .level(LevelFilter::Trace)
+                .level(LevelFilter::Debug)
                 .format(move |out, message, record| {
                     out.finish(format_args!(
                         "[{}][{}][{}] {}",
