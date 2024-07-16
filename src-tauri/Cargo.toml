@@ -38,6 +38,7 @@ base64 = "0.22.1"
 infer = "0.16.0"
 sys-locale = "0.3.1"
 async-openai = "0.23.4"
+sysinfo = "0.30.13"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

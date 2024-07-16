@@ -9,6 +9,9 @@ use entity::entities::{
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
 
+use serde_json::json;
+use sysinfo::System;
+
 use tauri::State;
 use tokio_stream::StreamExt;
 
@@ -404,6 +407,20 @@ pub async fn delete_prompt(prompt_id: i32, repo: State<'_, Repository>) -> Comma
         .delete_prompt(prompt_id)
         .await
         .map_err(|message| DbError { message })?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn get_sys_info() -> CommandResult<serde_json::Value> {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+    let result = json!({
+        "os": System::name(),
+        "version": System::os_version(),
+        "kernel": System::kernel_version(),
+        "totalMemory": format!("{:.2} GB", sys.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0),
+        "freeMemory": format!("{:.2} GB", sys.free_memory() as f64 / 1024.0 / 1024.0 / 1024.0),
+    });
     Ok(result)
 }
 

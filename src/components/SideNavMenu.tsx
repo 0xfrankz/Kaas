@@ -1,4 +1,4 @@
-import { MessageSquare, Package, Puzzle, Settings } from 'lucide-react';
+import { Bug, MessageSquare, Package, Puzzle, Settings } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -7,6 +7,12 @@ import { cn } from '@/lib/utils';
 
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from './ui/context-menu';
 
 type MenuProps = {
   expanded: boolean;
@@ -89,14 +95,26 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         className="mt-auto"
         to="/settings"
       />
-      <Badge
-        className={cn(
-          'w-12 flex justify-center my-6 rounded-full bg-muted text-muted-foreground transition-all',
-          expanded ? 'ml-4' : 'ml-2'
-        )}
-      >
-        Free
-      </Badge>
+      <ContextMenu key="hidden-debug-menu">
+        <ContextMenuTrigger>
+          <Badge
+            className={cn(
+              'w-12 flex justify-center my-6 rounded-full bg-muted text-muted-foreground transition-all',
+              expanded ? 'ml-4' : 'ml-2'
+            )}
+          >
+            Free
+          </Badge>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem
+            className="cursor-pointer gap-2"
+            onClick={() => navigate('/debug')}
+          >
+            <Bug className="size-4" /> {t('generic:action:debug')}
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </ul>
   );
 }

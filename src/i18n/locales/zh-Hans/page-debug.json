@@ -3,6 +3,9 @@
     "label": {
         "be-invoker": "后端调用测试",
         "provider": "供应商",
-        "api-key": "API Key"
+        "api-key": "API Key",
+        "sys-info": "系统信息",
+        "webview-info": "Webview 信息",
+        "os-info": "操作系统信息"
     }
 }

@@ -31,6 +31,7 @@ import {
   invokeDeleteModel,
   invokeDeletePrompt,
   invokeGetOptions,
+  invokeGetSysInfo,
   invokeGetSystemMessage,
   invokeHardDeleteMessage,
   invokeListConversations,
@@ -97,6 +98,7 @@ export const OPTIONS_CONVERSATION_KEY = ['options-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
 export const SYSTEM_MESSAGE_KEY = ['system-message'];
 export const LIST_PROMPTS_KEY = ['list-prompts'];
+export const SYS_INFO_KEY = ['sys-info'];
 
 export function useCreateModelMutation(): UseMutationResult<
   GenericModel,
@@ -530,6 +532,16 @@ export function usePromptDeleter(
     mutationFn: invokeDeletePrompt,
     ...options,
   }).mutate;
+}
+
+export function useGetSysInfoQuery(): UseQueryResult<
+  Record<string, string>,
+  CommandError
+> {
+  return useQuery({
+    queryKey: [SYS_INFO_KEY],
+    queryFn: invokeGetSysInfo,
+  });
 }
 
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;

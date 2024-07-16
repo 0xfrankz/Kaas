@@ -48,7 +48,8 @@ fn main() {
             commands::create_prompt,
             commands::list_prompts,
             commands::update_prompt,
-            commands::delete_prompt
+            commands::delete_prompt,
+            commands::get_sys_info,
         ])
         .plugin(
             tauri_plugin_log::Builder::default()

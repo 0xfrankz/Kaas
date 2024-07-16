@@ -3,6 +3,9 @@
     "label": {
         "be-invoker": "Backend Invokers",
         "provider": "Provider",
-        "api-key": "API Key"
+        "api-key": "API Key",
+        "sys-info": "System Information",
+        "webview-info": "Webview Info",
+        "os-info": "Operating System info"
     }
 }

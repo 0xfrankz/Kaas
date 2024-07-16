@@ -264,3 +264,8 @@ export async function invokeDeletePrompt(promptId: number): Promise<Prompt> {
   const result = await invoke<Prompt>('delete_prompt', { promptId });
   return result;
 }
+
+export async function invokeGetSysInfo(): Promise<Record<string, string>> {
+  const result = await invoke<Record<string, string>>('get_sys_info');
+  return result;
+}
