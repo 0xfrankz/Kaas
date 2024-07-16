@@ -33,7 +33,10 @@ impl Repository {
         tauri::async_runtime::block_on(async move {
             Migrator::up(&self.connection, None)
                 .await
-                .map_err(|_| "Failed to migrate database!")?;
+                .map_err(|err| {
+                    error!("Failed to migrate database: {:?}", err);
+                    format!("Failed to migrate database! Reason: {}", err)
+                })?;
             info!("Database migrated");
             Ok(())
         })
