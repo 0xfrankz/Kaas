@@ -1,10 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { open } from '@tauri-apps/api/shell';
+import { Heart } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, Suspense, useEffect, useRef, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm, useWatch } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -407,7 +410,7 @@ function SettingProxy() {
         value: JSON.stringify(form.getValues()),
       });
     }
-  }, [useProxy]);
+  }, [form, proxySetting.on, updater, useProxy]);
 
   return (
     <Card className="mt-1 flex flex-col px-4 py-6">
@@ -624,6 +627,61 @@ function SettingGroupNetwork() {
   );
 }
 
+function AboutUs() {
+  const { t } = useTranslation(['generic', 'page-settings']);
+  return (
+    <div className="mt-8 flex break-inside-avoid flex-col">
+      <span className="mb-1 text-sm font-semibold">
+        {t('page-settings:label:aboutus')}
+      </span>
+      <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
+        <ul className="flex flex-col gap-2 text-sm">
+          <li>
+            <span className="mr-2 font-medium">
+              {t('page-settings:label:version')}:
+            </span>
+            {import.meta.env.VITE_APP_VERSION}_{import.meta.env.COMMIT_HASH}
+          </li>
+          <li>
+            {/* {t('page-settings:message:built-by-1')}{' '}
+            <Heart className="mx-1 inline-block size-4 fill-red-600" />
+            {t('page-settings:message:built-by-2')}{' '}
+            <Link
+              to="/dependencies"
+              className="ml-1 text-primary underline-offset-4 hover:underline"
+            >
+              {t('page-settings:message:built-by-3')}
+            </Link>
+            . */}
+            <Trans
+              i18nKey="page-settings:message:built-by"
+              values={{ name: 'Frank Zhang' }}
+              components={{
+                userLink: (
+                  <Button
+                    variant="link"
+                    onClick={() => open('https://github.com/cranezhang')}
+                    className="mx-1 inline p-0"
+                  />
+                ),
+                icon: (
+                  <Heart className="mx-1 inline-block size-4 fill-red-600" />
+                ),
+                depsLink: (
+                  <Link
+                    to="/dependencies"
+                    className="ml-1 text-primary underline-offset-4 hover:underline"
+                  />
+                ),
+              }}
+            />
+          </li>
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
 function PageTitle() {
   const { t } = useTranslation(['page-settings']);
   return <TitleBar title={t('page-settings:title')} />;
@@ -645,6 +703,7 @@ export default function SettingsPage() {
               <SettingGroupProfile />
               <SettingGroupModels className="break-after-column" />
               <SettingGroupNetwork />
+              <AboutUs />
             </div>
           </ScrollArea>
         </TwoRows.Bottom>

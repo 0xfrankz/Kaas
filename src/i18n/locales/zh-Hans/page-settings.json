@@ -23,7 +23,10 @@
         "max-tokens": "默认最大词元（token）数",
         "max-tokens-desc": "每次请求模型时包含的最大词元（token）数量。可以在对话选项中覆盖此设置",
         "proxy-server-desc": "代理服务器的地址。",
-        "traffic-type-desc": "哪种类型的流量应经过代理？"
+        "traffic-type-desc": "哪种类型的流量应经过代理？",
+        "aboutus": "关于Kaas",
+        "version": "版本",
+        "commit": "Commit"
     },
     "select": {
         "dark-theme": "深色模式",
@@ -32,6 +35,7 @@
     },
     "message": {
         "change-setting-success": "{{setting}}已更改",
-        "change-setting-failure": "更改{{setting}}失败"
+        "change-setting-failure": "更改{{setting}}失败",
+        "built-by": "由<userLink>{{name}}</userLink>使用<icon/>及<depsLink>大量NB的开源软件</depsLink>打造。"
     }
 }

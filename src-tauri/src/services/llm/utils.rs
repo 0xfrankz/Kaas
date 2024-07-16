@@ -1,74 +1,17 @@
 use async_openai::{
-    config::{AzureConfig, OpenAIConfig},
-    types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, Role},
-    Client,
+    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs}
 };
-use entity::entities::{conversations::{AzureOptions, OpenAIOptions, Options, ProviderOptions}, messages::{Model as Message, Roles}, models::{Model, ProviderConfig, Providers}};
-use serde::Deserialize;
+use entity::entities::{
+    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers
+};
 
-// /**
-//  * Convert a Model entity to async_openai's Azure Client
-//  */
-// pub fn model_to_azure_client(model: &Model) -> Result<Client<AzureConfig>, String> {
-//     match model.provider.as_str().into() {
-//         Providers::Azure => {
-//             let config_json: RawAzureConfig = serde_json::from_str(&model.config)
-//                 .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
-//             let config: AzureConfig = config_json.into();
-//             let client = Client::with_config(config);
-//             return Ok(client);
-//         },
-//         _ => {
-//             Err("Model is not an Azure model".to_owned())
-//         }
-//     }
-// }
+use crate::services::cache;
 
-// /**
-//  * Convert a Model entity to async_openai's OpenAI Client
-//  */
-// pub fn model_to_openai_client(model: &Model) -> Result<Client<OpenAIConfig>, String> {
-//     match model.provider.as_str().into() {
-//         Providers::OpenAI => {
-//             let config_json: RawOpenAIConfig = serde_json::from_str(&model.config)
-//                 .map_err(|_| format!("Failed to parse model config: {}", &model.config))?;
-//             let config: OpenAIConfig = config_json.into();
-//             let client = Client::with_config(config);
-//             return Ok(client);
-//         },
-//         _ => {
-//             return Err("Model is not an OpenAI model".to_owned());
-//         }
-//     }
-// }
-
-// /**
-//  * Convert a ProviderConfig to async_openai's Azure Client
-//  */
-// pub fn config_to_azure_client(config: &ProviderConfig) -> Result<Client<AzureConfig>, String> {
-//     let config_json: RawAzureConfig = serde_json::from_str(&config.config)
-//         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-//     let config: AzureConfig = config_json.into();
-//     let client = Client::with_config(config);
-//     return Ok(client);
-// }
-
-// /**
-//  * Convert a Model entity to async_openai's OpenAI Client
-//  */
-// pub fn config_to_openai_client(config: &ProviderConfig) -> Result<Client<OpenAIConfig>, String> {
-//     let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
-//         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-//     let config: OpenAIConfig = config_json.into();
-//     let client = Client::with_config(config);
-//     return Ok(client);
-// }
-
-pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &ProviderOptions, default_max_tokens: Option<u16>) -> Result<CreateChatCompletionRequest, String> {
+pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u32>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
     let request: CreateChatCompletionRequest;
     // set messages
-    let req_messages: Vec<ChatCompletionRequestMessage> = messages.iter().map(message_to_request_message).collect();
+    let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_request_message).collect();
     // request_builder.messages(req_messages);
     // set options
     match options.provider.as_str().into() {
@@ -108,13 +51,35 @@ pub fn messages_and_options_to_request(messages: &Vec<Message>, options: &Provid
     Ok(request)
 }
 
-fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage {
+fn message_to_request_message(message: MessageDTO) -> ChatCompletionRequestMessage {
     match message.role.into() {
         Roles::User => {
+            let content_parts = message
+                .content
+                .into_iter()
+                .map(|item| {
+                    let part: ChatCompletionRequestMessageContentPart = match item.r#type {
+                        ContentType::Image => ChatCompletionRequestMessageContentPartImageArgs::default()
+                            .image_url(
+                                ImageUrlArgs::default()
+                                    .url(cache::read_as_data_url(item.data.as_str(), item.mimetype.as_deref()).unwrap_or(String::default()))
+                                    .detail(ImageDetail::Auto)
+                                    .build()?
+                            )
+                            .build()?
+                            .into(),
+                        ContentType::Text => ChatCompletionRequestMessageContentPartTextArgs::default()
+                            .text(item.data)
+                            .build()?
+                            .into()
+                    };
+                    Ok(part)
+                })
+                .collect::<Result<Vec<ChatCompletionRequestMessageContentPart>, OpenAIError>>()
+                .expect("Failed to build user message content");
             return ChatCompletionRequestMessage::User(
                 ChatCompletionRequestUserMessage {
-                    content: ChatCompletionRequestUserMessageContent::Text(message.content.clone()),
-                    role: Role::User,
+                    content: ChatCompletionRequestUserMessageContent::Array(content_parts),
                     name: None
                 }
             );
@@ -122,21 +87,17 @@ fn message_to_request_message(message: &Message) -> ChatCompletionRequestMessage
         Roles::System => {
             return ChatCompletionRequestMessage::System(
                 ChatCompletionRequestSystemMessage {
-                    content: message.content.clone(),
-                    role: Role::System,
+                    content: message.get_text().unwrap_or(String::default()),
                     name: None
                 }
             );
         },
         _ => {
             return ChatCompletionRequestMessage::Assistant(
-                ChatCompletionRequestAssistantMessage {
-                    content: Some(message.content.clone()),
-                    role: Role::Assistant,
-                    name: None,
-                    tool_calls: None,
-                    function_call: None,
-                }
+                ChatCompletionRequestAssistantMessageArgs::default()
+                    .content(message.get_text().unwrap_or(String::default()))
+                    .build()
+                    .unwrap_or(ChatCompletionRequestAssistantMessage::default())
             );
         }
     }
@@ -159,5 +120,30 @@ pub fn is_stream_enabled(options: &ProviderOptions) -> bool {
             }
         }
     }
+}
+
+// An utility function that converts string of format BCP-47 with region subtag to format BCP-47 with script subtag
+pub fn convert_locale_region_to_script(bcp47: &str) -> String {
+    let mut bcp47 = bcp47.to_string();
+    if bcp47.contains("-") {
+        let parts: Vec<&str> = bcp47.split("-").collect();
+        if parts.len() == 2 {
+            let lang = parts[0].to_string();
+            let region = parts[1].to_uppercase();
+            if lang == "zh" {
+                if region == "CN" || region == "SG" || region == "MY" {
+                    // Simplified Chinese
+                    bcp47 = format!("{}-Hans", lang);
+                } else {
+                    // Traditional Chinese
+                    bcp47 = format!("{}-Hant", lang);
+                }
+            } else if lang == "en" {
+                // use en for all English regions
+                bcp47 = lang
+            }
+        }
+    }
+    bcp47
 }
 

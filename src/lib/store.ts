@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 
+import { SETTING_USER_DEFAULT_MODEL } from './constants';
 import type { Model, Setting } from './types';
 
 export type AppState = {
   models: Model[];
   settings: Record<string, string>;
-  refreshModels: (models: Model[]) => void;
+  setModels: (models: Model[]) => void;
   setSettings: (settings: Setting[]) => void;
   updateSetting: (setting: Setting) => void;
+  getDefaultModel: () => Model | undefined;
 };
 
 type ConfirmationData = {
@@ -23,10 +25,10 @@ export type ConfirmationState = {
   close: () => void;
 };
 
-export const useAppStateStore = create<AppState>()((set) => ({
+export const useAppStateStore = create<AppState>()((set, get) => ({
   models: [],
   settings: {},
-  refreshModels: (models: Model[]) => {
+  setModels: (models: Model[]) => {
     set({ models });
   },
   setSettings: (settings: Setting[]) => {
@@ -38,12 +40,23 @@ export const useAppStateStore = create<AppState>()((set) => ({
       return { settings: result };
     });
   },
-  updateSetting: (setting: Setting) =>
+  updateSetting: (setting: Setting) => {
     set((state) => {
       return {
         settings: { ...state.settings, [setting.key]: setting.value },
       };
-    }),
+    });
+  },
+  getDefaultModel: () => {
+    const defaultModelId = parseInt(
+      get().settings[SETTING_USER_DEFAULT_MODEL],
+      10
+    );
+    const defaultModel = get().models.find(
+      (model) => model.id === defaultModelId
+    );
+    return defaultModel ?? get().models[0];
+  },
 }));
 
 export const useConfirmationStateStore = create<ConfirmationState>()((set) => ({

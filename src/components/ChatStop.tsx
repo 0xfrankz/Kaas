@@ -1,12 +1,8 @@
-import { emit } from '@tauri-apps/api/event';
 import { Square } from 'lucide-react';
 
 import { Button } from './ui/button';
 
-export function ChatStop() {
-  const onClick = async () => {
-    await emit('stop-bot');
-  };
+export function ChatStop({ onClick }: { onClick: () => void }) {
   return (
     <Button
       variant="secondary"

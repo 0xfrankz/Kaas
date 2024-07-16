@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 pub const SETTING_NETWORK_PROXY: &str = "network:proxy";
 pub const SETTING_MODELS_CONTEXT_LENGTH: &str = "models:context_length";
 pub const SETTING_MODELS_MAX_TOKENS: &str = "models:max_tokens";
+pub const SETTING_USER_DEFAULT_MODEL: &str = "user:default_model";
+pub const SETTING_DISPLAY_LANGUAGE: &str = "display:language";
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
 #[sea_orm(table_name = "settings")]

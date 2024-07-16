@@ -1,11 +1,14 @@
 import { MessageSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { useConversationsContext } from '@/lib/hooks';
 import type { ConversationDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { ConversationStarter } from './ConversationStarter';
 import { Button } from './ui/button';
+import { ScrollArea } from './ui/scroll-area';
 
 type Props = {
   activeConversationId: number;
@@ -40,23 +43,27 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
 
 export function ConversationHistory({ activeConversationId }: Props) {
   const { conversations } = useConversationsContext();
+  const { t } = useTranslation(['page-conversation']);
   return (
-    <div className="box-border h-full w-72 border-r border-border bg-background px-5 py-6">
+    <div className="box-border flex h-full max-h-screen w-72 flex-col gap-6 border-r border-border bg-background px-5 py-6">
       <h3 className="px-2 text-xs font-medium tracking-wide text-gray-400">
-        Conversation history
+        {t('page-conversation:section:conversation-history')}
       </h3>
-      <ul className="mt-3 flex flex-col gap-2">
-        {conversations.map((c) => {
-          return (
-            <li key={c.id} className="h-12">
-              <ConversationHistoryItem
-                conversation={c}
-                active={c.id === activeConversationId}
-              />
-            </li>
-          );
-        })}
-      </ul>
+      <ScrollArea>
+        <ul className="mt-3 flex flex-col gap-2">
+          {conversations.map((c) => {
+            return (
+              <li key={c.id} className="h-12">
+                <ConversationHistoryItem
+                  conversation={c}
+                  active={c.id === activeConversationId}
+                />
+              </li>
+            );
+          })}
+        </ul>
+      </ScrollArea>
+      <ConversationStarter />
     </div>
   );
 }

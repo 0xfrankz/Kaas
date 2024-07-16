@@ -1,7 +1,9 @@
 {
     "section": {
         "choose-model": "Choose a model for {{subject}}",
-        "set-system-message": "Set the system message for {{subject}}"
+        "set-system-message": "Set the system message for {{subject}}",
+        "conversation-history": "Conversation History",
+        "use-prompt": "Use a prompt template"
     },
     "label": {
         "enter-to-send": "Press Enter to send",
@@ -14,6 +16,11 @@
         "set-system-message-success": "System messge has been set",
         "set-system-message-error": "Failed to set system message: {{errorMsg}}",
         "unset-system-message-success": "System messge has been unset",
-        "unset-system-message-error": "Failed to unset system message: {{errorMsg}}"
+        "unset-system-message-error": "Failed to unset system message: {{errorMsg}}",
+        "input-placeholder": "How can I help?",
+        "use-prompt-tips": "Replace variables in your prompt template with real values.",
+        "insert-into-prompt": "Insert into prompt",
+        "token-usage": "Tokens used for this message: {{usage}}",
+        "total-token-usage": "Tokens used for this conversation: {{totalUsage}}"
     }
 }

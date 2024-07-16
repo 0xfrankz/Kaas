@@ -22,6 +22,7 @@ import type { FilledPrompt, FormHandler, NewPrompt, Prompt } from '@/lib/types';
 import { debounce } from '@/lib/utils';
 
 import { PromptVariables } from '../PromptVariables';
+import { Button } from '../ui/button';
 import {
   Form,
   FormControl,
@@ -246,6 +247,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
     { ...props }: HTMLAttributes<HTMLFormElement>,
     ref: ForwardedRef<FormHandler>
   ) => {
+    const [editing, setEditing] = useState<boolean>(false);
     const { prompt: filledPrompt, setPrompt: setFilledPrompt } =
       useFilledPromptContext();
     const form = useForm<FilledPrompt>({
@@ -261,6 +263,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
       name: 'variables',
     });
     const prompt = form.watch('prompt');
+    const { t } = useTranslation(['page-prompts']);
 
     // Hooks
     useImperativeHandle(
@@ -322,47 +325,70 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
     }, [formData]);
 
     const renderVariables = () => {
-      return fields.map((item, index) => {
-        return (
-          <Controller
-            key={item.id}
-            control={form.control}
-            name={`variables.${index}.value`}
-            render={({ field }) => {
-              return (
-                <div className="col-span-4">
-                  <label htmlFor={field.name}>{item.label}</label>
-                  <Input {...field} id={field.name} className="mt-1" />
-                </div>
-              );
-            }}
-          />
-        );
-      });
+      return (
+        <div>
+          <h3 className="mb-2 text-muted-foreground">
+            {t('page-prompts:section:variables')}
+          </h3>
+          {fields.map((item, index) => {
+            return (
+              <Controller
+                key={item.id}
+                control={form.control}
+                name={`variables.${index}.value`}
+                render={({ field }) => {
+                  return (
+                    <div className="col-span-4">
+                      <label htmlFor={field.name}>{item.label}</label>
+                      <Input {...field} id={field.name} className="mt-1" />
+                    </div>
+                  );
+                }}
+              />
+            );
+          })}
+        </div>
+      );
     };
 
     return (
       <Form {...form}>
         <form {...props}>
-          <div className="flex flex-col gap-4 py-4">
-            <FormField
-              control={form.control}
-              name="prompt"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormControl>
-                    <Textarea
-                      className="col-span-4 rounded-md py-1"
-                      rows={10}
-                      {...field}
-                    />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+          <div className="flex flex-col gap-4">
+            {editing ? (
+              <FormField
+                control={form.control}
+                name="prompt"
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                    <FormControl>
+                      <Textarea
+                        className="col-span-4 rounded-md py-1"
+                        rows={10}
+                        {...field}
+                      />
+                    </FormControl>
+                    <div className="col-span-4">
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-input bg-accent p-2 hover:border-input-hover">
+                <span className="max-h-6 w-2/3 max-w-[320px] truncate text-sm">
+                  {prompt}
+                </span>
+                <Button
+                  variant="secondary"
+                  className="text-sm"
+                  onClick={() => setEditing(true)}
+                >
+                  {t('generic:action:edit')}
+                </Button>
+              </div>
+            )}
+
             {renderVariables()}
           </div>
         </form>

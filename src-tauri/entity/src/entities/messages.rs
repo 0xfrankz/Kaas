@@ -2,7 +2,11 @@
 
 use sea_orm::entity::prelude::*;
 use sea_orm::entity::Linked;
+use sea_orm::ActiveValue::{Set, NotSet};
+use sea_orm::IntoActiveModel;
 use serde::{Deserialize, Serialize};
+
+use super::contents::{ContentDTO, ContentType};
 
 pub enum Roles {
     User,
@@ -39,7 +43,10 @@ pub struct Model {
     pub id: i32,
     pub conversation_id: i32,
     pub role: i32,
-    pub content: String,
+    // token usage
+    pub prompt_token: Option<u32>,
+    pub completion_token: Option<u32>,
+    pub total_token: Option<u32>,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -60,11 +67,19 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Conversations,
+    #[sea_orm(has_many = "super::contents::Entity")]
+    Contents,
 }
 
 impl Related<super::conversations::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Conversations.def()
+    }
+}
+
+impl Related<super::contents::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Contents.def()
     }
 }
 
@@ -87,10 +102,73 @@ impl Linked for MessageToModel {
     }
 }
 
-#[derive(DeriveIntoActiveModel, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NewMessage {
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub struct MessageDTO {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<i32>,
     pub conversation_id: i32,
     pub role: i32,
-    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completion_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_token: Option<u32>,
+    #[serde(skip_deserializing)]
+    pub created_at: DateTimeLocal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub updated_at: Option<DateTimeLocal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub deleted_at: Option<DateTimeLocal>,
+    pub content: Vec<ContentDTO>,
+}
+
+impl MessageDTO {
+    pub fn get_text(&self) -> Option<String> {
+        self.content
+            .iter()
+            .find_map(|item| {
+                if item.r#type == ContentType::Text {
+                    Some(item.data.clone())
+                } else {
+                    None
+                }
+            })
+    }
+}
+
+impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
+    fn from(value: (Model, Vec<super::contents::Model>)) -> Self {
+        let message = value.0;
+        let contents = value.1;
+        MessageDTO {
+            id: Some(message.id),
+            conversation_id: message.conversation_id,
+            role: message.role,
+            prompt_token: message.prompt_token,
+            completion_token: message.completion_token,
+            total_token: message.total_token,
+            created_at: message.created_at,
+            updated_at: message.updated_at,
+            deleted_at: message.deleted_at,
+            content: contents.into_iter().map(|content| content.into()).collect()
+        }
+    }
+}
+
+impl IntoActiveModel<ActiveModel> for MessageDTO {
+    fn into_active_model(self) -> ActiveModel {
+        ActiveModel {
+            id: self.id.map_or(NotSet, |id| Set(id)),
+            conversation_id: Set(self.conversation_id),
+            role: Set(self.role),
+            prompt_token: self.prompt_token.map_or(NotSet, |prompt_token| Set(Some(prompt_token))),
+            completion_token: self.completion_token.map_or(NotSet, |completion_token| Set(Some(completion_token))),
+            total_token: self.total_token.map_or(NotSet, |total_token| Set(Some(total_token))),
+            ..Default::default()
+        }
+    }
 }

@@ -1,13 +1,13 @@
 
 use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, ProviderOptions, UpdateConversationDTO};
-use entity::entities::messages::{self, ActiveModel as ActiveMessage, Model as Message, MessageToModel, NewMessage};
+use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
 use entity::entities::models::{self, Model, NewModel, ProviderConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
 use entity::entities::settings::{self, Model as Setting};
+use entity::entities::contents::{self, Model as Content, ActiveModel as ActiveContent};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::ActiveValue::NotSet;
-use sea_orm::{DbErr, IntoActiveModel, JoinType, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{DbErr, IntoActiveModel, JoinType, LoaderTrait, QueryFilter, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -196,7 +196,7 @@ impl Repository {
                 }
                 _ => {
                     let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(None);
+                    active_model.options = Set(Some(options_str));
                 }
             }
         }
@@ -209,43 +209,50 @@ impl Repository {
         Ok(result)
     }
 
-    pub async fn create_conversation_with_message(&self, conversation: Conversation, message: Message) -> Result<(Conversation, Message), String> {
+    pub async fn create_conversation_with_content(&self, conversation: Conversation, content: Content) -> Result<(Conversation, Message, Content), String> {
         // when created with a message
         // model id must be present
         let mode_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
         let model = self
                 .get_model(mode_id)
                 .await?;
-        let result = self.connection.transaction::<_, (Conversation, Message), DbErr>(|txn| {
+        let result = self.connection.transaction::<_, (Conversation, Message, Content), DbErr>(|txn| {
             Box::pin(async move {
-                let mut c_am: ActiveConversation = conversation.into();
-                c_am.id = ActiveValue::NotSet;
+                let mut conv_am: ActiveConversation = conversation.into();
+                conv_am.id = ActiveValue::NotSet;
                 match model.provider.into() {
                     Providers::Azure => {
                         let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
-                        c_am.options = Set(Some(options_str));
+                        conv_am.options = Set(Some(options_str));
                     }
                     _ => {
                         let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                        c_am.options = Set(Some(options_str));
+                        conv_am.options = Set(Some(options_str));
                     }
                 }
-                c_am.created_at = Set(chrono::Local::now());
+                conv_am.created_at = Set(chrono::Local::now());
 
-                let c_m: Conversation = c_am
+                let conv_m: Conversation = conv_am
                     .insert(txn)
                     .await?;
                 
-                let mut m_am: ActiveMessage = message.into();
-                m_am.id = ActiveValue::NotSet;
-                m_am.conversation_id = Set(c_m.id);
-                m_am.created_at = Set(chrono::Local::now());
-
-                let m_m: Message = m_am
+                let msg_m: Message = ActiveMessage {
+                        conversation_id: Set(conv_m.id),
+                        created_at: Set(chrono::Local::now()),
+                        role: Set(messages::Roles::User.into()),
+                        ..Default::default()
+                    }
                     .insert(txn)
                     .await?;
-                
-                Ok((c_m, m_m))
+
+                let mut ctnt_am: ActiveContent = content.into();
+                ctnt_am.id = ActiveValue::NotSet;
+                ctnt_am.message_id = Set(msg_m.id);
+                let ctnt_m = ctnt_am
+                    .insert(txn)
+                    .await?;
+
+                Ok((conv_m, msg_m, ctnt_m))
             })
         })
         .await
@@ -530,23 +537,15 @@ impl Repository {
     }
 
     /**
-     * Get the last message of a conversation
-     */
-    pub async fn get_last_message(&self, conversation_id: i32) -> Result<Message, String> {
-        self.get_last_messages(conversation_id, 1)
-            .await
-            .map(|mut messages| messages.pop())?
-            .ok_or(format!("Message with conversation id = {} doesn't exist", conversation_id))
-    }
-
-    /**
      * Get the last n messages of a conversation
      */
-    pub async fn get_last_messages(&self, conversation_id: i32, n: u16) -> Result<Vec<Message>, String> {
-        let messages = messages::Entity::find()
-            .filter(messages::Column::ConversationId.eq(conversation_id))
-            // .order_by_desc(messages::Column::CreatedAt)
-            // .limit(n as u64)
+    pub async fn get_last_messages(&self, conversation_id: i32, n: u16, before_message_id: Option<i32>) -> Result<Vec<MessageDTO>, String> {
+        let mut query = messages::Entity::find()
+            .filter(messages::Column::ConversationId.eq(conversation_id));
+        if let Some(mid) = before_message_id {
+            query = query.filter(messages::Column::Id.lt(mid));
+        }
+        let messages = query
             .cursor_by(messages::Column::Id)
             .last(n as u64)
             .all(&self.connection)
@@ -555,32 +554,70 @@ impl Repository {
                 error!("{}", err);
                 format!("Failed to find last {} messages with conversation id = {}", n,conversation_id)
             })?;
-        Ok(messages)
+        let contents = messages
+            .load_many(contents::Entity, &self.connection)
+            .await
+            .map_err(|err| { 
+                error!("{}", err);
+                format!("Failed to find contents of the last {} messages with conversation id = {}", n,conversation_id)
+            })?;
+        let result: Vec<(Message, Vec<Content>)> = messages.into_iter().zip(contents.into_iter()).collect();
+        let dtos: Vec<MessageDTO> = result.into_iter().map(|data| {
+            data.into()
+        }).collect();
+
+        Ok(dtos)
     }
 
     /**
      * Insert a new message
      */
-    pub async fn create_message(&self, new_message: NewMessage) -> Result<Message, String> {
-        let mut active_model = new_message.into_active_model();
-        active_model.created_at  = Set(chrono::Local::now());
-        let result = active_model
-            .insert(&self.connection)
-            .await
-            .map_err(|err| {
-                error!("{}", err);
-                "Failed to create new message".to_string()
-            })?;
+    pub async fn create_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        let contents = message.content.clone();
+        let mut msg_am = message.into_active_model();
+        msg_am.created_at  = Set(chrono::Local::now());
+        let result = self.connection.transaction::<_, MessageDTO, DbErr>(|txn| {
+            Box::pin(async move {
+                // Insert message first
+                let msg_m = msg_am
+                    .insert(txn)
+                    .await?;
+                let ctnt_ams: Vec<contents::ActiveModel> = contents.into_iter().map(|content| {
+                    let mut ctnt_am: contents::ActiveModel = content.into_active_model();
+                    ctnt_am.message_id = Set(msg_m.id);
+                    ctnt_am
+                }).collect();
+                // Insert contents
+                contents::Entity::insert_many(ctnt_ams)
+                    .exec(txn)
+                    .await?;
+                // Retrieve newly inserted contents
+                let contents = msg_m
+                    .find_related(contents::Entity)
+                    .all(txn)
+                    .await?;
+                // Return DTO
+                let dto = MessageDTO::from((msg_m, contents));
+                Ok(dto)
+            })
+        })
+        .await
+        .map_err(|err| {
+            error!("Failed to create message with contents: {}", err);
+            err.to_string()
+        })?;
+        
         Ok(result)
     }
 
     /**
      * List all messages of a conversation
      */
-    pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<Message>, String> {
+    pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<MessageDTO>, String> {
         // Retrieve all Messages from DB with conversation_id
         // By default, filter out all system messages
         let result= messages::Entity::find()
+            .find_with_related(contents::Entity)
             .filter(messages::Column::ConversationId.eq(conversation_id))
             .filter(messages::Column::Role.ne(Into::<i32>::into(messages::Roles::System)))
             .filter(messages::Column::DeletedAt.is_null())
@@ -590,48 +627,98 @@ impl Repository {
             .map_err(|err| {
                 error!("{}", err);
                 format!("Failed to list messages of conversation with id = {}", conversation_id)
-            })?;
+            })?
+            .into_iter()
+            .map(|data| MessageDTO::from(data))
+            .collect();
         Ok(result)
     }
 
     /**
      * Get the system message of a conversation
      */
-    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<Message>, String> {
-        let result: Result<Option<Message>, String> = messages::Entity::find()
+    pub async fn get_system_message(&self, conversation_id: i32) -> Result<Option<MessageDTO>, String> {
+        let mut result = messages::Entity::find()
+            .find_with_related(contents::Entity)
             .filter(messages::Column::ConversationId.eq(conversation_id))
             .filter(messages::Column::Role.eq(Into::<i32>::into(messages::Roles::System)))
-            .one(&self.connection)
+            .all(&self.connection)
             .await
             .map_err(|err| {
                 error!("{}", err);
                 format!("Failed to get system message of conversation with id = {}", conversation_id)
+            })?;
+        let dto = result.pop()
+            .map(|data| {
+                MessageDTO::from(data)
             });
-        result
+        Ok(dto)
     }
 
     /**
      * Update the system message of a conversation
      */
-    pub async fn update_message(&self, message: Message) -> Result<Message, String> {
-        let mut active_model = message.into_active_model();
-        active_model.reset(messages::Column::Content);
-        active_model.updated_at = Set(Some(chrono::Local::now()));
-        let result = active_model
-            .update(&self.connection)
-            .await
-            .map_err(|err| {
-                error!("{}", err);
-                "Failed to update message".to_string()
-            })?;
+    pub async fn update_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        let message_id = message.id.ok_or("Message id is missing")?;
+        let contents = message.content.clone();
+        let mut msg_am = message.into_active_model();
+        msg_am.updated_at = Set(Some(chrono::Local::now()));
+        let result = self.connection.transaction::<_, MessageDTO, DbErr>(|txn| {
+            Box::pin(async move {
+                // Update messge first
+                let msg_m = msg_am
+                    .update(txn)
+                    .await?;
+                // Delete old content (hard delete)
+                contents::Entity::delete_many()
+                    .filter(contents::Column::MessageId.eq(msg_m.id))
+                    .exec(txn)
+                    .await?;
+                // Insert new content
+                let ctnt_ams: Vec<contents::ActiveModel> = contents
+                    .into_iter()
+                    .map(|content| {
+                        let mut ctnt_am: contents::ActiveModel = content.into_active_model();
+                        ctnt_am.message_id = Set(msg_m.id);
+                        ctnt_am
+                    }).collect();
+                contents::Entity::insert_many(ctnt_ams)
+                    .exec(txn)
+                    .await?;
+                // Retrieve newly inserted contents
+                let contents = msg_m
+                    .find_related(contents::Entity)
+                    .all(txn)
+                    .await?;
+                // Return DTO
+                let dto = MessageDTO::from((msg_m, contents));
+                Ok(dto)
+            })
+        })
+        .await
+        .map_err(|err| {
+            error!("Failed to update message with contents (id={}): {}", message_id, err);
+            err.to_string()
+        })?;
+        // let mut active_model = message.into_active_model();
+        // // active_model.reset(messages::Column::Content);
+        // active_model.updated_at = Set(Some(chrono::Local::now()));
+        // let result = active_model
+        //     .update(&self.connection)
+        //     .await
+        //     .map_err(|err| {
+        //         error!("{}", err);
+        //         "Failed to update message".to_string()
+        //     })?;
         Ok(result)
     }
 
     /**
      * Hard delete a message
      */
-    pub async fn hard_delete_message(&self, message: Message) -> Result<Message, String> {
-        messages::Entity::delete_by_id(message.id)
+    pub async fn hard_delete_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        let message_id = message.id.ok_or("Message id is missing")?;
+        messages::Entity::delete_by_id(message_id)
             .exec(&self.connection)
             .await
             .map_err(|err| {

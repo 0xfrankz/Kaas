@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { produce } from 'immer';
-import { Calendar, Plus } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -10,12 +10,11 @@ import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
 import {
   LIST_PROMPTS_KEY,
   useListPromptsQuery,
-  usePromptCreator,
   usePromptDeleter,
   usePromptUpdater,
 } from '@/lib/hooks';
 import log from '@/lib/log';
-import type { DialogHandler, NewPrompt, Prompt } from '@/lib/types';
+import type { DialogHandler, Prompt } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import PromptFormDialog from './PromptFormDialog';
@@ -38,12 +37,14 @@ type GridItemProps = {
 function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
   const { t } = useTranslation(['generic']);
   return (
-    <Card className={cn('mb-6 flex break-inside-avoid flex-col')}>
+    <Card className={cn('flex flex-col')}>
       <CardHeader>
-        <CardTitle>{prompt.alias}</CardTitle>
+        <CardTitle className="line-clamp-1">{prompt.alias}</CardTitle>
       </CardHeader>
-      <CardContent className="max-h-96 overflow-hidden text-ellipsis">
-        <p className="whitespace-pre-wrap">{prompt.content}</p>
+      <CardContent>
+        <p className="line-clamp-4 whitespace-pre-wrap text-sm text-muted-foreground">
+          {prompt.content}
+        </p>
       </CardContent>
       <CardFooter className="items-center justify-start">
         <div className="flex items-center text-xs text-muted-foreground">
@@ -76,44 +77,14 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
   );
 }
 
-function AddPromptItem({ onClick }: { onClick: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <Button className="mb-6 h-fit w-full" onClick={onClick}>
-      <div className="flex grow flex-col items-center justify-center space-y-1.5 py-4">
-        <Plus className="size-10" />
-        <span>{t('generic:action:create-prompt')}</span>
-      </div>
-    </Button>
-  );
-}
-
 export function PromptGrid() {
   const queryClient = useQueryClient();
   const { t } = useTranslation(['generic', 'page-prompts']);
-  const newPromptDialogRef = useRef<DialogHandler<undefined>>(null);
   const editPromptDialogRef = useRef<DialogHandler<Prompt>>(null);
   const usePromptDialogRef = useRef<DialogHandler<Prompt>>(null);
   // Queries
   const { data: prompts, isSuccess } = useListPromptsQuery();
-  const creator = usePromptCreator({
-    onSuccess: async (prompt) => {
-      // Update cache
-      queryClient.setQueryData<Prompt[]>(LIST_PROMPTS_KEY, (old) =>
-        old ? [...old, prompt] : [prompt]
-      );
-      // Show toast
-      toast.success(t('page-prompts:message:create-prompt-success'));
-      // Close dialog
-      newPromptDialogRef.current?.close();
-    },
-    onError: async (error, variables) => {
-      await log.error(
-        `Failed to create prompt: data = ${JSON.stringify(variables)}, error = ${error.message}`
-      );
-      toast.error(`Failed to create prompt: ${error.message}`);
-    },
-  });
+
   const updater = usePromptUpdater({
     onSuccess: async (prompt) => {
       // Update cache
@@ -160,17 +131,6 @@ export function PromptGrid() {
   });
 
   // Callbacks
-  const onCreateClick = useCallback(() => {
-    newPromptDialogRef.current?.open();
-  }, [newPromptDialogRef]);
-
-  const onCreateSubmit = useCallback(
-    (newPrompt: NewPrompt) => {
-      creator(newPrompt);
-    },
-    [creator]
-  );
-
   const onEditClick = useCallback((prompt: Prompt) => {
     editPromptDialogRef.current?.open(prompt);
   }, []);
@@ -195,8 +155,7 @@ export function PromptGrid() {
 
   return (
     <>
-      <div className="mx-auto mt-6 w-full columns-3 gap-8 text-foreground">
-        <AddPromptItem onClick={onCreateClick} />
+      <div className="mx-auto mt-6 grid w-full grid-cols-3 gap-8 text-foreground">
         {isSuccess &&
           prompts.map((prompt) => (
             <PromptGridItem
@@ -207,10 +166,6 @@ export function PromptGrid() {
             />
           ))}
       </div>
-      <PromptFormDialog.New
-        ref={newPromptDialogRef}
-        onSubmit={onCreateSubmit}
-      />
       <PromptFormDialog.Edit
         ref={editPromptDialogRef}
         onSubmit={onEditSubmit}

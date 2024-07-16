@@ -1,0 +1,9 @@
+{
+    "title": "Dependencies",
+    "label": {
+        "name": "Name",
+        "link": "Link",
+        "license": "License",
+        "author": "Author"
+    }
+}

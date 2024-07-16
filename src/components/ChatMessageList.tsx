@@ -1,10 +1,10 @@
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
-import type { Message } from '@/lib/types';
+import { useMessageListContext } from '@/lib/hooks';
 
 import ChatMessage from './ChatMessage';
 
-export function ChatMessageList({ messages }: { messages: Message[] }) {
-  // Render functions
+export function ChatMessageList() {
+  const { messages } = useMessageListContext();
   const renderMessages = () => {
     const inner = messages ? (
       <ul className="box-border pt-6">

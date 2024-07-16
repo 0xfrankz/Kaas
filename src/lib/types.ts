@@ -1,6 +1,10 @@
 import type { z } from 'zod';
 
-import type { ALL_PROVIDERS, SUPPORTED_PROVIDERS } from './constants';
+import type {
+  ALL_PROVIDERS,
+  CONTENT_ITEM_TYPES,
+  SUPPORTED_PROVIDERS,
+} from './constants';
 import type {
   azureOptionsFormSchema,
   conversationFormSchema,
@@ -20,6 +24,13 @@ export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;
 export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
 
 export type NewModel = NewAzureModel | NewOpenAIModel;
+
+export type RemoteModel = {
+  id: string;
+  created: number;
+  object: string;
+  owned_by: string;
+};
 
 type SavedModelAttrs = {
   id: number;
@@ -47,6 +58,7 @@ export type Setting = {
 
 export type AllProviders = (typeof ALL_PROVIDERS)[number];
 export type SupportedProviders = (typeof SUPPORTED_PROVIDERS)[number];
+export type ContentItemTypes = (typeof CONTENT_ITEM_TYPES)[number];
 
 export type NewConversation = z.infer<typeof conversationFormSchema>;
 
@@ -79,10 +91,19 @@ export type UpdateConversation = Omit<
   subject?: string;
 };
 
+export type ContentItem = {
+  type: (typeof CONTENT_ITEM_TYPES)[number];
+  mimetype?: string; // MIME type of the data
+  data: string; // actual text if type === text, cache filename otherwise
+};
+
 export type NewMessage = {
   conversationId: number;
   role: number;
-  content: string;
+  content: ContentItem[];
+  promptToken?: number;
+  completionToken?: number;
+  totalToken?: number;
 };
 
 export type Message = NewMessage & {
@@ -91,6 +112,15 @@ export type Message = NewMessage & {
   updatedAt?: string;
   deletedAt?: string;
   modelId?: number;
+  isReceiving?: boolean;
+  isError?: boolean;
+};
+
+export type BotReply = {
+  message: string;
+  promptToken?: number;
+  completionToken?: number;
+  totalToken?: number;
 };
 
 export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
@@ -125,6 +155,13 @@ export type ProviderStyles = {
   };
 };
 
+export type FileData = {
+  fileName: string;
+  fileSize: number;
+  fileType: string; // number of bytes
+  fileData: Uint8Array; // blob
+};
+
 // Contexts
 export type TConversationsContext = {
   conversations: ConversationDetails[];
@@ -135,6 +172,18 @@ export type TConversationsContext = {
 export type TFilledPromptContext = {
   prompt: FilledPrompt;
   setPrompt: (prompt: FilledPrompt) => void;
+};
+
+export type TMessageListContext = {
+  messages: Message[];
+  onRegenerateClick: (message: Message) => void;
+  onReceiverReady: () => void;
+};
+
+export type TFileUploaderContext = {
+  files: FileData[];
+  addFiles: (newFiles: FileData[]) => void;
+  removeFile: (index: number) => void;
 };
 
 // Errors
@@ -159,6 +208,10 @@ export type DialogHandler<T> = {
 
 export type StatefulDialogHandler<T> = DialogHandler<T> & {
   isOpen: () => boolean;
+};
+
+export type PromptInputHandler = {
+  submit: () => void;
 };
 
 // Functions

@@ -4,7 +4,7 @@ use sea_orm::{entity::prelude::*, ActiveValue::NotSet, FromQueryResult, Set};
 use serde::{Deserialize, Serialize};
 
 pub const DEFAULT_CONTEXT_LENGTH: u16 = 1;
-pub const DEFAULT_MAX_TOKENS: u16 = 256;
+pub const DEFAULT_MAX_TOKENS: u32 = 256;
 
 #[derive(Clone, Default, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
 #[sea_orm(table_name = "conversations")]
@@ -124,7 +124,7 @@ pub struct AzureOptions {
     // pub logit_bias: Option<HashMap<String, serde_json::Value>>, // default: null
     // pub logprobs: Option<i32>, // Azure seems to have a different definition from OpenAI's. async-openai currently doesn't support the Azure version
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_tokens: Option<u16>,
+    pub max_tokens: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub n: Option<u8>, // min:1, max: 128, default: 1
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -172,7 +172,7 @@ pub struct OpenAIOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency_penalty: Option<f32>, // min: -2.0, max: 2.0, default: 0
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_tokens: Option<u16>,
+    pub max_tokens: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub n: Option<u8>, // min:1, max: 128, default: 1
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -4,7 +4,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { SETTING_DISPLAY_LANGUAGE, SETTING_DISPLAY_THEME } from './constants';
-import { ConversationsContext, FilledPromptContext } from './contexts';
+import {
+  ConversationsContext,
+  FileUploaderContext,
+  FilledPromptContext,
+  MessageListContext,
+} from './contexts';
 import { AppError, ERROR_TYPE_APP_STATE } from './error';
 import {
   useListConversationsQuery,
@@ -12,7 +17,12 @@ import {
   useListSettingsQuery,
 } from './hooks';
 import { useAppStateStore } from './store';
-import type { FilledPrompt, TConversationsContext } from './types';
+import type {
+  FileData,
+  FilledPrompt,
+  TConversationsContext,
+  TMessageListContext,
+} from './types';
 
 export function RQProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -37,8 +47,8 @@ export function InitializationProvider({
 }) {
   const [initialized, setInitialized] = useState(false);
   const { i18n } = useTranslation();
-  const { theme, setTheme } = useTheme();
-  const { refreshModels, setSettings } = useAppStateStore();
+  const { setTheme } = useTheme();
+  const { setModels, setSettings } = useAppStateStore();
   const {
     data: modelList,
     isSuccess: isModelsSuccess,
@@ -54,7 +64,7 @@ export function InitializationProvider({
 
   useEffect(() => {
     if (isModelsSuccess && isSettingsSuccess) {
-      refreshModels(modelList);
+      setModels(modelList);
       setSettings(settingList);
       // apply language setting
       const language = settingList.find(
@@ -67,13 +77,20 @@ export function InitializationProvider({
       const themeSetting = settingList.find(
         (s) => s.key === SETTING_DISPLAY_THEME
       )?.value as string;
-      if (themeSetting !== theme) {
-        setTheme(themeSetting);
-      }
+      setTheme(themeSetting);
 
       setInitialized(true);
     }
-  }, [isModelsSuccess, isSettingsSuccess, modelList, settingList]);
+  }, [
+    i18n,
+    isModelsSuccess,
+    isSettingsSuccess,
+    modelList,
+    setModels,
+    setSettings,
+    setTheme,
+    settingList,
+  ]);
 
   if (initialized) {
     // Successfully initialized
@@ -152,5 +169,57 @@ export function FilledPromptContextProvider({
     <FilledPromptContext.Provider value={context}>
       {children}
     </FilledPromptContext.Provider>
+  );
+}
+
+export function MessageListContextProvider({
+  messages,
+  onRegenerateClick,
+  onReceiverReady,
+  children,
+}: TMessageListContext & {
+  children: React.ReactNode;
+}) {
+  const messageListContext = useMemo(() => {
+    return {
+      messages,
+      onRegenerateClick,
+      onReceiverReady,
+    };
+  }, [messages, onRegenerateClick, onReceiverReady]);
+
+  return (
+    <MessageListContext.Provider value={messageListContext}>
+      {children}
+    </MessageListContext.Provider>
+  );
+}
+
+export function FileUploaderContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [files, setFiles] = useState<FileData[]>([]);
+  const context = useMemo(
+    () => ({
+      files,
+      addFiles: (newFiles: FileData[]) => {
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      },
+      removeFile: (index: number) => {
+        setFiles((prevFiles) => {
+          const newFiles = [...prevFiles];
+          newFiles.splice(index, 1);
+          return newFiles;
+        });
+      },
+    }),
+    [files]
+  );
+  return (
+    <FileUploaderContext.Provider value={context}>
+      {children}
+    </FileUploaderContext.Provider>
   );
 }

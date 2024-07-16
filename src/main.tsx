@@ -1,7 +1,6 @@
 import './styles.css';
 import '@/i18n';
 
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 import React, { Suspense } from 'react';
@@ -24,6 +23,7 @@ import {
 } from '@/lib/providers';
 import ConversationPage from '@/pages/Conversation';
 import ConversationsPage from '@/pages/Conversations';
+import DebugPage from '@/pages/Debug';
 import ModelsPage from '@/pages/Models';
 import PromptsPage from '@/pages/Prompts';
 import SettingsPage from '@/pages/Settings';
@@ -31,6 +31,7 @@ import SettingsPage from '@/pages/Settings';
 import { GlobalFallback } from './components/GlobalFallback';
 import { PageSkeleton } from './components/placeholders/WholePage';
 import { TooltipProvider } from './components/ui/tooltip';
+import Dependencies from './pages/Dependencies';
 
 const AnimatedOutlet = (): React.JSX.Element => {
   const location = useLocation();
@@ -86,6 +87,14 @@ const router = createBrowserRouter([
         path: 'settings',
         element: <SettingsPage />,
       },
+      {
+        path: 'dependencies',
+        element: <Dependencies />,
+      },
+      {
+        path: 'debug',
+        element: <DebugPage />,
+      },
     ],
   },
 ]);
@@ -103,7 +112,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             </Suspense>
           </TooltipProvider>
         </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
       </RQProvider>
     </ErrorBoundary>
   </React.StrictMode>

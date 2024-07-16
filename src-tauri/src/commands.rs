@@ -1,19 +1,21 @@
 use std::time::Instant;
 
 use entity::entities::{
+    contents::{ContentType, Model as Content}, 
     conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
-    messages::{self, Model as Message, NewMessage, Roles}, 
+    messages::{MessageDTO, Roles}, 
     models::{Model, NewModel, ProviderConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
 
-use reqwest::Response;
 use tauri::State;
 use tokio_stream::StreamExt;
 
 use crate::{
-    errors::CommandError::{self, ApiError, DbError, StateError}, log_utils::{error, trace, info}, services::{db::Repository, llm::{utils, webservices as ws}}
+    errors::CommandError::{self, ApiError, DbError},
+    log_utils::{error, trace, info}, 
+    services::{db::Repository, llm::{utils, webservices as ws}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -59,6 +61,28 @@ pub async fn delete_model(model_id: i32, repo: State<'_, Repository>) -> Command
 }
 
 #[tauri::command]
+pub async fn list_remote_models(provider: String, api_key: String, repo: State<'_, Repository>) -> CommandResult<Vec<async_openai::types::Model>> {
+    let now = Instant::now();
+    let proxy_setting = repo
+        .get_setting(SETTING_NETWORK_PROXY)
+        .await
+        .map(|setting| {
+            if let Ok(p_setting) = serde_json::from_str::<ProxySetting>(&setting.value) {
+                Some(p_setting)
+            } else { 
+                None
+            }
+        })
+        .unwrap_or(None);
+    let result = ws::list_models(provider, api_key, proxy_setting)
+        .await
+        .map_err(|message| ApiError { message })?;
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::list_remote_models]: {:.2?}", elapsed);
+    Ok(result)
+}
+
+#[tauri::command]
 pub async fn list_settings(repo: State<'_, Repository>) -> CommandResult<Vec<Setting>> {
     let result = repo
         .list_settings()
@@ -90,13 +114,13 @@ pub async fn create_conversation(
         subject: new_conversation.message.clone(),
         ..Default::default()
     };
-    let message = Message {
-        role: messages::Roles::from(0).into(), // first messge must be User message
-        content: new_conversation.message,
+    let content = Content {
+        r#type: ContentType::Text,
+        data: new_conversation.message,
         ..Default::default()
     };
-    let (conversation, _) = repo
-        .create_conversation_with_message(conversation, message)
+    let (conversation, _, _) = repo
+        .create_conversation_with_content(conversation, content)
         .await
         .map_err(|message| DbError { message })?;
 
@@ -198,19 +222,21 @@ pub async fn update_conversation(conversation: UpdateConversationDTO, repo: Stat
 }
 
 #[tauri::command]
-pub async fn create_message(message: NewMessage, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn create_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
     let now = Instant::now();
+    log::info!("create_message: message = {:?}", message);
     let result = repo
         .create_message(message)
         .await
         .map_err(|message| DbError { message })?;
+    log::info!("create_message: result = {:?}", result);
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::create_message]: {:.2?}", elapsed);
     Ok(result)
 }
 
 #[tauri::command]
-pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<Message>> {
+pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<MessageDTO>> {
     let now = Instant::now();
     let result = repo
         .list_messages(conversation_id)
@@ -222,19 +248,20 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Option<Message>> {
+pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Option<MessageDTO>> {
     let now = Instant::now();
-    let result = repo
+    let result: Option<MessageDTO> = repo
         .get_system_message(conversation_id)
         .await
-        .map_err(|message| DbError { message })?;
+        .map_err(|message| DbError { message })?
+        .and_then(|inner| Some(MessageDTO::from(inner)));
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::get_system_message]: {:.2?}", elapsed);
     Ok(result)
 }
 
 #[tauri::command]
-pub async fn update_message(message: Message, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn update_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .update_message(message)
@@ -246,7 +273,7 @@ pub async fn update_message(message: Message, repo: State<'_, Repository>) -> Co
 }
 
 #[tauri::command]
-pub async fn hard_delete_message(message: Message, repo: State<'_, Repository>) -> CommandResult<Message> {
+pub async fn hard_delete_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .hard_delete_message(message)
@@ -258,7 +285,7 @@ pub async fn hard_delete_message(message: Message, repo: State<'_, Repository>) 
 }
 
 #[tauri::command]
-pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
+pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Option<i32>, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
     let now = Instant::now();
     // Retrieve options, config and settings
     let options = repo
@@ -290,11 +317,11 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
             }
         })
         .unwrap_or(DEFAULT_CONTEXT_LENGTH);
-    let max_token_setting: u16 = repo
+    let max_token_setting: u32 = repo
         .get_setting(SETTING_MODELS_MAX_TOKENS)
         .await
         .map(|setting| {
-            match setting.value.parse::<u16>() {
+            match setting.value.parse::<u32>() {
                 Ok(value) => value,
                 Err(_) => DEFAULT_MAX_TOKENS,
             }
@@ -318,21 +345,21 @@ pub async fn call_bot(conversation_id: i32, window: tauri::Window, repo: State<'
         .map_err(|message| DbError { message })?;
     // Retrieve message list as context
     let mut context = repo
-        .get_last_messages(conversation_id, context_length + 1) // plus one to get the last user's message
+        .get_last_messages(conversation_id, context_length + 1, before_message_id) // plus one to get the last user's message
         .await
         .map_err(|message| DbError { message })?;
     if let Some(sys_m) = sys_message {
         context.insert(0, sys_m);
     }
-    log::info!("calling bot with context {:?}", context);
+    log::info!("bot calling context: {:?}", context);
     // delegate to one-off or stream function to send request
     let is_stream_enabled = utils::is_stream_enabled(&options);
     if is_stream_enabled {
         // stream response
-        call_bot_stream(window, context, options, config, proxy_setting, max_token_setting).await;
+        call_bot_stream(tag, window, context, options, config, proxy_setting, max_token_setting).await;
     } else {
         // one-off response
-        call_bot_one_off(window, context, options, config, proxy_setting, max_token_setting).await;
+        call_bot_one_off(tag, window, context, options, config, proxy_setting, max_token_setting).await;
     }
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
@@ -381,28 +408,28 @@ pub async fn delete_prompt(prompt_id: i32, repo: State<'_, Repository>) -> Comma
 }
 
 /***** Functions for calling model API START *****/
-async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
+    let tag_clone = tag.clone();
     let task_handle = tokio::spawn(async move {
         // handle non-stream response
-        // start receiving in frontend
-        emit_stream_start(&window);
         log::info!("call_bot_one_off: thread start");
         let result = ws::complete_chat(messages, options, config, proxy_setting, Some(max_token_setting))
             .await;
         match result {
             Ok(reply) => {
-                log::info!("Bot call received: {}", reply);
-                emit_stream_data(&window, reply);
-                emit_stream_done(&window);
+                // start receiving in frontend
+                emit_stream_start(&tag, &window);
+                log::info!("Bot call received: {:?}", reply);
+                emit_stream_data(&tag, &window, reply);
+                emit_stream_done(&tag, &window);
                 log::info!("call_bot_one_off: thread done");
             },
             Err(msg) => {
-                let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&window, &err_reply);
-                log::error!("call_bot_one_off: {}", &err_reply);
+                emit_stream_error(&tag, &window, &msg);
+                log::error!("call_bot_one_off: {}", &msg);
             }
         }
     });
@@ -411,7 +438,7 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
     let event_handle = window_clone.listen("stop-bot", move |_| {
         log::info!("Bot call stopped!");
         abort_handle.abort();
-        emit_stream_stopped(&window_clone_2);
+        emit_stream_stopped(&tag_clone, &window_clone_2);
     });
     // Run task
     let _ = task_handle.await;
@@ -420,19 +447,20 @@ async fn call_bot_one_off(window: tauri::Window, messages: Vec<Message>, options
 
 }
 
-async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u16) {
+async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     let log_tag = "call_bot_stream";
     trace(log_tag, "entrant");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
+    let tag_clone = tag.clone();
     let task_handle = tokio::spawn(async move {
         // handle stream response
-        // start receiving in frontend
-        emit_stream_start(&window);
-        trace(log_tag, "Thread sp[awned");
+        trace(log_tag, "Thread spawned");
         let stream_result = ws::complete_chat_stream(messages, options, config, proxy_setting, Some(max_token_setting)).await;
         match stream_result {
             Ok(mut stream) => {
+                // start receiving in frontend
+                emit_stream_start(&tag, &window);
                 trace(log_tag, "Streaming started!");
                 while let Some(result) = stream.next().await {
                     trace(log_tag, "Streaming data...");
@@ -440,13 +468,21 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
                         Ok(response) => {
                             response.choices.iter().for_each(|chat_choice| {
                                 if let Some(ref content) = chat_choice.delta.content {
-                                    emit_stream_data(&window, content.to_owned());
+                                    let usage = response.usage.clone();
+                                    let reply = ws::BotReply {
+                                        message: content.to_owned(),
+                                        prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                                        completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                                        total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                                    };
+                                    emit_stream_data(&tag, &window, reply);
                                 }
                             });
                         }
                         Err(err) => {
                             let err_reply = format!("[[ERROR]]{}", err);
-                            emit_stream_error(&window, &err_reply);
+                            emit_stream_error(&tag, &window, &err_reply);
+                            log::error!("Error during stream: {:?}", err);
                             error(log_tag, &format!("Error during stream: {}", &err_reply));
                             break;
                         }
@@ -454,11 +490,11 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
                 }
                 trace(log_tag, "Streaming finished!");
                 // stop receiving in frontend
-                emit_stream_done(&window);
+                emit_stream_done(&tag, &window);
             },
             Err(msg) => {
                 let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&window, &err_reply);
+                emit_stream_error(&tag, &window, &err_reply);
                 error(log_tag, &format!("Error starting stream: {}", &err_reply));
             }
         }
@@ -468,7 +504,7 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
     let event_handle = window_clone.listen("stop-bot", move |_| {
         trace(log_tag, "call stopped");
         abort_handle.abort();
-        emit_stream_stopped(&window_clone_2);
+        emit_stream_stopped(&tag_clone, &window_clone_2);
     });
     // Run task
     let _ = task_handle.await;
@@ -479,51 +515,54 @@ async fn call_bot_stream(window: tauri::Window, messages: Vec<Message>, options:
 /***** Functions for calling model API END *****/
 
 /***** Helper functions for emitting events to frontend START *****/
-fn emit_stream_start(window: &tauri::Window) {
-    match window.emit("bot-reply", "[[START]]") {
+fn emit_stream_start(tag: &str, window: &tauri::Window) {
+    log::info!("emit_stream_start: {}", tag);
+    match window.emit(tag, "[[START]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // simple retry
-            let _ = window.emit("bot-reply", "[[START]]");
+            let _ = window.emit(tag, "[[START]]");
         },
         _ => {}
     }
 }
 
-fn emit_stream_done(window: &tauri::Window) {
-    match window.emit("bot-reply", "[[DONE]]") {
+fn emit_stream_done(tag: &str, window: &tauri::Window) {
+    match window.emit(tag, "[[DONE]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // simple retry
-            let _ = window.emit("bot-reply", "[[DONE]]");
+            let _ = window.emit(tag, "[[DONE]]");
         },
         _ => {}
     }
 }
 
-fn emit_stream_stopped(window: &tauri::Window) {
-    match window.emit("bot-reply", "[[STOPPED]]") {
+fn emit_stream_stopped(tag: &str, window: &tauri::Window) {
+    match window.emit(tag, "[[STOPPED]]") {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // simple retry
-            let _ = window.emit("bot-reply", "[[STOPPED]]");
+            let _ = window.emit(tag, "[[STOPPED]]");
         },
         _ => {}
     }
 }
 
-fn emit_stream_error(window: &tauri::Window, err_message: &String) {
-    match window.emit("bot-reply", err_message) {
+fn emit_stream_error(tag: &str, window: &tauri::Window, err_message: &String) {
+    match window.emit(tag, format!("[[ERROR]]{}", err_message)) {
         Err(err) => {
             log::error!("Error when sending event: {}", err);
             // retry
-            let _ = window.emit("bot-reply", err_message);
+            let _ = window.emit(tag, err_message);
         },
         _ => {}
     }
 }
 
-fn emit_stream_data(window: &tauri::Window, data: String) {
-    let _ = window.emit("bot-reply", data);
+fn emit_stream_data(tag: &str, window: &tauri::Window, data: ws::BotReply) {
+    let data_str: String = serde_json::to_string(&data).unwrap_or(String::default());
+    log::info!("emit_stream_data: {}", data_str); // debug
+    let _ = window.emit(tag, data_str);
 }
 /***** Helper functions for emitting events to frontend END *****/

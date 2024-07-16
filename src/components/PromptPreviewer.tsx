@@ -8,7 +8,7 @@ export function PromptPreviewer() {
   );
   const promptStr = interpolate(prompt.prompt, promptCtx);
   return (
-    <div className="whitespace-pre-wrap p-4 text-muted-foreground">
+    <div className="whitespace-pre-wrap rounded-2xl bg-muted p-4 text-muted-foreground">
       {promptStr}
     </div>
   );

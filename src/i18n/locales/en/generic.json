@@ -16,11 +16,16 @@
         "save": "Save",
         "use": "Use",
         "set": "Set",
+        "retry": "Retry",
         "start-new-conversation": "Start a new conversation",
         "choose-a-model": "Choose a model",
         "use-this-model": "Use this model",
         "create-a-model": "Create a model",
-        "create-prompt": "Create new prompt template"
+        "create-prompt": "Create new prompt template",
+        "regenerate": "Regenerate",
+        "debug": "Debug",
+        "load-models": "Load from API",
+        "insert": "Insert"
     },
     "select": {
         "language-en": "English",
@@ -34,7 +39,10 @@
     "message": {
         "last-message": "Last message: {{lastMessage}}",
         "created-at": "Created at: {{createdAt}}",
-        "are-you-sure": "Are you absolutely sure?"
+        "are-you-sure": "Are you absolutely sure?",
+        "drag-file-here": "Drop images here to upload\n\nPNG (.png), JPEG (.jpeg and .jpg) and WEBP (.webp) files are supported\nYou can upload a maximum of {{maxNumOfUploadFiles}} files, each less than 20MB.",
+        "release-to-upload": "Release to upload",
+        "max-upload-files-warning": "You can only upload a maximum of {{maxNumOfUploadFiles}} files"
     },
     "label": {
         "default": "Default",

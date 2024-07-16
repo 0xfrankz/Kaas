@@ -6,6 +6,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { produce } from 'immer';
 import type { HTMLAttributes } from 'react';
 import {
@@ -36,6 +37,7 @@ import {
   invokeListMessages,
   invokeListModels,
   invokeListPrompts,
+  invokeListRemoteModels,
   invokeListSettings,
   invokeUpdateConversation,
   invokeUpdateConversationModel,
@@ -46,11 +48,25 @@ import {
   invokeUpdateSubject,
   invokeUpsertSetting,
 } from './commands';
-import { MESSAGE_USER, SETTING_NETWORK_PROXY } from './constants';
-import { ConversationsContext, FilledPromptContext } from './contexts';
+import {
+  MESSAGE_BOT,
+  MESSAGE_USER,
+  SETTING_NETWORK_PROXY,
+  STREAM_DONE,
+  STREAM_ERROR,
+  STREAM_START,
+  STREAM_STOPPED,
+} from './constants';
+import {
+  ConversationsContext,
+  FileUploaderContext,
+  FilledPromptContext,
+  MessageListContext,
+} from './contexts';
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
 import type {
+  BotReply,
   CommandError,
   ConversationDetails,
   GenericModel,
@@ -63,13 +79,17 @@ import type {
   Options,
   Prompt,
   ProxySetting,
+  RemoteModel,
   Setting,
   TConversationsContext,
+  TFileUploaderContext,
   TFilledPromptContext,
+  TMessageListContext,
   UpdateConversation,
 } from './types';
 
 export const LIST_MODELS_KEY = ['list-models'];
+export const LIST_REMOTE_MODELS_KEY = ['list-remote-models'];
 export const LIST_SETTINGS_KEY = ['list-settings'];
 export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
@@ -111,6 +131,24 @@ export function useModelDeleter(
     mutationFn: invokeDeleteModel,
     ...options,
   }).mutate;
+}
+
+export function useListRemoteModelsQuery({
+  provider,
+  apiKey,
+  ...options
+}: Omit<
+  UseQueryOptions<RemoteModel[], CommandError>,
+  'queryKey' | 'queryFn'
+> & {
+  provider: string;
+  apiKey: string;
+}) {
+  return useQuery({
+    queryKey: LIST_REMOTE_MODELS_KEY,
+    queryFn: () => invokeListRemoteModels(provider, apiKey),
+    ...options,
+  });
 }
 
 export function useListSettingsQuery(): UseQueryResult<
@@ -312,16 +350,6 @@ export function useGetSystemMessageQuery({
   });
 }
 
-export function useCreateMessageMutation(): UseMutationResult<
-  Message,
-  CommandError,
-  NewMessage
-> {
-  return useMutation({
-    mutationFn: invokeCreateMessage,
-  });
-}
-
 export function useMessageCreator(
   options?: Omit<
     UseMutationOptions<Message, CommandError, NewMessage>,
@@ -333,11 +361,27 @@ export function useMessageCreator(
     mutationFn: invokeCreateMessage,
     onSuccess: (msg) => {
       // Update cache
-      // Add to list if it is a user message
       if (msg.role === MESSAGE_USER) {
+        // Add to list if it is a user message
         queryClient.setQueryData<Message[]>(
           [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
           (messages) => (messages ? [...messages, msg] : [msg])
+        );
+      } else if (msg.role === MESSAGE_BOT) {
+        // Replace placeholder if it is a bot message
+        queryClient.setQueryData<Message[]>(
+          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+          (messages) => {
+            if (messages) {
+              const lastMsg = messages.at(-1);
+              if (lastMsg && lastMsg.id < 0) {
+                // remove last placeholder message
+                messages.pop();
+              }
+              return [...messages, msg];
+            }
+            return [msg];
+          }
         );
       }
     },
@@ -351,8 +395,27 @@ export function useMessageUpdater(
     'mutationFn'
   >
 ) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: invokeUpdateMessage,
+    onSuccess: (msg) => {
+      // Update cache
+      if (msg.role === MESSAGE_BOT) {
+        // Update existing bot message
+        queryClient.setQueryData<Message[]>(
+          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+          (old) =>
+            produce(old, (draft) => {
+              const target = draft?.find((m) => m.id === msg.id);
+              if (target) {
+                target.content = msg.content;
+                target.updatedAt = msg.updatedAt;
+                target.isReceiving = false;
+              }
+            })
+        );
+      }
+    },
     ...options,
   }).mutate;
 }
@@ -369,10 +432,24 @@ export function useMessageHardDeleter(
   }).mutate;
 }
 
-export function useCallBot(): UseMutationResult<void, CommandError, number> {
+export function useBotCaller(
+  options?: Omit<
+    UseMutationOptions<
+      void,
+      CommandError,
+      {
+        conversationId: number;
+        tag: string;
+        beforeMessageId?: number;
+      }
+    >,
+    'mutationFn'
+  >
+) {
   return useMutation({
     mutationFn: invokeCallBot,
-  });
+    ...options,
+  }).mutate;
 }
 
 export function useUpdateOptionsMutation(): UseMutationResult<
@@ -458,7 +535,7 @@ export function usePromptDeleter(
 type AnchorAttributesProps = Omit<HTMLAttributes<HTMLDivElement>, 'ref'>;
 const Anchor = forwardRef<HTMLDivElement, AnchorAttributesProps>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={className} {...props} />
+    <div ref={ref} className={className} id="buttom-anchor" {...props} />
   )
 );
 
@@ -474,67 +551,62 @@ type UseScrollToBottomResult = {
  * @returns
  */
 export function useScrollToBottom(
-  containerRef: React.RefObject<HTMLDivElement>,
-  isSticky: boolean = true
+  containerRef: React.RefObject<HTMLDivElement>
 ): UseScrollToBottomResult {
-  const [sticky, setSticky] = useState(isSticky);
+  const toScrollRef = useRef<boolean>(true);
   const bottomScrollTopRef = useRef<number>(0);
   const anchorRef = useRef<HTMLDivElement>(null);
 
   // Imperative function to scroll to anchor
   const scrollToBottom = useCallback(() => {
-    if (anchorRef.current) {
-      anchorRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest',
-      });
-    }
+    setTimeout(() => {
+      if (toScrollRef.current && anchorRef.current) {
+        anchorRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'end',
+        });
+      }
+    }, 200);
   }, [anchorRef]);
 
   // 创建IntersectionObserver
   const observer = useMemo(() => {
     return new IntersectionObserver(
       (entries) => {
-        if (sticky) {
-          entries.forEach((entry) => {
-            // when anchor enters viewport
-            if (entry.isIntersecting) {
-              setSticky(true);
-              bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
-            } else if (
-              containerRef.current?.scrollTop &&
-              containerRef.current.scrollTop < bottomScrollTopRef.current
-            ) {
-              // element exits viewport and user scrolled up
-              setSticky(false);
-            } else {
-              // element exits viewport and user didn't scroll up
-              // up initialization, this branch will auto scroll to bottom
-              // by using a short delay, js can get the write position to scroll to
-              setTimeout(() => {
-                if (sticky) {
-                  scrollToBottom();
-                  bottomScrollTopRef.current =
-                    containerRef.current?.scrollTop ?? 0;
-                }
-              }, 100);
-            }
-          });
-        }
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // anchor enters viewport
+            toScrollRef.current = false;
+            bottomScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
+          } else if (
+            containerRef.current?.scrollTop &&
+            containerRef.current.scrollTop < bottomScrollTopRef.current
+          ) {
+            // element exits viewport because user scrolled up
+            toScrollRef.current = false;
+          } else {
+            // element exits viewport and user didn't scroll up
+            // upon initialization, this branch will auto scroll to bottom
+            // by using a short delay, js can get the write position to scroll to
+            toScrollRef.current = true;
+            scrollToBottom();
+          }
+        });
       },
       {
         root: null,
         threshold: 0,
       }
     );
-  }, [isSticky]);
+  }, [containerRef, scrollToBottom]);
 
   // Hook: attach observer && monitor scroll
   useEffect(() => {
-    if (anchorRef.current) {
+    const el = anchorRef.current;
+    if (el) {
       // Start oberserving for intersection
-      observer.observe(anchorRef.current);
+      observer.observe(el);
     } else {
       throw Error(
         "The Anchor element hasn't been mounted. Make sure the Anchor element returned by the hook is mounted in your scrolling container."
@@ -542,9 +614,9 @@ export function useScrollToBottom(
     }
     return () => {
       // Release observer
-      if (anchorRef.current) observer.unobserve(anchorRef.current);
+      if (el) observer.unobserve(el);
     };
-  }, [anchorRef, containerRef]);
+  }, [anchorRef, containerRef, observer]);
 
   // Anchor element with ref set
   const anchorEl = useMemo(() => {
@@ -556,6 +628,107 @@ export function useScrollToBottom(
   return {
     scrollToBottom,
     Anchor: anchorEl,
+  };
+}
+
+/**
+ * Hook for receiving message from backend
+ */
+export function useReplyListener(tag: string) {
+  const [ready, setReady] = useState(false);
+  const [receiving, setReceiving] = useState(false);
+  const [reply, setReply] = useState<BotReply | null>(null);
+  const [error, setError] = useState<string>();
+  const acceptingRef = useRef<boolean>(false);
+  const listenerRef = useRef<UnlistenFn>();
+  const mountedRef = useRef(false);
+
+  const startStreaming = () => {
+    setReceiving(true);
+    acceptingRef.current = true;
+    setReply(null);
+  };
+
+  const endStreaming = () => {
+    setReceiving(false);
+    acceptingRef.current = false;
+  };
+
+  const unbindListener = () => {
+    if (listenerRef.current) {
+      listenerRef.current();
+      listenerRef.current = undefined;
+    }
+  };
+
+  const bindListener = async () => {
+    listenerRef.current = await listen<string>(tag, (event) => {
+      const nextMsg = event.payload;
+      switch (true) {
+        case nextMsg === STREAM_START:
+          startStreaming();
+          break;
+        case nextMsg === STREAM_DONE:
+          endStreaming();
+          break;
+        case nextMsg === STREAM_STOPPED:
+          endStreaming();
+          break;
+        case nextMsg.startsWith(STREAM_ERROR):
+          setError(nextMsg.split(STREAM_ERROR).at(-1) ?? '');
+          endStreaming();
+          break;
+        default:
+          if (acceptingRef.current) {
+            const botReply = JSON.parse(nextMsg) as BotReply;
+            setReply((state) => {
+              if (state) {
+                // streaming mode, append to previous reply
+                return {
+                  ...state,
+                  message: state.message + botReply.message,
+                  promptToken: botReply.promptToken,
+                  completionToken: botReply.completionToken,
+                  totalToken: botReply.totalToken,
+                };
+              }
+              return botReply;
+            });
+          }
+          break;
+      }
+    });
+  };
+
+  const mount = async () => {
+    // stop bot when entering the page
+    // in case it was left running before
+    // await emit('stop-bot');
+    await bindListener();
+    setReady(true);
+  };
+
+  const unmount = () => {
+    unbindListener();
+    // stop bot when leaving the page
+    // emit('stop-bot');
+  };
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      // when not mounted
+      mount();
+      mountedRef.current = true; // avoid binding listener twice in strict mode
+    }
+    return unmount;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return {
+    ready,
+    receiving,
+    reply,
+    error,
   };
 }
 
@@ -576,6 +749,26 @@ export function useFilledPromptContext(): TFilledPromptContext {
   if (context === undefined) {
     throw new Error(
       'useFilledPromptContext must be used within a FilledPromptContextProvider'
+    );
+  }
+  return context;
+}
+
+export function useMessageListContext(): TMessageListContext {
+  const context = useContext(MessageListContext);
+  if (context === undefined) {
+    throw new Error(
+      'useMessageListContext must be used within a MessageListContextProvider'
+    );
+  }
+  return context;
+}
+
+export function useFileUploaderContext(): TFileUploaderContext {
+  const context = useContext(FileUploaderContext);
+  if (context === undefined) {
+    throw new Error(
+      'useFileUploaderContext must be used within a FileUploaderContextProvider'
     );
   }
   return context;

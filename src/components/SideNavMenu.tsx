@@ -1,7 +1,7 @@
 import { MessageSquare, Package, Puzzle, Settings } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
@@ -50,6 +50,7 @@ function SideNavMenuItem({
 }
 
 export function SideNavMenu({ expanded = false }: MenuProps) {
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const { t } = useTranslation('generic');
 

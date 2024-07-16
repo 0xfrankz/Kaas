@@ -14,6 +14,7 @@ import {
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { NewConversation } from '@/lib/types';
+import { getModelAlias } from '@/lib/utils';
 
 import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
@@ -28,7 +29,7 @@ import {
 } from './ui/select';
 
 export function NewConversationForm() {
-  const { models } = useAppStateStore();
+  const { models, getDefaultModel } = useAppStateStore();
   const form = useForm<NewConversation>();
   const inputRef = useRef<HTMLInputElement>(null);
   const createConversationMutation = useCreateConversationMutation();
@@ -42,10 +43,18 @@ export function NewConversationForm() {
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {
         onSuccess: async (conversation) => {
-          navigate(`/conversations/${conversation.id}`);
-          return queryClient.invalidateQueries({
+          localStorage.setItem('autoContinue', String(conversation.id));
+          await queryClient.invalidateQueries({
             queryKey: LIST_CONVERSATIONS_KEY,
           });
+          navigate(`/conversations/${conversation.id}`);
+        },
+        onError: (err) => {
+          toast.error(
+            t('page-conversations:message:create-conversation-error', {
+              errorMsg: err.message,
+            })
+          );
         },
       });
     } else {
@@ -83,7 +92,7 @@ export function NewConversationForm() {
             <FormField
               control={form.control}
               name="modelId"
-              defaultValue={models[0].id}
+              defaultValue={getDefaultModel()?.id ?? models[0].id}
               render={({ field }) => (
                 <FormItem className="ml-4 w-40">
                   <Select
@@ -100,7 +109,7 @@ export function NewConversationForm() {
                         <SelectItem value={model.id.toString()} key={model.id}>
                           <div className="flex gap-2">
                             <ProviderIcon provider={model.provider} />
-                            {model.alias}
+                            {getModelAlias(model)}
                           </div>
                         </SelectItem>
                       ))}

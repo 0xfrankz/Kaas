@@ -16,7 +16,7 @@
       {
         "files": ["**/*.ts", "**/*.tsx"],
         "plugins": ["@typescript-eslint", "unused-imports", "simple-import-sort", "tailwindcss"],
-        "extends": ["airbnb", "airbnb-typescript", "plugin:prettier/recommended", "plugin:tailwindcss/recommended"],
+        "extends": ["airbnb", "airbnb-typescript", "plugin:prettier/recommended", "plugin:tailwindcss/recommended", "plugin:react-hooks/recommended"],
         "parserOptions": {
           "project": ["./tsconfig.json", "./tsconfig.node.json"]
         },
@@ -58,7 +58,9 @@
                   "vite.config.ts"
                ]
             }
-          ]
+          ],
+          "react-hooks/rules-of-hooks": "error",
+          "react-hooks/exhaustive-deps": "warn"
         }
       }
     ],

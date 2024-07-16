@@ -18,17 +18,12 @@ import { FilledPromptContextProvider } from '@/lib/providers';
 import { conversationFormSchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { DialogHandler, NewConversation, Prompt } from '@/lib/types';
+import { getModelAlias } from '@/lib/utils';
 
 import PromptForm from './forms/PromptForm';
 import { PromptPreviewer } from './PromptPreviewer';
 import { Button } from './ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem } from './ui/form';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -39,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import { Separator } from './ui/separator';
 
 type UsePromptDialogProps = {
   onConfirm: () => void;
@@ -53,7 +49,7 @@ const LocalNewConversationForm = forwardRef<
     prompt.variables?.map((v) => [v.label, v.value]) ?? []
   );
   const promptStr = interpolate(prompt.prompt, promptCtx);
-  const { models } = useAppStateStore();
+  const { models, getDefaultModel } = useAppStateStore();
   const form = useForm<NewConversation>();
   const createConversationMutation = useCreateConversationMutation();
   const queryClient = useQueryClient();
@@ -65,6 +61,8 @@ const LocalNewConversationForm = forwardRef<
     if (validation.success) {
       createConversationMutation.mutate(validation.data, {
         onSuccess: async (conversation) => {
+          // mark for auto-continue
+          localStorage.setItem('autoContinue', String(conversation.id));
           navigate(`/conversations/${conversation.id}`);
           return queryClient.invalidateQueries({
             queryKey: LIST_CONVERSATIONS_KEY,
@@ -83,13 +81,13 @@ const LocalNewConversationForm = forwardRef<
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props} ref={ref}>
-        <div className="flex h-[72px] items-center justify-end">
+        <div className="flex items-center justify-end">
           <FormField
             control={form.control}
             name="message"
             // defaultValue={promptStr}
             render={({ field }) => (
-              <FormItem className="ml-4 grow">
+              <FormItem className="grow">
                 <FormControl>
                   <Input type="hidden" {...field} value={promptStr} />
                 </FormControl>
@@ -99,7 +97,7 @@ const LocalNewConversationForm = forwardRef<
           <FormField
             control={form.control}
             name="modelId"
-            defaultValue={models[0].id}
+            defaultValue={getDefaultModel()?.id ?? models[0].id}
             render={({ field }) => (
               <FormItem className="w-40">
                 <Select
@@ -114,7 +112,7 @@ const LocalNewConversationForm = forwardRef<
                   <SelectContent>
                     {models.map((model) => (
                       <SelectItem value={model.id.toString()} key={model.id}>
-                        {model.provider}
+                        {getModelAlias(model)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -177,17 +175,25 @@ export const PromptUseDialog = forwardRef<
 
   const renderForm = () => {
     return prompt ? (
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{t('page-prompts:section:use-prompt')}</DialogTitle>
-          <DialogDescription>
-            {t('page-prompts:message:use-prompt-tips')}
-          </DialogDescription>
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
+        <DialogHeader className="mb-4">
+          <DialogTitle>{prompt.alias}</DialogTitle>
         </DialogHeader>
         <FilledPromptContextProvider defaultValue={filledPrompt}>
-          <div className="flex max-h-[600px] gap-4 overflow-hidden">
+          {/* Template section */}
+          <div className="flex items-center">
+            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+              1
+            </div>
+            <span className="ml-2">
+              {t('page-prompts:message:fill-the-template')}
+            </span>
+          </div>
+          <div className="flex grow gap-8 overflow-hidden">
             <ScrollArea className="flex-1">
-              {prompt.alias}
+              <h3 className="mb-2 text-muted-foreground">
+                {t('page-prompts:section:template')}
+              </h3>
               <PromptForm.Use
                 id="promptForm"
                 onSubmit={() => {
@@ -195,23 +201,43 @@ export const PromptUseDialog = forwardRef<
                 }}
               />
             </ScrollArea>
-            <div className="flex flex-1 flex-col">
-              <ScrollArea className="flex-1 rounded-2xl bg-muted">
-                <PromptPreviewer />
-              </ScrollArea>
-              <LocalNewConversationForm id="usePromptForm" />
-              <div className="flex h-fit items-center justify-end gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowDialog(false)}
-                >
-                  {t('generic:action:cancel')}
-                </Button>
-                <Button form="usePromptForm" type="submit">
-                  <SendHorizonal className="size-4" />
-                </Button>
-              </div>
+            <ScrollArea className="flex-1">
+              <h3 className="mb-2 text-muted-foreground">
+                {t('page-prompts:section:preview')}
+              </h3>
+              <PromptPreviewer />
+            </ScrollArea>
+          </div>
+          <Separator />
+          {/* Model section */}
+          <div className="flex items-center">
+            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+              2
             </div>
+            <span className="ml-2">
+              {t('page-prompts:message:pick-a-model')}
+            </span>
+          </div>
+          <div className="flex">
+            <LocalNewConversationForm id="usePromptForm" />
+          </div>
+          <Separator />
+          {/* Actions section */}
+          <div className="flex items-center">
+            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+              3
+            </div>
+            <span className="ml-2">
+              {t('page-prompts:message:start-conversation')}
+            </span>
+          </div>
+          <div className="flex h-fit items-center gap-2">
+            <Button variant="secondary" onClick={() => setShowDialog(false)}>
+              {t('generic:action:cancel')}
+            </Button>
+            <Button form="usePromptForm" type="submit">
+              <SendHorizonal className="size-4" />
+            </Button>
           </div>
         </FilledPromptContextProvider>
       </DialogContent>
