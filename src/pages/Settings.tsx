@@ -643,16 +643,6 @@ function AboutUs() {
             {import.meta.env.VITE_APP_VERSION}_{import.meta.env.COMMIT_HASH}
           </li>
           <li>
-            {/* {t('page-settings:message:built-by-1')}{' '}
-            <Heart className="mx-1 inline-block size-4 fill-red-600" />
-            {t('page-settings:message:built-by-2')}{' '}
-            <Link
-              to="/dependencies"
-              className="ml-1 text-primary underline-offset-4 hover:underline"
-            >
-              {t('page-settings:message:built-by-3')}
-            </Link>
-            . */}
             <Trans
               i18nKey="page-settings:message:built-by"
               values={{ name: 'Frank Zhang' }}
@@ -660,7 +650,7 @@ function AboutUs() {
                 userLink: (
                   <Button
                     variant="link"
-                    onClick={() => open('https://github.com/cranezhang')}
+                    onClick={() => open('https://github.com/0xfrankz')}
                     className="mx-1 inline p-0"
                   />
                 ),
