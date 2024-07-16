@@ -5,8 +5,37 @@ KAAS is a ChatGPT client designed to serve multiple platforms. Built using Tauri
 With Rust in its development stack, KAAS also makes the most of high-speed execution and robust security.
 
 # Features
+- **Privacy**  
+KAAS prioritizes data privacy. Your credentials and chat data are never sent to our servers. They are stored locally and securely on your device.*
+- **Cross-platform**  
+KAAS is designed to work across multiple platforms, including Windows, MacOS, and Linux.
+- **Security**  
+The core part of KAAS is built using Rust, ensuring high-speed execution and robust security. Plus, we delibrately limit the privileges of the client to the minimum necessary. You can view the list of permissions required in the `tauri.conf.json` file.
+- **Support for multiple providers**
+  - OpenAI (ChatGPT)
+  - Azure
+  - Anthropic (Claude) (🚧work in progress)
+  - Google (Gemini) (🚧work in progress)
+  - Ollama (🚧work in progress)
+- **Built-in proxy**  
+KAAS supports proxy settings. You can set up a proxy to bypass your network restrictions.
+- **Prompt templates**  
+CoT or COSTAR, your favorite prompt templates are available here. You can also create your own.
+- **Dual themes**  
+KAAS supports both light and dark themes.
+- **Multilingual**  
+KAAS now supports
+  - English
+  - Chinese Simplified
+  - Chinese Traditional (🚧work in progress)
+  - Japanese (🚧work in progress)
+  - French (🚧work in progress)
+  - German (🚧work in progress)
+
+_*: When you use online models, data is still sent to your model provider's APIs. If that bothers you, consider using Ollama's models locally_
 
 # Installation
+Go to [Release](https://github.com/0xfrankz/kaas/releases) page for latest installers.
 
 # Built from source
 1. Install Node.js
@@ -101,19 +130,7 @@ yarn tauri dev
 
 - [Azure Documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#chat-completions)
 
-## Lepton AI
-
-❌ **Not yet supported**
-
-| Field | Description |
-| -------- | -------- |
-| api-key | The API key for your Lepton AI API. |
-| model | The Lepton AI model to use. |
-
-### References
-- [Lepton Documentation](https://www.lepton.ai/references/llm_models)]
-
-## Anthropic
+## Anthropic Claude
 
 ❌ **Not yet supported**
 
@@ -122,3 +139,11 @@ yarn tauri dev
 | api-key | The API key for your Anthropic API. |
 | anthropic-version | The version of Anthropic to use. |
 | model | The Anthropic model to use. |
+
+## Google Gemini
+
+❌ **Not yet supported**
+
+## Ollama
+
+❌ **Not yet supported**
