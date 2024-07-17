@@ -39,22 +39,22 @@ Go to [Release](https://github.com/0xfrankz/kaas/releases) page for latest insta
 
 # Built from source
 1. Install Node.js
-2. Install Yarn
+2. Install pnpm
 3. Install Rust
 4. Run the following commands:
 ```
-yarn
-yarn tauri build
+pnpm i
+pnpm tauri build
 ```
 
 # Development
 1. Install Node.js
-2. Install Yarn
+2. Install pnpm
 3. Install Rust
 4. Run the following commands:
 ```
-yarn
-yarn tauri dev
+pnpm i
+pnpm tauri dev
 ```
 
 # Supported providers
