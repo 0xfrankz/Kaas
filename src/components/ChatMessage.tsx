@@ -175,11 +175,23 @@ const Content = ({ content }: ContentProps) => {
   );
 };
 
-const ActionBar = ({ usage }: { usage?: number }) => {
+const UserActionBar = ({ onCopyClick }: { onCopyClick: () => void }) => {
   const { hover } = useContext(HoverContext);
   const { t } = useTranslation();
   return (
-    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground" />
+    <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
+      <Button
+        variant="ghost"
+        className={cn(
+          'flex gap-1 px-2 py-1 h-fit text-xs',
+          hover ? null : 'hidden'
+        )}
+        onClick={onCopyClick}
+      >
+        <RefreshCw className="size-[14px]" />
+        {t('generic:action:copy')}
+      </Button>
+    </div>
   );
 };
 
@@ -206,14 +218,27 @@ const ErrorActionBar = ({
 const BotActionBar = ({
   usage,
   onRegenerateClick,
+  onCopyClick,
 }: {
   usage?: number;
   onRegenerateClick: () => void;
+  onCopyClick: () => void;
 }) => {
   const { hover } = useContext(HoverContext);
   const { t } = useTranslation();
   return (
     <div className="mt-4 flex h-[14px] items-center justify-end gap-6 text-muted-foreground">
+      <Button
+        variant="ghost"
+        className={cn(
+          'flex gap-1 px-2 py-1 h-fit text-xs',
+          hover ? null : 'hidden'
+        )}
+        onClick={onCopyClick}
+      >
+        <RefreshCw className="size-[14px]" />
+        {t('generic:action:copy')}
+      </Button>
       <Button
         variant="ghost"
         className={cn(
@@ -323,6 +348,11 @@ const User = ({ message }: MessageProps) => {
   const userName = useAppStateStore(
     (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
   );
+
+  const onCopyClick = () => {
+    navigator.clipboard.writeText(getTextFromMessage(message));
+  };
+
   return (
     <HoverContextProvider>
       <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
@@ -332,7 +362,7 @@ const User = ({ message }: MessageProps) => {
           time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
         />
         <Content content={message.content} />
-        <ActionBar usage={message.promptToken} />
+        <UserActionBar onCopyClick={onCopyClick} />
       </div>
     </HoverContextProvider>
   );
@@ -344,6 +374,10 @@ const Bot = ({ message }: MessageProps) => {
   );
   const { t } = useTranslation(['generic']);
   const { onRegenerateClick } = useMessageListContext();
+
+  const onCopyClick = () => {
+    navigator.clipboard.writeText(getTextFromMessage(message));
+  };
 
   const render = () => {
     if (message.isError) {
@@ -364,6 +398,7 @@ const Bot = ({ message }: MessageProps) => {
         <MarkdownContent content={message.content} />
         <BotActionBar
           onRegenerateClick={() => onRegenerateClick(message)}
+          onCopyClick={onCopyClick}
           usage={message.totalToken}
         />
       </>
