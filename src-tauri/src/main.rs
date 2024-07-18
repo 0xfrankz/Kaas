@@ -43,6 +43,7 @@ fn main() {
             commands::list_messages,
             commands::get_system_message,
             commands::update_message,
+            commands::hard_delete_messages,
             commands::hard_delete_message,
             commands::call_bot,
             commands::create_prompt,

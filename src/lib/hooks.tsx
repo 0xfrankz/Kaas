@@ -34,6 +34,7 @@ import {
   invokeGetSysInfo,
   invokeGetSystemMessage,
   invokeHardDeleteMessage,
+  invokeHardDeleteMessages,
   invokeListConversations,
   invokeListMessages,
   invokeListModels,
@@ -418,6 +419,15 @@ export function useMessageUpdater(
         );
       }
     },
+    ...options,
+  }).mutate;
+}
+
+export function useMessagesHardDeleter(
+  options?: Omit<UseMutationOptions<void, CommandError, number>, 'mutationFn'>
+) {
+  return useMutation({
+    mutationFn: invokeHardDeleteMessages,
     ...options,
   }).mutate;
 }

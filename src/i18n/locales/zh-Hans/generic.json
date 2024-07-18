@@ -24,6 +24,7 @@
         "create-a-model": "创建模型",
         "create-prompt": "创建新提示词模板",
         "regenerate": "重新生成",
+        "restart": "重新开始对话",
         "debug": "调试",
         "load-models": "从API加载",
         "insert": "插入"

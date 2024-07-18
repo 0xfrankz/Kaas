@@ -24,6 +24,7 @@
         "create-a-model": "Create a model",
         "create-prompt": "Create new prompt template",
         "regenerate": "Regenerate",
+        "restart": "Restart conversation",
         "debug": "Debug",
         "load-models": "Load from API",
         "insert": "Insert"

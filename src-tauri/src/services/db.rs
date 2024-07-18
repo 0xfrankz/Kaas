@@ -714,6 +714,21 @@ impl Repository {
     }
 
     /**
+     * Hard delete all messages of a conversation
+     */
+    pub async fn hard_delete_messages(&self, conversation_id: i32) -> Result<(), String> {
+        messages::Entity::delete_many()
+            .filter(messages::Column::ConversationId.eq(conversation_id))
+            .exec(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to delete messages of conversation with id {}", conversation_id)
+            })?;
+        Ok(())
+    }
+
+    /**
      * Hard delete a message
      */
     pub async fn hard_delete_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {

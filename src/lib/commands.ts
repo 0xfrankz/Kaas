@@ -1,6 +1,5 @@
 import { invoke } from '@tauri-apps/api';
 
-import log from './log';
 import type {
   Conversation,
   ConversationDetails,
@@ -213,6 +212,14 @@ export async function invokeUpdateMessage(message: Message): Promise<Message> {
     message,
   });
   return result;
+}
+
+export async function invokeHardDeleteMessages(
+  conversationId: number
+): Promise<void> {
+  await invoke<void>('hard_delete_messages', {
+    conversationId,
+  });
 }
 
 export async function invokeHardDeleteMessage(

@@ -276,12 +276,25 @@ pub async fn update_message(message: MessageDTO, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
+pub async fn hard_delete_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<()> {
+    let now = Instant::now();
+    repo.hard_delete_messages(conversation_id)
+        .await
+        .map_err(|message| DbError { message })?;
+    // TODO: delete all media files associated with these messages
+    let elapsed = now.elapsed();
+    log::info!("[Timer][commands::delete_messages]: {:.2?}", elapsed);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn hard_delete_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .hard_delete_message(message)
         .await
         .map_err(|message| DbError { message })?;
+    // TODO: delete all media files associated with this messge
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::hard_delete_message]: {:.2?}", elapsed);
     Ok(result)
