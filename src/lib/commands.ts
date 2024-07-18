@@ -101,7 +101,6 @@ export async function invokeListConversations(): Promise<
   ConversationDetails[]
 > {
   const result = await invoke<ConversationDetails[]>('list_conversations');
-  log.info(`[FE]list_conversations result: ${JSON.stringify(result)}`);
   return result;
 }
 

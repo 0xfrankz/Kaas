@@ -4,6 +4,7 @@ import { produce } from 'immer';
 import {
   Bot as BotIcon,
   CircleAlert,
+  ClipboardCopy,
   Coins,
   RefreshCw,
   RotateCw,
@@ -40,6 +41,12 @@ import {
 
 import { ImagePreviwer } from './ImagePreviewer';
 import { Button } from './ui/button';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from './ui/context-menu';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
@@ -188,7 +195,7 @@ const UserActionBar = ({ onCopyClick }: { onCopyClick: () => void }) => {
         )}
         onClick={onCopyClick}
       >
-        <RefreshCw className="size-[14px]" />
+        <ClipboardCopy className="size-[14px]" />
         {t('generic:action:copy')}
       </Button>
     </div>
@@ -236,7 +243,7 @@ const BotActionBar = ({
         )}
         onClick={onCopyClick}
       >
-        <RefreshCw className="size-[14px]" />
+        <ClipboardCopy className="size-[14px]" />
         {t('generic:action:copy')}
       </Button>
       <Button
@@ -345,6 +352,7 @@ const ContentReceiver = ({ message }: { message: Message }) => {
 };
 
 const User = ({ message }: MessageProps) => {
+  const { t } = useTranslation();
   const userName = useAppStateStore(
     (state) => state.settings[SETTING_PROFILE_NAME] ?? DEFAULT_PROFILE_NAME
   );
@@ -355,15 +363,27 @@ const User = ({ message }: MessageProps) => {
 
   return (
     <HoverContextProvider>
-      <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
-        <MetaBar
-          avatar={USER_AVATAR}
-          name={userName}
-          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
-        />
-        <Content content={message.content} />
-        <UserActionBar onCopyClick={onCopyClick} />
-      </div>
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
+            <MetaBar
+              avatar={USER_AVATAR}
+              name={userName}
+              time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+            />
+            <Content content={message.content} />
+            <UserActionBar onCopyClick={onCopyClick} />
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem
+            className="cursor-pointer gap-2"
+            onClick={onCopyClick}
+          >
+            <ClipboardCopy className="size-4" /> {t('generic:action:copy')}
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </HoverContextProvider>
   );
 };
@@ -407,14 +427,32 @@ const Bot = ({ message }: MessageProps) => {
 
   return (
     <HoverContextProvider>
-      <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-        <MetaBar
-          avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
-          name={model ? `${model.provider}` : t('generic:model:unknown')}
-          time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
-        />
-        {render()}
-      </div>
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
+            <MetaBar
+              avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
+              name={model ? `${model.provider}` : t('generic:model:unknown')}
+              time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+            />
+            {render()}
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem
+            className="cursor-pointer gap-2"
+            onClick={onCopyClick}
+          >
+            <ClipboardCopy className="size-4" /> {t('generic:action:copy')}
+          </ContextMenuItem>
+          <ContextMenuItem
+            className="cursor-pointer gap-2"
+            onClick={() => onRegenerateClick(message)}
+          >
+            <RefreshCw className="size-4" /> {t('generic:action:regenerate')}
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </HoverContextProvider>
   );
 };

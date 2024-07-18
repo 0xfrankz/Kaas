@@ -77,9 +77,10 @@
         "minHeight": 540,
         "minWidth": 960,
         "resizable": true,
-        "title": "Kaas",
         "width": 1440,
-        "fileDropEnabled": false
+        "fileDropEnabled": false,
+        "center": true,
+        "title": "Kaas"
       }
     ]
   }
