@@ -167,6 +167,8 @@ const KeyboardBlocker = () => {
     'ctrl.comma',
     'ctrl.period',
     'ctrl.forwardslash',
+    'ctrl.f5',
+    'ctrl.shift.r',
   ];
   useKeyPress(
     filter,
