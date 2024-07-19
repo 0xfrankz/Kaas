@@ -13,6 +13,8 @@ import {
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark as highlighterTheme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 
 import cache from '@/lib/cache';
@@ -128,10 +130,38 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
   );
 };
 
+const CodeHighlighter = ({
+  children,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  const match = /language-(\w+)/.exec(className || '');
+  const childrenStr = String(children).replace(/\n$/, '');
+  return match ? (
+    <SyntaxHighlighter
+      {...props}
+      PreTag="div"
+      // eslint-disable-next-line react/no-children-prop
+      children={childrenStr}
+      language={match[1]}
+      style={highlighterTheme}
+    />
+  ) : (
+    <code {...props} className={className}>
+      {children}
+    </code>
+  );
+};
+
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
     <div className={cn('mt-2 prose max-w-none text-foreground')}>
-      <Markdown remarkPlugins={[remarkGfm]}>
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code: CodeHighlighter,
+        }}
+      >
         {getTextFromContent(content)}
       </Markdown>
     </div>
