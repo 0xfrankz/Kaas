@@ -1,3 +1,5 @@
+import 'katex/dist/katex.min.css'; // `rehype-katex` does not import the CSS for you
+
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { produce } from 'immer';
@@ -15,7 +17,9 @@ import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark as highlighterTheme } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 
 import cache from '@/lib/cache';
 import {
@@ -157,12 +161,16 @@ const MarkdownContent = ({ content }: ContentProps) => {
   return (
     <div className={cn('mt-2 prose max-w-none text-foreground')}>
       <Markdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
         components={{
           code: CodeHighlighter,
         }}
       >
         {getTextFromContent(content)}
+        {/* {
+          '$$[ m_{ij} = sum_{(x = 0)}^{M - 1} sum_{(y = 0)}^{N - 1} x^i y^j f(x, y) ]$$'
+        } */}
       </Markdown>
     </div>
   );
