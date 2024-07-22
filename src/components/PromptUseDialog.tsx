@@ -22,6 +22,7 @@ import { getModelAlias } from '@/lib/utils';
 
 import PromptForm from './forms/PromptForm';
 import { PromptPreviewer } from './PromptPreviewer';
+import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem } from './ui/form';
@@ -112,7 +113,10 @@ const LocalNewConversationForm = forwardRef<
                   <SelectContent>
                     {models.map((model) => (
                       <SelectItem value={model.id.toString()} key={model.id}>
-                        {getModelAlias(model)}
+                        <div className="flex gap-2">
+                          <ProviderIcon provider={model.provider} />
+                          {getModelAlias(model)}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
