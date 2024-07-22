@@ -1,12 +1,12 @@
 // Type related constants
 export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
-export const PROVIDER_ANTHROPIC = 'Anthropic';
+export const PROVIDER_CLAUDE = 'Claude';
 export const PROVIDER_UNKNOWN = 'Unknown';
 export const SUPPORTED_PROVIDERS = [
   PROVIDER_OPENAI,
   PROVIDER_AZURE,
-  PROVIDER_ANTHROPIC,
+  PROVIDER_CLAUDE,
 ] as const;
 export const ALL_PROVIDERS = [
   ...SUPPORTED_PROVIDERS,
@@ -15,7 +15,7 @@ export const ALL_PROVIDERS = [
 export const PROVIDER_INFO = {
   [PROVIDER_OPENAI]: 'OpenAI',
   [PROVIDER_AZURE]: 'Microsoft Azure',
-  [PROVIDER_ANTHROPIC]: 'Anthropic Claude',
+  [PROVIDER_CLAUDE]: 'Anthropic Claude',
 };
 export const PROVIDER_STYLES = {
   [PROVIDER_OPENAI]: {
@@ -38,14 +38,14 @@ export const PROVIDER_STYLES = {
       dark: '#0078D4',
     },
   },
-  [PROVIDER_ANTHROPIC]: {
+  [PROVIDER_CLAUDE]: {
     icon: {
-      light: 'azure_logo.svg',
-      dark: 'azure_logo.svg',
+      light: 'claude_logo.svg',
+      dark: 'claude_logo.svg',
     },
     color: {
-      light: '#CCE4F6',
-      dark: '#0078D4',
+      light: '#F4D6CD',
+      dark: '#D97757',
     },
   },
   [PROVIDER_UNKNOWN]: {
