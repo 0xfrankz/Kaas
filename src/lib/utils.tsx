@@ -106,3 +106,17 @@ export function getFileExt(fileName: string): string {
   const matches = fileName.match(regex);
   return matches ? matches[1] : '';
 }
+
+export const preprocessLaTeX = (content: string) => {
+  // Replace block-level LaTeX delimiters \[ \] with $$ $$
+  const blockProcessedContent = content.replace(
+    /\\\[([\s\S]*?)\\\]/g,
+    (_, equation) => `$$${equation}$$`
+  );
+  // Replace inline LaTeX delimiters \( \) with $ $
+  const inlineProcessedContent = blockProcessedContent.replace(
+    /\\\((.*?)\\\)/g,
+    (_, equation) => `$${equation}$`
+  );
+  return inlineProcessedContent;
+};

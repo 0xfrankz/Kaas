@@ -43,6 +43,7 @@ import {
   getMessageTag,
   getTextFromContent,
   getTextFromMessage,
+  preprocessLaTeX,
 } from '@/lib/utils';
 
 import { ImagePreviwer } from './ImagePreviewer';
@@ -167,7 +168,7 @@ const MarkdownContent = ({ content }: ContentProps) => {
           code: CodeHighlighter,
         }}
       >
-        {getTextFromContent(content)}
+        {preprocessLaTeX(getTextFromContent(content))}
         {/* {
           '$$[ m_{ij} = sum_{(x = 0)}^{M - 1} sum_{(y = 0)}^{N - 1} x^i y^j f(x, y) ]$$'
         } */}
