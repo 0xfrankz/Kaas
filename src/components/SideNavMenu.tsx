@@ -99,11 +99,11 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         <ContextMenuTrigger>
           <Badge
             className={cn(
-              'w-12 flex justify-center my-6 rounded-full bg-muted text-muted-foreground transition-all',
+              'w-12 flex justify-center my-6 rounded-full border-none bg-gradient-to-br from-[#f0d55d] via-[#FFD000] to-[#FFB800] transition-all',
               expanded ? 'ml-4' : 'ml-2'
             )}
           >
-            Free
+            Pro
           </Badge>
         </ContextMenuTrigger>
         <ContextMenuContent>

@@ -36,6 +36,7 @@
     "model": {
         "Azure": "微软Azure",
         "OpenAI": "OpenAI",
+        "Anthropic": "Anthropic",
         "unknown": "未知"
     },
     "message": {
