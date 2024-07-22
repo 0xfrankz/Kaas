@@ -160,7 +160,7 @@ const CodeHighlighter = ({
 
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
-    <div className={cn('mt-2 prose max-w-none text-foreground')}>
+    <div className="prose mt-2 max-w-none text-foreground prose-p:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
@@ -169,9 +169,6 @@ const MarkdownContent = ({ content }: ContentProps) => {
         }}
       >
         {preprocessLaTeX(getTextFromContent(content))}
-        {/* {
-          '$$[ m_{ij} = sum_{(x = 0)}^{M - 1} sum_{(y = 0)}^{N - 1} x^i y^j f(x, y) ]$$'
-        } */}
       </Markdown>
     </div>
   );
