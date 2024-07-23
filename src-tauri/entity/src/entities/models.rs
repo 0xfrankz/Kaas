@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub enum Providers {
     Azure,
     OpenAI,
+    Claude,
     Unknown
 }
 
@@ -13,6 +14,7 @@ impl From<&str> for Providers {
         match value {
             "Azure" => Providers::Azure,
             "OpenAI" => Providers::OpenAI,
+            "Claude" => Providers::Claude,
             _ => Providers::Unknown
         }
     }
@@ -35,6 +37,7 @@ impl Into<String> for Providers {
         match self {
             Providers::Azure => "Azure".to_owned(),
             Providers::OpenAI => "OpenAI".to_owned(),
+            Providers::Claude => "Claude".to_owned(),
             _ => "Unknown".to_owned()
         }
     }

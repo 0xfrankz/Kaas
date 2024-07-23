@@ -108,7 +108,7 @@ export default function ModelsPage() {
         },
       });
     },
-    [createModelMutation]
+    [createModelMutation, queryClient]
   );
 
   const onEdit = useCallback((model: Model) => {

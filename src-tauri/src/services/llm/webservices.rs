@@ -6,6 +6,7 @@ use async_openai::{
 use entity::entities::{conversations::ProviderOptions, messages::{MessageDTO, Model as Message}, models::{ProviderConfig, Providers}, settings::ProxySetting};
 use reqwest;
 use serde::{Serialize, Deserialize};
+use super::config::ClaudeConfig;
 
 use super::utils::messages_and_options_to_request;
 
@@ -48,7 +49,30 @@ impl Into<OpenAIConfig> for RawOpenAIConfig {
             config = config.with_org_id(org_id);
         }
 
-        return config;
+        config
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RawClaudeConfig {
+    api_key: String,
+    model: String,
+    api_version: String,
+    api_base: Option<String>,
+}
+
+impl Into<ClaudeConfig> for RawClaudeConfig {
+    fn into(self) -> ClaudeConfig {
+        let mut config = ClaudeConfig::new()
+            .with_api_key(self.api_key)
+            .with_api_version(self.api_version)
+            .with_model(self.model);
+        if let Some(api_base) = self.api_base {
+            config = config.with_api_base(api_base);
+        }
+
+        config
     }
 }
 
@@ -76,17 +100,20 @@ pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, 
         Providers::OpenAI => {
             let (client, request) = build_openai_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
             execute_chat_complete_request(client, request).await
-        }
+        },
+        Providers::Claude => {
+            let (client, request) = build_claude_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
+            execute_chat_complete_request(client, request).await
+        },
         _ => {
             return Err(format!("Complete chat with {} not implemented yet", config.provider));
         }
     }
 }
 
-async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: CreateChatCompletionRequest) -> Result<BotReply, String> {
+async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: CreateChatCompletionRequest, path: &str) -> Result<BotReply, String> {
     let response = client
-        .chat()
-        .create(request)
+        .post(path, request)
         .await
         .map_err(|err| {
             log::error!("execute_chat_complete_request: {}", err);
@@ -223,5 +250,16 @@ fn build_openai_client_and_request(messages: Vec<MessageDTO>, options: ProviderO
     let client = Client::with_config(config).with_http_client(http_client);
     let mut request = messages_and_options_to_request(messages, &options, default_max_tokens)?;
     request.model = model;
+    Ok((client, request))
+}
+
+fn build_claude_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<(Client<ClaudeConfig>, CreateChatCompletionRequest), String> {
+    let http_client = build_http_client(proxy_setting);
+    let config_json: RawClaudeConfig = serde_json::from_str(&config.config)
+        .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+    let config: ClaudeConfig = config_json.into();
+    let client = Client::with_config(config).with_http_client(http_client);
+    let request = messages_and_options_to_request(messages, &options, default_max_tokens)?;
+
     Ok((client, request))
 }

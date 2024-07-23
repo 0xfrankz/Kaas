@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import { PROVIDER_AZURE, PROVIDER_OPENAI } from '@/lib/constants';
+import {
+  PROVIDER_AZURE,
+  PROVIDER_CLAUDE,
+  PROVIDER_OPENAI,
+} from '@/lib/constants';
 
 export const newOpenAIModelFormSchema = z.object({
   alias: z.string(),
@@ -18,11 +22,23 @@ export const newAzureModelFormSchema = z.object({
   deploymentId: z.string().min(1, 'Deployment ID is required'),
 });
 
+export const newClaudeModelFormSchema = z.object({
+  alias: z.string(),
+  provider: z.literal(PROVIDER_CLAUDE),
+  apiKey: z.string().min(1, 'API Key is required'),
+  model: z.string().min(1, 'Model is required'),
+  apiVersion: z.string().min(1, 'API version is required'),
+});
+
 export const editAzureModelFormSchema = newAzureModelFormSchema.extend({
   id: z.number(),
 });
 
 export const editOpenAIModelFormSchema = newOpenAIModelFormSchema.extend({
+  id: z.number(),
+});
+
+export const editClaudeModelFormSchema = newClaudeModelFormSchema.extend({
   id: z.number(),
 });
 

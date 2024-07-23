@@ -28,7 +28,8 @@
         "endpoint-tips": "你的模型的API接口地址（endpoint）",
         "endpoint-tips-azure": "你的模型的API接口地址（endpoint）。通常格式为\"https://{your-resource-name}.openai.azure.com\"。",
         "api-version-tips": "你的模型的API版本。通常格式为YYYY-MM-DD。",
+        "claude-api-version-tips": "你的模型的API版本。通常格式为YYYY-MM-DD。目前仅支持2023-06-01或更新的版本。",
         "deployment-id-tips": "你的模型的API部署ID（deployment ID）",
-        "model-tips": "你的模型的model类型"
+        "model-tips": "你希望使用的模型名称"
     }
 }

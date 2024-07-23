@@ -14,6 +14,7 @@ import {
   editAzureModelFormSchema,
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
+  newClaudeModelFormSchema,
   newOpenAIModelFormSchema,
 } from '@/lib/schemas';
 import type {
@@ -21,6 +22,7 @@ import type {
   Model,
   ModelFormHandler,
   NewAzureModel,
+  NewClaudeModel,
   NewModel,
   NewOpenAIModel,
   OpenAIModel,
@@ -348,8 +350,6 @@ const GenericClaudeModelForm = ({
 }: GenericFormProps<NewModel | Model>) => {
   const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
-  const apiKey = useWatch({ name: 'apiKey', control: form.control });
-  const provider = useWatch({ name: 'provider', control: form.control });
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -394,31 +394,7 @@ const GenericClaudeModelForm = ({
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-            <FormField
-              control={form.control}
-              name="model"
-              render={() => (
-                <FormLabel className="text-right">
-                  {t('page-models:label:model')}
-                </FormLabel>
-              )}
-            />
-            <div className="col-span-3 col-start-2">
-              Model should be input for Anthropic Claude!
-            </div>
-            <div className="col-span-3 col-start-2">
-              <FormField
-                control={form.control}
-                name="model"
-                render={() => <FormMessage />}
-              />
-              <FormDescription>
-                {t('page-models:message:model-tips')}
-              </FormDescription>
-            </div>
-          </div>
-          {/* <FormField
+          <FormField
             control={form.control}
             name="model"
             render={({ field }) => (
@@ -437,7 +413,27 @@ const GenericClaudeModelForm = ({
                 </div>
               </FormItem>
             )}
-          /> */}
+          />
+          <FormField
+            control={form.control}
+            name="apiVersion"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">
+                  {t('page-models:label:api-version')}
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
+                  <FormMessage />
+                  <FormDescription>
+                    {t('page-models:message:claude-api-version-tips')}
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="provider"
@@ -589,6 +585,7 @@ const NewClaudeModelForm = forwardRef<ModelFormHandler, NewFormProps>(
         alias: '',
         apiKey: '',
         model: '',
+        apiVersion: '',
       },
     });
 
@@ -616,5 +613,8 @@ export default {
   OpenAI: {
     New: NewOpenAIModelForm,
     Edit: EditOpenAIModelForm,
+  },
+  Claude: {
+    New: NewClaudeModelForm,
   },
 };

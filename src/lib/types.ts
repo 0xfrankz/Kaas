@@ -11,6 +11,7 @@ import type {
   editAzureModelFormSchema,
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
+  newClaudeModelFormSchema,
   newOpenAIModelFormSchema,
   newPromptFormSchema,
   openAIOptionsFormSchema,
@@ -22,8 +23,10 @@ export type NewAzureModel = z.infer<typeof newAzureModelFormSchema>;
 export type AzureModel = z.infer<typeof editAzureModelFormSchema>;
 export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;
 export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
+export type NewClaudeModel = z.infer<typeof newClaudeModelFormSchema>;
+export type ClaudeModel = z.infer<typeof editAzureModelFormSchema>;
 
-export type NewModel = NewAzureModel | NewOpenAIModel;
+export type NewModel = NewAzureModel | NewOpenAIModel | NewClaudeModel;
 
 export type RemoteModel = {
   id: string;
