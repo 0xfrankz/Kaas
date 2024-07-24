@@ -7,7 +7,6 @@ use reqwest::header::{HeaderMap, CONTENT_TYPE};
 pub const CLAUDE_ENV_KEY: &str = "CLAUDE_API_KEY";
 pub const DEFAULT_CLAUDE_API_BASE: &str = "https://api.anthropic.com/v1";
 pub const DEFAULT_CLAUDE_API_VERSION: &str = "2023-06-01";
-pub const DEFAULT_CLAUDE_MODEL: &str = "claude-3-haiku-20240307";
 pub const CLAUDE_API_KEY_HEADER: &str = "x-api-key";
 pub const CLAUDE_API_VERSION_HEADER: &str = "anthropic-version";
 
@@ -18,7 +17,6 @@ pub struct ClaudeConfig {
     api_base: String,
     api_key: Secret<String>,
     api_version: String,
-    model: String,
 }
 
 impl Default for ClaudeConfig {
@@ -28,8 +26,7 @@ impl Default for ClaudeConfig {
             api_key: std::env::var(CLAUDE_ENV_KEY)
             .unwrap_or_else(|_| "".to_string())
             .into(),
-            api_version: DEFAULT_CLAUDE_API_VERSION.to_string(),
-            model: DEFAULT_CLAUDE_MODEL.to_string(),
+            api_version: DEFAULT_CLAUDE_API_VERSION.to_string()
         }
     }
 }
@@ -55,12 +52,6 @@ impl ClaudeConfig {
     /// To use an API version different from default [DEFAULT_CLAUDE_API_VERSION]
     pub fn with_api_version<S: Into<String>>(mut self, api_version: S) -> Self {
         self.api_version = api_version.into();
-        self
-    }
-
-    /// To use a model different from default [DEFAULT_CLAUDE_MODEL]
-    pub fn with_model<S: Into<String>>(mut self, model: S) -> Self {
-        self.model = model.into();
         self
     }
 }
@@ -89,6 +80,7 @@ impl Config for ClaudeConfig {
     }
 
     fn url(&self, path: &str) -> String {
+        log::info!("ClaudeConfig url: {}", format!("{}{}", self.api_base, path));
         format!("{}{}", self.api_base, path)
     }
 

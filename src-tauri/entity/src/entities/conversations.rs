@@ -204,3 +204,33 @@ impl Default for OpenAIOptions{
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaudeOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context_length: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>, // Defaults to 0.5. Ranges from 0.0 to 1.0. 
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_p: Option<f32>, // Same as temperature?
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<String>,
+}
+
+impl Default for ClaudeOptions{
+    fn default() -> Self {
+        ClaudeOptions {
+            context_length: None,
+            max_tokens: None,
+            stream: Some(false),
+            temperature: Some(0.5),
+            top_p: Some(1.0),
+            user: None,
+        }
+    }
+}

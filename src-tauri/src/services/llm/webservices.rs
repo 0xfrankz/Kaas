@@ -3,12 +3,15 @@ use async_openai::{
         ChatCompletionResponseStream, CreateChatCompletionRequest
     }, Client
 };
-use entity::entities::{conversations::ProviderOptions, messages::{MessageDTO, Model as Message}, models::{ProviderConfig, Providers}, settings::ProxySetting};
+use entity::entities::{conversations::{ProviderOptions, DEFAULT_MAX_TOKENS}, messages::MessageDTO, models::{ProviderConfig, Providers}, settings::ProxySetting};
 use reqwest;
 use serde::{Serialize, Deserialize};
 use super::config::ClaudeConfig;
 
 use super::utils::messages_and_options_to_request;
+
+const DEFAULT_CHAT_PATH: &str = "/chat/completions";
+const CLAUDE_CHAT_PATH: &str = "/messages";
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -66,8 +69,7 @@ impl Into<ClaudeConfig> for RawClaudeConfig {
     fn into(self) -> ClaudeConfig {
         let mut config = ClaudeConfig::new()
             .with_api_key(self.api_key)
-            .with_api_version(self.api_version)
-            .with_model(self.model);
+            .with_api_version(self.api_version);
         if let Some(api_base) = self.api_base {
             config = config.with_api_base(api_base);
         }
@@ -95,15 +97,15 @@ pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, 
     match config.provider.as_str().into() {
         Providers::Azure => {
             let (client, request) = build_azure_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
-            execute_chat_complete_request(client, request).await
+            execute_chat_complete_request(client, request, DEFAULT_CHAT_PATH).await
         },
         Providers::OpenAI => {
             let (client, request) = build_openai_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
-            execute_chat_complete_request(client, request).await
+            execute_chat_complete_request(client, request, DEFAULT_CHAT_PATH).await
         },
         Providers::Claude => {
             let (client, request) = build_claude_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
-            execute_chat_complete_request(client, request).await
+            execute_chat_complete_request(client, request, CLAUDE_CHAT_PATH).await
         },
         _ => {
             return Err(format!("Complete chat with {} not implemented yet", config.provider));
@@ -112,11 +114,13 @@ pub async fn complete_chat(messages: Vec<MessageDTO>, options: ProviderOptions, 
 }
 
 async fn execute_chat_complete_request<C: Config>(client: Client<C>, request: CreateChatCompletionRequest, path: &str) -> Result<BotReply, String> {
+    log::info!("execute_chat_complete_request request: {:?}", request);
     let response = client
-        .post(path, request)
+        .chat()
+        .create(path, request)
         .await
         .map_err(|err| {
-            log::error!("execute_chat_complete_request: {}", err);
+            log::error!("execute_chat_complete_request: {:?}", err);
             format!("Failed to get chat completion response: {}", err)
         })?;
 
@@ -257,9 +261,12 @@ fn build_claude_client_and_request(messages: Vec<MessageDTO>, options: ProviderO
     let http_client = build_http_client(proxy_setting);
     let config_json: RawClaudeConfig = serde_json::from_str(&config.config)
         .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+    let model = config_json.model.clone();
     let config: ClaudeConfig = config_json.into();
     let client = Client::with_config(config).with_http_client(http_client);
-    let request = messages_and_options_to_request(messages, &options, default_max_tokens)?;
-
+    // max_token is required by Claude, make sure it has value here
+    let max_token_opt = default_max_tokens.or(Some(DEFAULT_MAX_TOKENS));
+    let mut request = messages_and_options_to_request(messages, &options, max_token_opt)?;
+    request.model = model;
     Ok((client, request))
 }

@@ -1,13 +1,13 @@
 use std::fs;
 
-use entity::entities::settings::{SETTING_DISPLAY_LANGUAGE, SETTING_USER_DEFAULT_MODEL};
+use entity::entities::settings::SETTING_DISPLAY_LANGUAGE;
 use tauri::{App, Manager};
 use tauri::api::path::app_data_dir;
 use crate::core::handle::Handle;
 use crate::services::db::Builder as RepoBuilder;
 use crate::services::db::Repository;
 use crate::services::llm::utils::convert_locale_region_to_script;
-use entity::entities::settings::{self, Model as Setting};
+use entity::entities::settings::Model as Setting;
 
 pub fn init(app: &App) -> Result<(), String> {
   // Init handle

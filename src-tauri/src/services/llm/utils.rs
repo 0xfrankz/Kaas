@@ -1,11 +1,13 @@
 use async_openai::{
-    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs}
+    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs, Metadata}
 };
 use entity::entities::{
-    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers
+    contents::ContentType, conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers
 };
 
 use crate::services::cache;
+
+use super::config::ClaudeConfig;
 
 pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u32>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
@@ -31,13 +33,26 @@ pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &Prov
                 ..Default::default()
             };
         },
+        Providers::Claude => {
+            let options: ClaudeOptions = serde_json::from_str(&options.options)
+                .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+            request = CreateChatCompletionRequest {
+                messages: req_messages,
+                max_tokens: options.max_tokens.or(default_max_tokens),
+                stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                metadata: options.user.map(|u| { Metadata { user_id: u }}),
+                ..Default::default()
+            };
+        }
         _ => {
             let options: OpenAIOptions = serde_json::from_str(&options.options)
                 .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
             request = CreateChatCompletionRequest {
                 messages: req_messages,
                 frequency_penalty: options.frequency_penalty,
-                max_tokens: options.max_tokens,
+                max_tokens: options.max_tokens.or(default_max_tokens),
                 n: options.n,
                 presence_penalty: options.presence_penalty,
                 stream: options.stream,
