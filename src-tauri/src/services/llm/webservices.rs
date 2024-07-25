@@ -455,7 +455,7 @@ impl LLMClientTrait for LLMClient {
                 // execute request
                 let response = client
                     .chat()
-                    .create(DEFAULT_CHAT_PATH, request)
+                    .create(request)
                     .await
                     .map_err(|err| {
                         log::error!("execute_chat_complete_request: {:?}", err);
@@ -505,7 +505,7 @@ impl LLMClientTrait for LLMClient {
                 // execute request
                 let response = client
                     .chat()
-                    .create(DEFAULT_CHAT_PATH, request)
+                    .create(request)
                     .await
                     .map_err(|err| {
                         log::error!("execute_chat_complete_request: {:?}", err);

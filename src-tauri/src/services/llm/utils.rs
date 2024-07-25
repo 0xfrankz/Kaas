@@ -1,8 +1,8 @@
 use async_openai::{
-    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs, Metadata}
+    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs}
 };
 use entity::entities::{
-    contents::ContentType, conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
+    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
 };
 
 use crate::services::cache;
@@ -33,19 +33,6 @@ pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &Prov
                 ..Default::default()
             };
         },
-        Providers::Claude => {
-            let options: ClaudeOptions = serde_json::from_str(&options.options)
-                .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
-            request = CreateChatCompletionRequest {
-                messages: req_messages,
-                max_tokens: options.max_tokens.or(default_max_tokens),
-                stream: options.stream,
-                temperature: options.temperature,
-                top_p: options.top_p,
-                metadata: options.user.map(|u| { Metadata { user_id: u }}),
-                ..Default::default()
-            };
-        }
         _ => {
             let options: OpenAIOptions = serde_json::from_str(&options.options)
                 .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
