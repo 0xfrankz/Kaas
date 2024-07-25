@@ -17,8 +17,8 @@ use tokio_stream::StreamExt;
 
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
-    log_utils::{error, trace, info}, 
-    services::{db::Repository, llm::{utils, webservices as ws}}
+    log_utils::{error, info, trace}, 
+    services::{db::Repository, llm::{utils, webservices::{self as ws, GlobalSettings, LLMClient, LLMClientTrait}}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -446,16 +446,25 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
     let task_handle = tokio::spawn(async move {
         // handle non-stream response
         log::info!("call_bot_one_off: thread start");
-        let result = ws::complete_chat(messages, options, config, proxy_setting, Some(max_token_setting))
-            .await;
-        match result {
-            Ok(reply) => {
-                // start receiving in frontend
-                emit_stream_start(&tag, &window);
-                log::info!("Bot call received: {:?}", reply);
-                emit_stream_data(&tag, &window, reply);
-                emit_stream_done(&tag, &window);
-                log::info!("call_bot_one_off: thread done");
+        let init_client_result = LLMClient::new(config, proxy_setting);
+        match init_client_result {
+            Ok(client) => {
+                let result = client.chat(messages, options, GlobalSettings { max_tokens: max_token_setting })
+                    .await;
+                match result {
+                    Ok(reply) => {
+                        // start receiving in frontend
+                        emit_stream_start(&tag, &window);
+                        log::info!("Bot call received: {:?}", reply);
+                        emit_stream_data(&tag, &window, reply);
+                        emit_stream_done(&tag, &window);
+                        log::info!("call_bot_one_off: thread done");
+                    },
+                    Err(msg) => {
+                        emit_stream_error(&tag, &window, &msg);
+                        log::error!("call_bot_one_off: {}", &msg);
+                    }
+                }
             },
             Err(msg) => {
                 emit_stream_error(&tag, &window, &msg);
