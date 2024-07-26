@@ -18,7 +18,7 @@ use tokio_stream::StreamExt;
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
     log_utils::{error, info, trace}, 
-    services::{db::Repository, llm::{utils, webservices::{self as ws, GlobalSettings, LLMClient, LLMClientTrait}}}
+    services::{db::Repository, llm::{utils, webservices::{self as ws, GlobalSettings, LLMClient}}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -438,6 +438,8 @@ pub async fn get_sys_info() -> CommandResult<serde_json::Value> {
 }
 
 /***** Functions for calling model API START *****/
+
+/// Calling chat bot in normal mode
 async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
@@ -486,15 +488,15 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
 
 }
 
+/// Calling chat bot in streaming mode
 async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     let log_tag = "call_bot_stream";
-    trace(log_tag, "entrant");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
     let tag_clone = tag.clone();
     let task_handle = tokio::spawn(async move {
         // handle stream response
-        trace(log_tag, "Thread spawned");
+        log::info!("call_bot_stream: thread start");
         let stream_result = ws::complete_chat_stream(messages, options, config, proxy_setting, Some(max_token_setting)).await;
         match stream_result {
             Ok(mut stream) => {

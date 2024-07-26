@@ -7,7 +7,7 @@ use entity::entities::{
 
 use crate::services::cache;
 
-use super::webservices::{ClaudeAssistantMessage, ClaudeImageSource, ClaudeMessage, ClaudeMessageContentPart, ClaudeMessageContentPartImage, ClaudeMessageContentPartText, ClaudeRequestMessageContent, ClaudeUserMessage};
+use super::chat::{ClaudeAssistantMessage, ClaudeImageSource, ClaudeMessage, ClaudeMessageContentPart, ClaudeMessageContentPartImage, ClaudeMessageContentPartText, ClaudeRequestMessageContent, ClaudeUserMessage};
 
 pub fn messages_and_options_to_request(messages: Vec<MessageDTO>, options: &ProviderOptions, default_max_tokens: Option<u32>) -> Result<CreateChatCompletionRequest, String> {
     // let mut request_builder = CreateChatCompletionRequestArgs::default();
