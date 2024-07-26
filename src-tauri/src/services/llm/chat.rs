@@ -1,9 +1,34 @@
-use async_openai::{Client, error::OpenAIError};
-use serde::{Serialize, Deserialize};
+use std::pin::Pin;
 
-use super::config::ClaudeConfig;
+use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest, CreateChatCompletionStreamResponse}, Chat, Client};
+use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::MessageDTO};
+use serde::{Serialize, Deserialize};
+use tokio_stream::{Stream, StreamExt};
+
+use super::{config::ClaudeConfig, utils::{message_to_claude_request_message, message_to_openai_request_message}};
 
 const CLAUDE_CHAT_PATH: &str = "/messages";
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub struct BotReply {
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub prompt_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub completion_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub total_token: Option<u32>,
+}
+
+pub type BotReplyStream = Pin<Box<dyn Stream<Item = Result<BotReply, OpenAIError>> + Send>>;
+
+pub struct GlobalSettings {
+    pub max_tokens: u32,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ClaudeMessageContentPartText {
@@ -216,5 +241,191 @@ impl<'c> ClaudeChat<'c> {
             ));
         }
         self.client.post(CLAUDE_CHAT_PATH, request).await
+    }
+}
+
+pub enum ChatRequest<'c> {
+    OpenAIChatRequest(&'c Client<OpenAIConfig>, CreateChatCompletionRequest),
+    AzureChatRequest(&'c Client<AzureConfig>, CreateChatCompletionRequest),
+    ClaudeChatRequest(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
+}
+
+impl<'c> ChatRequest<'c> {
+    pub fn openai(client: &'c Client<OpenAIConfig>, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
+        let request: CreateChatCompletionRequest;
+        // set messages
+        let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
+        // set options
+        let options: OpenAIOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        request = CreateChatCompletionRequest {
+            model: model.to_string(),
+            messages: req_messages,
+            frequency_penalty: options.frequency_penalty,
+            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+            n: options.n,
+            presence_penalty: options.presence_penalty,
+            stream: options.stream,
+            temperature: options.temperature,
+            top_p: options.top_p,
+            user: options.user,
+            ..Default::default()
+        };
+        Ok(ChatRequest::OpenAIChatRequest(client, request))
+    }
+
+    pub fn azure(client: &'c Client<AzureConfig>, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<ChatRequest, String> {
+        let request: CreateChatCompletionRequest;
+        // set messages
+        let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
+        // set options
+        let options: AzureOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        request = CreateChatCompletionRequest {
+            messages: req_messages,
+            frequency_penalty: options.frequency_penalty,
+            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+            n: options.n,
+            presence_penalty: options.presence_penalty,
+            stream: options.stream,
+            temperature: options.temperature,
+            top_p: options.top_p,
+            user: options.user,
+            ..Default::default()
+        };
+        Ok(ChatRequest::AzureChatRequest(client, request))
+    }
+
+    pub fn claude(client: &'c Client<ClaudeConfig>, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
+        let request: ClaudeChatCompletionRequest;
+        // set messages
+        let req_messages: Vec<ClaudeMessage> = messages.into_iter().map(message_to_claude_request_message).collect();
+        // set options
+        let options: ClaudeOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        request = ClaudeChatCompletionRequest {
+            model: model.to_string(),
+            messages: req_messages,
+            max_tokens: options.max_tokens.unwrap_or(global_settings.max_tokens),
+            stream: options.stream,
+            temperature: options.temperature,
+            top_p: options.top_p,
+            metadata: options.user.map(|user| {
+                ClaudeMetadata {
+                    user_id: user,
+                }
+            }),
+            ..Default::default()
+        };
+        Ok(ChatRequest::ClaudeChatRequest(client, request))
+    }
+
+    async fn execute_openai_compatible_request<C: Config>(&self, client: &Client<C>, request: CreateChatCompletionRequest) -> Result<BotReply, String> {
+        let response = client
+            .chat()
+            .create(request)
+            .await
+            .map_err(|err| {
+                log::error!("execute_chat_complete_request: {:?}", err);
+                format!("Failed to get chat completion response: {}", err)
+            })?;
+        // extract data & build reply
+        let choice = response
+            .choices
+            .first()
+            .ok_or("Api returned empty choices".to_string())?;
+        let message = choice
+            .message
+            .content
+            .as_ref()
+            .ok_or("Api returned empty message".to_string())?
+            .to_string();
+        let usage = response.usage;
+        let reply = BotReply {
+            message,
+            prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+            completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+            total_token: usage.as_ref().map(|usage| usage.total_tokens),
+        };
+
+        return Ok(reply)
+    }
+
+    async fn execute_openai_compatible_stream_request<C: Config>(&self, client: &Client<C>, request: CreateChatCompletionRequest) -> Result<BotReplyStream, String> {
+        let stream: ChatCompletionResponseStream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+        let result = stream.map(|item| {
+            item.map(|resp| {
+                let result = resp.choices
+                    .first()
+                    .map_or(BotReply::default(), |choice| {
+                        let usage = resp.usage.clone();
+                        BotReply {
+                            message: choice.delta.content.clone().unwrap_or(String::default()),
+                            prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                            completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                            total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                        }
+                    });
+                result
+            })
+        });
+        Ok(Box::pin(result))
+    }
+
+    pub async fn execute(&self) -> Result<BotReply, String> {
+        match self {
+            ChatRequest::OpenAIChatRequest(client, request) => {
+                return self.execute_openai_compatible_request(client, request.clone()).await;
+            },
+            ChatRequest::AzureChatRequest(client, request) => {
+                return self.execute_openai_compatible_request(client, request.clone()).await;
+            },
+            ChatRequest::ClaudeChatRequest(client, request) => {
+                let response = ClaudeChat::new(client)
+                    .create(request.clone())
+                    .await
+                    .map_err(|err| {
+                        log::error!("execute_chat_complete_request: {:?}", err);
+                        format!("Failed to get chat completion response: {}", err)
+                    })?;
+                // extract data & build reply
+                let content = response
+                    .content
+                    .first()
+                    .ok_or("Api returned empty content".to_string())?;
+                let message = match content {
+                    ClaudeResponseMessageContent::Text(text) => {
+                        text.text.clone()
+                    },
+                    ClaudeResponseMessageContent::ToolUse(_) => "ToolUse is not implemented yet".to_string()
+                };
+                let usage = response.usage;
+                let reply = BotReply {
+                    message,
+                    prompt_token: Some(usage.input_tokens),
+                    completion_token: Some(usage.output_tokens),
+                    total_token: Some(usage.input_tokens + usage.output_tokens),
+                };
+                
+                return Ok(reply)
+            }
+        }
+    }
+
+    pub async fn execute_stream(&self) -> Result<BotReplyStream, String> {
+        match self {
+            ChatRequest::OpenAIChatRequest(client, request) => {
+                return self.execute_openai_compatible_stream_request(client, request.clone()).await;
+            },
+            ChatRequest::AzureChatRequest(client, request) => {
+                return self.execute_openai_compatible_stream_request(client, request.clone()).await;
+            },
+            ChatRequest::ClaudeChatRequest(client, request) => {
+                todo!()
+            }
+        }
     }
 }

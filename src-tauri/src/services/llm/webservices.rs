@@ -9,7 +9,7 @@ use reqwest;
 use serde::{Serialize, Deserialize};
 use crate::services::llm::utils::message_to_openai_request_message;
 
-use super::{chat::{ClaudeChat, ClaudeChatCompletionRequest, ClaudeMessage, ClaudeMetadata, ClaudeResponseMessageContent}, config::ClaudeConfig, utils::{build_http_client, message_to_claude_request_message}};
+use super::{chat::{BotReply, BotReplyStream, ChatRequest, ClaudeChat, ClaudeChatCompletionRequest, ClaudeMessage, ClaudeMetadata, ClaudeResponseMessageContent, GlobalSettings}, config::ClaudeConfig, utils::{build_http_client, message_to_claude_request_message}};
 
 use super::utils::messages_and_options_to_request;
 
@@ -76,21 +76,6 @@ impl Into<ClaudeConfig> for RawClaudeConfig {
 
         config
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub struct BotReply {
-    pub message: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(skip_deserializing)]
-    pub prompt_token: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(skip_deserializing)]
-    pub completion_token: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(skip_deserializing)]
-    pub total_token: Option<u32>,
 }
 
 pub async fn complete_chat_stream(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<ChatCompletionResponseStream, String> {
@@ -165,10 +150,6 @@ fn build_openai_client_and_request(messages: Vec<MessageDTO>, options: ProviderO
     Ok((client, request))
 }
 
-pub struct GlobalSettings {
-    pub max_tokens: u32,
-}
-
 /// Wrapper of async-openai's Client struct
 #[derive(Debug, Clone)]
 pub enum LLMClient {
@@ -211,165 +192,46 @@ impl LLMClient {
     pub async fn chat(&self, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<BotReply, String> {
         match self {
             LLMClient::OpenAIClient(client, model) => {
-                let request: CreateChatCompletionRequest;
-                // set messages
-                let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
-                // set options
-                let options: OpenAIOptions = serde_json::from_str(&options.options)
-                    .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
-                // build request
-                request = CreateChatCompletionRequest {
-                    model: model.to_string(),
-                    messages: req_messages,
-                    frequency_penalty: options.frequency_penalty,
-                    max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-                    n: options.n,
-                    presence_penalty: options.presence_penalty,
-                    stream: options.stream,
-                    temperature: options.temperature,
-                    top_p: options.top_p,
-                    user: options.user,
-                    ..Default::default()
-                };
-                // execute request
-                let response = client
-                    .chat()
-                    .create(request)
-                    .await
-                    .map_err(|err| {
-                        log::error!("execute_chat_complete_request: {:?}", err);
-                        format!("Failed to get chat completion response: {}", err)
-                    })?;
-                // extract data & build reply
-                let choice = response
-                    .choices
-                    .first()
-                    .ok_or("Api returned empty choices".to_string())?;
-                let message = choice
-                    .message
-                    .content
-                    .as_ref()
-                    .ok_or("Api returned empty message".to_string())?
-                    .to_string();
-                let usage = response.usage;
-                let reply = BotReply {
-                    message,
-                    prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-                    completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-                    total_token: usage.as_ref().map(|usage| usage.total_tokens),
-                };
-            
+                let reply = ChatRequest::openai(client, messages, options, global_settings, model.to_string())?
+                    .execute()
+                    .await?;                
                 return Ok(reply)
             },
             LLMClient::AzureClient(client) => {
-                let request: CreateChatCompletionRequest;
-                // set messages
-                let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
-                // set options
-                let options: AzureOptions = serde_json::from_str(&options.options)
-                    .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
-                // build request
-                request = CreateChatCompletionRequest {
-                    messages: req_messages,
-                    frequency_penalty: options.frequency_penalty,
-                    max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-                    n: options.n,
-                    presence_penalty: options.presence_penalty,
-                    stream: options.stream,
-                    temperature: options.temperature,
-                    top_p: options.top_p,
-                    user: options.user,
-                    ..Default::default()
-                };
-                // execute request
-                let response = client
-                    .chat()
-                    .create(request)
-                    .await
-                    .map_err(|err| {
-                        log::error!("execute_chat_complete_request: {:?}", err);
-                        format!("Failed to get chat completion response: {}", err)
-                    })?;
-                // extract data & build reply
-                let choice = response
-                    .choices
-                    .first()
-                    .ok_or("Api returned empty choices".to_string())?;
-                let message = choice
-                    .message
-                    .content
-                    .as_ref()
-                    .ok_or("Api returned empty message".to_string())?
-                    .to_string();
-                let usage = response.usage;
-                let reply = BotReply {
-                    message,
-                    prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-                    completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-                    total_token: usage.as_ref().map(|usage| usage.total_tokens),
-                };
-            
+                let reply = ChatRequest::azure(client, messages, options, global_settings)?
+                    .execute()
+                    .await?;                
                 return Ok(reply)
             },
             LLMClient::ClaudeClient(client, model) => {
-                let request: ClaudeChatCompletionRequest;
-                // set messages
-                let req_messages: Vec<ClaudeMessage> = messages.into_iter().map(message_to_claude_request_message).collect();
-                // set options
-                let options: ClaudeOptions = serde_json::from_str(&options.options)
-                    .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
-                // build request
-                request = ClaudeChatCompletionRequest {
-                    model: model.to_string(),
-                    messages: req_messages,
-                    max_tokens: options.max_tokens.unwrap_or(global_settings.max_tokens),
-                    stream: options.stream,
-                    temperature: options.temperature,
-                    top_p: options.top_p,
-                    metadata: options.user.map(|user| {
-                        ClaudeMetadata {
-                            user_id: user,
-                        }
-                    }),
-                    ..Default::default()
-                };
-                // execute request
-                let response = ClaudeChat::new(client)
-                    .create(request)
-                    .await
-                    .map_err(|err| {
-                        log::error!("execute_chat_complete_request: {:?}", err);
-                        format!("Failed to get chat completion response: {}", err)
-                    })?;
-                // extract data & build reply
-                let content = response
-                    .content
-                    .first()
-                    .ok_or("Api returned empty content".to_string())?;
-                let message = match content {
-                    ClaudeResponseMessageContent::Text(text) => {
-                        text.text.clone()
-                    },
-                    ClaudeResponseMessageContent::ToolUse(_) => "ToolUse is not implemented yet".to_string()
-                };
-                let usage = response.usage;
-                let reply = BotReply {
-                    message,
-                    prompt_token: Some(usage.input_tokens),
-                    completion_token: Some(usage.output_tokens),
-                    total_token: Some(usage.input_tokens + usage.output_tokens),
-                };
-                
+                let reply = ChatRequest::claude(client, messages, options, global_settings, model.to_string())?
+                    .execute()
+                    .await?;                
                 return Ok(reply)
             },
         }
     }
 
-    pub async fn chat_stream(&self, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<ChatCompletionResponseStream, String> {
-        // match self {
-        //     LLMClient::OpenAIClient(client, model) => {
-        //     }
-        // }
-        todo!();
+    pub async fn chat_stream(&self, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<BotReplyStream, String> {
+        match self {
+            LLMClient::OpenAIClient(client, model) => {
+                let stream = ChatRequest::openai(client, messages, options, global_settings, model.to_string())?
+                    .execute_stream()
+                    .await?;                
+                return Ok(stream)
+            },
+            LLMClient::AzureClient(client) => {
+                let stream = ChatRequest::azure(client, messages, options, global_settings)?
+                    .execute_stream()
+                    .await?;                
+                return Ok(stream)
+            },
+            LLMClient::ClaudeClient(client, model) => {
+                let stream = ChatRequest::claude(client, messages, options, global_settings, model.to_string())?
+                    .execute_stream()
+                    .await?;                
+                return Ok(stream)
+            },
+        }
     }
 }

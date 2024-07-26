@@ -18,7 +18,7 @@ use tokio_stream::StreamExt;
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
     log_utils::{error, info, trace}, 
-    services::{db::Repository, llm::{utils, webservices::{self as ws, GlobalSettings, LLMClient}}}
+    services::{db::Repository, llm::{chat::{BotReply, GlobalSettings}, utils, webservices::{self as ws, LLMClient}}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -497,46 +497,46 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
     let task_handle = tokio::spawn(async move {
         // handle stream response
         log::info!("call_bot_stream: thread start");
-        let stream_result = ws::complete_chat_stream(messages, options, config, proxy_setting, Some(max_token_setting)).await;
-        match stream_result {
-            Ok(mut stream) => {
-                // start receiving in frontend
-                emit_stream_start(&tag, &window);
-                trace(log_tag, "Streaming started!");
-                while let Some(result) = stream.next().await {
-                    trace(log_tag, "Streaming data...");
-                    match result {
-                        Ok(response) => {
-                            response.choices.iter().for_each(|chat_choice| {
-                                if let Some(ref content) = chat_choice.delta.content {
-                                    let usage = response.usage.clone();
-                                    let reply = ws::BotReply {
-                                        message: content.to_owned(),
-                                        prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-                                        completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-                                        total_token: usage.as_ref().map(|usage| usage.total_tokens),
-                                    };
+        let init_client_result = LLMClient::new(config, proxy_setting);
+        match init_client_result {
+            Ok(client) => {
+                let stream_result = client
+                    .chat_stream(messages, options, GlobalSettings { max_tokens: max_token_setting })
+                    .await;
+                match stream_result {
+                    Ok(mut stream) => {
+                        // start receiving in frontend
+                        emit_stream_start(&tag, &window);
+                        trace(log_tag, "Streaming started!");
+                        while let Some(result) = stream.next().await {
+                            trace(log_tag, "Streaming data...");
+                            match result {
+                                Ok(reply) => {
                                     emit_stream_data(&tag, &window, reply);
+                                },
+                                Err(err) => {
+                                    let err_reply = format!("[[ERROR]]{}", err);
+                                    emit_stream_error(&tag, &window, &err_reply);
+                                    log::error!("Error during stream: {:?}", err);
+                                    error(log_tag, &format!("Error during stream: {}", &err_reply));
+                                    break;
                                 }
-                            });
+                            }
                         }
-                        Err(err) => {
-                            let err_reply = format!("[[ERROR]]{}", err);
-                            emit_stream_error(&tag, &window, &err_reply);
-                            log::error!("Error during stream: {:?}", err);
-                            error(log_tag, &format!("Error during stream: {}", &err_reply));
-                            break;
-                        }
+                        trace(log_tag, "Streaming finished!");
+                        // stop receiving in frontend
+                        emit_stream_done(&tag, &window);
+                    },
+                    Err(msg) => {
+                        let err_reply = format!("[[ERROR]]{}", msg);
+                        emit_stream_error(&tag, &window, &err_reply);
+                        error(log_tag, &format!("Error starting stream: {}", &err_reply));
                     }
                 }
-                trace(log_tag, "Streaming finished!");
-                // stop receiving in frontend
-                emit_stream_done(&tag, &window);
             },
             Err(msg) => {
-                let err_reply = format!("[[ERROR]]{}", msg);
-                emit_stream_error(&tag, &window, &err_reply);
-                error(log_tag, &format!("Error starting stream: {}", &err_reply));
+                emit_stream_error(&tag, &window, &msg);
+                log::error!("call_bot_stream: {}", &msg);
             }
         }
     });
@@ -601,7 +601,7 @@ fn emit_stream_error(tag: &str, window: &tauri::Window, err_message: &String) {
     }
 }
 
-fn emit_stream_data(tag: &str, window: &tauri::Window, data: ws::BotReply) {
+fn emit_stream_data(tag: &str, window: &tauri::Window, data: BotReply) {
     let data_str: String = serde_json::to_string(&data).unwrap_or(String::default());
     log::info!("emit_stream_data: {}", data_str); // debug
     let _ = window.emit(tag, data_str);
