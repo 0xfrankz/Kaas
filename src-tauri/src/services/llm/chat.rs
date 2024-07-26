@@ -221,6 +221,14 @@ pub struct ClaudeChatCompletionResponse {
     pub usage: ClaudeUsage,
 }
 
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ClaudeChatCompletionStreamResponse {
+
+}
+
+pub type ClaudeChatCompletionResponseStream = 
+    Pin<Box<dyn Stream<Item = Result<ClaudeChatCompletionStreamResponse, OpenAIError>> + Send>>;
+
 /// Given a list of messages comprising a conversation, the model will return a response.
 pub struct ClaudeChat<'c> {
     client: &'c Client<ClaudeConfig>,
@@ -231,6 +239,7 @@ impl<'c> ClaudeChat<'c> {
         Self { client }
     }
 
+    /// Creates a model response for the given chat conversation.
     pub async fn create(
         &self,
         request: ClaudeChatCompletionRequest
@@ -241,6 +250,31 @@ impl<'c> ClaudeChat<'c> {
             ));
         }
         self.client.post(CLAUDE_CHAT_PATH, request).await
+    }
+
+    pub async fn create_stream(
+        &self,
+        mut request: ClaudeChatCompletionRequest
+    ) -> Result<ClaudeChatCompletionResponseStream, OpenAIError> {
+        if request.stream.is_some() && !request.stream.unwrap() {
+            return Err(OpenAIError::InvalidArgument(
+                "When stream is false, use Chat::create".into(),
+            ));
+        }
+
+        request.stream = Some(true);
+
+        let event_source = self
+            .client
+            .http_client
+            .post(self.client.config.url(CLAUDE_CHAT_PATH))
+            .query(&self.client.config.query())
+            .headers(self.client.config.headers())
+            .json(&request)
+            .eventsource()
+            .unwrap();
+
+        todo!();
     }
 }
 
