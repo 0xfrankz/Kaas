@@ -1,8 +1,9 @@
 use async_openai::{
     config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{
         ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest
-    }, Client
+    }
 };
+pub use async_openai::Client;
 use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::MessageDTO, models::{ProviderConfig, Providers}, settings::ProxySetting};
 use reqwest;
 use serde::{Serialize, Deserialize};

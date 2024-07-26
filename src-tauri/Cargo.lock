@@ -286,33 +286,7 @@ dependencies = [
 [[package]]
 name = "async-openai"
 version = "0.23.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc0e5ff98f9e7c605df4c88783a0439d1dc667ce86bd79e99d4164f8b0c05ccc"
-dependencies = [
- "async-convert",
- "backoff",
- "base64 0.22.1",
- "bytes",
- "derive_builder",
- "eventsource-stream",
- "futures",
- "rand 0.8.5",
- "reqwest",
- "reqwest-eventsource",
- "secrecy",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tokio-stream",
- "tokio-util",
- "tracing",
-]
-
-[[package]]
-name = "async-openai"
-version = "0.23.4"
-source = "git+https://github.com/0xfrankz/async-openai.git?tag=async-openai-v0.23.4#7e5881f6c226b04f2efa9ecd965c1aae9275b881"
+source = "git+https://github.com/0xfrankz/async-openai.git?branch=multi-providers-support#ae0aa2027ec51b4012011097f2f018ffdbbce562"
 dependencies = [
  "async-convert",
  "backoff",
@@ -1285,7 +1259,6 @@ dependencies = [
 name = "entity"
 version = "0.1.0"
 dependencies = [
- "async-openai 0.23.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono",
  "log",
  "sea-orm",
@@ -2445,7 +2418,7 @@ dependencies = [
 name = "kaas"
 version = "1.0.0"
 dependencies = [
- "async-openai 0.23.4 (git+https://github.com/0xfrankz/async-openai.git?tag=async-openai-v0.23.4)",
+ "async-openai",
  "base64 0.22.1",
  "chrono",
  "entity",
