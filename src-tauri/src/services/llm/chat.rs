@@ -5,7 +5,7 @@ use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOption
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use tokio_stream::{Stream, StreamExt};
 use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
-use super::{config::ClaudeConfig, utils::{message_to_claude_request_message, message_to_openai_request_message}};
+use super::{config::ClaudeConfig, utils::{message_to_claude_request_message, message_to_openai_request_message, sum_option}};
 
 const CLAUDE_CHAT_PATH: &str = "/messages";
 
@@ -133,8 +133,10 @@ pub struct ClaudeTool {
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
 pub struct ClaudeUsage {
-    pub input_tokens: u32,
-    pub output_tokens: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input_tokens: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_tokens: Option<u32>,
 }
 
 #[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
@@ -222,16 +224,36 @@ pub struct ClaudeChatCompletionResponse {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct ClaudeChatCompletionStreamContentDelta {
+pub struct ContentBlockDelta {
     pub r#type: String,
     pub text: String,
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct ClaudeChatCompletionStreamResponse {
-    pub r#type: String,
+pub struct ClaudeChatCompletionStreamContentBlockDelta {
     pub index: u32,
-    pub delta: ClaudeChatCompletionStreamContentDelta,
+    pub delta: ContentBlockDelta,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ClaudeMessageDelta {
+    stop_reason: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stop_sequences: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ClaudeChatCompletionStreamMessageDelta {
+    delta: ClaudeMessageDelta,
+    usage: ClaudeUsage,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
+pub enum ClaudeChatCompletionStreamResponse {
+    ContentBlockDelta(ClaudeChatCompletionStreamContentBlockDelta),
+    MessageDelta(ClaudeChatCompletionStreamMessageDelta)
 }
 
 pub type ClaudeChatCompletionResponseStream = 
@@ -451,11 +473,12 @@ impl<'c> ChatRequest<'c> {
                     ClaudeResponseMessageContent::ToolUse(_) => "ToolUse is not implemented yet".to_string()
                 };
                 let usage = response.usage;
+
                 let reply = BotReply {
                     message,
-                    prompt_token: Some(usage.input_tokens),
-                    completion_token: Some(usage.output_tokens),
-                    total_token: Some(usage.input_tokens + usage.output_tokens),
+                    prompt_token: usage.input_tokens,
+                    completion_token: usage.output_tokens,
+                    total_token: sum_option(usage.input_tokens, usage.output_tokens),
                 };
                 
                 return Ok(reply)
@@ -478,12 +501,22 @@ impl<'c> ChatRequest<'c> {
                     .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
                 let result = stream.map(|item| {
                     item.map(|resp| {
-                        BotReply {
-                            message: resp.delta.text,
-                            // prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-                            // completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-                            // total_token: usage.as_ref().map(|usage| usage.total_tokens),
-                            ..Default::default()
+                        match resp {
+                            ClaudeChatCompletionStreamResponse::ContentBlockDelta(content_delta) => {
+                                return BotReply {
+                                    message: content_delta.delta.text.clone(),
+                                    ..Default::default()
+                                }
+                            },
+                            ClaudeChatCompletionStreamResponse::MessageDelta(message_delta) => {
+                                // return empty string as message
+                                return BotReply {
+                                    prompt_token: message_delta.usage.input_tokens,
+                                    completion_token: message_delta.usage.output_tokens,
+                                    total_token: sum_option(message_delta.usage.input_tokens, message_delta.usage.output_tokens),
+                                    ..Default::default()
+                                }
+                            }
                         }
                     })
                 });
@@ -508,7 +541,7 @@ where
     match event {
         Event::Message(message) => {
             match message.event.as_str() {
-                "content_block_delta" => {
+                "content_block_delta" | "message_delta" => {
                     // content block data
                     let response = match serde_json::from_str::<O>(&message.data) {
                         Err(e) => StreamEvent::Error(e.to_string()),
