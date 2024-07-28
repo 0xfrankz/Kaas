@@ -2,9 +2,9 @@ use std::pin::Pin;
 
 use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest, CreateChatCompletionStreamResponse}, Chat, Client};
 use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::MessageDTO};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use tokio_stream::{Stream, StreamExt};
-
+use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
 use super::{config::ClaudeConfig, utils::{message_to_claude_request_message, message_to_openai_request_message}};
 
 const CLAUDE_CHAT_PATH: &str = "/messages";
@@ -222,8 +222,16 @@ pub struct ClaudeChatCompletionResponse {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct ClaudeChatCompletionStreamResponse {
+pub struct ClaudeChatCompletionStreamContentDelta {
+    pub r#type: String,
+    pub text: String,
+}
 
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ClaudeChatCompletionStreamResponse {
+    pub r#type: String,
+    pub index: u32,
+    pub delta: ClaudeChatCompletionStreamContentDelta,
 }
 
 pub type ClaudeChatCompletionResponseStream = 
@@ -235,6 +243,7 @@ pub struct ClaudeChat<'c> {
 }
 
 impl<'c> ClaudeChat<'c> {
+
     pub fn new(client: &'c Client<ClaudeConfig>) -> Self {
         Self { client }
     }
@@ -256,25 +265,26 @@ impl<'c> ClaudeChat<'c> {
         &self,
         mut request: ClaudeChatCompletionRequest
     ) -> Result<ClaudeChatCompletionResponseStream, OpenAIError> {
-        if request.stream.is_some() && !request.stream.unwrap() {
-            return Err(OpenAIError::InvalidArgument(
-                "When stream is false, use Chat::create".into(),
-            ));
-        }
+        // TODO, remove this line
+        // if request.stream.is_some() && !request.stream.unwrap() {
+        //     return Err(OpenAIError::InvalidArgument(
+        //         "When stream is false, use Chat::create".into(),
+        //     ));
+        // }
 
         request.stream = Some(true);
 
         let event_source = self
             .client
-            .http_client
-            .post(self.client.config.url(CLAUDE_CHAT_PATH))
-            .query(&self.client.config.query())
-            .headers(self.client.config.headers())
+            .http_client()
+            .post(self.client.config().url(CLAUDE_CHAT_PATH))
+            .query(&self.client.config().query())
+            .headers(self.client.config().headers())
             .json(&request)
             .eventsource()
             .unwrap();
 
-        todo!();
+        Ok(stream(event_source).await)
     }
 }
 
@@ -389,10 +399,14 @@ impl<'c> ChatRequest<'c> {
     }
 
     async fn execute_openai_compatible_stream_request<C: Config>(&self, client: &Client<C>, request: CreateChatCompletionRequest) -> Result<BotReplyStream, String> {
-        let stream: ChatCompletionResponseStream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+        let stream: ChatCompletionResponseStream = client
+            .chat()
+            .create_stream(request)
+            .await
+            .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
         let result = stream.map(|item| {
             item.map(|resp| {
-                let result = resp.choices
+                let first_choice = resp.choices
                     .first()
                     .map_or(BotReply::default(), |choice| {
                         let usage = resp.usage.clone();
@@ -403,7 +417,7 @@ impl<'c> ChatRequest<'c> {
                             total_token: usage.as_ref().map(|usage| usage.total_tokens),
                         }
                     });
-                result
+                first_choice
             })
         });
         Ok(Box::pin(result))
@@ -458,8 +472,143 @@ impl<'c> ChatRequest<'c> {
                 return self.execute_openai_compatible_stream_request(client, request.clone()).await;
             },
             ChatRequest::ClaudeChatRequest(client, request) => {
-                todo!()
+                let stream: ClaudeChatCompletionResponseStream = ClaudeChat::new(client)
+                    .create_stream(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                let result = stream.map(|item| {
+                    item.map(|resp| {
+                        BotReply {
+                            message: resp.delta.text,
+                            // prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                            // completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                            // total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                            ..Default::default()
+                        }
+                    })
+                });
+                Ok(Box::pin(result))
             }
         }
     }
+}
+
+pub enum StreamEvent<O: DeserializeOwned + std::marker::Send + 'static> {
+    Open,
+    Continue,
+    Data(O),
+    Stop,
+    Error(String)
+}
+
+fn parse_claude_stream_event<O>(event: Event) -> StreamEvent<O>
+where
+    O: DeserializeOwned + std::marker::Send + 'static,
+{
+    match event {
+        Event::Message(message) => {
+            match message.event.as_str() {
+                "content_block_delta" => {
+                    // content block data
+                    let response = match serde_json::from_str::<O>(&message.data) {
+                        Err(e) => StreamEvent::Error(e.to_string()),
+                        Ok(output) => StreamEvent::Data(output),
+                    };
+                    response
+                },
+                "message_stop" => {
+                    StreamEvent::Stop
+                },
+                "error" => {
+                    // eventstream::Event doesn't support error event yet
+                    StreamEvent::Error(message.data)
+                },
+                _ => {
+                    // Currently, treat all other event types as continue
+                    StreamEvent::Continue
+                }
+            }
+        },
+        Event::Open => {
+            StreamEvent::Open
+        }
+    }
+}
+
+/// Request Claude which responds with SSE.
+/// [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format)
+pub(crate) async fn stream<O>(
+    mut event_source: EventSource,
+) -> Pin<Box<dyn Stream<Item = Result<O, OpenAIError>> + Send>>
+where
+    O: DeserializeOwned + std::marker::Send + 'static,
+{
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+
+    tokio::spawn(async move {
+        while let Some(ev) = event_source.next().await {
+            match ev {
+                Err(e) => {
+                    if let Err(_e) = tx.send(Err(OpenAIError::StreamError(e.to_string()))) {
+                        // rx dropped
+                        break;
+                    }
+                }
+                Ok(event) => {
+                    match parse_claude_stream_event(event) {
+                        StreamEvent::Open => {
+                            log::info!("SSE: OPEN");
+                            continue
+                        },
+                        StreamEvent::Continue => {
+                            log::info!("SSE: CONTINUE");
+                            continue
+                        },
+                        StreamEvent::Data(data) => {
+                            if let Err(_e) = tx.send(Ok(data)) {
+                                // rx dropped
+                                break;
+                            }
+                        },
+                        StreamEvent::Stop => {
+                            log::info!("SSE: STOP");
+                            break
+                        },
+                        StreamEvent::Error(err) => {
+                            log::info!("SSE: ERROR: {}", err);
+                            if let Err(_e) = tx.send(Err(OpenAIError::StreamError(err))) {
+                                // rx dropped
+                               break;
+                            }
+                        }
+                    }
+                    // Event::Message(message) => {
+                    //     // if message.data == "[DONE]" {
+                    //     //     break;
+                    //     // }
+
+                    //     // let response = match serde_json::from_str::<O>(&message.data) {
+                    //     //     Err(e) => Err(map_deserialization_error(e, message.data.as_bytes())),
+                    //     //     Ok(output) => Ok(output),
+                    //     // };
+
+                    //     // if let Err(_e) = tx.send(response) {
+                    //     //     // rx dropped
+                    //     //     break;
+                    //     // }
+
+                    //     log::info!("SSE: {:?}", message);
+                    // }
+                    // Event::Open => {
+                    //     log::info!("SSE: OPEN");
+                    //     continue
+                    // },
+                },
+            }
+        }
+        log::info!("SSE: About to close");
+        event_source.close();
+    });
+
+    Box::pin(tokio_stream::wrappers::UnboundedReceiverStream::new(rx))
 }

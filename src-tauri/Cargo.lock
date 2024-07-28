@@ -286,7 +286,7 @@ dependencies = [
 [[package]]
 name = "async-openai"
 version = "0.23.4"
-source = "git+https://github.com/0xfrankz/async-openai.git?branch=multi-providers-support#ae0aa2027ec51b4012011097f2f018ffdbbce562"
+source = "git+https://github.com/0xfrankz/async-openai.git?branch=multi-providers-support#56ed422512361ea1311cf8dc29e571103e31c6ab"
 dependencies = [
  "async-convert",
  "backoff",
@@ -2427,6 +2427,7 @@ dependencies = [
  "migration",
  "once_cell",
  "reqwest",
+ "reqwest-eventsource",
  "sea-orm",
  "secrecy",
  "serde",
