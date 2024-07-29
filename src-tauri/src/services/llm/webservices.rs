@@ -1,17 +1,12 @@
 use async_openai::{
-    config::{AzureConfig, Config, OpenAIConfig}, types::{
-        ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest
-    },
+    config::{AzureConfig, Config, OpenAIConfig},
     Client
 };
-use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::MessageDTO, models::{ProviderConfig, Providers}, settings::ProxySetting};
+use entity::entities::{conversations::ProviderOptions, messages::MessageDTO, models::{ProviderConfig, Providers}, settings::ProxySetting};
 use reqwest;
-use serde::{Serialize, Deserialize};
-use crate::services::llm::utils::message_to_openai_request_message;
+use serde::Deserialize;
 
-use super::{chat::{BotReply, BotReplyStream, ChatRequest, ClaudeChat, ClaudeChatCompletionRequest, ClaudeMessage, ClaudeMetadata, ClaudeResponseMessageContent, GlobalSettings}, config::ClaudeConfig, utils::{build_http_client, message_to_claude_request_message}};
-
-use super::utils::messages_and_options_to_request;
+use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, config::ClaudeConfig, utils::build_http_client};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -78,24 +73,6 @@ impl Into<ClaudeConfig> for RawClaudeConfig {
     }
 }
 
-pub async fn complete_chat_stream(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<ChatCompletionResponseStream, String> {
-    match config.provider.as_str().into() {
-        Providers::Azure => {
-            let (client, request) = build_azure_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
-            let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
-            return Ok(stream);
-        },
-        Providers::OpenAI => {
-            let (client, request) = build_openai_client_and_request(messages, options, config, proxy_setting, default_max_tokens)?;
-            let stream = client.chat().create_stream(request).await.map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
-            return Ok(stream);
-        },
-        _ => {
-            return Err(format!("Complete chat with {} not supported yet", config.provider.as_str()));
-        }
-    }
-}
-
 pub async fn list_models(provider: String, api_key: String, proxy_setting: Option<ProxySetting>) -> Result<Vec<async_openai::types::Model>, String> {
     let http_client: reqwest::Client = build_http_client(proxy_setting);
     match provider.as_str().into() {
@@ -126,28 +103,6 @@ async fn list_models_with_client<C: Config>(client: Client<C>) -> Result<Vec<asy
         })?
         .data;
     Ok(result)
-}
-
-fn build_azure_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<(Client<AzureConfig>, CreateChatCompletionRequest), String> {
-    let http_client = build_http_client(proxy_setting);
-    let config_json: RawAzureConfig = serde_json::from_str(&config.config)
-        .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-    let config: AzureConfig = config_json.into();
-    let client = Client::with_config(config).with_http_client(http_client);
-    let request = messages_and_options_to_request(messages, &options, default_max_tokens)?;
-    Ok((client, request))
-}
-
-fn build_openai_client_and_request(messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, default_max_tokens: Option<u32>) -> Result<(Client<OpenAIConfig>, CreateChatCompletionRequest), String> {
-    let http_client = build_http_client(proxy_setting);
-    let config_json: RawOpenAIConfig = serde_json::from_str(&config.config)
-        .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
-    let model = config_json.model.clone();
-    let config: OpenAIConfig = config_json.into();
-    let client = Client::with_config(config).with_http_client(http_client);
-    let mut request = messages_and_options_to_request(messages, &options, default_max_tokens)?;
-    request.model = model;
-    Ok((client, request))
 }
 
 /// Wrapper of async-openai's Client struct

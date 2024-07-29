@@ -1,6 +1,6 @@
 use std::pin::Pin;
 
-use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest, CreateChatCompletionStreamResponse}, Chat, Client};
+use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest}, Client};
 use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::MessageDTO};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use tokio_stream::{Stream, StreamExt};
