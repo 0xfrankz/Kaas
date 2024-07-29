@@ -414,6 +414,9 @@ export function useMessageUpdater(
                 target.content = msg.content;
                 target.updatedAt = msg.updatedAt;
                 target.isReceiving = false;
+                target.promptToken = msg.promptToken;
+                target.completionToken = msg.completionToken;
+                target.totalToken = msg.totalToken;
               }
             })
         );
