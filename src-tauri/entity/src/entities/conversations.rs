@@ -125,8 +125,8 @@ pub struct AzureOptions {
     // pub logprobs: Option<i32>, // Azure seems to have a different definition from OpenAI's. async-openai currently doesn't support the Azure version
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tokens: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub n: Option<u8>, // min:1, max: 128, default: 1
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub n: Option<u8>, // min:1, max: 128, default: 1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub presence_penalty: Option<f32>, // min: -2.0, max: 2.0, default 0
     // pub response_format: Option<ChatCompletionResponseFormat>, // to be implemented
@@ -154,7 +154,6 @@ impl Default for AzureOptions{
             context_length: None,
             frequency_penalty: Some(0.0),
             max_tokens: None,
-            n: Some(1),
             presence_penalty: Some(0.0),
             stream: Some(false),
             temperature: Some(1.0),
@@ -174,8 +173,8 @@ pub struct OpenAIOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tokens: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub n: Option<u8>, // min:1, max: 128, default: 1
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // pub n: Option<u8>, // min:1, max: 128, default: 1
+    // #[serde(skip_serializing_if = "Option::is_none")]
     pub presence_penalty: Option<f32>, // min: -2.0, max: 2.0, default 0
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
@@ -195,7 +194,6 @@ impl Default for OpenAIOptions{
             context_length: None,
             frequency_penalty: Some(0.0),
             max_tokens: None,
-            n: Some(1),
             presence_penalty: Some(0.0),
             stream: Some(false),
             temperature: Some(1.0),

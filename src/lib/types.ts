@@ -7,6 +7,7 @@ import type {
 } from './constants';
 import type {
   azureOptionsFormSchema,
+  claudeOptionsFormSchema,
   conversationFormSchema,
   editAzureModelFormSchema,
   editOpenAIModelFormSchema,
@@ -128,7 +129,8 @@ export type BotReply = {
 
 export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
-export type Options = AzureOptions | OpenAIOptions;
+export type ClaudeOptions = z.infer<typeof claudeOptionsFormSchema>;
+export type Options = AzureOptions | OpenAIOptions | ClaudeOptions;
 export type ProviderOptions = {
   provider: AllProviders;
   options: string;

@@ -370,7 +370,6 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
     log::info!("bot calling context: {:?}", context);
     // delegate to one-off or stream function to send request
     let is_stream_enabled = utils::is_stream_enabled(&options);
-    let is_stream_enabled = true; // TODO, remove this line
     if is_stream_enabled {
         // stream response
         call_bot_stream(tag, window, context, options, config, proxy_setting, max_token_setting).await;

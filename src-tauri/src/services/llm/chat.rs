@@ -287,12 +287,11 @@ impl<'c> ClaudeChat<'c> {
         &self,
         mut request: ClaudeChatCompletionRequest
     ) -> Result<ClaudeChatCompletionResponseStream, OpenAIError> {
-        // TODO, remove this line
-        // if request.stream.is_some() && !request.stream.unwrap() {
-        //     return Err(OpenAIError::InvalidArgument(
-        //         "When stream is false, use Chat::create".into(),
-        //     ));
-        // }
+        if request.stream.is_some() && !request.stream.unwrap() {
+            return Err(OpenAIError::InvalidArgument(
+                "When stream is false, use Chat::create".into(),
+            ));
+        }
 
         request.stream = Some(true);
 
@@ -330,7 +329,7 @@ impl<'c> ChatRequest<'c> {
             messages: req_messages,
             frequency_penalty: options.frequency_penalty,
             max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            n: options.n,
+            // n: options.n,
             presence_penalty: options.presence_penalty,
             stream: options.stream,
             temperature: options.temperature,
@@ -353,7 +352,7 @@ impl<'c> ChatRequest<'c> {
             messages: req_messages,
             frequency_penalty: options.frequency_penalty,
             max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            n: options.n,
+            // n: options.n,
             presence_penalty: options.presence_penalty,
             stream: options.stream,
             temperature: options.temperature,

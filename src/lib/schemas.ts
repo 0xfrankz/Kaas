@@ -46,7 +46,7 @@ const commonOptionsFormSchema = z.object({
   contextLength: z.coerce.number().int().min(0).max(65535).optional(),
   frequencyPenalty: z.coerce.number().min(-2.0).max(2.0).optional().default(0),
   maxTokens: z.coerce.number().int().min(1).max(65535).optional(),
-  n: z.coerce.number().int().min(1).max(128).optional().default(1),
+  // n: z.coerce.number().int().min(1).max(128).optional().default(1),
   presencePenalty: z.coerce.number().min(-2.0).max(2.0).optional().default(0),
   stream: z.boolean().optional().default(false),
   temperature: z.coerce.number().min(0).max(2.0).optional().default(1),
@@ -64,6 +64,15 @@ export const azureOptionsFormSchema = commonOptionsFormSchema.extend({
 export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
   provider: z.literal(PROVIDER_OPENAI),
 });
+
+export const claudeOptionsFormSchema = commonOptionsFormSchema
+  .omit({
+    frequencyPenalty: true,
+    presencePenalty: true,
+  })
+  .extend({
+    provider: z.literal(PROVIDER_CLAUDE),
+  });
 
 export const optionsFormSchema = z.discriminatedUnion('provider', [
   openAIOptionsFormSchema,

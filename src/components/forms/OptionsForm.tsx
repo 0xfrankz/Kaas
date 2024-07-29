@@ -3,9 +3,14 @@ import type { ForwardedRef, HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { azureOptionsFormSchema, openAIOptionsFormSchema } from '@/lib/schemas';
+import {
+  azureOptionsFormSchema,
+  claudeOptionsFormSchema,
+  openAIOptionsFormSchema,
+} from '@/lib/schemas';
 import type {
   AzureOptions,
+  ClaudeOptions,
   FormHandler,
   OpenAIOptions,
   Options,
@@ -44,15 +49,11 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
     });
 
     // Hooks
-    useImperativeHandle(
-      ref,
-      () => {
-        return {
-          reset: () => form.reset(),
-        };
-      },
-      [form]
-    );
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
 
     return (
       <Form {...form}>
@@ -100,21 +101,6 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                   <FormLabel className="col-span-2 text-right">
                     Max Tokens
                   </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="n"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">N</FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
@@ -243,15 +229,11 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
     });
 
     // Hooks
-    useImperativeHandle(
-      ref,
-      () => {
-        return {
-          reset: () => form.reset(),
-        };
-      },
-      [form]
-    );
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
 
     return (
       <Form {...form}>
@@ -299,21 +281,6 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                   <FormLabel className="col-span-2 text-right">
                     Max Tokens
                   </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="n"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">N</FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
@@ -428,7 +395,154 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
   }
 );
 
+const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
+  (
+    { onSubmit, defaultValues, ...props }: FormProps<ClaudeOptions>,
+    ref: ForwardedRef<FormHandler>
+  ) => {
+    const form = useForm<ClaudeOptions>({
+      resolver: zodResolver(claudeOptionsFormSchema),
+      defaultValues: {
+        user: '', // default user to empty to avoid React's Uncontrolled Input warning
+        ...defaultValues,
+      },
+    });
+
+    // Hooks
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
+
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
+          <div className="grid grid-cols-2 gap-4 py-8">
+            <FormField
+              control={form.control}
+              name="contextLength"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    Context Length
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="maxTokens"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    Max Tokens
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="stream"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    Stream
+                  </FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="temperature"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    Temperature
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="topP"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">Top P</FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="user"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">User</FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="provider"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
+        </form>
+      </Form>
+    );
+  }
+);
+
 export default {
   Azure: AzureOptionsForm,
   OpenAI: OpenAIOptionsForm,
+  Claude: ClaudeOptionsForm,
 };
