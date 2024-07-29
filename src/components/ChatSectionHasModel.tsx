@@ -106,8 +106,13 @@ export function ChatSectionHasModel({
               draft?.pop();
               draft?.push(placeholder);
             } else {
+              // regenerating an existing bot message
               const target = draft?.find((m) => m.id === msg.id);
-              if (target) target.isReceiving = true;
+              if (target) {
+                target.isReceiving = true;
+                // set isError to false in case we need to retry from errors with regenerating a message
+                target.isError = false;
+              }
             }
           })
       );
