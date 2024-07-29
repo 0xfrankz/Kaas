@@ -152,7 +152,7 @@ const CodeHighlighter = ({
       style={highlighterTheme}
     />
   ) : (
-    <code {...props} className={className}>
+    <code {...props} className={cn('text-wrap', className)}>
       {children}
     </code>
   );
