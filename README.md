@@ -4,7 +4,8 @@
   [![license-icon]](https://opensource.org/license/mit)
   [![app-version-icon]](https://github.com/0xfrankz/Kaas)
   [![typeScript-version-icon]](https://www.typescriptlang.org/)
-  [![rust-version-icon]](https://www.rust-lang.org/)
+  [![rust-version-icon]](https://www.rust-lang.org/)  
+  [![twitter-follow-icon]](https://x.com/thekaasapp)
 
 </div>
 
@@ -176,3 +177,5 @@ pnpm tauri dev
 [typescript-version-icon]: https://img.shields.io/github/package-json/dependency-version/0xfrankz/Kaas/dev/typescript
 [rust-version-icon]: https://img.shields.io/badge/Rust-1.75.0-dea584
 [license-icon]: https://img.shields.io/github/license/0xfrankz/Kaas
+[twitter-follow-icon]: https://img.shields.io/twitter/follow/thekaasapp
+
