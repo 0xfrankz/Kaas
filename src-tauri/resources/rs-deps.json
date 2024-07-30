@@ -1904,12 +1904,12 @@
     "description": "RFC 6902, JavaScript Object Notation (JSON) Patch"
   },
   {
-    "name": "kaas",
-    "version": "0.1.0",
+    "name": "Kaas",
+    "version": "1.0.0",
     "publisher": "Frank Zhang",
     "repository": "",
-    "licenses": "Apache 2.0",
-    "description": "A Tauri App"
+    "licenses": "MIT",
+    "description": "A LLM client designed to serve multiple providers and platforms."
   },
   {
     "name": "kuchikiki",

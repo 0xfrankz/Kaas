@@ -1,30 +1,40 @@
-# Description
+<h1 align="center">Welcome to Kaas 👋</h1>
+<div align="center">
 
-KAAS is a ChatGPT client designed to serve multiple platforms. Built using Tauri and React, this client places significant emphasis on data privacy and security. It ensures this through local data storage practices, thereby reinforcing data safety.
+  [![license-icon]](https://opensource.org/license/mit)
+  [![app-version-icon]](https://github.com/0xfrankz/Kaas)
+  [![typeScript-version-icon]](https://www.typescriptlang.org/)
+  [![rust-version-icon]](https://www.rust-lang.org/)
 
-With Rust in its development stack, KAAS also makes the most of high-speed execution and robust security.
+</div>
 
-# Features
-- **Privacy**  
-KAAS prioritizes data privacy. Your credentials and chat data are never sent to our servers. They are stored locally and securely on your device.*
-- **Cross-platform**  
-KAAS is designed to work across multiple platforms, including Windows, MacOS, and Linux.
-- **Security**  
-The core part of KAAS is built using Rust, ensuring high-speed execution and robust security. Plus, we delibrately limit the privileges of the client to the minimum necessary. You can view the list of permissions required in the `tauri.conf.json` file.
-- **Support for multiple providers**
+# 📄Description
+
+Kaas is a ChatGPT client designed to serve multiple platforms. Built using Tauri and React, this client places significant emphasis on data privacy and security. It ensures this through local data storage practices, thereby reinforcing data safety.
+
+With Rust in its development stack, Kaas also makes the most of high-speed execution and robust security.
+
+# ✨Features
+- **🔒Privacy**  
+Kaas prioritizes data privacy. Your credentials and chat data are never sent to our servers. They are stored locally and securely on your device.*
+- **💻Cross-platform**  
+Kaas is designed to work across multiple platforms, including Windows, MacOS, and Linux.
+- **💂Security**  
+The core part of Kaas is built using Rust, ensuring high-speed execution and robust security. Plus, we delibrately limit the privileges of the client to the minimum necessary. You can view the list of permissions required in the `tauri.conf.json` file.
+- **🤖Support for multiple providers**
   - OpenAI (ChatGPT)
   - Azure
   - Anthropic (Claude) (🚧work in progress)
   - Google (Gemini) (🚧work in progress)
   - Ollama (🚧work in progress)
-- **Built-in proxy**  
-KAAS supports proxy settings. You can set up a proxy to bypass your network restrictions.
-- **Prompt templates**  
+- **🪜Built-in proxy**  
+Kaas supports proxy settings. You can set up a proxy to bypass your network restrictions.
+- **🧩Prompt templates**  
 CoT or COSTAR, your favorite prompt templates are available here. You can also create your own.
-- **Dual themes**  
-KAAS supports both light and dark themes.
-- **Multilingual**  
-KAAS now supports
+- **🌓Dual themes**  
+Kaas supports both light and dark themes.
+- **🦉Multilingual**  
+Kaas now supports
   - English
   - Chinese Simplified
   - Chinese Traditional (🚧work in progress)
@@ -34,10 +44,10 @@ KAAS now supports
 
 _*: When you use online models, data is still sent to your model provider's APIs. If that bothers you, consider using Ollama's models locally_
 
-# Installation
+# 📦Installation
 Go to [Release](https://github.com/0xfrankz/kaas/releases) page for latest installers.
 
-# Built from source
+# 🛠️Built from source
 1. Install Node.js
 2. Install pnpm
 3. Install Rust
@@ -47,7 +57,7 @@ pnpm i
 pnpm tauri build
 ```
 
-# Development
+# 👍Development
 1. Install Node.js
 2. Install pnpm
 3. Install Rust
@@ -57,11 +67,11 @@ pnpm i
 pnpm tauri dev
 ```
 
-# Supported providers
+# 🤖Supported providers
 
 **Symbols:** ✅ - Supported, ❌ - Not supported, 📌 - Plan to support
 
-## OpenAI
+## OpenAI ✅
 ### API configurations
 
 | Field | Description |
@@ -96,7 +106,7 @@ pnpm tauri dev
 
 - [OpenAI Documentation](https://platform.openai.com/docs/guides/text-generation/chat-completions-api)
 
-## Microsoft Azure
+## Microsoft Azure ✅
 
 ### API configurations
 
@@ -130,9 +140,9 @@ pnpm tauri dev
 
 - [Azure Documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#chat-completions)
 
-## Anthropic Claude
+## Anthropic Claude ✅
 
-❌ **Not yet supported**
+### API configurations
 
 | Field | Description |
 | -------- | -------- |
@@ -140,10 +150,29 @@ pnpm tauri dev
 | anthropic-version | The version of Anthropic to use. |
 | model | The Anthropic model to use. |
 
+### Conversation options
+
+| Option | Description | Supported |
+| - | - | - |
+| max_tokens | The maximum number of tokens to generate before stopping. | ✅ |
+| temperature | Amount of randomness injected into the response.<br/>Defaults to 1.0. Ranges from 0.0 to 1.0. Use temperature closer to 0.0 for analytical / multiple choice, and closer to 1.0 for creative and generative tasks.<br/>We generally recommend altering this or top_p but not both. | ✅ |
+| top_p | Use nucleus sampling.<br/>Recommended for advanced use cases only. You usually only need to use _temperature_.| ✅ |
+| stream | Whether to incrementally stream the response using server-sent events.  | ✅ |
+| user | An object describing metadata about the request. <br/>_metadata.user_id_: An external identifier for the user who is associated with the request. | ✅ |
+| stop_sequences | Custom text sequences that will cause the model to stop generating. | 📌 |
+| top_k | Only sample from the top K options for each subsequent token.<br/>Recommended for advanced use cases only. You usually only need to use _temperature_.| 📌 |
+| tools | Definitions of tools that the model may use. | ❌ |
+| tool_choice | How the model should use the provided tools. | ❌ |
+
 ## Google Gemini
 
-❌ **Not yet supported**
+📌 **Plan to support**
 
 ## Ollama
 
-❌ **Not yet supported**
+📌 **Plan to support**
+
+[app-version-icon]: https://img.shields.io/github/package-json/v/0xfrankz/Kaas?color=f8c611
+[typescript-version-icon]: https://img.shields.io/github/package-json/dependency-version/0xfrankz/Kaas/dev/typescript
+[rust-version-icon]: https://img.shields.io/badge/Rust-1.75.0-dea584
+[license-icon]: https://img.shields.io/github/license/0xfrankz/Kaas

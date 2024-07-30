@@ -1,12 +1,12 @@
 workspace = { members = [".", "entity", "migration"] }
 [package]
-name = "kaas"
+name = "Kaas"
 version = "1.0.0"
 description = "A LLM client designed to serve multiple providers and platforms."
 authors = ["Frank Zhang"]
-license = "Apache 2.0"
+license = "MIT"
 repository = ""
-default-run = "kaas"
+default-run = "Kaas"
 edition = "2021"
 rust-version = "1.60"
 
