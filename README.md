@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to Kaas</h1>
+<h1 align="center">Welcome to Kaas 🧀</h1>
 <div align="center">
 
   [![license-icon]](https://opensource.org/license/mit)
