@@ -34,10 +34,6 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   });
   const queryClient = useQueryClient();
 
-  if (error) {
-    form.setError('model', { type: 'custom', message: error.message });
-  }
-
   const onClick = useCallback(() => {
     if (config.provider === PROVIDER_OPENAI) {
       // check api key when user is using OpenAI
@@ -123,6 +119,12 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
       }
     }
   }, [data, form]);
+
+  useEffect(() => {
+    if (error && !form.getFieldState('model').error) {
+      form.setError('model', { type: 'custom', message: error.message });
+    }
+  }, [error, form]);
 
   return render();
 }
