@@ -3,37 +3,6 @@
 version = 3
 
 [[package]]
-name = "Kaas"
-version = "1.0.0"
-dependencies = [
- "async-openai",
- "base64 0.22.1",
- "chrono",
- "entity",
- "infer 0.16.0",
- "log",
- "migration",
- "once_cell",
- "reqwest",
- "reqwest-eventsource",
- "sea-orm",
- "secrecy",
- "serde",
- "serde_json",
- "sqlx",
- "strum 0.26.3",
- "strum_macros",
- "sys-locale",
- "sysinfo",
- "tauri",
- "tauri-build",
- "tauri-plugin-log",
- "thiserror",
- "tokio",
- "tokio-stream",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -317,7 +286,7 @@ dependencies = [
 [[package]]
 name = "async-openai"
 version = "0.23.4"
-source = "git+https://github.com/0xfrankz/async-openai.git?branch=multi-providers-support#56ed422512361ea1311cf8dc29e571103e31c6ab"
+source = "git+https://github.com/0xfrankz/async-openai.git?branch=multi-providers-support#e76abf580b3a9e6d23715633222a6c473253376f"
 dependencies = [
  "async-convert",
  "backoff",
@@ -2443,6 +2412,37 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "kaas"
+version = "1.0.0"
+dependencies = [
+ "async-openai",
+ "base64 0.22.1",
+ "chrono",
+ "entity",
+ "infer 0.16.0",
+ "log",
+ "migration",
+ "once_cell",
+ "reqwest",
+ "reqwest-eventsource",
+ "sea-orm",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "strum 0.26.3",
+ "strum_macros",
+ "sys-locale",
+ "sysinfo",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-log",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]

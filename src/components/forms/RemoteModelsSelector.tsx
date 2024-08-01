@@ -3,7 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { PROVIDER_OPENAI } from '@/lib/constants';
 import { LIST_REMOTE_MODELS_KEY, useListRemoteModelsQuery } from '@/lib/hooks';
+import type { RawConfig } from '@/lib/types';
 
 import { Button } from '../ui/button';
 import { FormControl, FormField, FormItem } from '../ui/form';
@@ -17,24 +19,18 @@ import {
 } from '../ui/select';
 
 type Props = {
-  provider: string;
-  apiKey: string;
+  config: RawConfig;
   enabledByDefault: boolean;
 };
 
-export function RemoteModelsSelector({
-  provider,
-  apiKey,
-  enabledByDefault,
-}: Props) {
+export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const { t } = useTranslation(['error']);
   const form = useFormContext();
   const [enabled, setEnabled] = useState(enabledByDefault);
   const { data, isLoading, error } = useListRemoteModelsQuery({
-    provider,
-    apiKey,
+    config,
     enabled,
-    select: (raw) => raw.sort((a, b) => b.created - a.created),
+    select: (raw) => raw.sort((a, b) => (a.id < b.id ? -1 : 1)),
   });
   const queryClient = useQueryClient();
 
@@ -43,15 +39,30 @@ export function RemoteModelsSelector({
   }
 
   const onClick = useCallback(() => {
-    if (form.getValues('apiKey').length === 0) {
-      form.setError('apiKey', {
-        type: 'custom',
-        message: t('error:validation:empty-api-key'),
-      });
+    if (config.provider === PROVIDER_OPENAI) {
+      // check api key when user is using OpenAI
+      const apiKey = form.getValues('apiKey');
+      if (apiKey && apiKey.length === 0) {
+        form.setError('apiKey', {
+          type: 'custom',
+          message: t('error:validation:empty-api-key'),
+        });
+      } else {
+        setEnabled(true);
+      }
     } else {
-      setEnabled(true);
+      // check endpoint when user is using Ollama
+      const endpoint = form.getValues('endpoint');
+      if (endpoint && endpoint.length === 0) {
+        form.setError('endpoint', {
+          type: 'custom',
+          message: t('error:validation:empty-api-key'),
+        });
+      } else {
+        setEnabled(true);
+      }
     }
-  }, [form, t]);
+  }, [config.provider, form, t]);
 
   const render = () => {
     if (isLoading) {
@@ -102,7 +113,7 @@ export function RemoteModelsSelector({
       queryKey: LIST_REMOTE_MODELS_KEY,
       exact: true,
     });
-  }, [provider, apiKey, queryClient]);
+  }, [queryClient]);
 
   useEffect(() => {
     if (data && data.length > 0) {

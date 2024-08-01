@@ -1,12 +1,12 @@
 use async_openai::{
-    config::{AzureConfig, Config, OpenAIConfig},
+    config::{AzureConfig, OpenAIConfig},
     Client
 };
-use entity::entities::{conversations::ProviderOptions, messages::MessageDTO, models::{ProviderConfig, Providers}, settings::ProxySetting};
+use entity::entities::{conversations::ProviderOptions, messages::MessageDTO, models::{GenericConfig, Providers}, settings::ProxySetting};
 use reqwest;
 use serde::Deserialize;
 
-use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, config::ClaudeConfig, utils::build_http_client};
+use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, config::{ClaudeConfig, OllamaConfig}, models::{ListModelsRequest, RemoteModel}, utils::build_http_client};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,11 +27,12 @@ impl Into<AzureConfig> for RawAzureConfig {
     }
 }
 
+/// OpenAI config
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RawOpenAIConfig {
     api_key: String,
-    model: String,
+    model: Option<String>,
     api_base: Option<String>,
     org_id: Option<String>,
 }
@@ -73,49 +74,55 @@ impl Into<ClaudeConfig> for RawClaudeConfig {
     }
 }
 
-pub async fn list_models(provider: String, api_key: String, proxy_setting: Option<ProxySetting>) -> Result<Vec<async_openai::types::Model>, String> {
-    let http_client: reqwest::Client = build_http_client(proxy_setting);
-    match provider.as_str().into() {
-        Providers::Azure => {
-            let config = AzureConfig::default().with_api_key(api_key);
-            let client = Client::with_config(config).with_http_client(http_client);
-            list_models_with_client(client).await
-        },
-        Providers::OpenAI => {
-            let config = OpenAIConfig::default().with_api_key(api_key);
-            let client = Client::with_config(config).with_http_client(http_client);
-            list_models_with_client(client).await
-        },
-        _ => {
-            Err(format!("List models with {} not supported yet", provider))
-        }
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RawOllamaConfig {
+    api_base: String,
+    model: Option<String>,
+}
+
+impl Into<OllamaConfig> for RawOllamaConfig {
+    fn into(self) -> OllamaConfig {
+        OllamaConfig::new()
+            .with_api_base(self.api_base)
     }
 }
 
-async fn list_models_with_client<C: Config>(client: Client<C>) -> Result<Vec<async_openai::types::Model>, String> {
-    let result = client
-        .models()
-        .list()
-        .await
-        .map_err(|err| {
-            log::error!("list_models: {}", err);
-            String::from("Failed to list models")
-        })?
-        .data;
-    Ok(result)
-}
+// pub async fn list_models(provider: String, api_key: String, proxy_setting: Option<ProxySetting>) -> Result<Vec<async_openai::types::Model>, String> {
+//     let http_client: reqwest::Client = build_http_client(proxy_setting);
+//     match provider.as_str().into() {
+//         Providers::OpenAI => {
+//             let config = OpenAIConfig::default().with_api_key(api_key);
+//             let client = Client::with_config(config).with_http_client(http_client);
+//             let result = client
+//                 .models()
+//                 .list()
+//                 .await
+//                 .map_err(|err| {
+//                     log::error!("list_models: {}", err);
+//                     String::from("Failed to list models")
+//                 })?
+//                 .data;
+//             Ok(result)
+//         },
+//         _ => {
+//             Err(format!("List models with {} not supported yet", provider))
+//         }
+//     }
+// }
 
 /// Wrapper of async-openai's Client struct
 #[derive(Debug, Clone)]
 pub enum LLMClient {
-    OpenAIClient(Client<OpenAIConfig>, String),
+    OpenAIClient(Client<OpenAIConfig>, Option<String>),
     AzureClient(Client<AzureConfig>),
     ClaudeClient(Client<ClaudeConfig>, String),
+    OllamaClient(Client<OllamaConfig>, Option<String>),
 }
 
 impl LLMClient {
     /// Build client from config
-    pub fn new(config: ProviderConfig, proxy_setting: Option<ProxySetting>) -> Result<Self, String> {
+    pub fn new(config: GenericConfig, proxy_setting: Option<ProxySetting>) -> Result<Self, String> {
         let http_client: reqwest::Client = build_http_client(proxy_setting);
         match config.provider.as_str().into() {
             Providers::Azure => {
@@ -138,6 +145,13 @@ impl LLMClient {
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
                 Ok(LLMClient::ClaudeClient(client, model))
             },
+            Providers::Ollama => {
+                let raw_config: RawOllamaConfig = serde_json::from_str(&config.config)
+                    .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+                let model = raw_config.model.clone();
+                let client = Client::with_config(raw_config.into());
+                Ok(LLMClient::OllamaClient(client, model))
+            },
             _ => {
                 Err(format!("Complete chat with {} not supported yet", config.provider.as_str()))
             }
@@ -147,10 +161,16 @@ impl LLMClient {
     pub async fn chat(&self, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<BotReply, String> {
         match self {
             LLMClient::OpenAIClient(client, model) => {
-                let reply = ChatRequest::openai(client, messages, options, global_settings, model.to_string())?
-                    .execute()
-                    .await?;                
-                return Ok(reply)
+                match model.as_ref() {
+                    Some(model_str) => {
+                        let reply = ChatRequest::openai(client, messages, options, global_settings, model_str.to_string())?
+                            .execute()
+                            .await?;                
+                        Ok(reply)
+                    },
+                    None => Err(format!("OpenAI model not set"))
+                }
+                
             },
             LLMClient::AzureClient(client) => {
                 let reply = ChatRequest::azure(client, messages, options, global_settings)?
@@ -164,16 +184,24 @@ impl LLMClient {
                     .await?;                
                 return Ok(reply)
             },
+            LLMClient::OllamaClient(client, model) => {
+                todo!();
+            }
         }
     }
 
     pub async fn chat_stream(&self, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<BotReplyStream, String> {
         match self {
             LLMClient::OpenAIClient(client, model) => {
-                let stream = ChatRequest::openai(client, messages, options, global_settings, model.to_string())?
-                    .execute_stream()
-                    .await?;                
-                return Ok(stream)
+                match model.as_ref() {
+                    Some(model_str) => {
+                        let stream = ChatRequest::openai(client, messages, options, global_settings, model_str.to_string())?
+                            .execute_stream()
+                            .await?;                
+                        Ok(stream)
+                    },
+                    None => Err(format!("OpenAI model not set"))
+                }
             },
             LLMClient::AzureClient(client) => {
                 let stream = ChatRequest::azure(client, messages, options, global_settings)?
@@ -187,6 +215,34 @@ impl LLMClient {
                     .await?;                
                 return Ok(stream)
             },
+            LLMClient::OllamaClient(client, model) => {
+                todo!();
+            }
+        }
+    }
+
+    pub async fn models(&self) -> Result<Vec<RemoteModel>, String> {
+        match self {
+            LLMClient::OpenAIClient(client, _) => {
+                let result = ListModelsRequest::openai(client)
+                    .execute()
+                    .await?;
+                Ok(result)
+            },
+            LLMClient::AzureClient(_) => {
+                // Azure doesn't support model list
+                Err("List models API is not supported by Azure".to_string())
+            },
+            LLMClient::ClaudeClient(_, _) => {
+                // Claude doesn't support model list
+                Err("List models API is not supported by Azure".to_string())
+            },
+            LLMClient::OllamaClient(client, _) => {
+                let result = ListModelsRequest::ollama(client)
+                    .execute()
+                    .await?;
+                Ok(result)
+            }
         }
     }
 }

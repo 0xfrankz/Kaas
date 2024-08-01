@@ -1,7 +1,7 @@
 
 use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, ProviderOptions, UpdateConversationDTO};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
-use entity::entities::models::{self, Model, NewModel, ProviderConfig, Providers};
+use entity::entities::models::{self, Model, NewModel, GenericConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
 use entity::entities::settings::{self, Model as Setting};
 use entity::entities::contents::{self, Model as Content, ActiveModel as ActiveContent};
@@ -346,7 +346,7 @@ impl Repository {
     /**
      * Get model provider and config of a conversation
      */
-    pub async fn get_conversation_config(&self, conversation_id: i32) -> Result<ProviderConfig, String> {
+    pub async fn get_conversation_config(&self, conversation_id: i32) -> Result<GenericConfig, String> {
         let result = conversations::Entity::find_by_id(conversation_id)
             .select_only()
             .join(
@@ -355,7 +355,7 @@ impl Repository {
             )
             .column(models::Column::Provider)
             .column(models::Column::Config)
-            .into_model::<ProviderConfig>()
+            .into_model::<GenericConfig>()
             .one(&self.connection)
             .await
             .map_err(|err| {

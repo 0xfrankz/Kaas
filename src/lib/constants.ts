@@ -2,11 +2,13 @@
 export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
 export const PROVIDER_CLAUDE = 'Claude';
+export const PROVIDER_OLLAMA = 'Ollama';
 export const PROVIDER_UNKNOWN = 'Unknown';
 export const SUPPORTED_PROVIDERS = [
   PROVIDER_OPENAI,
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_OLLAMA,
 ] as const;
 export const ALL_PROVIDERS = [
   ...SUPPORTED_PROVIDERS,
@@ -46,6 +48,16 @@ export const PROVIDER_STYLES = {
     color: {
       light: '#F4D6CD',
       dark: '#D97757',
+    },
+  },
+  [PROVIDER_OLLAMA]: {
+    icon: {
+      light: 'ollama_logo_b.svg',
+      dark: 'ollama_logo_w.svg',
+    },
+    color: {
+      light: '#EEEEEE',
+      dark: '#999999',
     },
   },
   [PROVIDER_UNKNOWN]: {

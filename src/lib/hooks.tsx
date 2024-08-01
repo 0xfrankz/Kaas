@@ -67,27 +67,29 @@ import {
 } from './contexts';
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
-import type {
-  BotReply,
-  CommandError,
-  ConversationDetails,
-  GenericModel,
-  Message,
-  Model,
-  NewConversation,
-  NewMessage,
-  NewModel,
-  NewPrompt,
-  Options,
-  Prompt,
-  ProxySetting,
-  RemoteModel,
-  Setting,
-  TConversationsContext,
-  TFileUploaderContext,
-  TFilledPromptContext,
-  TMessageListContext,
-  UpdateConversation,
+import {
+  type BotReply,
+  type CommandError,
+  type ConversationDetails,
+  type GenericModel,
+  type Message,
+  type Model,
+  type NewConversation,
+  type NewMessage,
+  type NewModel,
+  type NewPrompt,
+  type Options,
+  type Prompt,
+  type ProxySetting,
+  type RawConfig,
+  type RemoteModel,
+  type Setting,
+  type TConversationsContext,
+  type TFileUploaderContext,
+  type TFilledPromptContext,
+  type TMessageListContext,
+  toGenericConfig,
+  type UpdateConversation,
 } from './types';
 
 export const LIST_MODELS_KEY = ['list-models'];
@@ -137,19 +139,17 @@ export function useModelDeleter(
 }
 
 export function useListRemoteModelsQuery({
-  provider,
-  apiKey,
+  config,
   ...options
 }: Omit<
   UseQueryOptions<RemoteModel[], CommandError>,
   'queryKey' | 'queryFn'
 > & {
-  provider: string;
-  apiKey: string;
+  config: RawConfig;
 }) {
   return useQuery({
     queryKey: LIST_REMOTE_MODELS_KEY,
-    queryFn: () => invokeListRemoteModels(provider, apiKey),
+    queryFn: () => invokeListRemoteModels(toGenericConfig(config)),
     ...options,
   });
 }

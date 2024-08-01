@@ -4,7 +4,7 @@ use entity::entities::{
     contents::{ContentType, Model as Content}, 
     conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::MessageDTO,
-    models::{Model, NewModel, ProviderConfig}, 
+    models::{Model, NewModel, GenericConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
     settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
 };
@@ -18,7 +18,7 @@ use tokio_stream::StreamExt;
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
     log_utils::{error, info, trace}, 
-    services::{db::Repository, llm::{chat::{BotReply, GlobalSettings}, utils, webservices::{self as ws, LLMClient}}}
+    services::{db::Repository, llm::{chat::{BotReply, GlobalSettings}, models::RemoteModel, utils, webservices::LLMClient}}
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -64,7 +64,7 @@ pub async fn delete_model(model_id: i32, repo: State<'_, Repository>) -> Command
 }
 
 #[tauri::command]
-pub async fn list_remote_models(provider: String, api_key: String, repo: State<'_, Repository>) -> CommandResult<Vec<async_openai::types::Model>> {
+pub async fn list_remote_models(config: GenericConfig, repo: State<'_, Repository>) -> CommandResult<Vec<RemoteModel>> {
     let now = Instant::now();
     let proxy_setting = repo
         .get_setting(SETTING_NETWORK_PROXY)
@@ -77,12 +77,19 @@ pub async fn list_remote_models(provider: String, api_key: String, repo: State<'
             }
         })
         .unwrap_or(None);
-    let result = ws::list_models(provider, api_key, proxy_setting)
-        .await
-        .map_err(|message| ApiError { message })?;
-    let elapsed = now.elapsed();
-    log::info!("[Timer][commands::list_remote_models]: {:.2?}", elapsed);
-    Ok(result)
+    let init_client_result = LLMClient::new(config, proxy_setting);
+    match init_client_result {
+        Ok(client) => {
+            let result = client
+                .models()
+                .await
+                .map_err(|message| ApiError { message })?;
+            let elapsed = now.elapsed();
+            log::info!("[Timer][commands::list_remote_models]: {:.2?}", elapsed);
+            Ok(result)
+        },
+        Err(message) => Err(ApiError{ message })
+    }
 }
 
 #[tauri::command]
@@ -440,7 +447,7 @@ pub async fn get_sys_info() -> CommandResult<serde_json::Value> {
 /***** Functions for calling model API START *****/
 
 /// Calling chat bot in normal mode
-async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
+async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
@@ -489,7 +496,7 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
 }
 
 /// Calling chat bot in streaming mode
-async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: ProviderConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
+async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     let log_tag = "call_bot_stream";
     let window_clone = window.clone();
     let window_clone_2 = window.clone();

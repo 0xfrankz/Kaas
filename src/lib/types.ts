@@ -3,6 +3,8 @@ import type { z } from 'zod';
 import type {
   ALL_PROVIDERS,
   CONTENT_ITEM_TYPES,
+  PROVIDER_OLLAMA,
+  PROVIDER_OPENAI,
   SUPPORTED_PROVIDERS,
 } from './constants';
 import type {
@@ -10,9 +12,12 @@ import type {
   claudeOptionsFormSchema,
   conversationFormSchema,
   editAzureModelFormSchema,
+  editClaudeModelFormSchema,
+  editOllamaModelFormSchema,
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newClaudeModelFormSchema,
+  newOllamaModelFormSchema,
   newOpenAIModelFormSchema,
   newPromptFormSchema,
   openAIOptionsFormSchema,
@@ -25,15 +30,18 @@ export type AzureModel = z.infer<typeof editAzureModelFormSchema>;
 export type NewOpenAIModel = z.infer<typeof newOpenAIModelFormSchema>;
 export type OpenAIModel = z.infer<typeof editOpenAIModelFormSchema>;
 export type NewClaudeModel = z.infer<typeof newClaudeModelFormSchema>;
-export type ClaudeModel = z.infer<typeof editAzureModelFormSchema>;
+export type ClaudeModel = z.infer<typeof editClaudeModelFormSchema>;
+export type NewOllamaModel = z.infer<typeof newOllamaModelFormSchema>;
+export type OllamaModel = z.infer<typeof editOllamaModelFormSchema>;
 
-export type NewModel = NewAzureModel | NewOpenAIModel | NewClaudeModel;
+export type NewModel =
+  | NewAzureModel
+  | NewOpenAIModel
+  | NewClaudeModel
+  | NewOllamaModel;
 
 export type RemoteModel = {
   id: string;
-  created: number;
-  object: string;
-  owned_by: string;
 };
 
 type SavedModelAttrs = {
@@ -53,6 +61,27 @@ export type GenericModel = {
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
+};
+
+export type RawOpenAIConfig = {
+  provider: typeof PROVIDER_OPENAI;
+  apiKey: string;
+  model?: string;
+  apiBase?: string;
+  orgId?: string;
+};
+
+export type RawOllamaConfig = {
+  provider: typeof PROVIDER_OLLAMA;
+  apiBase: string;
+  model?: string;
+};
+
+export type RawConfig = RawOpenAIConfig | RawOllamaConfig;
+
+export type GenericConfig = {
+  provider: AllProviders;
+  config: string;
 };
 
 export type Setting = {
@@ -96,7 +125,7 @@ export type UpdateConversation = Omit<
 };
 
 export type ContentItem = {
-  type: (typeof CONTENT_ITEM_TYPES)[number];
+  type: ContentItemTypes;
   mimetype?: string; // MIME type of the data
   data: string; // actual text if type === text, cache filename otherwise
 };
@@ -131,7 +160,7 @@ export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
 export type ClaudeOptions = z.infer<typeof claudeOptionsFormSchema>;
 export type Options = AzureOptions | OpenAIOptions | ClaudeOptions;
-export type ProviderOptions = {
+export type GenericOptions = {
   provider: AllProviders;
   options: string;
 };
@@ -247,10 +276,17 @@ export function fromGenericModel(model: GenericModel): Model {
   };
 }
 
-export function fromGenericChatOptions(options: ProviderOptions): Options {
+export function fromGenericChatOptions(options: GenericOptions): Options {
   const { provider, options: optionsStr } = options;
   return {
     provider,
     ...JSON.parse(optionsStr),
+  };
+}
+
+export function toGenericConfig(config: RawConfig): GenericConfig {
+  return {
+    provider: config.provider,
+    config: JSON.stringify(config),
   };
 }

@@ -1,7 +1,11 @@
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { PROVIDER_CLAUDE, PROVIDER_OPENAI } from '@/lib/constants';
+import {
+  PROVIDER_CLAUDE,
+  PROVIDER_OLLAMA,
+  PROVIDER_OPENAI,
+} from '@/lib/constants';
 import type { DialogHandler, Model, NewModel } from '@/lib/types';
 
 import { DeleteWithConfirmation } from './DeleteWithConfirmation';
@@ -56,6 +60,8 @@ const NewModelFormDialog = forwardRef<
         return <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
       case PROVIDER_CLAUDE:
         return <ModelForm.Claude.New id="modelForm" onSubmit={onFormSubmit} />;
+      case PROVIDER_OLLAMA:
+        return <ModelForm.Ollama.New id="modelForm" onSubmit={onFormSubmit} />;
       default:
         return <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
     }

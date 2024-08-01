@@ -1904,7 +1904,7 @@
     "description": "RFC 6902, JavaScript Object Notation (JSON) Patch"
   },
   {
-    "name": "Kaas",
+    "name": "kaas",
     "version": "1.0.0",
     "publisher": "Frank Zhang",
     "repository": "",

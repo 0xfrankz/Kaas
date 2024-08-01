@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
 } from '@/lib/constants';
 
@@ -30,6 +31,13 @@ export const newClaudeModelFormSchema = z.object({
   apiVersion: z.string().min(1, 'API version is required'),
 });
 
+export const newOllamaModelFormSchema = z.object({
+  alias: z.string(),
+  provider: z.literal(PROVIDER_OLLAMA),
+  endpoint: z.string().min(1, 'Endpoint is required'),
+  model: z.string().min(1, 'Model is required'),
+});
+
 export const editAzureModelFormSchema = newAzureModelFormSchema.extend({
   id: z.number(),
 });
@@ -39,6 +47,10 @@ export const editOpenAIModelFormSchema = newOpenAIModelFormSchema.extend({
 });
 
 export const editClaudeModelFormSchema = newClaudeModelFormSchema.extend({
+  id: z.number(),
+});
+
+export const editOllamaModelFormSchema = newOllamaModelFormSchema.extend({
   id: z.number(),
 });
 

@@ -37,6 +37,7 @@
         "Azure": "Microsoft Azure",
         "OpenAI": "OpenAI",
         "Claude": "Anthropic Claude",
+        "Ollama": "Ollama",
         "unknown": "Unknown"
     },
     "message": {

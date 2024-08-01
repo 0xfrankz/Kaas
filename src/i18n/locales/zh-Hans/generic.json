@@ -37,6 +37,7 @@
         "Azure": "微软Azure",
         "OpenAI": "OpenAI",
         "Claude": "Anthropic Claude",
+        "Ollama": "Ollama",
         "unknown": "未知"
     },
     "message": {

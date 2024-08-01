@@ -6,6 +6,7 @@ pub enum Providers {
     Azure,
     OpenAI,
     Claude,
+    Ollama,
     Unknown
 }
 
@@ -15,6 +16,7 @@ impl From<&str> for Providers {
             "Azure" => Providers::Azure,
             "OpenAI" => Providers::OpenAI,
             "Claude" => Providers::Claude,
+            "Ollama" => Providers::Ollama,
             _ => Providers::Unknown
         }
     }
@@ -38,6 +40,7 @@ impl Into<String> for Providers {
             Providers::Azure => "Azure".to_owned(),
             Providers::OpenAI => "OpenAI".to_owned(),
             Providers::Claude => "Claude".to_owned(),
+            Providers::Ollama => "Ollama".to_owned(),
             _ => "Unknown".to_owned()
         }
     }
@@ -76,9 +79,9 @@ impl Related<super::conversations::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-#[derive(Clone, Debug, FromQueryResult, Serialize)]
+#[derive(Clone, Debug, FromQueryResult, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProviderConfig {
+pub struct GenericConfig {
     pub provider: String,
     pub config: String
 }

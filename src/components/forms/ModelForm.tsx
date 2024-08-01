@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
 } from '@/lib/constants';
 import {
@@ -15,6 +16,7 @@ import {
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newClaudeModelFormSchema,
+  newOllamaModelFormSchema,
   newOpenAIModelFormSchema,
 } from '@/lib/schemas';
 import type {
@@ -24,8 +26,11 @@ import type {
   NewAzureModel,
   NewClaudeModel,
   NewModel,
+  NewOllamaModel,
   NewOpenAIModel,
   OpenAIModel,
+  RawOllamaConfig,
+  RawOpenAIConfig,
 } from '@/lib/types';
 
 import {
@@ -214,7 +219,10 @@ const GenericOpenAIModelForm = ({
   const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
   const apiKey = useWatch({ name: 'apiKey', control: form.control });
-  const provider = useWatch({ name: 'provider', control: form.control });
+  const config: RawOpenAIConfig = {
+    provider: PROVIDER_OPENAI,
+    apiKey,
+  };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -271,8 +279,7 @@ const GenericOpenAIModelForm = ({
             />
             <div className="col-span-3 col-start-2">
               <RemoteModelsSelector
-                provider={provider}
-                apiKey={apiKey}
+                config={config}
                 enabledByDefault={!!loadModelsOnInit}
               />
             </div>
@@ -287,26 +294,6 @@ const GenericOpenAIModelForm = ({
               </FormDescription>
             </div>
           </div>
-          {/* <FormField
-            control={form.control}
-            name="model"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:model')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:model-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          /> */}
           <FormField
             control={form.control}
             name="provider"
@@ -434,6 +421,126 @@ const GenericClaudeModelForm = ({
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="provider"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="hidden" {...field} />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          {isEdit ? (
+            <FormField
+              control={form.control}
+              name="id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <div className="col-span-3 col-start-2">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          ) : null}
+        </div>
+      </form>
+    </Form>
+  );
+};
+
+const GenericOllamaModelForm = ({
+  form,
+  onSubmit,
+  loadModelsOnInit,
+  ...props
+}: GenericFormProps<NewModel | Model>) => {
+  const { t } = useTranslation(['page-models']);
+  const isEdit = !!form.getValues('id');
+  const endpoint = useWatch({ name: 'endpoint', control: form.control });
+  const config: RawOllamaConfig = {
+    provider: PROVIDER_OLLAMA,
+    apiBase: endpoint,
+  };
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
+        <div className="grid gap-4 py-8">
+          <FormField
+            control={form.control}
+            name="alias"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">
+                  {t('page-models:label:alias')}
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-start-2 col-end-4">
+                  <FormMessage />
+                  <FormDescription>
+                    {t('page-models:message:alias-tips')}
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="endpoint"
+            render={({ field }) => (
+              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                <FormLabel className="text-right">
+                  {t('page-models:label:endpoint')}
+                </FormLabel>
+                <FormControl>
+                  <Input className="col-span-3" {...field} />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
+                  <FormMessage />
+                  <FormDescription>
+                    {t('page-models:message:endpoint-tips-azure')}
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+            <FormField
+              control={form.control}
+              name="model"
+              render={() => (
+                <FormLabel className="text-right">
+                  {t('page-models:label:model')}
+                </FormLabel>
+              )}
+            />
+            <div className="col-span-3 col-start-2">
+              <RemoteModelsSelector
+                config={config}
+                enabledByDefault={!!loadModelsOnInit}
+              />
+            </div>
+            <div className="col-span-3 col-start-2">
+              <FormField
+                control={form.control}
+                name="model"
+                render={() => <FormMessage />}
+              />
+              <FormDescription>
+                {t('page-models:message:model-tips')}
+              </FormDescription>
+            </div>
+          </div>
           <FormField
             control={form.control}
             name="provider"
@@ -605,6 +712,34 @@ const NewClaudeModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   }
 );
 
+const NewOllamaModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewOllamaModel>({
+      resolver: zodResolver(newOllamaModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_OLLAMA,
+        alias: '',
+        endpoint: '',
+        model: '',
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOllamaModelForm
+        form={form as UseFormReturn<NewModel, any, undefined>}
+        onSubmit={onSubmit}
+        {...props}
+      />
+    );
+  }
+);
+
 export default {
   Azure: {
     New: NewAzureModelForm,
@@ -616,5 +751,8 @@ export default {
   },
   Claude: {
     New: NewClaudeModelForm,
+  },
+  Ollama: {
+    New: NewOllamaModelForm,
   },
 };

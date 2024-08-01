@@ -3,7 +3,9 @@ import { invoke } from '@tauri-apps/api';
 import type {
   Conversation,
   ConversationDetails,
+  GenericConfig,
   GenericModel,
+  GenericOptions,
   Message,
   Model,
   NewConversation,
@@ -12,7 +14,6 @@ import type {
   NewPrompt,
   Options,
   Prompt,
-  ProviderOptions,
   RemoteModel,
   Setting,
   UpdateConversation,
@@ -54,12 +55,10 @@ export async function invokeDeleteModel(modelId: number): Promise<Model> {
 }
 
 export async function invokeListRemoteModels(
-  provider: string,
-  apiKey: string
+  config: GenericConfig
 ): Promise<RemoteModel[]> {
   const result = await invoke<RemoteModel[]>('list_remote_models', {
-    provider,
-    apiKey,
+    config,
   });
   return result;
 }
@@ -141,7 +140,7 @@ export async function invokeUpdateConversation(
 export async function invokeGetOptions(
   conversationId: number
 ): Promise<Options> {
-  const result = await invoke<ProviderOptions>('get_options', {
+  const result = await invoke<GenericOptions>('get_options', {
     conversationId,
   });
   return fromGenericChatOptions(result);
@@ -156,7 +155,7 @@ export async function invokeUpdateOptions({
 }) {
   // Omit the Provider field
   const { provider: ignored, ...rest } = options;
-  await invoke<ProviderOptions>('update_options', {
+  await invoke<GenericOptions>('update_options', {
     conversationId,
     options: JSON.stringify(rest),
   });
