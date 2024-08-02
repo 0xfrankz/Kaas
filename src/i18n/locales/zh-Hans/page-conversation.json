@@ -8,7 +8,17 @@
     "label": {
         "enter-to-send": "按回车发送",
         "shift-enter-to-send": "按Shift+回车发送",
-        "quick-send": "快捷发送"
+        "quick-send": "快捷发送",
+        "context-length": "上下文长度",
+        "num-ctx": "输入tokens数量",
+        "num-predict": "输出tokens数量",
+        "stream": "流输出",
+        "temperature" : "温度系数",
+        "top-p": "Top P",
+        "frequency-penalty": "Frequency Penalty",
+        "presence-penalty": "Presence Penalty",
+        "max-tokens": "最大tokens数量",
+        "user": "用户"
     },
     "message": {
         "no-model": "你需要先选择一个模型",

@@ -2,16 +2,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { ForwardedRef, HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import {
   azureOptionsFormSchema,
   claudeOptionsFormSchema,
+  ollamaOptionsFormSchema,
   openAIOptionsFormSchema,
 } from '@/lib/schemas';
 import type {
   AzureOptions,
   ClaudeOptions,
   FormHandler,
+  OllamaOptions,
   OpenAIOptions,
   Options,
 } from '@/lib/types';
@@ -47,6 +50,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
         ...defaultValues,
       },
     });
+    const { t } = useTranslation();
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -65,7 +69,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Context Length
+                    {t('page-conversation:label:context-length')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -82,7 +86,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Frequency Penalty
+                    {t('page-conversation:label:frequency-penalty')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -99,7 +103,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Max Tokens
+                    {t('page-conversation:label:max-tokens')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -116,7 +120,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Presence Penalty
+                    {t('page-conversation:label:presence-penalty')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -133,7 +137,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Stream
+                    {t('page-conversation:label:stream')}
                   </FormLabel>
                   <FormControl>
                     <Switch
@@ -153,7 +157,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Temperature
+                    {t('page-conversation:label:temperature')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -169,7 +173,9 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               name="topP"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">Top P</FormLabel>
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:top-p')}
+                  </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
@@ -184,7 +190,9 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               name="user"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">User</FormLabel>
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:user')}
+                  </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
@@ -227,6 +235,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
         ...defaultValues,
       },
     });
+    const { t } = useTranslation();
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -245,7 +254,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Context Length
+                    {t('page-conversation:label:context-length')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -541,8 +550,155 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
   }
 );
 
+const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
+  (
+    { onSubmit, defaultValues, ...props }: FormProps<OllamaOptions>,
+    ref: ForwardedRef<FormHandler>
+  ) => {
+    const form = useForm<OllamaOptions>({
+      resolver: zodResolver(ollamaOptionsFormSchema),
+      defaultValues,
+    });
+    const { t } = useTranslation();
+
+    // Hooks
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
+
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
+          <div className="grid grid-cols-2 gap-4 py-8">
+            <FormField
+              control={form.control}
+              name="contextLength"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:context-length')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="numCtx"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:num-ctx')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="numPredict"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:num-predict')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="stream"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:stream')}
+                  </FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="temperature"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:temperature')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="topP"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                  <FormLabel className="col-span-2 text-right">Top P</FormLabel>
+                  <FormControl>
+                    <Input className="col-span-2" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="provider"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
+        </form>
+      </Form>
+    );
+  }
+);
+
 export default {
   Azure: AzureOptionsForm,
   OpenAI: OpenAIOptionsForm,
   Claude: ClaudeOptionsForm,
+  Ollama: OllamaOptionsForm,
 };

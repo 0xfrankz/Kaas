@@ -1,13 +1,16 @@
 use std::pin::Pin;
 
 use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest}, Client};
-use entity::entities::{conversations::{AzureOptions, ClaudeOptions, OpenAIOptions, ProviderOptions}, messages::MessageDTO};
+use entity::entities::{conversations::{AzureOptions, ClaudeOptions, GenericOptions, OllamaOptions, OpenAIOptions}, messages::MessageDTO};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use tokio_stream::{Stream, StreamExt};
 use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
-use super::{config::ClaudeConfig, utils::{message_to_claude_request_message, message_to_openai_request_message, sum_option}};
+use crate::log_utils::warn;
+
+use super::{config::{ClaudeConfig, OllamaConfig}, utils::{message_to_claude_request_message, message_to_ollama_request_message, message_to_openai_request_message, sum_option}};
 
 const CLAUDE_CHAT_PATH: &str = "/messages";
+const OLLAMA_CHAT_PATH: &str = "/api/chat";
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
@@ -259,13 +262,100 @@ pub enum ClaudeChatCompletionStreamResponse {
 pub type ClaudeChatCompletionResponseStream = 
     Pin<Box<dyn Stream<Item = Result<ClaudeChatCompletionStreamResponse, OpenAIError>> + Send>>;
 
-/// Given a list of messages comprising a conversation, the model will return a response.
+#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct OllamaMessageContent {
+    pub content: String,
+    pub images: Option<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(tag = "role")]
+#[serde(rename_all = "lowercase")]
+pub enum OllamaMessage {
+    User(OllamaMessageContent),
+    Assistant(OllamaMessageContent),
+    System(OllamaMessageContent),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct OllamaChatCompletionRequestOptions {
+    /// The size of the context window used to generate the next token. (Default: 2048)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_ctx: Option<u32>,
+
+    /// Maximum number of tokens to predict when generating text. (Default: 128, -1 = infinite generation, -2 = fill context)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_predict: Option<i32>,
+
+    /// The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>,
+
+    /// Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_p: Option<f32>,
+}
+
+impl Into<OllamaChatCompletionRequestOptions> for OllamaOptions {
+    fn into(self) -> OllamaChatCompletionRequestOptions {
+        OllamaChatCompletionRequestOptions {
+            num_ctx: self.num_ctx,
+            num_predict: self.num_predict,
+            temperature: self.temperature,
+            top_p: self.top_p,
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
+pub struct OllamaChatCompletionRequest {
+    /// ID of the model to use.
+    /// Required.
+    pub model: String,
+
+    /// A list of messages comprising the conversation so far.
+    /// Required.
+    pub messages: Vec<OllamaMessage>,
+
+    /// Additional model parameters
+    /// Optional
+    /// Visit [Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md#parameter) page for details
+    pub options: Option<OllamaChatCompletionRequestOptions>,
+
+    /// If false the response will be returned as a single response object, rather than a stream of objects
+    /// Defaults to true
+    pub stream: Option<bool>,
+
+    ///  Controls how long the model will stay loaded into memory following the request (default: 5m)
+    /// Optional
+    pub keep_alive: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
+pub struct OllamaChatCompletionResponse {
+    model: String,
+    created_at: String,
+    message: Option<OllamaMessage>,
+    done: bool,
+    // fields below will only appear when stream is false
+    // or in the last response object when stream is true
+    total_duration: Option<u64>, // All durations are returned in nanoseconds.
+    load_duration: Option<u64>, // All durations are returned in nanoseconds.
+    prompt_eval_count: Option<u32>,
+    prompt_eval_duration: Option<u64>, // All durations are returned in nanoseconds.
+    eval_count: Option<u32>,
+    eval_duration: Option<u64>, // All durations are returned in nanoseconds.
+}
+
+pub type OllamaChatCompletionResponseStream = 
+    Pin<Box<dyn Stream<Item = Result<OllamaChatCompletionResponse, OpenAIError>> + Send>>;
+
+/// Encapsulation of Claude's chat API
 pub struct ClaudeChat<'c> {
     client: &'c Client<ClaudeConfig>,
 }
 
 impl<'c> ClaudeChat<'c> {
-
     pub fn new(client: &'c Client<ClaudeConfig>) -> Self {
         Self { client }
     }
@@ -305,7 +395,56 @@ impl<'c> ClaudeChat<'c> {
             .eventsource()
             .unwrap();
 
-        Ok(stream(event_source).await)
+        Ok(claude_stream(event_source).await)
+    }
+}
+
+/// Encapsulation of Ollama's chat API
+pub struct OllamaChat<'c> {
+    client: &'c Client<OllamaConfig>,
+}
+
+impl<'c> OllamaChat<'c> {
+    pub fn new(client: &'c Client<OllamaConfig>) -> Self {
+        Self { client }
+    }
+
+    /// Creates a model response for the given chat conversation.
+    pub async fn create(
+        &self,
+        request: OllamaChatCompletionRequest
+    ) -> Result<OllamaChatCompletionResponse, OpenAIError> {
+        if request.stream.is_some() && request.stream.unwrap() {
+            return Err(OpenAIError::InvalidArgument(
+                "When stream is true, use OllamaChat::create_stream".into(),
+            ));
+        }
+        self.client.post(OLLAMA_CHAT_PATH, request).await
+    }
+
+    pub async fn create_stream(
+        &self,
+        mut request: OllamaChatCompletionRequest
+    ) -> Result<OllamaChatCompletionResponseStream, OpenAIError> {
+        if request.stream.is_some() && !request.stream.unwrap() {
+            return Err(OpenAIError::InvalidArgument(
+                "When stream is false, use Chat::create".into(),
+            ));
+        }
+
+        request.stream = Some(true);
+
+        let event_source = self
+            .client
+            .http_client()
+            .post(self.client.config().url(OLLAMA_CHAT_PATH))
+            .query(&self.client.config().query())
+            .headers(self.client.config().headers())
+            .json(&request)
+            .eventsource()
+            .unwrap();
+
+        Ok(claude_stream(event_source).await)
     }
 }
 
@@ -313,10 +452,11 @@ pub enum ChatRequest<'c> {
     OpenAIChatRequest(&'c Client<OpenAIConfig>, CreateChatCompletionRequest),
     AzureChatRequest(&'c Client<AzureConfig>, CreateChatCompletionRequest),
     ClaudeChatRequest(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
+    OllamaChatRequest(&'c Client<OllamaConfig>, OllamaChatCompletionRequest),
 }
 
 impl<'c> ChatRequest<'c> {
-    pub fn openai(client: &'c Client<OpenAIConfig>, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
+    pub fn openai(client: &'c Client<OpenAIConfig>, messages: Vec<MessageDTO>, options: GenericOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
         let request: CreateChatCompletionRequest;
         // set messages
         let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
@@ -340,7 +480,7 @@ impl<'c> ChatRequest<'c> {
         Ok(ChatRequest::OpenAIChatRequest(client, request))
     }
 
-    pub fn azure(client: &'c Client<AzureConfig>, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings) -> Result<ChatRequest, String> {
+    pub fn azure(client: &'c Client<AzureConfig>, messages: Vec<MessageDTO>, options: GenericOptions, global_settings: GlobalSettings) -> Result<ChatRequest, String> {
         let request: CreateChatCompletionRequest;
         // set messages
         let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
@@ -363,7 +503,7 @@ impl<'c> ChatRequest<'c> {
         Ok(ChatRequest::AzureChatRequest(client, request))
     }
 
-    pub fn claude(client: &'c Client<ClaudeConfig>, messages: Vec<MessageDTO>, options: ProviderOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
+    pub fn claude(client: &'c Client<ClaudeConfig>, messages: Vec<MessageDTO>, options: GenericOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
         let request: ClaudeChatCompletionRequest;
         // set messages
         let req_messages: Vec<ClaudeMessage> = messages.into_iter().map(message_to_claude_request_message).collect();
@@ -386,6 +526,25 @@ impl<'c> ChatRequest<'c> {
             ..Default::default()
         };
         Ok(ChatRequest::ClaudeChatRequest(client, request))
+    }
+
+    pub fn ollama(client: &'c Client<OllamaConfig>, messages: Vec<MessageDTO>, options: GenericOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
+        let request: OllamaChatCompletionRequest;
+        // set messages
+        let req_messages: Vec<OllamaMessage> = messages.into_iter().map(message_to_ollama_request_message).collect();
+        // set options
+        let options: OllamaOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        let stream = options.stream.clone();
+        request = OllamaChatCompletionRequest {
+            model: model.to_string(),
+            messages: req_messages,
+            options: Some(options.into()),
+            stream,
+            ..Default::default()
+        };
+        Ok(ChatRequest::OllamaChatRequest(client, request))
     }
 
     async fn execute_openai_compatible_request<C: Config>(&self, client: &Client<C>, request: CreateChatCompletionRequest) -> Result<BotReply, String> {
@@ -445,6 +604,7 @@ impl<'c> ChatRequest<'c> {
     }
 
     pub async fn execute(&self) -> Result<BotReply, String> {
+        let log_tag = "ChatRequest::execute";
         match self {
             ChatRequest::OpenAIChatRequest(client, request) => {
                 return self.execute_openai_compatible_request(client, request.clone()).await;
@@ -457,7 +617,7 @@ impl<'c> ChatRequest<'c> {
                     .create(request.clone())
                     .await
                     .map_err(|err| {
-                        log::error!("execute_chat_complete_request: {:?}", err);
+                        log::error!("execute ChatRequest::ClaudeChatRequest: {:?}", err);
                         format!("Failed to get chat completion response: {}", err)
                     })?;
                 // extract data & build reply
@@ -473,19 +633,47 @@ impl<'c> ChatRequest<'c> {
                 };
                 let usage = response.usage;
 
-                let reply = BotReply {
+                Ok(BotReply {
                     message,
                     prompt_token: usage.input_tokens,
                     completion_token: usage.output_tokens,
                     total_token: sum_option(usage.input_tokens, usage.output_tokens),
+                })
+            },
+            ChatRequest::OllamaChatRequest(client, request) => {
+                let response = OllamaChat::new(client)
+                    .create(request.clone())
+                    .await
+                    .map_err(|err| {
+                        log::error!("execute ChatRequest::OllamaChatRequest: {:?}", err);
+                        format!("Failed to get chat completion response: {}", err)
+                    })?;
+                let message: String = match response.message {
+                    Some(response_message) => match response_message{
+                        OllamaMessage::Assistant(content) => content.content,
+                        _ => {
+                            warn(log_tag, "OllamaChat::create returned a non-assistant message");
+                            String::default()
+                        }
+                    },
+                    _ => {
+                        warn(log_tag, "OllamaChat::create returned an empty message");
+                        String::default()
+                    }
                 };
-                
-                return Ok(reply)
+                // extract data & build reply
+                Ok(BotReply {
+                    message,
+                    prompt_token: response.prompt_eval_count,
+                    completion_token: response.eval_count,
+                    total_token: sum_option(response.prompt_eval_count, response.eval_count),
+                })
             }
         }
     }
 
     pub async fn execute_stream(&self) -> Result<BotReplyStream, String> {
+        let log_tag = "ChatRequest::execute_stream";
         match self {
             ChatRequest::OpenAIChatRequest(client, request) => {
                 return self.execute_openai_compatible_stream_request(client, request.clone()).await;
@@ -502,14 +690,14 @@ impl<'c> ChatRequest<'c> {
                     item.map(|resp| {
                         match resp {
                             ClaudeChatCompletionStreamResponse::ContentBlockDelta(content_delta) => {
-                                return BotReply {
+                                BotReply {
                                     message: content_delta.delta.text.clone(),
                                     ..Default::default()
                                 }
                             },
                             ClaudeChatCompletionStreamResponse::MessageDelta(message_delta) => {
                                 // return empty string as message
-                                return BotReply {
+                                BotReply {
                                     prompt_token: message_delta.usage.input_tokens,
                                     completion_token: message_delta.usage.output_tokens,
                                     total_token: sum_option(message_delta.usage.input_tokens, message_delta.usage.output_tokens),
@@ -520,12 +708,43 @@ impl<'c> ChatRequest<'c> {
                     })
                 });
                 Ok(Box::pin(result))
+            },
+            ChatRequest::OllamaChatRequest(client, request) => {
+                let stream: OllamaChatCompletionResponseStream = OllamaChat::new(client)
+                    .create_stream(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                let result = stream.map(|item| {
+                    item.map(|response| {
+                        let message: String = match response.message {
+                            Some(response_message) => match response_message{
+                                OllamaMessage::Assistant(content) => content.content,
+                                _ => {
+                                    warn(log_tag, "OllamaChat::create_stream returned a non-assistant message");
+                                    String::default()
+                                }
+                            },
+                            _ => {
+                                // normally the last message of the stream
+                                String::default()
+                            }
+                        };
+
+                        BotReply {
+                            message,
+                            prompt_token: response.prompt_eval_count,
+                            completion_token: response.eval_count,
+                            total_token: sum_option(response.prompt_eval_count, response.eval_count),
+                        }
+                    })
+                });
+                Ok(Box::pin(result))
             }
         }
     }
 }
 
-pub enum StreamEvent<O: DeserializeOwned + std::marker::Send + 'static> {
+pub enum ClaudeStreamEvent<O: DeserializeOwned + std::marker::Send + 'static> {
     Open,
     Continue,
     Data(O),
@@ -533,7 +752,7 @@ pub enum StreamEvent<O: DeserializeOwned + std::marker::Send + 'static> {
     Error(String)
 }
 
-fn parse_claude_stream_event<O>(event: Event) -> StreamEvent<O>
+fn parse_claude_stream_event<O>(event: Event) -> ClaudeStreamEvent<O>
 where
     O: DeserializeOwned + std::marker::Send + 'static,
 {
@@ -543,33 +762,33 @@ where
                 "content_block_delta" | "message_delta" => {
                     // content block data
                     let response = match serde_json::from_str::<O>(&message.data) {
-                        Err(e) => StreamEvent::Error(e.to_string()),
-                        Ok(output) => StreamEvent::Data(output),
+                        Err(e) => ClaudeStreamEvent::Error(e.to_string()),
+                        Ok(output) => ClaudeStreamEvent::Data(output),
                     };
                     response
                 },
                 "message_stop" => {
-                    StreamEvent::Stop
+                    ClaudeStreamEvent::Stop
                 },
                 "error" => {
                     // eventstream::Event doesn't support error event yet
-                    StreamEvent::Error(message.data)
+                    ClaudeStreamEvent::Error(message.data)
                 },
                 _ => {
                     // Currently, treat all other event types as continue
-                    StreamEvent::Continue
+                    ClaudeStreamEvent::Continue
                 }
             }
         },
         Event::Open => {
-            StreamEvent::Open
+            ClaudeStreamEvent::Open
         }
     }
 }
 
 /// Request Claude which responds with SSE.
 /// [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format)
-pub(crate) async fn stream<O>(
+pub(crate) async fn claude_stream<O>(
     mut event_source: EventSource,
 ) -> Pin<Box<dyn Stream<Item = Result<O, OpenAIError>> + Send>>
 where
@@ -579,6 +798,7 @@ where
 
     tokio::spawn(async move {
         while let Some(ev) = event_source.next().await {
+            log::info!("SSE: {:?}", ev);
             match ev {
                 Err(e) => {
                     if let Err(_e) = tx.send(Err(OpenAIError::StreamError(e.to_string()))) {
@@ -588,25 +808,25 @@ where
                 }
                 Ok(event) => {
                     match parse_claude_stream_event(event) {
-                        StreamEvent::Open => {
+                        ClaudeStreamEvent::Open => {
                             log::info!("SSE: OPEN");
                             continue
                         },
-                        StreamEvent::Continue => {
+                        ClaudeStreamEvent::Continue => {
                             log::info!("SSE: CONTINUE");
                             continue
                         },
-                        StreamEvent::Data(data) => {
+                        ClaudeStreamEvent::Data(data) => {
                             if let Err(_e) = tx.send(Ok(data)) {
                                 // rx dropped
                                 break;
                             }
                         },
-                        StreamEvent::Stop => {
+                        ClaudeStreamEvent::Stop => {
                             log::info!("SSE: STOP");
                             break
                         },
-                        StreamEvent::Error(err) => {
+                        ClaudeStreamEvent::Error(err) => {
                             log::info!("SSE: ERROR: {}", err);
                             if let Err(_e) = tx.send(Err(OpenAIError::StreamError(err))) {
                                 // rx dropped

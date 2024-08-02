@@ -1,5 +1,5 @@
 
-use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, ProviderOptions, UpdateConversationDTO};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, GenericOptions, UpdateConversationDTO};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
 use entity::entities::models::{self, Model, NewModel, GenericConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
@@ -318,7 +318,7 @@ impl Repository {
     /**
      * Get model provider and requeset options of a conversation
      */
-    pub async fn get_conversation_options(&self, conversation_id: i32) -> Result<ProviderOptions, String> {
+    pub async fn get_conversation_options(&self, conversation_id: i32) -> Result<GenericOptions, String> {
         let result = conversations::Entity::find_by_id(conversation_id)
                 .select_only()
                 .column(conversations::Column::Options)
@@ -327,7 +327,7 @@ impl Repository {
                     conversations::Relation::Models.def()
                 )
                 .column(models::Column::Provider)
-                .into_model::<ProviderOptions>()
+                .into_model::<GenericOptions>()
                 .one(&self.connection)
                 .await
                 .map_err(|err| {
@@ -373,7 +373,7 @@ impl Repository {
     /**
      * Update options of a conversation
      */
-    pub async fn update_conversation_options(&self, conversation_id: i32, options: String) -> Result<ProviderOptions, String> {
+    pub async fn update_conversation_options(&self, conversation_id: i32, options: String) -> Result<GenericOptions, String> {
         // Get conversation model
         let conversation = conversations::Entity::find_by_id(conversation_id)
                 .one(&self.connection)
@@ -433,7 +433,7 @@ impl Repository {
                 error!("{}", err);
                 format!("Failed to update options of conversation with id = {}", conversation_id)
             })?;
-        Ok(ProviderOptions { provider, options: options_str })
+        Ok(GenericOptions { provider, options: options_str })
     }
 
     /**

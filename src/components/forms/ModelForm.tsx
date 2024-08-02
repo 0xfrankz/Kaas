@@ -468,7 +468,7 @@ const GenericOllamaModelForm = ({
   const endpoint = useWatch({ name: 'endpoint', control: form.control });
   const config: RawOllamaConfig = {
     provider: PROVIDER_OLLAMA,
-    apiBase: endpoint,
+    endpoint,
   };
   return (
     <Form {...form}>

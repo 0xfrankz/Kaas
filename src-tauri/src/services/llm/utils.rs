@@ -2,12 +2,12 @@ use async_openai::{
     error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, ImageDetail, ImageUrlArgs}
 };
 use entity::entities::{
-    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, ProviderOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
+    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, GenericOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
 };
 
-use crate::services::cache;
+use crate::services::{cache, llm::chat::OllamaMessageContent};
 
-use super::chat::{ClaudeAssistantMessage, ClaudeImageSource, ClaudeMessage, ClaudeMessageContentPart, ClaudeMessageContentPartImage, ClaudeMessageContentPartText, ClaudeRequestMessageContent, ClaudeUserMessage};
+use super::chat::{ClaudeAssistantMessage, ClaudeImageSource, ClaudeMessage, ClaudeMessageContentPart, ClaudeMessageContentPartImage, ClaudeMessageContentPartText, ClaudeRequestMessageContent, ClaudeUserMessage, OllamaMessage};
 
 pub fn sum_option(a: Option<u32>, b: Option<u32>) -> Option<u32> {
     match (a, b) {
@@ -105,7 +105,39 @@ pub fn message_to_claude_request_message(message: MessageDTO) -> ClaudeMessage {
     }
 }
 
-pub fn is_stream_enabled(options: &ProviderOptions) -> bool {
+pub fn message_to_ollama_request_message(message: MessageDTO) -> OllamaMessage {
+    let mut content: OllamaMessageContent = OllamaMessageContent::default();
+
+    message
+        .content
+        .into_iter()
+        .for_each(|c| {
+            match c.r#type {
+                ContentType::Image => {
+                    if content.images.is_none() {
+                        content.images = Some(Vec::new());
+                    }
+                    content.images.as_mut().unwrap().push(cache::read_as_data_url(c.data.as_str(), c.mimetype.as_deref()).unwrap_or(String::default()));
+                },
+                ContentType::Text => {
+                    content.content = c.data;
+                }
+            }
+        });
+    match message.role.into() {
+        Roles::User => {
+            return OllamaMessage::User(content);
+        },
+        Roles::Bot => {
+            return OllamaMessage::Assistant(content);
+        },
+        Roles::System => {
+            return OllamaMessage::System(content);
+        },
+    }
+}
+
+pub fn is_stream_enabled(options: &GenericOptions) -> bool {
     match options.provider.as_str().into() {
         Providers::Azure => {
             if let Ok(azure_options) = serde_json::from_str::<AzureOptions>(&options.options) {

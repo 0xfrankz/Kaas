@@ -20,6 +20,7 @@ import type {
   newOllamaModelFormSchema,
   newOpenAIModelFormSchema,
   newPromptFormSchema,
+  ollamaOptionsFormSchema,
   openAIOptionsFormSchema,
   proxySchema,
   usePromptFormSchema,
@@ -67,13 +68,13 @@ export type RawOpenAIConfig = {
   provider: typeof PROVIDER_OPENAI;
   apiKey: string;
   model?: string;
-  apiBase?: string;
+  endpoint?: string;
   orgId?: string;
 };
 
 export type RawOllamaConfig = {
   provider: typeof PROVIDER_OLLAMA;
-  apiBase: string;
+  endpoint: string;
   model?: string;
 };
 
@@ -159,7 +160,12 @@ export type BotReply = {
 export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
 export type ClaudeOptions = z.infer<typeof claudeOptionsFormSchema>;
-export type Options = AzureOptions | OpenAIOptions | ClaudeOptions;
+export type OllamaOptions = z.infer<typeof ollamaOptionsFormSchema>;
+export type Options =
+  | AzureOptions
+  | OpenAIOptions
+  | ClaudeOptions
+  | OllamaOptions;
 export type GenericOptions = {
   provider: AllProviders;
   options: string;

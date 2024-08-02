@@ -8,7 +8,17 @@
     "label": {
         "enter-to-send": "Press Enter to send",
         "shift-enter-to-send": "Press Shift+Enter to send",
-        "quick-send": "Quick Send"
+        "quick-send": "Quick Send",
+        "context-length": "Context Length",
+        "num-ctx": "Number of input tokens",
+        "num-predict": "Number of output tokens",
+        "stream": "Stream",
+        "temperature" : "Temperature",
+        "top-p": "Top P",
+        "frequency-penalty": "Frequency Penalty",
+        "presence-penalty": "Presence Penalty",
+        "max-tokens": "Max tokens",
+        "user": "User"
     },
     "message": {
         "no-model": "You need to choose a model first",

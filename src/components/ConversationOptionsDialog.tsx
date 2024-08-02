@@ -3,7 +3,11 @@ import { Settings2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { PROVIDER_AZURE, PROVIDER_CLAUDE } from '@/lib/constants';
+import {
+  PROVIDER_AZURE,
+  PROVIDER_CLAUDE,
+  PROVIDER_OLLAMA,
+} from '@/lib/constants';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
@@ -11,6 +15,7 @@ import type {
   AzureOptions,
   ClaudeOptions,
   ConversationDetails,
+  OllamaOptions,
   OpenAIOptions,
   Options,
 } from '@/lib/types';
@@ -100,6 +105,15 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
             ref={formRef}
             onSubmit={onFormSubmit}
             defaultValues={options as ClaudeOptions}
+          />
+        );
+      case PROVIDER_OLLAMA:
+        return (
+          <OptionsForm.Ollama
+            id="optionsForm"
+            ref={formRef}
+            onSubmit={onFormSubmit}
+            defaultValues={options as OllamaOptions}
           />
         );
       default:

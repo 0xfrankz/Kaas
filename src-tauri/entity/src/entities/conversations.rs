@@ -103,7 +103,7 @@ impl From<UpdateConversationDTO> for ActiveModel {
 
 #[derive(Clone, Debug, FromQueryResult, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProviderOptions {
+pub struct GenericOptions {
     pub provider: String,
     pub options: String
 }
@@ -231,4 +231,30 @@ impl Default for ClaudeOptions{
             user: None,
         }
     }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OllamaOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context_length: Option<u16>,
+    
+    /// The size of the context window used to generate the next token. (Default: 2048)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_ctx: Option<u32>,
+
+    /// Maximum number of tokens to predict when generating text. (Default: 128, -1 = infinite generation, -2 = fill context)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_predict: Option<i32>,
+
+    /// The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>,
+
+    /// Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_p: Option<f32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
 }

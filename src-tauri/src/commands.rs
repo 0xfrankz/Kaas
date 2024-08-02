@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use entity::entities::{
     contents::{ContentType, Model as Content}, 
-    conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, ProviderOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
+    conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, GenericOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::MessageDTO,
     models::{Model, NewModel, GenericConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
@@ -172,7 +172,7 @@ pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repositor
 }
 
 #[tauri::command]
-pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
+pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<GenericOptions> {
     let now = Instant::now();
     let result = repo
         .get_conversation_options(conversation_id)
@@ -184,7 +184,7 @@ pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> C
 }
 
 #[tauri::command]
-pub async fn update_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<ProviderOptions> {
+pub async fn update_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<GenericOptions> {
     let now = Instant::now();
     let result = repo
         .update_conversation_options(conversation_id, options)
@@ -447,7 +447,7 @@ pub async fn get_sys_info() -> CommandResult<serde_json::Value> {
 /***** Functions for calling model API START *****/
 
 /// Calling chat bot in normal mode
-async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
+async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: GenericOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
@@ -496,7 +496,7 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
 }
 
 /// Calling chat bot in streaming mode
-async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: ProviderOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
+async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: GenericOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
     let log_tag = "call_bot_stream";
     let window_clone = window.clone();
     let window_clone_2 = window.clone();

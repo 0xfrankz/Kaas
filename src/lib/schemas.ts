@@ -86,6 +86,19 @@ export const claudeOptionsFormSchema = commonOptionsFormSchema
     provider: z.literal(PROVIDER_CLAUDE),
   });
 
+export const ollamaOptionsFormSchema = commonOptionsFormSchema
+  .omit({
+    frequencyPenalty: true,
+    maxTokens: true,
+    presencePenalty: true,
+    user: true,
+  })
+  .extend({
+    provider: z.literal(PROVIDER_OLLAMA),
+    numCtx: z.coerce.number().optional(),
+    numPredict: z.coerce.number().optional(),
+  });
+
 export const optionsFormSchema = z.discriminatedUnion('provider', [
   openAIOptionsFormSchema,
   azureOptionsFormSchema,
