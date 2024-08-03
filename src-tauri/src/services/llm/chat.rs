@@ -434,17 +434,29 @@ impl<'c> OllamaChat<'c> {
 
         request.stream = Some(true);
 
-        let event_source = self
+        log::info!("Creating stream: request = {:?}", request);
+
+        let res = self
             .client
             .http_client()
             .post(self.client.config().url(OLLAMA_CHAT_PATH))
             .query(&self.client.config().query())
             .headers(self.client.config().headers())
             .json(&request)
-            .eventsource()
-            .unwrap();
+            .send()
+            .await
+            .map_err(|e| OpenAIError::from(e))?;
 
-        Ok(claude_stream(event_source).await)
+        let stream = res.bytes_stream().map(|res| match res {
+            Ok(bytes) => {
+                let resp = serde_json::from_slice::<OllamaChatCompletionResponse>(&bytes)
+                    .map_err(|e| OpenAIError::StreamError(format!("Failed to deserialize response: {}", e)))?;
+                Ok(resp)
+            }
+            Err(e) => Err(OpenAIError::StreamError(format!("Failed to read from stream: {}", e))),
+        });
+
+        Ok(Box::pin(stream))
     }
 }
 
@@ -834,27 +846,39 @@ where
                             }
                         }
                     }
-                    // Event::Message(message) => {
-                    //     // if message.data == "[DONE]" {
-                    //     //     break;
-                    //     // }
+                },
+            }
+        }
+        log::info!("SSE: About to close");
+        event_source.close();
+    });
 
-                    //     // let response = match serde_json::from_str::<O>(&message.data) {
-                    //     //     Err(e) => Err(map_deserialization_error(e, message.data.as_bytes())),
-                    //     //     Ok(output) => Ok(output),
-                    //     // };
+    Box::pin(tokio_stream::wrappers::UnboundedReceiverStream::new(rx))
+}
 
-                    //     // if let Err(_e) = tx.send(response) {
-                    //     //     // rx dropped
-                    //     //     break;
-                    //     // }
+/// Request Ollama which responds with SSE.
+/// [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format)
+pub(crate) async fn ollama_stream<O>(
+    mut event_source: EventSource,
+) -> Pin<Box<dyn Stream<Item = Result<O, OpenAIError>> + Send>>
+where
+    O: DeserializeOwned + std::marker::Send + 'static,
+{
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
 
-                    //     log::info!("SSE: {:?}", message);
-                    // }
-                    // Event::Open => {
-                    //     log::info!("SSE: OPEN");
-                    //     continue
-                    // },
+    tokio::spawn(async move {
+        while let Some(ev) = event_source.next().await {
+            log::info!("ollama_stream SSE: {:?}", ev);
+            match ev {
+                Err(e) => {
+                    if let Err(_e) = tx.send(Err(OpenAIError::StreamError(e.to_string()))) {
+                        // rx dropped
+                        break;
+                    }
+                }
+                Ok(event) => {
+                    log::info!("ollama_stream SSE: {:?}", event);
+                    continue
                 },
             }
         }
