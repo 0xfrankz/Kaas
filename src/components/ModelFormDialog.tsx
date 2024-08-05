@@ -2,6 +2,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
+  PROVIDER_AZURE,
   PROVIDER_CLAUDE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
@@ -119,9 +120,25 @@ const EditModelFormDialog = forwardRef<
   const renderForm = () => {
     if (!model) return null;
     switch (model.provider) {
-      case PROVIDER_OPENAI:
+      case PROVIDER_AZURE:
         return (
-          <ModelForm.OpenAI.Edit
+          <ModelForm.Azure.Edit
+            id="modelForm"
+            model={model}
+            onSubmit={onFormSubmit}
+          />
+        );
+      case PROVIDER_CLAUDE:
+        return (
+          <ModelForm.Claude.Edit
+            id="modelForm"
+            model={model}
+            onSubmit={onFormSubmit}
+          />
+        );
+      case PROVIDER_OLLAMA:
+        return (
+          <ModelForm.Ollama.Edit
             id="modelForm"
             model={model}
             onSubmit={onFormSubmit}
@@ -129,7 +146,7 @@ const EditModelFormDialog = forwardRef<
         );
       default:
         return (
-          <ModelForm.Azure.Edit
+          <ModelForm.OpenAI.Edit
             id="modelForm"
             model={model}
             onSubmit={onFormSubmit}

@@ -13,6 +13,8 @@ import {
 } from '@/lib/constants';
 import {
   editAzureModelFormSchema,
+  editClaudeModelFormSchema,
+  editOllamaModelFormSchema,
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newClaudeModelFormSchema,
@@ -21,6 +23,7 @@ import {
 } from '@/lib/schemas';
 import type {
   AzureModel,
+  ClaudeModel,
   Model,
   ModelFormHandler,
   NewAzureModel,
@@ -28,6 +31,7 @@ import type {
   NewModel,
   NewOllamaModel,
   NewOpenAIModel,
+  OllamaModel,
   OpenAIModel,
   RawOllamaConfig,
   RawOpenAIConfig,
@@ -712,6 +716,29 @@ const NewClaudeModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   }
 );
 
+const EditClaudeModelForm = forwardRef<ModelFormHandler, EditFormProps>(
+  ({ model, onSubmit, ...props }, ref) => {
+    const form = useForm<ClaudeModel>({
+      resolver: zodResolver(editClaudeModelFormSchema),
+      defaultValues: model as ClaudeModel,
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericClaudeModelForm
+        form={form as UseFormReturn<NewModel | Model, any, undefined>}
+        onSubmit={onSubmit as (model: NewModel | Model) => void}
+        {...props}
+      />
+    );
+  }
+);
+
 const NewOllamaModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   ({ onSubmit, ...props }, ref) => {
     const form = useForm<NewOllamaModel>({
@@ -740,6 +767,29 @@ const NewOllamaModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   }
 );
 
+const EditOllamaModelForm = forwardRef<ModelFormHandler, EditFormProps>(
+  ({ model, onSubmit, ...props }, ref) => {
+    const form = useForm<OllamaModel>({
+      resolver: zodResolver(editOllamaModelFormSchema),
+      defaultValues: model as OllamaModel,
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOllamaModelForm
+        form={form as UseFormReturn<NewModel | Model, any, undefined>}
+        onSubmit={onSubmit as (model: NewModel | Model) => void}
+        {...props}
+      />
+    );
+  }
+);
+
 export default {
   Azure: {
     New: NewAzureModelForm,
@@ -751,8 +801,10 @@ export default {
   },
   Claude: {
     New: NewClaudeModelForm,
+    Edit: EditClaudeModelForm,
   },
   Ollama: {
     New: NewOllamaModelForm,
+    Edit: EditOllamaModelForm,
   },
 };
