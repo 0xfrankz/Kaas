@@ -86,19 +86,6 @@ pub struct GenericConfig {
     pub config: String
 }
 
-pub trait Config {}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AzureConfig {
-    pub endpoint: String,
-    pub api_key: String,
-    pub deployment_name: String,
-    pub api_version: String,
-}
-
-impl Config for AzureConfig {}
-
 #[derive(DeriveIntoActiveModel, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct NewModel {
