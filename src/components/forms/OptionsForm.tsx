@@ -48,32 +48,31 @@ type FormProps<T extends Options> = Omit<
 
 type FormFieldProps<T extends Options> = {
   control: Control<T>;
+  name: FieldPath<T>;
+  label: string;
+  placeholder?: string;
 };
 
-// The ContextLengthField component
-const ContextLengthField = <T extends Options>({
+// OptionsForm's input component
+const InputField = <T extends Options>({
   control,
+  name,
+  label,
+  placeholder,
 }: FormFieldProps<T>) => {
-  const ctxLength = useAppStateStore(
-    (state) =>
-      state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
-  );
-  const { t } = useTranslation();
   return (
     <FormField
       control={control}
-      name={'contextLength' as FieldPath<T>}
+      name={name}
       render={({ field }) => (
         <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">
-            {t('page-conversation:label:context-length')}
-          </FormLabel>
+          <FormLabel className="col-span-2 text-right">{label}</FormLabel>
           <FormControl>
             <Input
               className="col-span-2"
               {...field}
               value={(field.value ?? '') as string}
-              placeholder={ctxLength}
+              placeholder={placeholder}
             />
           </FormControl>
           <div className="col-span-4">
@@ -85,85 +84,20 @@ const ContextLengthField = <T extends Options>({
   );
 };
 
-// The FrequencyPenaltyField component
-const FrequencyPenaltyField = <T extends Options>({
+// OptionsForm's hidden input component
+const HiddenInputField = <T extends Options>({
   control,
-}: FormFieldProps<T>) => {
-  const { t } = useTranslation();
+  name,
+}: Omit<FormFieldProps<T>, 'label' | 'placeholder'>) => {
   return (
     <FormField
       control={control}
-      name={'frequencyPenalty' as FieldPath<T>}
+      name={name}
       render={({ field }) => (
-        <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">
-            {t('page-conversation:label:frequency-penalty')}
-          </FormLabel>
+        <FormItem>
           <FormControl>
             <Input
-              className="col-span-2"
-              {...field}
-              value={(field.value ?? '') as string}
-            />
-          </FormControl>
-          <div className="col-span-4">
-            <FormMessage />
-          </div>
-        </FormItem>
-      )}
-    />
-  );
-};
-
-// The MaxTokensField component
-const MaxTokensField = <T extends Options>({ control }: FormFieldProps<T>) => {
-  const maxTokens = useAppStateStore(
-    (state) => state.settings[SETTING_MODELS_MAX_TOKENS] ?? DEFAULT_MAX_TOKENS
-  );
-  const { t } = useTranslation();
-  return (
-    <FormField
-      control={control}
-      name={'maxTokens' as FieldPath<T>}
-      render={({ field }) => (
-        <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">
-            {t('page-conversation:label:max-tokens')}
-          </FormLabel>
-          <FormControl>
-            <Input
-              className="col-span-2"
-              {...field}
-              value={(field.value ?? '') as string}
-              placeholder={maxTokens}
-            />
-          </FormControl>
-          <div className="col-span-4">
-            <FormMessage />
-          </div>
-        </FormItem>
-      )}
-    />
-  );
-};
-
-// The PresencePenaltyField component
-const PresencePenaltyField = <T extends Options>({
-  control,
-}: FormFieldProps<T>) => {
-  const { t } = useTranslation();
-  return (
-    <FormField
-      control={control}
-      name={'presencePenalty' as FieldPath<T>}
-      render={({ field }) => (
-        <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">
-            {t('page-conversation:label:presence-penalty')}
-          </FormLabel>
-          <FormControl>
-            <Input
-              className="col-span-2"
+              type="hidden"
               {...field}
               value={(field.value ?? '') as string}
             />
@@ -178,17 +112,18 @@ const PresencePenaltyField = <T extends Options>({
 };
 
 // The StreamField component
-const StreamField = <T extends Options>({ control }: FormFieldProps<T>) => {
-  const { t } = useTranslation();
+const StreamField = <T extends Options>({
+  control,
+  name,
+  label,
+}: Omit<FormFieldProps<T>, 'placeholder'>) => {
   return (
     <FormField
       control={control}
-      name={'stream' as FieldPath<T>}
+      name={name}
       render={({ field }) => (
         <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">
-            {t('page-conversation:label:stream')}
-          </FormLabel>
+          <FormLabel className="col-span-2 text-right">{label}</FormLabel>
           <FormControl>
             <Switch
               checked={field.value as boolean}
@@ -216,6 +151,10 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
         ...defaultValues,
       },
     });
+    const [ctxLength, maxTokens] = useAppStateStore((state) => [
+      state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH,
+      state.settings[SETTING_MODELS_MAX_TOKENS] ?? DEFAULT_MAX_TOKENS,
+    ]);
     const { t } = useTranslation();
 
     // Hooks
@@ -229,76 +168,49 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
           <div className="grid grid-cols-2 gap-4 py-8">
-            <ContextLengthField control={form.control} />
-            <FrequencyPenaltyField control={form.control} />
-            <MaxTokensField control={form.control} />
-            <PresencePenaltyField control={form.control} />
-            <StreamField control={form.control} />
-            <FormField
+            <InputField
+              control={form.control}
+              name="contextLength"
+              label={t('page-conversation:label:context-length')}
+              placeholder={ctxLength}
+            />
+            <InputField
+              control={form.control}
+              name="frequencyPenalty"
+              label={t('page-conversation:label:frequency-penalty')}
+            />
+            <InputField
+              control={form.control}
+              name="maxTokens"
+              label={t('page-conversation:label:max-tokens')}
+              placeholder={maxTokens}
+            />
+            <InputField
+              control={form.control}
+              name="presencePenalty"
+              label={t('page-conversation:label:presence-penalty')}
+            />
+            <StreamField
+              control={form.control}
+              name="stream"
+              label={t('page-conversation:label:stream')}
+            />
+            <InputField
               control={form.control}
               name="temperature"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:temperature')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:temperature')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="topP"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:top-p')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:top-p')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="user"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:user')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:user')}
             />
-            <FormField
-              control={form.control}
-              name="provider"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-3 col-start-2">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+            <HiddenInputField control={form.control} name="provider" />
           </div>
         </form>
       </Form>
@@ -317,6 +229,10 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
         ...defaultValues,
       },
     });
+    const [ctxLength, maxTokens] = useAppStateStore((state) => [
+      state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH,
+      state.settings[SETTING_MODELS_MAX_TOKENS] ?? DEFAULT_MAX_TOKENS,
+    ]);
     const { t } = useTranslation();
 
     // Hooks
@@ -330,80 +246,49 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
           <div className="grid grid-cols-2 gap-4 py-8">
-            <ContextLengthField control={form.control} />
-            <FrequencyPenaltyField control={form.control} />
-            <MaxTokensField control={form.control} />
-            <PresencePenaltyField control={form.control} />
-            <StreamField control={form.control} />
-            <FormField
+            <InputField
+              control={form.control}
+              name="contextLength"
+              label={t('page-conversation:label:context-length')}
+              placeholder={ctxLength}
+            />
+            <InputField
+              control={form.control}
+              name="frequencyPenalty"
+              label={t('page-conversation:label:frequency-penalty')}
+            />
+            <InputField
+              control={form.control}
+              name="maxTokens"
+              label={t('page-conversation:label:max-tokens')}
+              placeholder={maxTokens}
+            />
+            <InputField
+              control={form.control}
+              name="presencePenalty"
+              label={t('page-conversation:label:presence-penalty')}
+            />
+            <StreamField
+              control={form.control}
+              name="stream"
+              label={t('page-conversation:label:stream')}
+            />
+            <InputField
               control={form.control}
               name="temperature"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:temperature')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:temperature')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="topP"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:top-p')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:top-p')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="user"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:user')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      className="col-span-2"
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:user')}
             />
-            <FormField
-              control={form.control}
-              name="provider"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+            <HiddenInputField control={form.control} name="provider" />
           </div>
         </form>
       </Form>
@@ -422,11 +307,11 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
         ...defaultValues,
       },
     });
+    const [ctxLength, maxTokens] = useAppStateStore((state) => [
+      state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH,
+      state.settings[SETTING_MODELS_MAX_TOKENS] ?? DEFAULT_MAX_TOKENS,
+    ]);
     const { t } = useTranslation();
-    const ctxLength = useAppStateStore(
-      (state) =>
-        state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
-    );
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -439,78 +324,39 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
           <div className="grid grid-cols-2 gap-4 py-8">
-            <ContextLengthField control={form.control} />
-            <MaxTokensField control={form.control} />
-            <StreamField control={form.control} />
-            <FormField
+            <InputField
+              control={form.control}
+              name="contextLength"
+              label={t('page-conversation:label:context-length')}
+              placeholder={ctxLength}
+            />
+            <InputField
+              control={form.control}
+              name="maxTokens"
+              label={t('page-conversation:label:max-tokens')}
+              placeholder={maxTokens}
+            />
+            <StreamField
+              control={form.control}
+              name="stream"
+              label={t('page-conversation:label:stream')}
+            />
+            <InputField
               control={form.control}
               name="temperature"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:temperature')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:temperature')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="topP"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:top-p')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:top-p')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="user"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:user')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      className="col-span-2"
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:user')}
             />
-            <FormField
-              control={form.control}
-              name="provider"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+            <HiddenInputField control={form.control} name="provider" />
           </div>
         </form>
       </Form>
@@ -527,11 +373,11 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
       resolver: zodResolver(ollamaOptionsFormSchema),
       defaultValues,
     });
-    const { t } = useTranslation();
     const ctxLength = useAppStateStore(
       (state) =>
         state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
     );
+    const { t } = useTranslation();
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -544,88 +390,38 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
           <div className="grid grid-cols-2 gap-4 py-8">
-            <ContextLengthField control={form.control} />
-            <FormField
+            <InputField
+              control={form.control}
+              name="contextLength"
+              label={t('page-conversation:label:context-length')}
+              placeholder={ctxLength}
+            />
+            <InputField
               control={form.control}
               name="numCtx"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:num-ctx')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:num-ctx')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="numPredict"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:num-predict')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:num-predict')}
             />
-            <StreamField control={form.control} />
-            <FormField
+            <StreamField
+              control={form.control}
+              name="stream"
+              label={t('page-conversation:label:stream')}
+            />
+            <InputField
               control={form.control}
               name="temperature"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">
-                    {t('page-conversation:label:temperature')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:temperature')}
             />
-            <FormField
+            <InputField
               control={form.control}
               name="topP"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">Top P</FormLabel>
-                  <FormControl>
-                    <Input className="col-span-2" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
+              label={t('page-conversation:label:top-p')}
             />
-            <FormField
-              control={form.control}
-              name="provider"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+            <HiddenInputField control={form.control} name="provider" />
           </div>
         </form>
       </Form>
