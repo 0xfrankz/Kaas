@@ -76,7 +76,7 @@ export const azureOptionsFormSchema = commonOptionsFormSchema.extend({
 });
 
 export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
-  provider: z.literal(PROVIDER_OPENAI),
+  provider: z.enum([PROVIDER_OPENAI, PROVIDER_CUSTOM] as const),
 });
 
 export const claudeOptionsFormSchema = commonOptionsFormSchema

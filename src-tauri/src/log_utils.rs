@@ -1,19 +1,19 @@
-pub fn trace(tag: &str, message: &str) {
-    log::trace!("[{}]: {}", tag, message);
+pub fn trace<S: Into<String>>(tag: &str, message: S) {
+    log::trace!("[{}]: {}", tag, message.into());
 }
 
-pub fn debug(tag: &str, message: &str) {
-    log::debug!("[{}]: {}", tag, message);
+pub fn debug<S: Into<String>>(tag: &str, message: S) {
+    log::debug!("[{}]: {}", tag, message.into());
 }
 
-pub fn info(tag: &str, message: &str) {
-    log::info!("[{}]: {}", tag, message);
+pub fn info<S: Into<String>>(tag: &str, message: S) {
+    log::info!("[{}]: {}", tag, message.into());
 }
 
-pub fn warn(tag: &str, message: &str) {
-    log::warn!("[{}]: {}", tag, message);
+pub fn warn<S: Into<String>>(tag: &str, message: S) {
+    log::warn!("[{}]: {}", tag, message.into());
 }
 
-pub fn error(tag: &str, message: &str) {
-    log::error!("[{}]: {}", tag, message);
+pub fn error<S: Into<String>>(tag: &str, message: S) {
+    log::error!("[{}]: {}", tag, message.into());
 }

@@ -5,7 +5,7 @@ use entity::entities::{
     contents::ContentType, conversations::{AzureOptions, OpenAIOptions, GenericOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
 };
 
-use crate::services::{cache, llm::chat::OllamaMessageContent};
+use crate::{log_utils::warn, services::{cache, llm::chat::OllamaMessageContent}};
 
 use super::chat::{ClaudeAssistantMessage, ClaudeImageSource, ClaudeMessage, ClaudeMessageContentPart, ClaudeMessageContentPartImage, ClaudeMessageContentPartText, ClaudeRequestMessageContent, ClaudeUserMessage, OllamaMessage};
 
@@ -19,9 +19,11 @@ pub fn sum_option(a: Option<u32>, b: Option<u32>) -> Option<u32> {
 }
 
 pub fn message_to_openai_request_message(message: MessageDTO) -> ChatCompletionRequestMessage {
+    let log_tag = "utils::message_to_openai_request_message";
     match message.role.into() {
         Roles::User => {
             let content_parts = message
+                .clone()
                 .content
                 .into_iter()
                 .map(|item| {
@@ -44,6 +46,22 @@ pub fn message_to_openai_request_message(message: MessageDTO) -> ChatCompletionR
                 })
                 .collect::<Result<Vec<ChatCompletionRequestMessageContentPart>, OpenAIError>>()
                 .expect("Failed to build user message content");
+            if content_parts.len() == 1 {
+                if let Some(part) = content_parts.first() {
+                    match part {
+                        ChatCompletionRequestMessageContentPart::Text(text) => {
+                            return ChatCompletionRequestMessage::User(
+                                ChatCompletionRequestUserMessage {
+                                    content: ChatCompletionRequestUserMessageContent::Text(text.text.to_string()),
+                                    name: None
+                                }
+                            );
+                        },
+                        _ => {warn(log_tag, format!("User message contains only image content: {:?}", message));}
+                    }
+                }
+            }
+            
             return ChatCompletionRequestMessage::User(
                 ChatCompletionRequestUserMessage {
                     content: ChatCompletionRequestUserMessageContent::Array(content_parts),

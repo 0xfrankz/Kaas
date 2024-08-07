@@ -117,6 +117,7 @@ export function ConversationOptionsDialog({ className, conversation }: Props) {
           />
         );
       default:
+        // handle both OpenAI and CUSTOM models here
         return (
           <OptionsForm.OpenAI
             id="optionsForm"
