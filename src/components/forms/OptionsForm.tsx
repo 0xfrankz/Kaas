@@ -5,11 +5,16 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import {
+  DEFAULT_CONTEXT_LENGTH,
+  SETTING_MODELS_CONTEXT_LENGTH,
+} from '@/lib/constants';
+import {
   azureOptionsFormSchema,
   claudeOptionsFormSchema,
   ollamaOptionsFormSchema,
   openAIOptionsFormSchema,
 } from '@/lib/schemas';
+import { useAppStateStore } from '@/lib/store';
 import type {
   AzureOptions,
   ClaudeOptions,
@@ -51,6 +56,10 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
       },
     });
     const { t } = useTranslation();
+    const ctxLength = useAppStateStore(
+      (state) =>
+        state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
+    );
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -72,7 +81,12 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
                     {t('page-conversation:label:context-length')}
                   </FormLabel>
                   <FormControl>
-                    <Input className="col-span-2" {...field} />
+                    <Input
+                      className="col-span-2"
+                      {...field}
+                      value={field.value ?? ''}
+                      placeholder={ctxLength}
+                    />
                   </FormControl>
                   <div className="col-span-4">
                     <FormMessage />
@@ -236,6 +250,10 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
       },
     });
     const { t } = useTranslation();
+    const ctxLength = useAppStateStore(
+      (state) =>
+        state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
+    );
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -257,7 +275,12 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
                     {t('page-conversation:label:context-length')}
                   </FormLabel>
                   <FormControl>
-                    <Input className="col-span-2" {...field} />
+                    <Input
+                      className="col-span-2"
+                      {...field}
+                      value={field.value ?? ''}
+                      placeholder={ctxLength}
+                    />
                   </FormControl>
                   <div className="col-span-4">
                     <FormMessage />
@@ -416,6 +439,11 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
         ...defaultValues,
       },
     });
+    const { t } = useTranslation();
+    const ctxLength = useAppStateStore(
+      (state) =>
+        state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
+    );
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -434,10 +462,15 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Context Length
+                    {t('page-conversation:label:context-length')}
                   </FormLabel>
                   <FormControl>
-                    <Input className="col-span-2" {...field} />
+                    <Input
+                      className="col-span-2"
+                      {...field}
+                      value={field.value ?? ''}
+                      placeholder={ctxLength}
+                    />
                   </FormControl>
                   <div className="col-span-4">
                     <FormMessage />
@@ -451,7 +484,7 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Max Tokens
+                    {t('page-conversation:label:max-tokens')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -468,7 +501,7 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Stream
+                    {t('page-conversation:label:stream')}
                   </FormLabel>
                   <FormControl>
                     <Switch
@@ -488,7 +521,7 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                   <FormLabel className="col-span-2 text-right">
-                    Temperature
+                    {t('page-conversation:label:temperature')}
                   </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
@@ -504,7 +537,9 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               name="topP"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">Top P</FormLabel>
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:top-p')}
+                  </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
@@ -519,7 +554,9 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               name="user"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-2 text-right">User</FormLabel>
+                  <FormLabel className="col-span-2 text-right">
+                    {t('page-conversation:label:user')}
+                  </FormLabel>
                   <FormControl>
                     <Input className="col-span-2" {...field} />
                   </FormControl>
@@ -560,6 +597,10 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
       defaultValues,
     });
     const { t } = useTranslation();
+    const ctxLength = useAppStateStore(
+      (state) =>
+        state.settings[SETTING_MODELS_CONTEXT_LENGTH] ?? DEFAULT_CONTEXT_LENGTH
+    );
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -581,7 +622,12 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
                     {t('page-conversation:label:context-length')}
                   </FormLabel>
                   <FormControl>
-                    <Input className="col-span-2" {...field} />
+                    <Input
+                      className="col-span-2"
+                      {...field}
+                      value={field.value ?? ''}
+                      placeholder={ctxLength}
+                    />
                   </FormControl>
                   <div className="col-span-4">
                     <FormMessage />
