@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
 } from '@/lib/constants';
@@ -218,8 +219,9 @@ const GenericOpenAIModelForm = ({
   form,
   onSubmit,
   loadModelsOnInit,
+  isCustom = false,
   ...props
-}: GenericFormProps<NewModel | Model>) => {
+}: GenericFormProps<NewModel | Model> & { isCustom?: boolean }) => {
   const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
   const apiKey = useWatch({ name: 'apiKey', control: form.control });
@@ -271,33 +273,78 @@ const GenericOpenAIModelForm = ({
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-            <FormField
-              control={form.control}
-              name="model"
-              render={() => (
-                <FormLabel className="text-right">
-                  {t('page-models:label:model')}
-                </FormLabel>
-              )}
-            />
-            <div className="col-span-3 col-start-2">
-              <RemoteModelsSelector
-                config={config}
-                enabledByDefault={!!loadModelsOnInit}
+          {isCustom ? (
+            <>
+              <FormField
+                control={form.control}
+                name="endpoint"
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                    <FormLabel className="text-right">
+                      {t('page-models:label:endpoint')}
+                    </FormLabel>
+                    <FormControl>
+                      <Input className="col-span-3" {...field} />
+                    </FormControl>
+                    <div className="col-span-3 col-start-2">
+                      <FormMessage />
+                      <FormDescription>
+                        {t('page-models:message:endpoint-tips')}
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="col-span-3 col-start-2">
               <FormField
                 control={form.control}
                 name="model"
-                render={() => <FormMessage />}
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+                    <FormLabel className="text-right">
+                      {t('page-models:label:model')}
+                    </FormLabel>
+                    <FormControl>
+                      <Input className="col-span-3" {...field} />
+                    </FormControl>
+                    <div className="col-span-3 col-start-2">
+                      <FormMessage />
+                      <FormDescription>
+                        {t('page-models:message:model-tips')}
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
               />
-              <FormDescription>
-                {t('page-models:message:model-tips')}
-              </FormDescription>
+            </>
+          ) : (
+            <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+              <FormField
+                control={form.control}
+                name="model"
+                render={() => (
+                  <FormLabel className="text-right">
+                    {t('page-models:label:model')}
+                  </FormLabel>
+                )}
+              />
+              <div className="col-span-3 col-start-2">
+                <RemoteModelsSelector
+                  config={config}
+                  enabledByDefault={!!loadModelsOnInit}
+                />
+              </div>
+              <div className="col-span-3 col-start-2">
+                <FormField
+                  control={form.control}
+                  name="model"
+                  render={() => <FormMessage />}
+                />
+                <FormDescription>
+                  {t('page-models:message:model-tips')}
+                </FormDescription>
+              </div>
             </div>
-          </div>
+          )}
           <FormField
             control={form.control}
             name="provider"
@@ -472,7 +519,7 @@ const GenericOllamaModelForm = ({
   const endpoint = useWatch({ name: 'endpoint', control: form.control });
   const config: RawOllamaConfig = {
     provider: PROVIDER_OLLAMA,
-    endpoint,
+    endpoint: endpoint ?? '',
   };
   return (
     <Form {...form}>
@@ -790,6 +837,60 @@ const EditOllamaModelForm = forwardRef<ModelFormHandler, EditFormProps>(
   }
 );
 
+const NewCustomModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewOpenAIModel>({
+      resolver: zodResolver(newOpenAIModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_CUSTOM,
+        alias: '',
+        apiKey: '',
+        model: '',
+        endpoint: '',
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={form as UseFormReturn<NewModel, any, undefined>}
+        onSubmit={onSubmit}
+        isCustom
+        {...props}
+      />
+    );
+  }
+);
+
+const EditCustomModelForm = forwardRef<ModelFormHandler, EditFormProps>(
+  ({ model, onSubmit, ...props }, ref) => {
+    const form = useForm<OpenAIModel>({
+      resolver: zodResolver(editOpenAIModelFormSchema),
+      defaultValues: model as OpenAIModel,
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={form as UseFormReturn<NewModel | Model, any, undefined>}
+        onSubmit={onSubmit as (model: NewModel | Model) => void}
+        isCustom
+        {...props}
+      />
+    );
+  }
+);
+
 export default {
   Azure: {
     New: NewAzureModelForm,
@@ -806,5 +907,9 @@ export default {
   Ollama: {
     New: NewOllamaModelForm,
     Edit: EditOllamaModelForm,
+  },
+  CUSTOM: {
+    New: NewCustomModelForm,
+    Edit: EditCustomModelForm,
   },
 };

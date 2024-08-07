@@ -3,15 +3,17 @@ import { z } from 'zod';
 import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
 } from '@/lib/constants';
 
 export const newOpenAIModelFormSchema = z.object({
   alias: z.string(),
-  provider: z.literal(PROVIDER_OPENAI),
+  provider: z.enum([PROVIDER_OPENAI, PROVIDER_CUSTOM] as const),
   apiKey: z.string().min(1, 'API Key is required'),
   model: z.string().min(1, 'Model is required'),
+  endpoint: z.string().url().optional(),
 });
 
 export const newAzureModelFormSchema = z.object({

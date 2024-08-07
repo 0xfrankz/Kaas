@@ -38,6 +38,7 @@
         "OpenAI": "OpenAI",
         "Claude": "Anthropic Claude",
         "Ollama": "Ollama",
+        "CUSTOM": "Custom",
         "unknown": "Unknown"
     },
     "message": {

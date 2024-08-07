@@ -3,22 +3,19 @@ export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
 export const PROVIDER_CLAUDE = 'Claude';
 export const PROVIDER_OLLAMA = 'Ollama';
+export const PROVIDER_CUSTOM = 'CUSTOM';
 export const PROVIDER_UNKNOWN = 'Unknown';
 export const SUPPORTED_PROVIDERS = [
   PROVIDER_OPENAI,
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
   PROVIDER_OLLAMA,
+  PROVIDER_CUSTOM,
 ] as const;
 export const ALL_PROVIDERS = [
   ...SUPPORTED_PROVIDERS,
   PROVIDER_UNKNOWN,
 ] as const;
-export const PROVIDER_INFO = {
-  [PROVIDER_OPENAI]: 'OpenAI',
-  [PROVIDER_AZURE]: 'Microsoft Azure',
-  [PROVIDER_CLAUDE]: 'Anthropic Claude',
-};
 export const PROVIDER_STYLES = {
   [PROVIDER_OPENAI]: {
     icon: {
@@ -58,6 +55,16 @@ export const PROVIDER_STYLES = {
     color: {
       light: '#EEEEEE',
       dark: '#999999',
+    },
+  },
+  [PROVIDER_CUSTOM]: {
+    icon: {
+      light: 'unknown_logo_b.svg',
+      dark: 'unknown_logo_w.svg',
+    },
+    color: {
+      light: '#CCCCCC',
+      dark: '#666666',
     },
   },
   [PROVIDER_UNKNOWN]: {

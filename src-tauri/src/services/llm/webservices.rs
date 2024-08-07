@@ -108,7 +108,7 @@ impl LLMClient {
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
                 Ok(LLMClient::AzureClient(client))
             },
-            Providers::OpenAI => {
+            Providers::OpenAI | Providers::CUSTOM => {
                 let raw_config: RawOpenAIConfig = serde_json::from_str(&config.config)
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
                 let model = raw_config.model.clone();

@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
-  PROVIDER_OPENAI,
 } from '@/lib/constants';
 import type { DialogHandler, Model, NewModel } from '@/lib/types';
 
@@ -57,14 +57,16 @@ const NewModelFormDialog = forwardRef<
 
   const renderForm = () => {
     switch (provider) {
-      case PROVIDER_OPENAI:
-        return <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
+      case PROVIDER_AZURE:
+        return <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
       case PROVIDER_CLAUDE:
         return <ModelForm.Claude.New id="modelForm" onSubmit={onFormSubmit} />;
       case PROVIDER_OLLAMA:
         return <ModelForm.Ollama.New id="modelForm" onSubmit={onFormSubmit} />;
+      case PROVIDER_CUSTOM:
+        return <ModelForm.CUSTOM.New id="modelForm" onSubmit={onFormSubmit} />;
       default:
-        return <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
+        return <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
     }
   };
 
@@ -139,6 +141,14 @@ const EditModelFormDialog = forwardRef<
       case PROVIDER_OLLAMA:
         return (
           <ModelForm.Ollama.Edit
+            id="modelForm"
+            model={model}
+            onSubmit={onFormSubmit}
+          />
+        );
+      case PROVIDER_CUSTOM:
+        return (
+          <ModelForm.CUSTOM.Edit
             id="modelForm"
             model={model}
             onSubmit={onFormSubmit}

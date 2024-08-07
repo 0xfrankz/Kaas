@@ -519,7 +519,6 @@ impl<'c> ChatRequest<'c> {
         let request: ClaudeChatCompletionRequest;
         // set messages
         let req_messages: Vec<ClaudeMessage> = messages.into_iter().map(message_to_claude_request_message).collect();
-        log::info!("Claude req_messages: {:?}", req_messages);
         // set options
         let options: ClaudeOptions = serde_json::from_str(&options.options)
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
