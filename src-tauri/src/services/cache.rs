@@ -6,6 +6,12 @@ use infer;
 use crate::core::handle::Handle;
 
 pub fn read_as_data_url(file_name: &str, mimetype: Option<&str>) -> Result<String, String> {
+    let (mime, data) = read_as_base64_with_mime(file_name, mimetype)?;
+    let result = format!("data:{};base64,{}", mime, data);
+    Ok(result)
+}
+
+pub fn read_as_base64_with_mime(file_name: &str, mimetype: Option<&str>) -> Result<(String, String), String> {
     let mut file_path = get_cache_dir()?;
     file_path.push(file_name);
     let mut data = vec![];
@@ -22,8 +28,8 @@ pub fn read_as_data_url(file_name: &str, mimetype: Option<&str>) -> Result<Strin
                 .unwrap_or("application/octet-stream")
         }
     };
-    let result = format!("data:{};base64,{}", mime, STANDARD.encode(data));
-    Ok(result)
+    let base64_str = STANDARD.encode(data);
+    Ok((mime.to_string(), base64_str))
 }
 
 pub fn get_cache_dir() -> Result<PathBuf, String> {

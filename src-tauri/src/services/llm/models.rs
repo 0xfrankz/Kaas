@@ -23,7 +23,7 @@ pub struct OllamaRemoteModelDetails {
 pub struct OllamaRemoteModel {
     name: String,
     modified_at: String,
-    size: u32,
+    size: u64,
     digest: String,
     details: OllamaRemoteModelDetails,
 }

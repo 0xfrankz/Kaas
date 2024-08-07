@@ -80,7 +80,7 @@ pub fn message_to_claude_request_message(message: MessageDTO) -> ClaudeMessage {
                     source: ClaudeImageSource {
                         r#type: "base64".to_string(),
                         media_type: item.mimetype.as_deref().unwrap_or("image/jpeg").to_string(),
-                        data: cache::read_as_data_url(item.data.as_str(), item.mimetype.as_deref()).unwrap_or(String::default())
+                        data: cache::read_as_base64_with_mime(item.data.as_str(), item.mimetype.as_deref()).map(|r| r.1).unwrap_or(String::default())
                     }
                 }),
                 ContentType::Text => ClaudeMessageContentPart::Text(ClaudeMessageContentPartText{
@@ -117,7 +117,7 @@ pub fn message_to_ollama_request_message(message: MessageDTO) -> OllamaMessage {
                     if content.images.is_none() {
                         content.images = Some(Vec::new());
                     }
-                    content.images.as_mut().unwrap().push(cache::read_as_data_url(c.data.as_str(), c.mimetype.as_deref()).unwrap_or(String::default()));
+                    content.images.as_mut().unwrap().push(cache::read_as_base64_with_mime(c.data.as_str(), c.mimetype.as_deref()).map(|r| r.1).unwrap_or(String::default()));
                 },
                 ContentType::Text => {
                     content.content = c.data;
