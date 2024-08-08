@@ -57,14 +57,74 @@ export const editOllamaModelFormSchema = newOllamaModelFormSchema.extend({
 });
 
 const commonOptionsFormSchema = z.object({
-  contextLength: z.coerce.number().int().min(0).max(65535).optional(),
-  frequencyPenalty: z.coerce.number().min(-2.0).max(2.0).optional().default(0),
+  contextLength: z.coerce.number().int().min(1).max(65535).optional(),
+  frequencyPenalty: z.coerce
+    .number()
+    .min(-2.0)
+    .max(2.0)
+    .optional()
+    .default(0)
+    .refine(
+      (value) => {
+        const strValue = value.toString();
+        const decimalPart = strValue.split('.')[1];
+        return decimalPart ? decimalPart.length <= 2 : true;
+      },
+      {
+        message: 'Only two decimal places are supported',
+      }
+    ),
   maxTokens: z.coerce.number().int().min(1).max(65535).optional(),
   // n: z.coerce.number().int().min(1).max(128).optional().default(1),
-  presencePenalty: z.coerce.number().min(-2.0).max(2.0).optional().default(0),
+  presencePenalty: z.coerce
+    .number()
+    .min(-2.0)
+    .max(2.0)
+    .optional()
+    .default(0)
+    .refine(
+      (value) => {
+        const strValue = value.toString();
+        const decimalPart = strValue.split('.')[1];
+        return decimalPart ? decimalPart.length <= 2 : true;
+      },
+      {
+        message: 'Only two decimal places are supported',
+      }
+    ),
   stream: z.boolean().optional().default(false),
-  temperature: z.coerce.number().min(0).max(2.0).optional().default(1),
-  topP: z.coerce.number().min(0).max(1.0).optional().default(1),
+  temperature: z.coerce
+    .number()
+    .min(0)
+    .max(2.0)
+    .optional()
+    .default(1)
+    .refine(
+      (value) => {
+        const strValue = value.toString();
+        const decimalPart = strValue.split('.')[1];
+        return decimalPart ? decimalPart.length <= 2 : true;
+      },
+      {
+        message: 'Only two decimal places are supported',
+      }
+    ),
+  topP: z.coerce
+    .number()
+    .gt(0)
+    .max(1.0)
+    .optional()
+    .default(1)
+    .refine(
+      (value) => {
+        const strValue = value.toString();
+        const decimalPart = strValue.split('.')[1];
+        return decimalPart ? decimalPart.length <= 2 : true;
+      },
+      {
+        message: 'Only two decimal places are supported',
+      }
+    ),
   user: z
     .string()
     .optional()

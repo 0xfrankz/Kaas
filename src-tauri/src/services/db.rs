@@ -1,5 +1,5 @@
 
-use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ConversationDTO, ConversationDetailsDTO, Model as Conversation, OpenAIOptions, GenericOptions, UpdateConversationDTO};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ClaudeOptions, ConversationDTO, ConversationDetailsDTO, GenericOptions, Model as Conversation, OllamaOptions, OpenAIOptions, UpdateConversationDTO};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
 use entity::entities::models::{self, Model, NewModel, GenericConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
@@ -193,7 +193,15 @@ impl Repository {
                 Providers::Azure => {
                     let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
                     active_model.options = Set(Some(options_str));
-                }
+                },
+                Providers::Claude => {
+                    let options_str = serde_json::to_string(&ClaudeOptions::default()).unwrap_or(String::default());
+                    active_model.options = Set(Some(options_str));
+                },
+                Providers::Ollama => {
+                    let options_str = serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default());
+                    active_model.options = Set(Some(options_str));
+                },
                 _ => {
                     let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
                     active_model.options = Set(Some(options_str));
@@ -224,7 +232,15 @@ impl Repository {
                     Providers::Azure => {
                         let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
                         conv_am.options = Set(Some(options_str));
-                    }
+                    },
+                    Providers::Claude => {
+                        let options_str = serde_json::to_string(&ClaudeOptions::default()).unwrap_or(String::default());
+                        conv_am.options = Set(Some(options_str));
+                    },
+                    Providers::Ollama => {
+                        let options_str = serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default());
+                        conv_am.options = Set(Some(options_str));
+                    },
                     _ => {
                         let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
                         conv_am.options = Set(Some(options_str));
@@ -408,18 +424,40 @@ impl Repository {
                 let azure_options: AzureOptions = serde_json::from_str(&options)
                     .unwrap_or_else(|err| {
                         // record error and return default
-                        error!("{}", err);
+                        error!("db::update_conversation_options: Error deserializing Azure options: {}", err);
                         AzureOptions::default()
                     });
                 options_str = serde_json::to_string(&azure_options).unwrap_or(String::default());
                 c_am.options = Set(Some(options_str.clone()));
-            }
+            },
+            Providers::Claude => {
+                // Deserialize & serialize the options as validation
+                let claude_options: ClaudeOptions = serde_json::from_str(&options)
+                    .unwrap_or_else(|err| {
+                        // record error and return default
+                        error!("db::update_conversation_options: Error deserializing Claude options: {}", err);
+                        ClaudeOptions::default()
+                    });
+                options_str = serde_json::to_string(&claude_options).unwrap_or(String::default());
+                c_am.options = Set(Some(options_str.clone()));
+            },
+            Providers::Ollama => {
+                // Deserialize & serialize the options as validation
+                let ollama_options: OllamaOptions = serde_json::from_str(&options)
+                    .unwrap_or_else(|err| {
+                        // record error and return default
+                        error!("db::update_conversation_options: Error deserializing Ollama options: {}", err);
+                        OllamaOptions::default()
+                    });
+                options_str = serde_json::to_string(&ollama_options).unwrap_or(String::default());
+                c_am.options = Set(Some(options_str.clone()));
+            },
             _ => {
                 // Deserialize & serialize the options as validation
                 let openai_options: OpenAIOptions = serde_json::from_str(&options)
                     .unwrap_or_else(|err| {
                         // record error and return default
-                        error!("{}", err);
+                        error!("db::update_conversation_options: Error deserializing OpenAI options: {}", err);
                         OpenAIOptions::default()
                     });
                 options_str = serde_json::to_string(&openai_options).unwrap_or(String::default());
@@ -471,7 +509,15 @@ impl Repository {
             Providers::Azure => {
                 let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
                 active_model.options = Set(Some(options_str));
-            }
+            },
+            Providers::Claude => {
+                let options_str = serde_json::to_string(&ClaudeOptions::default()).unwrap_or(String::default());
+                active_model.options = Set(Some(options_str));
+            },
+            Providers::Ollama => {
+                let options_str = serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default());
+                active_model.options = Set(Some(options_str));
+            },
             _ => {
                 let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
                 active_model.options = Set(Some(options_str));
