@@ -368,7 +368,7 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
         .map_err(|message| DbError { message })?;
     // Retrieve message list as context
     let mut context = repo
-        .get_last_messages(conversation_id, context_length + 1, before_message_id) // plus one to get the last user's message
+        .get_last_messages(conversation_id, context_length * 2 + 1, before_message_id) // get last N turns of conversation plus one to get the last user message
         .await
         .map_err(|message| DbError { message })?;
     if let Some(sys_m) = sys_message {
