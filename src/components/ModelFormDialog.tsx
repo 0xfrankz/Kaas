@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -6,11 +6,13 @@ import {
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
+  SUPPORTED_PROVIDERS,
 } from '@/lib/constants';
 import type { DialogHandler, Model, NewModel } from '@/lib/types';
 
 import { DeleteWithConfirmation } from './DeleteWithConfirmation';
 import ModelForm from './forms/ModelForm';
+import { ProviderCard } from './ProviderCard';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -31,69 +33,118 @@ type EditModelDialogProps = {
   onDelete: (model: Model) => void;
 };
 
-const NewModelFormDialog = forwardRef<
-  DialogHandler<string>,
-  NewModelDialogProps
->(({ onSubmit }, ref) => {
-  const [showDialog, setShowDialog] = useState(false);
-  const [provider, setProvider] = useState<String>();
-  const { t } = useTranslation(['generic']);
+const NewModelFormDialog = forwardRef<DialogHandler<void>, NewModelDialogProps>(
+  ({ onSubmit }, ref) => {
+    const [showDialog, setShowDialog] = useState(false);
+    const [provider, setProvider] = useState<String>();
+    const { t } = useTranslation(['generic']);
 
-  useImperativeHandle(ref, () => ({
-    open: (defaultValue?: string) => {
-      setProvider(defaultValue);
-      setShowDialog(true);
-    },
-    close: () => {
-      setProvider(undefined);
+    useImperativeHandle(ref, () => ({
+      open: () => {
+        setShowDialog(true);
+      },
+      close: () => {
+        setProvider(undefined);
+        setShowDialog(false);
+      },
+    }));
+
+    const onFormSubmit = (model: NewModel) => {
+      onSubmit(model);
       setShowDialog(false);
-    },
-  }));
+    };
 
-  const onFormSubmit = (model: NewModel) => {
-    onSubmit(model);
-    setShowDialog(false);
-  };
+    useEffect(() => {
+      if (!showDialog) {
+        setProvider(undefined);
+      }
+    }, [showDialog]);
 
-  const renderForm = () => {
-    switch (provider) {
-      case PROVIDER_AZURE:
-        return <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
-      case PROVIDER_CLAUDE:
-        return <ModelForm.Claude.New id="modelForm" onSubmit={onFormSubmit} />;
-      case PROVIDER_OLLAMA:
-        return <ModelForm.Ollama.New id="modelForm" onSubmit={onFormSubmit} />;
-      case PROVIDER_CUSTOM:
-        return <ModelForm.CUSTOM.New id="modelForm" onSubmit={onFormSubmit} />;
-      default:
-        return <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
-    }
-  };
+    const renderProviderGrid = () => {
+      return (
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+                1
+              </div>
+              {t('page-models:section:pick-provider')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-6 grid grid-cols-4 gap-5">
+            {SUPPORTED_PROVIDERS.map((p) => (
+              <ProviderCard
+                provider={p}
+                onClick={() => {
+                  setProvider(p);
+                }}
+                key={`${p}-model-card`}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      );
+    };
 
-  return (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {t('page-models:section:create-model', { provider })}
-          </DialogTitle>
-          <DialogDescription>
-            {t('page-models:message:create-model-tips', {
-              provider,
-            })}
-          </DialogDescription>
-        </DialogHeader>
-        {renderForm()}
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary">{t('generic:action:cancel')}</Button>
-          </DialogClose>
-          <Button form="modelForm">{t('generic:action:save')}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-});
+    const renderForm = () => {
+      let form = null;
+      switch (provider) {
+        case PROVIDER_AZURE:
+          form = <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
+          break;
+        case PROVIDER_CLAUDE:
+          form = (
+            <ModelForm.Claude.New id="modelForm" onSubmit={onFormSubmit} />
+          );
+          break;
+        case PROVIDER_OLLAMA:
+          form = (
+            <ModelForm.Ollama.New id="modelForm" onSubmit={onFormSubmit} />
+          );
+          break;
+        case PROVIDER_CUSTOM:
+          form = (
+            <ModelForm.CUSTOM.New id="modelForm" onSubmit={onFormSubmit} />
+          );
+          break;
+        default:
+          form = (
+            <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />
+          );
+      }
+      return (
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
+                2
+              </div>
+              {t('page-models:section:create-model', { provider })}
+            </DialogTitle>
+            <DialogDescription>
+              {t('page-models:message:create-model-tips', {
+                provider,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          {form}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setProvider(undefined)}>
+              {t('generic:action:change-provider')}
+            </Button>
+            <Button form="modelForm">{t('generic:action:save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      );
+    };
+
+    return (
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        {provider ? renderForm() : renderProviderGrid()}
+      </Dialog>
+    );
+  }
+);
 
 const EditModelFormDialog = forwardRef<
   DialogHandler<Model>,

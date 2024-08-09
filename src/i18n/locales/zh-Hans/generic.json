@@ -19,6 +19,7 @@
         "set": "设置",
         "retry": "重试",
         "start-new-conversation": "开始新对话",
+        "create-new-model": "创建新模型",
         "choose-a-model": "选择模型",
         "use-this-model": "使用此模型",
         "create-a-model": "创建模型",
@@ -27,7 +28,8 @@
         "restart": "重新开始对话",
         "debug": "调试",
         "load-models": "从API加载",
-        "insert": "插入"
+        "insert": "插入",
+        "change-provider": "切换供应商"
     },
     "select": {
         "language-en": "英文",

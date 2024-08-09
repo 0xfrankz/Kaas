@@ -5,39 +5,32 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
+import { ModelCreator } from '@/components/ModelCreator';
 import ModelFormDialog from '@/components/ModelFormDialog';
 import { ModelGrid } from '@/components/ModelGrid';
-import { SupportedModelCard } from '@/components/SupportedModelCard';
 import { TitleBar } from '@/components/TitleBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import TwoRows from '@/layouts/TwoRows';
-import {
-  SETTING_USER_DEFAULT_MODEL,
-  SUPPORTED_PROVIDERS,
-} from '@/lib/constants';
+import { SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
 import {
   LIST_MODELS_KEY,
-  useCreateModelMutation,
   useModelDeleter,
   useModelUpdater,
   useUpsertSettingMutation,
 } from '@/lib/hooks';
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
-import type { DialogHandler, Model, NewModel } from '@/lib/types';
+import type { DialogHandler, Model } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
   const { t } = useTranslation(['generic', 'page-models']);
-  const newPromptDialogRef = useRef<DialogHandler<string>>(null);
   const editPromptDialogRef = useRef<DialogHandler<Model>>(null);
   const { models, updateSetting } = useAppStateStore();
   const queryClient = useQueryClient();
   const hasModels = models.length > 0;
 
   // Queries
-  const createModelMutation = useCreateModelMutation();
   const upsertSettingMutation = useUpsertSettingMutation();
   const deleter = useModelDeleter({
     onSuccess: async (model) => {
@@ -88,29 +81,6 @@ export default function ModelsPage() {
   });
 
   // Callbacks
-  const onCreateClick = useCallback(
-    (provider: string) => {
-      newPromptDialogRef.current?.open(provider);
-    },
-    [newPromptDialogRef]
-  );
-
-  const onCreateSubmit = useCallback(
-    (model: NewModel) => {
-      createModelMutation.mutate(model, {
-        onSuccess: async (result) => {
-          log.info(`Model created: ${JSON.stringify(result)}`);
-          return queryClient.invalidateQueries({ queryKey: LIST_MODELS_KEY });
-        },
-        onError: (error) => {
-          log.error(error);
-          toast.error(`${error.type}: ${error.message}`);
-        },
-      });
-    },
-    [createModelMutation, queryClient]
-  );
-
   const onEdit = useCallback((model: Model) => {
     editPromptDialogRef.current?.open(model);
   }, []);
@@ -162,9 +132,12 @@ export default function ModelsPage() {
                 >
                   {hasModels ? (
                     <>
-                      <h2 className="text-3xl font-semibold tracking-tight">
-                        {t('page-models:section:your-models')}
-                      </h2>
+                      <div className="flex justify-between">
+                        <h2 className="text-3xl font-semibold tracking-tight">
+                          {t('page-models:section:your-models')}
+                        </h2>
+                        <ModelCreator />
+                      </div>
                       <ModelGrid
                         models={models}
                         onDefaultChange={onDefaultChange}
@@ -179,31 +152,15 @@ export default function ModelsPage() {
                       <p className="mt-4 text-sm">
                         {t('page-models:message:add-model')}
                       </p>
+                      <div className="mx-auto mt-4">
+                        <ModelCreator />
+                      </div>
                     </>
                   )}
-                </div>
-                <Separator className="my-6" />
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    {t('page-models:section:supported-models')}
-                  </h2>
-                  <div className="mt-6 grid grid-cols-4 gap-5">
-                    {SUPPORTED_PROVIDERS.map((provider) => (
-                      <SupportedModelCard
-                        provider={provider}
-                        onClick={() => onCreateClick(provider)}
-                        key={`${provider}-model-card`}
-                      />
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
           </ScrollArea>
-          <ModelFormDialog.New
-            ref={newPromptDialogRef}
-            onSubmit={onCreateSubmit}
-          />
           <ModelFormDialog.Edit
             ref={editPromptDialogRef}
             onSubmit={onUpdateSubmit}

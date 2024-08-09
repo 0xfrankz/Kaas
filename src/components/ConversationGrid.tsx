@@ -9,7 +9,7 @@ import { useConversationDeleter } from '@/lib/hooks';
 import { useConfirmationStateStore } from '@/lib/store';
 import type { ConversationDetails } from '@/lib/types';
 
-import { ConversationStarter } from './ConversationStarter';
+import { ConversationCreator } from './ConversationCreator';
 import { ProviderTag } from './ProviderTag';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import {
@@ -98,7 +98,7 @@ export function ConversationGrid({
               })
             : t('page-conversations:message:no-conversation')}
         </h2>
-        <ConversationStarter />
+        <ConversationCreator />
       </div>
       <div className="mt-6 grid grid-cols-3 gap-[26px]">
         {conversations.map((conversation) => {

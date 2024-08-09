@@ -6,7 +6,7 @@ import { useConversationsContext } from '@/lib/hooks';
 import type { ConversationDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-import { ConversationStarter } from './ConversationStarter';
+import { ConversationCreator } from './ConversationCreator';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 
@@ -63,7 +63,7 @@ export function ConversationHistory({ activeConversationId }: Props) {
           })}
         </ul>
       </ScrollArea>
-      <ConversationStarter />
+      <ConversationCreator />
     </div>
   );
 }

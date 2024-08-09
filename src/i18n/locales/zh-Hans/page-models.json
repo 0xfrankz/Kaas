@@ -4,7 +4,8 @@
         "your-models": "你的模型",
         "supported-models": "支持的模型",
         "create-model": "创建新$t(generic:model:{{provider}})模型",
-        "update-model": "编辑模型"
+        "update-model": "编辑模型",
+        "pick-provider": "选择模型供应商"
     },
     "label": {
         "alias": "别名",
@@ -16,7 +17,7 @@
     },
     "message": {
         "no-model": "你还没有创建任何模型",
-        "add-model": "点击下方按钮进行创建",
+        "add-model": "立即创建",
         "update-model-success": "已创建模型",
         "delete-model-success": "已删除模型",
         "delete-model-error": "删除模型失败: {{errorMsg}}",

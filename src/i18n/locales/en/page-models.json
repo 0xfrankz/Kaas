@@ -4,7 +4,8 @@
         "your-models": "Your Models",
         "supported-models": "Supported Models",
         "create-model": "Create new $t(generic:model:{{provider}}) model",
-        "update-model": "Edit model settings"
+        "update-model": "Edit model settings",
+        "pick-provider": "Pick a provider"
     },
     "label": {
         "alias": "Alias",
@@ -16,7 +17,7 @@
     },
     "message": {
         "no-model": "You have no models yet",
-        "add-model": "Add one from below",
+        "add-model": "Add one now",
         "update-model-success": "Model has been updated",
         "delete-model-success": "Model has been deleted",
         "delete-model-error": "Failed to delete model: {{errorMsg}}",

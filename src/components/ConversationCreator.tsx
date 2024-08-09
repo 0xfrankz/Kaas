@@ -9,7 +9,7 @@ import { useBlankConversationCreator } from '@/lib/hooks';
 import type { ButtonProps } from './ui/button';
 import { Button } from './ui/button';
 
-export const ConversationStarter = forwardRef<HTMLButtonElement, ButtonProps>(
+export const ConversationCreator = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, ...props }, ref) => {
     const { t } = useTranslation();
     const navigate = useNavigate();

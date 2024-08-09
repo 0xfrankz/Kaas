@@ -18,7 +18,8 @@
         "use": "Use",
         "set": "Set",
         "retry": "Retry",
-        "start-new-conversation": "Start a new conversation",
+        "start-new-conversation": "Start new conversation",
+        "create-new-model": "Create new model",
         "choose-a-model": "Choose a model",
         "use-this-model": "Use this model",
         "create-a-model": "Create a model",
@@ -27,7 +28,8 @@
         "restart": "Restart conversation",
         "debug": "Debug",
         "load-models": "Load from API",
-        "insert": "Insert"
+        "insert": "Insert",
+        "change-provider": "Change provider"
     },
     "select": {
         "language-en": "English",
