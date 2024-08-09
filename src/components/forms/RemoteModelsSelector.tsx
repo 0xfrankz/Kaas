@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { PROVIDER_OPENAI } from '@/lib/constants';
+import { PROVIDER_OLLAMA, PROVIDER_OPENAI } from '@/lib/constants';
 import { LIST_REMOTE_MODELS_KEY, useListRemoteModelsQuery } from '@/lib/hooks';
 import type { RawConfig } from '@/lib/types';
 
@@ -46,13 +46,13 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
       } else {
         setEnabled(true);
       }
-    } else {
+    } else if (config.provider === PROVIDER_OLLAMA) {
       // check endpoint when user is using Ollama
       const endpoint = form.getValues('endpoint');
-      if (endpoint && endpoint.length === 0) {
+      if (!endpoint || endpoint.length === 0) {
         form.setError('endpoint', {
           type: 'custom',
-          message: t('error:validation:empty-api-key'),
+          message: t('error:validation:empty-endpoint'),
         });
       } else {
         setEnabled(true);

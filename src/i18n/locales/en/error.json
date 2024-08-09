@@ -5,6 +5,7 @@
         "empty-traffic-type": "At least one protocol must be selected",
         "invalid-int-minmax": "{{value}} should be an integer between {{min}} and {{max}}",
         "empty-prompt": "You prompt is blank. Blank prompt is a waste of your tokens quota.",
-        "empty-api-key": "API key cannot be empty."
+        "empty-api-key": "API key cannot be empty.",
+        "empty-endpoint": "Endpoint cannot be empty."
     }
 }
