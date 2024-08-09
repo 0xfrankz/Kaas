@@ -831,6 +831,7 @@ const EditOllamaModelForm = forwardRef<ModelFormHandler, EditFormProps>(
       <GenericOllamaModelForm
         form={form as UseFormReturn<NewModel | Model, any, undefined>}
         onSubmit={onSubmit as (model: NewModel | Model) => void}
+        loadModelsOnInit
         {...props}
       />
     );
