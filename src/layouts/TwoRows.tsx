@@ -7,11 +7,7 @@ const TwoRows = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    className={cn('flex flex-col size-full', className)}
-    ref={ref}
-    {...props}
-  />
+  <div className={cn('flex flex-col', className)} ref={ref} {...props} />
 ));
 TwoRows.displayName = 'TwoRows';
 
@@ -19,7 +15,7 @@ const Top = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div className={cn('h-fit w-full', className)} ref={ref} {...props} />
+  <div className={cn('h-fit grow', className)} ref={ref} {...props} />
 ));
 Top.displayName = 'TwoRows.Top';
 

@@ -74,8 +74,8 @@
       {
         "fullscreen": false,
         "height": 810,
-        "minHeight": 540,
-        "minWidth": 960,
+        "minHeight": 667,
+        "minWidth": 375,
         "resizable": true,
         "width": 1440,
         "fileDropEnabled": false,

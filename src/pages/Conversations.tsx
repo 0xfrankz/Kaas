@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
 import { useConversationsContext } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
+import { cn } from '@/lib/utils';
 
 export default function ConversationsPage() {
   const { models } = useAppStateStore();
@@ -60,8 +61,13 @@ export default function ConversationsPage() {
           <TitleBar title={t('page-conversations:title')} />
         </TwoRows.Top>
         <TwoRows.Bottom className="flex overflow-hidden">
-          <ScrollArea className="w-full grow">
-            <div className="mx-auto mb-6 mt-12 flex w-[1080px] max-w-[1080px] flex-col">
+          <ScrollArea className="grow">
+            <div
+              className={cn(
+                'mx-auto mb-6 mt-12 flex flex-col'
+                // 'w-[1080px] max-w-[1080px]'
+              )}
+            >
               {hasModels ? render() : renderEmptyModels()}
             </div>
           </ScrollArea>

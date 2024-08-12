@@ -63,7 +63,8 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
   return (
     <ul
       className={cn(
-        'grow flex flex-col justify-start items-start transition-[margin] mt-32'
+        'grow flex-col justify-start items-start transition-[margin] mt-32',
+        expanded ? 'flex' : 'hidden md:flex'
       )}
     >
       <SideNavMenuItem

@@ -89,9 +89,9 @@ export function ConversationGrid({
   };
 
   return (
-    <div className="flex grow flex-col">
+    <div className="mx-4 flex grow flex-col md:mx-8">
       <div className="flex justify-between">
-        <h2 className="text-3xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
           {conversations.length > 0
             ? t('page-conversations:label:num-of-conversations', {
                 num: conversations.length,
@@ -100,7 +100,7 @@ export function ConversationGrid({
         </h2>
         <ConversationCreator />
       </div>
-      <div className="mt-6 grid grid-cols-3 gap-[26px]">
+      <div className="mt-6 grid grid-cols-1 gap-[26px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {conversations.map((conversation) => {
           return (
             <ContextMenu key={conversation.id}>

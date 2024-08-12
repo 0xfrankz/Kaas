@@ -40,7 +40,7 @@ export const ConversationCreator = forwardRef<HTMLButtonElement, ButtonProps>(
         className={className}
       >
         <Plus className="size-4" />
-        <span className="ml-2">
+        <span className="hidden md:visible md:inline">
           {t('generic:action:start-new-conversation')}
         </span>
       </Button>

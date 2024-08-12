@@ -64,19 +64,22 @@ export function NewConversationForm() {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-3xl font-semibold tracking-tight">
+    <div className="flex flex-col">
+      <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
         {t('page-conversations:label:start-new')}
       </h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="mt-6 box-border flex h-[72px] w-[720px] items-center rounded-2xl border border-input bg-transparent hover:border-input-hover">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex grow flex-col"
+        >
+          <div className="mx-4 mt-6 box-border flex h-fit grow flex-col rounded-2xl border border-input bg-transparent hover:border-input-hover md:h-[72px] md:flex-row md:items-center lg:mx-auto lg:w-[720px]">
             <FormField
               control={form.control}
               name="message"
               defaultValue=""
               render={({ field }) => (
-                <FormItem className="ml-4 grow">
+                <FormItem className="mx-4 grow">
                   <FormControl>
                     <Input
                       placeholder={t('page-conversations:message:ask-anything')}
@@ -89,39 +92,44 @@ export function NewConversationForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="modelId"
-              defaultValue={getDefaultModel()?.id ?? models[0].id}
-              render={({ field }) => (
-                <FormItem className="ml-4 w-40">
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {models.map((model) => (
-                        <SelectItem value={model.id.toString()} key={model.id}>
-                          <div className="flex gap-2">
-                            <ProviderIcon provider={model.provider} />
-                            {getModelAlias(model)}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="mx-4">
-              <SendHorizonal className="size-4" />
-            </Button>
+            <div className="m-4 flex justify-between md:justify-normal md:gap-4">
+              <FormField
+                control={form.control}
+                name="modelId"
+                defaultValue={getDefaultModel()?.id ?? models[0].id}
+                render={({ field }) => (
+                  <FormItem className="w-fit max-w-44">
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {models.map((model) => (
+                          <SelectItem
+                            value={model.id.toString()}
+                            key={model.id}
+                          >
+                            <div className="flex gap-2">
+                              <ProviderIcon provider={model.provider} />
+                              {getModelAlias(model)}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">
+                <SendHorizonal className="size-4" />
+              </Button>
+            </div>
           </div>
           <div className="col-span-3 col-start-2">
             <FormMessage />
