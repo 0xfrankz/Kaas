@@ -15,7 +15,7 @@ const Top = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div className={cn('h-fit grow', className)} ref={ref} {...props} />
+  <div className={cn('h-fit', className)} ref={ref} {...props} />
 ));
 Top.displayName = 'TwoRows.Top';
 

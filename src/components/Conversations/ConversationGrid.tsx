@@ -9,16 +9,16 @@ import { useConversationDeleter } from '@/lib/hooks';
 import { useConfirmationStateStore } from '@/lib/store';
 import type { ConversationDetails } from '@/lib/types';
 
-import { ConversationCreator } from './ConversationCreator';
-import { ProviderTag } from './ProviderTag';
-import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
+import { ConversationCreator } from '../ConversationCreator';
+import { ProviderTag } from '../ProviderTag';
+import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from './ui/context-menu';
+} from '../ui/context-menu';
 
 function ConversationGridItem({
   conversation,

@@ -16,17 +16,23 @@ import { useAppStateStore } from '@/lib/store';
 import type { NewConversation } from '@/lib/types';
 import { getModelAlias } from '@/lib/utils';
 
-import { ProviderIcon } from './ProviderIcon';
-import { Button } from './ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
-import { Input } from './ui/input';
+import { ProviderIcon } from '../ProviderIcon';
+import { Button } from '../ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '../ui/form';
+import { Input } from '../ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from '../ui/select';
 
 export function NewConversationForm() {
   const { models, getDefaultModel } = useAppStateStore();
