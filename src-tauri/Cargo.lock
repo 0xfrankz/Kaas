@@ -2416,7 +2416,7 @@ dependencies = [
 
 [[package]]
 name = "kaas"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "async-openai",
  "base64 0.22.1",
