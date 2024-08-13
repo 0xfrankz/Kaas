@@ -51,7 +51,9 @@ export const ModelCreator = forwardRef<HTMLButtonElement, ButtonProps>(
           className={className}
         >
           <Plus className="size-4" />
-          <span className="ml-2">{t('generic:action:create-new-model')}</span>
+          <span className="ml-2 hidden sm:inline">
+            {t('generic:action:create-new-model')}
+          </span>
         </Button>
         <ModelFormDialog.New
           ref={newPromptDialogRef}

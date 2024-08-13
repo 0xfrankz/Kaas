@@ -11,6 +11,7 @@ import type { ConversationDetails } from '@/lib/types';
 
 import { ConversationCreator } from '../ConversationCreator';
 import { ProviderTag } from '../ProviderTag';
+import SectionTitle from '../SectionTitle';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import {
   ContextMenu,
@@ -91,16 +92,16 @@ export function ConversationGrid({
   return (
     <div className="mx-4 flex grow flex-col md:mx-8">
       <div className="flex justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+        <SectionTitle>
           {conversations.length > 0
             ? t('page-conversations:label:num-of-conversations', {
                 num: conversations.length,
               })
             : t('page-conversations:message:no-conversation')}
-        </h2>
+        </SectionTitle>
         <ConversationCreator />
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-[26px] md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {conversations.map((conversation) => {
           return (
             <ContextMenu key={conversation.id}>

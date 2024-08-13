@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { SETTING_USER_DEFAULT_MODEL } from '@/lib/constants';
@@ -31,15 +32,15 @@ function ModelGridItem({
 
   return (
     <Card className="min-h-32 border border-border">
-      <CardHeader className="items-center space-y-2 pb-2">
-        <CardTitle className="mx-auto max-w-48 truncate text-base">
+      <CardHeader className="items-center space-y-2 p-4 md:p-6">
+        <CardTitle className="mx-auto max-w-32 overflow-hidden truncate text-base md:max-w-48">
           {getModelAlias(model)}
         </CardTitle>
         <ProviderTag provider={model.provider} />
       </CardHeader>
-      <CardFooter className="mt-6">
+      <CardFooter className="mt-6 p-4 md:p-6">
         <div className="flex w-full items-center justify-between">
-          <div className="flex items-center gap-1">
+          <div className="flex flex-col items-center gap-1 sm:flex-row">
             <Switch
               id="default-switch"
               checked={isDefault}
@@ -49,13 +50,14 @@ function ModelGridItem({
             />
             <Label
               htmlFor="default-switch"
-              className="font-medium text-muted-foreground peer-disabled:text-foreground peer-disabled:opacity-100"
+              className="text-xs font-medium text-muted-foreground peer-disabled:text-foreground peer-disabled:opacity-100 sm:text-sm"
             >
               {t('generic:label:default')}
             </Label>
           </div>
           <Button variant="secondary" onClick={() => onEditClick(model)}>
-            {t('generic:action:edit')}
+            <Pencil className="size-4 sm:hidden" />
+            <span className="hidden sm:inline">{t('generic:action:edit')}</span>
           </Button>
         </div>
       </CardFooter>
@@ -77,7 +79,7 @@ export function ModelGrid({
     parseInt(settings[SETTING_USER_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
 
   return (
-    <div className="mt-6 grid grid-cols-4 gap-5">
+    <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
       {models.map((model) => {
         return (
           <ModelGridItem

@@ -6,13 +6,13 @@ import {
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
-  SUPPORTED_PROVIDERS,
 } from '@/lib/constants';
-import type { DialogHandler, Model, NewModel } from '@/lib/types';
+import type { AllProviders, DialogHandler, Model, NewModel } from '@/lib/types';
 
 import { DeleteWithConfirmation } from './DeleteWithConfirmation';
 import ModelForm from './forms/ModelForm';
-import { ProviderCard } from './ProviderCard';
+import ModelFormDialogContent from './Models/ModelFormDialogContent';
+import ProvidersGridDialogContent from './Models/ProvidersGridDialogContent';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -36,7 +36,7 @@ type EditModelDialogProps = {
 const NewModelFormDialog = forwardRef<DialogHandler<void>, NewModelDialogProps>(
   ({ onSubmit }, ref) => {
     const [showDialog, setShowDialog] = useState(false);
-    const [provider, setProvider] = useState<String>();
+    const [provider, setProvider] = useState<AllProviders>();
     const { t } = useTranslation(['generic']);
 
     useImperativeHandle(ref, () => ({
@@ -59,32 +59,6 @@ const NewModelFormDialog = forwardRef<DialogHandler<void>, NewModelDialogProps>(
         setProvider(undefined);
       }
     }, [showDialog]);
-
-    const renderProviderGrid = () => {
-      return (
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
-                1
-              </div>
-              {t('page-models:section:pick-provider')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-6 grid grid-cols-4 gap-5">
-            {SUPPORTED_PROVIDERS.map((p) => (
-              <ProviderCard
-                provider={p}
-                onClick={() => {
-                  setProvider(p);
-                }}
-                key={`${p}-model-card`}
-              />
-            ))}
-          </div>
-        </DialogContent>
-      );
-    };
 
     const renderForm = () => {
       let form = null;
@@ -140,7 +114,15 @@ const NewModelFormDialog = forwardRef<DialogHandler<void>, NewModelDialogProps>(
 
     return (
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        {provider ? renderForm() : renderProviderGrid()}
+        {provider ? (
+          <ModelFormDialogContent
+            provider={provider as AllProviders}
+            onResetClick={() => setProvider(undefined)}
+            onFormSubmit={onFormSubmit}
+          />
+        ) : (
+          <ProvidersGridDialogContent onClick={setProvider} />
+        )}
       </Dialog>
     );
   }

@@ -8,6 +8,8 @@ import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { ModelCreator } from '@/components/ModelCreator';
 import ModelFormDialog from '@/components/ModelFormDialog';
 import { ModelGrid } from '@/components/ModelGrid';
+import NoModels from '@/components/Models/NoModels';
+import SectionTitle from '@/components/SectionTitle';
 import { TitleBar } from '@/components/TitleBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TwoRows from '@/layouts/TwoRows';
@@ -21,7 +23,6 @@ import {
 import log from '@/lib/log';
 import { useAppStateStore } from '@/lib/store';
 import type { DialogHandler, Model } from '@/lib/types';
-import { cn } from '@/lib/utils';
 
 export default function ModelsPage() {
   const { t } = useTranslation(['generic', 'page-models']);
@@ -116,49 +117,30 @@ export default function ModelsPage() {
 
   return (
     <SlideUpTransition motionKey="models">
-      <TwoRows className="max-h-screen">
+      <TwoRows className="h-screen max-h-screen">
         <TwoRows.Top>
           <TitleBar title={t('page-models:title')} />
         </TwoRows.Top>
         <TwoRows.Bottom className="flex overflow-hidden">
-          <ScrollArea className="w-full grow">
-            <div className="mb-6 mt-12 flex size-full justify-center">
-              <div className="w-[1080px] max-w-[1080px]">
-                <div
-                  className={cn(
-                    'flex flex-col min-h-[348px]',
-                    hasModels ? null : 'justify-center items-center'
-                  )}
-                >
-                  {hasModels ? (
-                    <>
-                      <div className="flex justify-between">
-                        <h2 className="text-3xl font-semibold tracking-tight">
-                          {t('page-models:section:your-models')}
-                        </h2>
-                        <ModelCreator />
-                      </div>
-                      <ModelGrid
-                        models={models}
-                        onDefaultChange={onDefaultChange}
-                        onEdit={onEdit}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-3xl font-semibold tracking-tight">
-                        {t('page-models:message:no-model')}
-                      </h2>
-                      <p className="mt-4 text-sm">
-                        {t('page-models:message:add-model')}
-                      </p>
-                      <div className="mx-auto mt-4">
-                        <ModelCreator />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+          <ScrollArea className="grow">
+            <div className="mx-4 mb-6 mt-12 flex flex-col">
+              {hasModels ? (
+                <>
+                  <div className="flex justify-between">
+                    <SectionTitle>
+                      {t('page-models:section:your-models')}
+                    </SectionTitle>
+                    <ModelCreator />
+                  </div>
+                  <ModelGrid
+                    models={models}
+                    onDefaultChange={onDefaultChange}
+                    onEdit={onEdit}
+                  />
+                </>
+              ) : (
+                <NoModels />
+              )}
             </div>
           </ScrollArea>
           <ModelFormDialog.Edit

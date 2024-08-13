@@ -559,7 +559,7 @@ const GenericOllamaModelForm = ({
                 <div className="col-span-3 col-start-2">
                   <FormMessage />
                   <FormDescription>
-                    {t('page-models:message:endpoint-tips-azure')}
+                    {t('page-models:message:endpoint-tips')}
                   </FormDescription>
                 </div>
               </FormItem>
