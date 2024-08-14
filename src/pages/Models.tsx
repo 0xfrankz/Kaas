@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
-import { ModelCreator } from '@/components/ModelCreator';
 import ModelFormDialog from '@/components/ModelFormDialog';
 import { ModelGrid } from '@/components/ModelGrid';
+import { ModelCreator } from '@/components/Models/ModelCreator';
 import NoModels from '@/components/Models/NoModels';
 import SectionTitle from '@/components/SectionTitle';
 import { TitleBar } from '@/components/TitleBar';

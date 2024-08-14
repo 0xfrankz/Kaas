@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
 import {
   LIST_PROMPTS_KEY,
-  useListPromptsQuery,
   usePromptDeleter,
   usePromptUpdater,
 } from '@/lib/hooks';
@@ -41,7 +40,7 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
       <CardHeader>
         <CardTitle className="line-clamp-1">{prompt.alias}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="grow">
         <p className="line-clamp-4 whitespace-pre-wrap text-sm text-muted-foreground">
           {prompt.content}
         </p>
@@ -77,14 +76,12 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
   );
 }
 
-export function PromptGrid() {
+export function PromptGrid({ prompts }: { prompts: Prompt[] }) {
   const queryClient = useQueryClient();
   const { t } = useTranslation(['generic', 'page-prompts']);
   const editPromptDialogRef = useRef<DialogHandler<Prompt>>(null);
   const usePromptDialogRef = useRef<DialogHandler<Prompt>>(null);
   // Queries
-  const { data: prompts, isSuccess } = useListPromptsQuery();
-
   const updater = usePromptUpdater({
     onSuccess: async (prompt) => {
       // Update cache
@@ -102,7 +99,6 @@ export function PromptGrid() {
       editPromptDialogRef.current?.close();
     },
     onError: async (error, variables) => {
-      console.log(error);
       await log.error(
         `Failed to update prompt: data = ${JSON.stringify(variables)}, error = ${error.message}`
       );
@@ -155,28 +151,22 @@ export function PromptGrid() {
 
   return (
     <>
-      <div className="mx-auto mt-6 grid w-full grid-cols-3 gap-8 text-foreground">
-        {isSuccess &&
-          prompts.map((prompt) => (
-            <PromptGridItem
-              key={prompt.id}
-              prompt={prompt}
-              onEditClick={onEditClick}
-              onUseClick={onUseClick}
-            />
-          ))}
+      <div className="mx-auto mt-6 grid w-full grid-cols-1 gap-5 text-foreground sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+        {prompts.map((prompt) => (
+          <PromptGridItem
+            key={prompt.id}
+            prompt={prompt}
+            onEditClick={onEditClick}
+            onUseClick={onUseClick}
+          />
+        ))}
       </div>
       <PromptFormDialog.Edit
         ref={editPromptDialogRef}
         onSubmit={onEditSubmit}
         onDeleteClick={onDeleteClick}
       />
-      <PromptUseDialog
-        ref={usePromptDialogRef}
-        onConfirm={() => {
-          console.log('onConfirm');
-        }}
-      />
+      <PromptUseDialog ref={usePromptDialogRef} />
     </>
   );
 }

@@ -37,9 +37,7 @@ import {
 } from './ui/select';
 import { Separator } from './ui/separator';
 
-type UsePromptDialogProps = {
-  onConfirm: () => void;
-};
+type UsePromptDialogProps = {};
 
 const LocalNewConversationForm = forwardRef<
   HTMLFormElement,
@@ -133,7 +131,7 @@ const LocalNewConversationForm = forwardRef<
 export const PromptUseDialog = forwardRef<
   DialogHandler<Prompt>,
   UsePromptDialogProps
->(({ onConfirm }, ref) => {
+>((_, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const { models } = useAppStateStore();
   const [prompt, setPrompt] = useState<Prompt>();

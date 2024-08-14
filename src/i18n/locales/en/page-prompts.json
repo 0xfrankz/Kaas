@@ -10,6 +10,7 @@
         "variables": "Variables"
     },
     "message": {
+        "no-prompt": "You have no prompts yet",
         "no-model": "You have no models yet",
         "create-prompt-success": "Prompt has been created",
         "create-prompt-tips": "You can use variables in your prompt, enclose them with curly braces, e.g. {variable_name}. \n_Use no more than 20 alphanumeric characters or underscore for variable name._",

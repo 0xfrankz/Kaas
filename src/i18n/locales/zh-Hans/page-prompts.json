@@ -10,6 +10,7 @@
         "variables": "变量"
     },
     "message": {
+        "no-prompt": "你还没有创建提示词",
         "no-model": "你还没有创建模型",
         "create-prompt-success": "已创建提示词模板",
         "create-prompt-tips": "你可以在提示词模板中使用变量，用花括号标记，例如 {variable_name}。 \n_变量名称可以包含不超过20个英文字母、数字或下划线_",
