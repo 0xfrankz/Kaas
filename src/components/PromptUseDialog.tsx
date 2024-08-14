@@ -1,11 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Package, SendHorizonal } from 'lucide-react';
+import { SendHorizonal } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import {
@@ -21,6 +21,8 @@ import type { DialogHandler, NewConversation, Prompt } from '@/lib/types';
 import { getModelAlias } from '@/lib/utils';
 
 import PromptForm from './forms/PromptForm';
+import { ModelCreator } from './Models/ModelCreator';
+import NumberedBullet from './NumberedBullet';
 import { PromptPreviewer } from './PromptPreviewer';
 import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
@@ -165,83 +167,80 @@ export const PromptUseDialog = forwardRef<
             {t('page-prompts:message:no-model')}
           </DialogTitle>
         </DialogHeader>
-        <Button type="button" asChild>
-          <Link to="/models" className="mx-auto w-fit">
-            <Package className="size-4" />
-            <span className="ml-2">{t('generic:action:create-new-model')}</span>
-          </Link>
-        </Button>
+        <div className="mt-6">
+          <ModelCreator forceShowText />
+        </div>
       </DialogContent>
     );
   };
 
   const renderForm = () => {
     return prompt ? (
-      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
-        <DialogHeader className="mb-4">
-          <DialogTitle>{prompt.alias}</DialogTitle>
-        </DialogHeader>
-        <FilledPromptContextProvider defaultValue={filledPrompt}>
-          {/* Template section */}
-          <div className="flex items-center">
-            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
-              1
-            </div>
-            <span className="ml-2">
-              {t('page-prompts:message:fill-the-template')}
-            </span>
-          </div>
-          <div className="flex grow gap-8 overflow-hidden">
-            <ScrollArea className="flex-1">
-              <h3 className="mb-2 text-muted-foreground">
-                {t('page-prompts:section:template')}
-              </h3>
-              <PromptForm.Use
-                id="promptForm"
-                onSubmit={() => {
-                  console.log('onSubmit');
-                }}
-              />
-            </ScrollArea>
-            <ScrollArea className="flex-1">
-              <h3 className="mb-2 text-muted-foreground">
-                {t('page-prompts:section:preview')}
-              </h3>
-              <PromptPreviewer />
-            </ScrollArea>
-          </div>
-          <Separator />
-          {/* Model section */}
-          <div className="flex items-center">
-            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
-              2
-            </div>
-            <span className="ml-2">
-              {t('page-prompts:message:pick-a-model')}
-            </span>
-          </div>
-          <div className="flex">
-            <LocalNewConversationForm id="usePromptForm" />
-          </div>
-          <Separator />
-          {/* Actions section */}
-          <div className="flex items-center">
-            <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
-              3
-            </div>
-            <span className="ml-2">
-              {t('page-prompts:message:start-conversation')}
-            </span>
-          </div>
-          <div className="flex h-fit items-center gap-2">
-            <Button variant="secondary" onClick={() => setShowDialog(false)}>
-              {t('generic:action:cancel')}
-            </Button>
-            <Button form="usePromptForm" type="submit">
-              <SendHorizonal className="size-4" />
-            </Button>
-          </div>
-        </FilledPromptContextProvider>
+      <DialogContent>
+        <div className="flex max-h-screen">
+          <ScrollArea className="grow">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                {prompt.alias}
+              </DialogTitle>
+            </DialogHeader>
+            <FilledPromptContextProvider defaultValue={filledPrompt}>
+              {/* Template section */}
+              <div className="mt-4 flex items-center gap-2">
+                <NumberedBullet number={1} />
+                <h3 className="text-base">
+                  {t('page-prompts:message:fill-the-template')}
+                </h3>
+              </div>
+              <div className="mt-4 flex grow flex-col gap-8 overflow-hidden md:flex-row">
+                <ScrollArea className="flex-1">
+                  <PromptForm.Use
+                    id="promptForm"
+                    onSubmit={() => {
+                      console.log('onSubmit');
+                    }}
+                  />
+                </ScrollArea>
+                <ScrollArea className="flex-1">
+                  <h4 className="mt-2 text-sm font-semibold">
+                    {t('page-prompts:section:preview')}
+                  </h4>
+                  <PromptPreviewer />
+                </ScrollArea>
+              </div>
+              <Separator className="hidden md:block" />
+              {/* Model section */}
+              <div className="mt-4 flex items-center gap-2">
+                <NumberedBullet number={2} />
+                <h3 className="text-base">
+                  {t('page-prompts:message:pick-a-model')}
+                </h3>
+              </div>
+              <div className="flex">
+                <LocalNewConversationForm id="usePromptForm" />
+              </div>
+              <Separator className="hidden md:block" />
+              {/* Actions section */}
+              <div className="mt-4 flex items-center gap-2">
+                <NumberedBullet number={3} />
+                <h3 className="text-base">
+                  {t('page-prompts:message:start-conversation')}
+                </h3>
+              </div>
+              <div className="flex h-fit items-center gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowDialog(false)}
+                >
+                  {t('generic:action:cancel')}
+                </Button>
+                <Button form="usePromptForm" type="submit">
+                  <SendHorizonal className="size-4" />
+                </Button>
+              </div>
+            </FilledPromptContextProvider>
+          </ScrollArea>
+        </div>
       </DialogContent>
     ) : null;
   };

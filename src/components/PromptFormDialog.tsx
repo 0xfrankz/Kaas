@@ -42,23 +42,29 @@ const NewPromptFormDialog = forwardRef<
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {t('page-prompts:section:create-prompt')}
-          </DialogTitle>
-          <div className="whitespace-pre-wrap text-left text-sm text-muted-foreground">
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {t('page-prompts:message:create-prompt-tips')}
-            </Markdown>
-          </div>
-        </DialogHeader>
-        <PromptForm.New id="promptForm" onSubmit={onSubmit} />
-        <DialogFooter className="gap-4">
-          <DialogClose asChild>
-            <Button variant="secondary">{t('generic:action:cancel')}</Button>
-          </DialogClose>
-          <Button form="promptForm">{t('generic:action:save')}</Button>
-        </DialogFooter>
+        <div className="flex max-h-screen">
+          <ScrollArea>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {t('page-prompts:section:create-prompt')}
+              </DialogTitle>
+              <div className="whitespace-pre-wrap text-left text-sm text-muted-foreground">
+                <Markdown remarkPlugins={[remarkGfm]}>
+                  {t('page-prompts:message:create-prompt-tips')}
+                </Markdown>
+              </div>
+            </DialogHeader>
+            <PromptForm.New id="promptForm" onSubmit={onSubmit} />
+            <DialogFooter className="gap-4">
+              <DialogClose asChild>
+                <Button variant="secondary">
+                  {t('generic:action:cancel')}
+                </Button>
+              </DialogClose>
+              <Button form="promptForm">{t('generic:action:save')}</Button>
+            </DialogFooter>
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

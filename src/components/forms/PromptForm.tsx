@@ -56,15 +56,11 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
     });
 
     // Hooks
-    useImperativeHandle(
-      ref,
-      () => {
-        return {
-          reset: () => form.reset(),
-        };
-      },
-      [form]
-    );
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
 
     const onChangeDebounded = useMemo(() => {
       return debounce((value: string) => {
@@ -159,15 +155,11 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
     );
 
     // Hooks
-    useImperativeHandle(
-      ref,
-      () => {
-        return {
-          reset: () => form.reset(),
-        };
-      },
-      [form]
-    );
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
 
     useEffect(() => {
       // initialize prompt
@@ -266,15 +258,11 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
     const { t } = useTranslation(['page-prompts']);
 
     // Hooks
-    useImperativeHandle(
-      ref,
-      () => {
-        return {
-          reset: () => form.reset(),
-        };
-      },
-      [form]
-    );
+    useImperativeHandle(ref, () => {
+      return {
+        reset: () => form.reset(),
+      };
+    }, [form]);
 
     useEffect(() => {
       const newVars = new Set(extractVariables(prompt));
@@ -310,7 +298,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
           insert(insertPos, { label: nv, value: '' }, { shouldFocus: false });
         }
       });
-    }, [prompt]);
+    }, [fields, insert, prompt, remove]);
 
     useEffect(() => {
       const data = {
@@ -322,14 +310,14 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
           })) ?? [],
       };
       setFilledPrompt(data);
-    }, [formData]);
+    }, [formData, setFilledPrompt]);
 
     const renderVariables = () => {
       return (
         <div>
-          <h3 className="mb-2 text-muted-foreground">
+          <h4 className="mt-2 text-sm font-semibold">
             {t('page-prompts:section:variables')}
-          </h3>
+          </h4>
           {fields.map((item, index) => {
             return (
               <Controller
@@ -339,7 +327,12 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
                 render={({ field }) => {
                   return (
                     <div className="col-span-4">
-                      <label htmlFor={field.name}>{item.label}</label>
+                      <label
+                        htmlFor={field.name}
+                        className="text-sm text-muted-foreground"
+                      >
+                        {item.label}
+                      </label>
                       <Input {...field} id={field.name} className="mt-1" />
                     </div>
                   );
@@ -354,7 +347,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
     return (
       <Form {...form}>
         <form {...props}>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             {editing ? (
               <FormField
                 control={form.control}
@@ -376,7 +369,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
               />
             ) : (
               <div className="flex items-center justify-between gap-2 rounded-md border border-input bg-accent p-2 hover:border-input-hover">
-                <span className="max-h-6 w-2/3 max-w-[320px] truncate text-sm">
+                <span className="max-h-6 max-w-60 overflow-hidden truncate text-sm md:max-w-[320px]">
                   {prompt}
                 </span>
                 <Button
@@ -388,7 +381,6 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
                 </Button>
               </div>
             )}
-
             {renderVariables()}
           </div>
         </form>
