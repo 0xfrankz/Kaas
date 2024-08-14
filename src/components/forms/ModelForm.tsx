@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle } from 'react';
-import type { UseFormReturn } from 'react-hook-form';
+import type { Control, FieldPath, UseFormReturn } from 'react-hook-form';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +34,7 @@ import type {
   NewOpenAIModel,
   OllamaModel,
   OpenAIModel,
+  RawConfig,
   RawOllamaConfig,
   RawOpenAIConfig,
 } from '@/lib/types';
@@ -68,6 +69,108 @@ type GenericFormProps<T extends NewModel | Model> = Omit<
   loadModelsOnInit?: boolean;
 };
 
+type FormFieldProps<T extends NewModel | Model> = {
+  control: Control<T>;
+  name: FieldPath<T>;
+  label: string;
+  placeholder?: string;
+  tips?: string;
+};
+
+// ModelForm's input component
+const InputField = <T extends NewModel | Model>({
+  control,
+  name,
+  label,
+  placeholder,
+  tips,
+}: FormFieldProps<T>) => {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+          <FormLabel className="text-right">{label}</FormLabel>
+          <FormControl>
+            <Input
+              className="col-span-3"
+              {...field}
+              value={(field.value ?? '') as string}
+              placeholder={placeholder}
+            />
+          </FormControl>
+          <div className="col-start-2 col-end-4">
+            <FormMessage />
+            {tips ? <FormDescription>{tips}</FormDescription> : null}
+          </div>
+        </FormItem>
+      )}
+    />
+  );
+};
+
+// ModelForm's hidden input component
+const HiddenInputField = <T extends NewModel | Model>({
+  control,
+  name,
+}: Omit<FormFieldProps<T>, 'label' | 'placeholder'>) => {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormControl>
+            <Input
+              type="hidden"
+              {...field}
+              value={(field.value ?? '') as string}
+            />
+          </FormControl>
+          <div className="col-span-4">
+            <FormMessage />
+          </div>
+        </FormItem>
+      )}
+    />
+  );
+};
+
+// ModelForm's input for model
+const ModelField = <T extends NewModel | Model>({
+  control,
+  name,
+  label,
+  tips,
+  config,
+  loadOnInit = false,
+}: Omit<FormFieldProps<T>, 'placeholder'> & {
+  config: RawConfig;
+  loadOnInit: boolean;
+}) => {
+  return (
+    <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
+      <FormField
+        control={control}
+        name={name}
+        render={() => <FormLabel className="text-right">{label}</FormLabel>}
+      />
+      <div className="col-span-3 col-start-2 flex justify-between gap-2">
+        <RemoteModelsSelector config={config} enabledByDefault={!!loadOnInit} />
+      </div>
+      <div className="col-span-3 col-start-2">
+        <FormField
+          control={control}
+          name={name}
+          render={() => <FormMessage />}
+        />
+        <FormDescription>{tips}</FormDescription>
+      </div>
+    </div>
+  );
+};
+
 const GenericAzureModelForm = ({
   form,
   onSubmit,
@@ -79,135 +182,39 @@ const GenericAzureModelForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
-          <FormField
+          <InputField
             control={form.control}
             name="alias"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:alias')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:alias-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:alias')}
+            tips={t('page-models:message:alias-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiKey"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-key')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:api-key-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-key')}
+            tips={t('page-models:message:api-key-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="endpoint"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:endpoint')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:endpoint-tips-azure')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:endpoint')}
+            tips={t('page-models:message:endpoint-tips-azure')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiVersion"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-version')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:api-version-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-version')}
+            tips={t('page-models:message:api-version-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="deploymentId"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:deployment-id')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:deployment-id-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:deployment-id')}
+            tips={t('page-models:message:deployment-id-tips')}
           />
-          <FormField
-            control={form.control}
-            name="provider"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input type="hidden" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                </div>
-              </FormItem>
-            )}
-          />
+          <HiddenInputField control={form.control} name="provider" />
           {isEdit ? (
-            <FormField
-              control={form.control}
-              name="id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-3 col-start-2">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+            <HiddenInputField control={form.control} name="id" />
           ) : null}
         </div>
       </form>
@@ -233,117 +240,42 @@ const GenericOpenAIModelForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
-          <FormField
+          <InputField
             control={form.control}
             name="alias"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:alias')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:alias-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:alias')}
+            tips={t('page-models:message:alias-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiKey"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-key')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:api-key-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-key')}
+            tips={t('page-models:message:api-key-tips')}
           />
           {isCustom ? (
             <>
-              <FormField
+              <InputField
                 control={form.control}
                 name="endpoint"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                    <FormLabel className="text-right">
-                      {t('page-models:label:endpoint')}
-                    </FormLabel>
-                    <FormControl>
-                      <Input className="col-span-3" {...field} />
-                    </FormControl>
-                    <div className="col-span-3 col-start-2">
-                      <FormMessage />
-                      <FormDescription>
-                        {t('page-models:message:endpoint-tips')}
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
+                label={t('page-models:label:endpoint')}
+                tips={t('page-models:message:endpoint-tips')}
               />
-              <FormField
+              <InputField
                 control={form.control}
                 name="model"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                    <FormLabel className="text-right">
-                      {t('page-models:label:model')}
-                    </FormLabel>
-                    <FormControl>
-                      <Input className="col-span-3" {...field} />
-                    </FormControl>
-                    <div className="col-span-3 col-start-2">
-                      <FormMessage />
-                      <FormDescription>
-                        {t('page-models:message:model-tips')}
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
+                label={t('page-models:label:model')}
+                tips={t('page-models:message:model-tips')}
               />
             </>
           ) : (
-            <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormField
-                control={form.control}
-                name="model"
-                render={() => (
-                  <FormLabel className="text-right">
-                    {t('page-models:label:model')}
-                  </FormLabel>
-                )}
-              />
-              <div className="col-span-3 col-start-2">
-                <RemoteModelsSelector
-                  config={config}
-                  enabledByDefault={!!loadModelsOnInit}
-                />
-              </div>
-              <div className="col-span-3 col-start-2">
-                <FormField
-                  control={form.control}
-                  name="model"
-                  render={() => <FormMessage />}
-                />
-                <FormDescription>
-                  {t('page-models:message:model-tips')}
-                </FormDescription>
-              </div>
-            </div>
+            <ModelField
+              control={form.control}
+              name="model"
+              label={t('page-models:label:model')}
+              tips={t('page-models:message:model-tips')}
+              config={config}
+              loadOnInit={!!loadModelsOnInit}
+            />
           )}
           <FormField
             control={form.control}
@@ -525,102 +457,29 @@ const GenericOllamaModelForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
-          <FormField
+          <InputField
             control={form.control}
             name="alias"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:alias')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:alias-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:alias')}
+            tips={t('page-models:message:alias-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="endpoint"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:endpoint')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:endpoint-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:endpoint')}
+            tips={t('page-models:message:endpoint-tips')}
           />
-          <div className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-            <FormField
-              control={form.control}
-              name="model"
-              render={() => (
-                <FormLabel className="text-right">
-                  {t('page-models:label:model')}
-                </FormLabel>
-              )}
-            />
-            <div className="col-span-3 col-start-2">
-              <RemoteModelsSelector
-                config={config}
-                enabledByDefault={!!loadModelsOnInit}
-              />
-            </div>
-            <div className="col-span-3 col-start-2">
-              <FormField
-                control={form.control}
-                name="model"
-                render={() => <FormMessage />}
-              />
-              <FormDescription>
-                {t('page-models:message:model-tips')}
-              </FormDescription>
-            </div>
-          </div>
-          <FormField
+          <ModelField
             control={form.control}
-            name="provider"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input type="hidden" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                </div>
-              </FormItem>
-            )}
+            name="model"
+            label={t('page-models:label:model')}
+            tips={t('page-models:message:model-tips')}
+            config={config}
+            loadOnInit={!!loadModelsOnInit}
           />
+          <HiddenInputField control={form.control} name="provider" />
           {isEdit ? (
-            <FormField
-              control={form.control}
-              name="id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="hidden" {...field} />
-                  </FormControl>
-                  <div className="col-span-3 col-start-2">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
+            <HiddenInputField control={form.control} name="id" />
           ) : null}
         </div>
       </form>

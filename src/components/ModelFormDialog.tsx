@@ -1,28 +1,11 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-  PROVIDER_AZURE,
-  PROVIDER_CLAUDE,
-  PROVIDER_CUSTOM,
-  PROVIDER_OLLAMA,
-} from '@/lib/constants';
 import type { AllProviders, DialogHandler, Model, NewModel } from '@/lib/types';
 
-import { DeleteWithConfirmation } from './DeleteWithConfirmation';
-import ModelForm from './forms/ModelForm';
 import ModelFormDialogContent from './Models/ModelFormDialogContent';
 import ProvidersGridDialogContent from './Models/ProvidersGridDialogContent';
-import { Button } from './ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog';
+import { Dialog } from './ui/dialog';
 
 type NewModelDialogProps = {
   onSubmit: (model: NewModel) => void;
@@ -60,62 +43,10 @@ const NewModelFormDialog = forwardRef<DialogHandler<void>, NewModelDialogProps>(
       }
     }, [showDialog]);
 
-    const renderForm = () => {
-      let form = null;
-      switch (provider) {
-        case PROVIDER_AZURE:
-          form = <ModelForm.Azure.New id="modelForm" onSubmit={onFormSubmit} />;
-          break;
-        case PROVIDER_CLAUDE:
-          form = (
-            <ModelForm.Claude.New id="modelForm" onSubmit={onFormSubmit} />
-          );
-          break;
-        case PROVIDER_OLLAMA:
-          form = (
-            <ModelForm.Ollama.New id="modelForm" onSubmit={onFormSubmit} />
-          );
-          break;
-        case PROVIDER_CUSTOM:
-          form = (
-            <ModelForm.CUSTOM.New id="modelForm" onSubmit={onFormSubmit} />
-          );
-          break;
-        default:
-          form = (
-            <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />
-          );
-      }
-      return (
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full border-2 border-foreground text-sm">
-                2
-              </div>
-              {t('page-models:section:create-model', { provider })}
-            </DialogTitle>
-            <DialogDescription>
-              {t('page-models:message:create-model-tips', {
-                provider,
-              })}
-            </DialogDescription>
-          </DialogHeader>
-          {form}
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setProvider(undefined)}>
-              {t('generic:action:change-provider')}
-            </Button>
-            <Button form="modelForm">{t('generic:action:save')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      );
-    };
-
     return (
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         {provider ? (
-          <ModelFormDialogContent
+          <ModelFormDialogContent.New
             provider={provider as AllProviders}
             onResetClick={() => setProvider(undefined)}
             onFormSubmit={onFormSubmit}
@@ -134,7 +65,6 @@ const EditModelFormDialog = forwardRef<
 >(({ onSubmit, onDelete }, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const [model, setModel] = useState<Model>();
-  const { t } = useTranslation(['page-models']);
 
   useImperativeHandle(ref, () => ({
     open: (defaultValue?: Model) => {
@@ -152,73 +82,13 @@ const EditModelFormDialog = forwardRef<
     setShowDialog(false);
   };
 
-  const renderForm = () => {
-    if (!model) return null;
-    switch (model.provider) {
-      case PROVIDER_AZURE:
-        return (
-          <ModelForm.Azure.Edit
-            id="modelForm"
-            model={model}
-            onSubmit={onFormSubmit}
-          />
-        );
-      case PROVIDER_CLAUDE:
-        return (
-          <ModelForm.Claude.Edit
-            id="modelForm"
-            model={model}
-            onSubmit={onFormSubmit}
-          />
-        );
-      case PROVIDER_OLLAMA:
-        return (
-          <ModelForm.Ollama.Edit
-            id="modelForm"
-            model={model}
-            onSubmit={onFormSubmit}
-          />
-        );
-      case PROVIDER_CUSTOM:
-        return (
-          <ModelForm.CUSTOM.Edit
-            id="modelForm"
-            model={model}
-            onSubmit={onFormSubmit}
-          />
-        );
-      default:
-        return (
-          <ModelForm.OpenAI.Edit
-            id="modelForm"
-            model={model}
-            onSubmit={onFormSubmit}
-          />
-        );
-    }
-  };
-
   return model ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('page-models:section:update-model')}</DialogTitle>
-          <DialogDescription>
-            {t('page-models:message:update-model-tips')}
-          </DialogDescription>
-        </DialogHeader>
-        {renderForm()}
-        <DialogFooter>
-          <DeleteWithConfirmation
-            message={t('page-models:message:delete-model-warning')}
-            onConfirm={() => onDelete(model)}
-          />
-          <DialogClose asChild>
-            <Button variant="secondary">{t('generic:action:cancel')}</Button>
-          </DialogClose>
-          <Button form="modelForm">{t('generic:action:save')}</Button>
-        </DialogFooter>
-      </DialogContent>
+      <ModelFormDialogContent.Edit
+        model={model}
+        onFormSubmit={onFormSubmit}
+        onDelete={onDelete}
+      />
     </Dialog>
   ) : null;
 });

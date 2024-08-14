@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { Pencil } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ import type { RawConfig } from '@/lib/types';
 import { Button } from '../ui/button';
 import { FormControl, FormField, FormItem } from '../ui/form';
 import { LoadingIcon } from '../ui/icons/LoadingIcon';
+import { Input } from '../ui/input';
 import {
   Select,
   SelectContent,
@@ -27,6 +29,8 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const { t } = useTranslation(['error']);
   const form = useFormContext();
   const [enabled, setEnabled] = useState(enabledByDefault);
+  const [manual, setManual] = useState(false);
+  const [inited, setInited] = useState(false);
   const { data, isLoading, error } = useListRemoteModelsQuery({
     config,
     enabled,
@@ -58,17 +62,37 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
         setEnabled(true);
       }
     }
-  }, [config.provider, form, t]);
+  }, [config, form, t]);
+
+  const renderManualInput = () => {
+    return (
+      <FormField
+        control={form.control}
+        name="model"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <Input {...field} className="w-44 max-w-44" />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    );
+  };
 
   const render = () => {
     if (isLoading) {
       return (
-        <div className="flex h-9">
+        <div className="flex h-9 w-44 max-w-44">
           <LoadingIcon className="my-auto h-6 self-start" />
         </div>
       );
     }
-    if (data) {
+    if (inited && data && data.length > 0) {
+      if (manual) {
+        return renderManualInput();
+      }
+
       return (
         <FormField
           control={form.control}
@@ -79,7 +103,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
               <FormItem>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-44 max-w-44">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
@@ -97,8 +121,14 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
         />
       );
     }
+
     return (
-      <Button variant="secondary" type="button" onClick={onClick}>
+      <Button
+        variant="secondary"
+        type="button"
+        onClick={onClick}
+        className="w-44 max-w-44"
+      >
         {t('generic:action:load-models')}
       </Button>
     );
@@ -112,13 +142,41 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   }, [queryClient]);
 
   useEffect(() => {
-    if (data && data.length > 0) {
+    // init when data is ready
+    // should run only once
+    if (!inited && data && data.length > 0) {
       const fieldValue = form.getValues('model') as string | undefined;
       if (!fieldValue || fieldValue.length === 0) {
+        // field is empty, init to first model
+        form.setValue('model', data[0].id);
+      } else {
+        const isInList = data.some((m) => m.id === fieldValue);
+        if (!isInList) {
+          // when the form value is not in the list,
+          // set to manual mode
+          setManual(true);
+        }
+      }
+      setInited(true);
+    }
+  }, [inited, data, form]);
+
+  useEffect(() => {
+    // run after the component is inited
+    // when the mode is changed
+    if (inited && data && data.length > 0) {
+      const fieldValue = form.getValues('model') as string | undefined;
+      const isInList = data.some((m) => m.id === fieldValue);
+
+      if (!manual && !isInList) {
+        // when data is ready
+        // and the component is in select mode,
+        // but the form value is not in the list,
+        // set the first model as field value
         form.setValue('model', data[0].id);
       }
     }
-  }, [data, form]);
+  }, [inited, data, form, manual]);
 
   useEffect(() => {
     if (error && !form.getFieldState('model').error) {
@@ -126,5 +184,16 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
     }
   }, [error, form]);
 
-  return render();
+  return (
+    <div className="flex gap-2">
+      {render()}
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setManual((old) => !old)}
+      >
+        <Pencil className="size-4" />
+      </Button>
+    </div>
+  );
 }

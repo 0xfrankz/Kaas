@@ -6,12 +6,14 @@ import {
   PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
 } from '@/lib/constants';
-import type { AllProviders, NewModel } from '@/lib/types';
+import type { AllProviders, Model, NewModel } from '@/lib/types';
 
+import { DeleteWithConfirmation } from '../DeleteWithConfirmation';
 import ModelForm from '../forms/ModelForm';
 import NumberedBullet from '../NumberedBullet';
 import { Button } from '../ui/button';
 import {
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -19,16 +21,23 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
-type Props = {
+type NewModelFormDialogContentProps = {
   provider: AllProviders;
   onResetClick: () => void;
   onFormSubmit: (model: NewModel) => void;
 };
-export default function ModelFormDialogContent({
+
+type EditModelFormDialogContentProps = {
+  model: Model;
+  onFormSubmit: (model: Model) => void;
+  onDelete: (model: Model) => void;
+};
+
+function NewModelFormDialogContent({
   provider,
   onResetClick,
   onFormSubmit,
-}: Props) {
+}: NewModelFormDialogContentProps) {
   const { t } = useTranslation();
   let form = null;
   switch (provider) {
@@ -54,14 +63,14 @@ export default function ModelFormDialogContent({
           <NumberedBullet number={2} />
           {t('page-models:section:create-model', { provider })}
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescription className="ml-10 text-left">
           {t('page-models:message:create-model-tips', {
             provider,
           })}
         </DialogDescription>
       </DialogHeader>
       {form}
-      <DialogFooter>
+      <DialogFooter className="gap-4">
         <Button variant="secondary" onClick={onResetClick}>
           {t('generic:action:change-provider')}
         </Button>
@@ -70,3 +79,86 @@ export default function ModelFormDialogContent({
     </DialogContent>
   );
 }
+
+function EditModelFormDialogContent({
+  model,
+  onFormSubmit,
+  onDelete,
+}: EditModelFormDialogContentProps) {
+  const { t } = useTranslation();
+  let form = null;
+  switch (model.provider) {
+    case PROVIDER_AZURE:
+      form = (
+        <ModelForm.Azure.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_CLAUDE:
+      form = (
+        <ModelForm.Claude.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_OLLAMA:
+      form = (
+        <ModelForm.Ollama.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_CUSTOM:
+      form = (
+        <ModelForm.CUSTOM.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    default:
+      form = (
+        <ModelForm.OpenAI.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+  }
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle className="flex items-center">
+          {t('page-models:section:update-model')}
+        </DialogTitle>
+        <DialogDescription className="text-left">
+          {t('page-models:message:update-model-tips')}
+        </DialogDescription>
+      </DialogHeader>
+      {form}
+      <DialogFooter className="gap-4">
+        <DeleteWithConfirmation
+          message={t('page-models:message:delete-model-warning')}
+          onConfirm={() => onDelete(model)}
+        />
+        <DialogClose asChild>
+          <Button variant="secondary">{t('generic:action:cancel')}</Button>
+        </DialogClose>
+        <Button form="modelForm">{t('generic:action:save')}</Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+export default {
+  New: NewModelFormDialogContent,
+  Edit: EditModelFormDialogContent,
+};
