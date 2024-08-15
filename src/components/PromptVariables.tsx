@@ -14,7 +14,7 @@ export function PromptVariables({ prompt }: { prompt?: string }) {
   }, [prompt]);
 
   return variables.size > 0 ? (
-    <div className="col-span-3 col-start-2 flex flex-wrap items-center gap-1">
+    <div className="col-span-4 flex flex-wrap items-center gap-1 sm:col-span-3 sm:col-start-2">
       <span className="text-xs text-muted-foreground">Variables:</span>
       {Array.from(variables)
         .sort()

@@ -26,7 +26,14 @@ import NumberedBullet from './NumberedBullet';
 import { PromptPreviewer } from './PromptPreviewer';
 import { ProviderIcon } from './ProviderIcon';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 import { Form, FormControl, FormField, FormItem } from './ui/form';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -176,71 +183,68 @@ export const PromptUseDialog = forwardRef<
 
   const renderForm = () => {
     return prompt ? (
-      <DialogContent>
-        <div className="flex max-h-screen">
-          <ScrollArea className="grow">
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                {prompt.alias}
-              </DialogTitle>
-            </DialogHeader>
-            <FilledPromptContextProvider defaultValue={filledPrompt}>
-              {/* Template section */}
-              <div className="mt-4 flex items-center gap-2">
-                <NumberedBullet number={1} />
-                <h3 className="text-base">
-                  {t('page-prompts:message:fill-the-template')}
-                </h3>
-              </div>
-              <div className="mt-4 flex grow flex-col gap-8 overflow-hidden md:flex-row">
-                <ScrollArea className="flex-1">
-                  <PromptForm.Use
-                    id="promptForm"
-                    onSubmit={() => {
-                      console.log('onSubmit');
-                    }}
-                  />
-                </ScrollArea>
-                <ScrollArea className="flex-1">
-                  <h4 className="mt-2 text-sm font-semibold">
-                    {t('page-prompts:section:preview')}
-                  </h4>
-                  <PromptPreviewer />
-                </ScrollArea>
-              </div>
-              <Separator className="hidden md:block" />
-              {/* Model section */}
-              <div className="mt-4 flex items-center gap-2">
-                <NumberedBullet number={2} />
-                <h3 className="text-base">
-                  {t('page-prompts:message:pick-a-model')}
-                </h3>
-              </div>
-              <div className="flex">
-                <LocalNewConversationForm id="usePromptForm" />
-              </div>
-              <Separator className="hidden md:block" />
-              {/* Actions section */}
-              <div className="mt-4 flex items-center gap-2">
-                <NumberedBullet number={3} />
-                <h3 className="text-base">
-                  {t('page-prompts:message:start-conversation')}
-                </h3>
-              </div>
-              <div className="flex h-fit items-center gap-2">
+      <DialogContent className="flex max-h-screen py-6 lg:max-w-3xl">
+        <ScrollArea className="grow">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              {prompt.alias}
+            </DialogTitle>
+          </DialogHeader>
+          <FilledPromptContextProvider defaultValue={filledPrompt}>
+            {/* Template section */}
+            <div className="mt-4 flex items-center gap-2">
+              <NumberedBullet number={1} />
+              <h3 className="text-base">
+                {t('page-prompts:message:fill-the-template')}
+              </h3>
+            </div>
+            <div className="mt-4 flex grow flex-col gap-4 overflow-hidden lg:flex-row">
+              <ScrollArea className="flex-1 lg:max-h-96 lg:w-1/2 lg:max-w-[1/2]">
+                <PromptForm.Use
+                  id="promptForm"
+                  onSubmit={() => {
+                    console.log('onSubmit');
+                  }}
+                />
+              </ScrollArea>
+              <ScrollArea className="flex-1 lg:max-h-96 lg:w-1/2 lg:max-w-[1/2]">
+                <PromptPreviewer />
+              </ScrollArea>
+            </div>
+            <Separator className="my-4" />
+            {/* Model section */}
+            <div className="mt-4 flex items-center gap-2">
+              <NumberedBullet number={2} />
+              <h3 className="text-base">
+                {t('page-prompts:message:pick-a-model')}
+              </h3>
+            </div>
+            <div className="mt-4 flex">
+              <LocalNewConversationForm id="usePromptForm" />
+            </div>
+            <Separator className="my-4" />
+            {/* Actions section */}
+            <div className="my-4 flex items-center gap-2">
+              <NumberedBullet number={3} />
+              <h3 className="text-base">
+                {t('page-prompts:message:start-conversation')}
+              </h3>
+            </div>
+            <DialogFooter className="gap-4">
+              <DialogClose asChild>
                 <Button
                   variant="secondary"
-                  onClick={() => setShowDialog(false)}
+                  // onClick={() => setShowDialog(false)}
                 >
                   {t('generic:action:cancel')}
                 </Button>
-                <Button form="usePromptForm" type="submit">
-                  <SendHorizonal className="size-4" />
-                </Button>
-              </div>
-            </FilledPromptContextProvider>
-          </ScrollArea>
-        </div>
+              </DialogClose>
+              <Button form="usePromptForm" type="submit">
+                <SendHorizonal className="size-4" />
+              </Button>
+            </DialogFooter>
+          </FilledPromptContextProvider>
+        </ScrollArea>
       </DialogContent>
     ) : null;
   };

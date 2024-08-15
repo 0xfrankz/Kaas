@@ -84,12 +84,12 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
               name="content"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-1 text-right">
+                  <FormLabel className="col-span-4 text-left sm:col-span-1 sm:text-right">
                     {t('generic:label:prompt')}
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      className="col-span-3 rounded-md py-1"
+                      className="col-span-4 rounded-md py-1 sm:col-span-3"
                       rows={10}
                       {...field}
                       onChange={(ev) => {
@@ -110,11 +110,14 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
               name="alias"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-1 text-right">
+                  <FormLabel className="col-span-4 text-left sm:col-span-1 sm:text-right">
                     {t('generic:label:alias')}
                   </FormLabel>
                   <FormControl>
-                    <Input className="col-span-3" {...field} />
+                    <Input
+                      className="col-span-4 rounded-md py-1 sm:col-span-3"
+                      {...field}
+                    />
                   </FormControl>
                   <div className="col-span-4">
                     <FormMessage />
@@ -175,12 +178,12 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
               name="content"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-1 text-right">
+                  <FormLabel className="col-span-4 text-left sm:col-span-1 sm:text-right">
                     {t('generic:label:prompt')}
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      className="col-span-3 rounded-md py-1"
+                      className="col-span-4 rounded-md py-1 sm:col-span-3"
                       rows={10}
                       {...field}
                       onChange={(ev) => {
@@ -201,11 +204,14 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
               name="alias"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-1 text-right">
+                  <FormLabel className="col-span-4 text-left sm:col-span-1 sm:text-right">
                     {t('generic:label:alias')}
                   </FormLabel>
                   <FormControl>
-                    <Input className="col-span-3" {...field} />
+                    <Input
+                      className="col-span-4 rounded-md py-1 sm:col-span-3"
+                      {...field}
+                    />
                   </FormControl>
                   <div className="col-span-4">
                     <FormMessage />
@@ -314,7 +320,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
 
     const renderVariables = () => {
       return (
-        <div>
+        <div className="flex flex-col gap-1">
           <h4 className="mt-2 text-sm font-semibold">
             {t('page-prompts:section:variables')}
           </h4>
@@ -369,7 +375,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
               />
             ) : (
               <div className="flex items-center justify-between gap-2 rounded-md border border-input bg-accent p-2 hover:border-input-hover">
-                <span className="max-h-6 max-w-60 overflow-hidden truncate text-sm md:max-w-[320px]">
+                <span className="max-h-6 max-w-60 overflow-hidden truncate text-sm">
                   {prompt}
                 </span>
                 <Button

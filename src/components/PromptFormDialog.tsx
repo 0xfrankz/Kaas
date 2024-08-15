@@ -41,30 +41,26 @@ const NewPromptFormDialog = forwardRef<
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent>
-        <div className="flex max-h-screen">
-          <ScrollArea>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {t('page-prompts:section:create-prompt')}
-              </DialogTitle>
-              <div className="whitespace-pre-wrap text-left text-sm text-muted-foreground">
-                <Markdown remarkPlugins={[remarkGfm]}>
-                  {t('page-prompts:message:create-prompt-tips')}
-                </Markdown>
-              </div>
-            </DialogHeader>
-            <PromptForm.New id="promptForm" onSubmit={onSubmit} />
-            <DialogFooter className="gap-4">
-              <DialogClose asChild>
-                <Button variant="secondary">
-                  {t('generic:action:cancel')}
-                </Button>
-              </DialogClose>
-              <Button form="promptForm">{t('generic:action:save')}</Button>
-            </DialogFooter>
-          </ScrollArea>
-        </div>
+      <DialogContent className="flex max-h-screen py-6">
+        <ScrollArea>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {t('page-prompts:section:create-prompt')}
+            </DialogTitle>
+            <div className="whitespace-pre-wrap text-left text-sm text-muted-foreground">
+              <Markdown remarkPlugins={[remarkGfm]}>
+                {t('page-prompts:message:create-prompt-tips')}
+              </Markdown>
+            </div>
+          </DialogHeader>
+          <PromptForm.New id="promptForm" onSubmit={onSubmit} />
+          <DialogFooter className="gap-4">
+            <DialogClose asChild>
+              <Button variant="secondary">{t('generic:action:cancel')}</Button>
+            </DialogClose>
+            <Button form="promptForm">{t('generic:action:save')}</Button>
+          </DialogFooter>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
@@ -91,38 +87,34 @@ const EditPromptFormDialog = forwardRef<
 
   return prompt ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent>
-        <div className="flex max-h-screen">
-          <ScrollArea>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {t('page-prompts:section:update-prompt')}
-              </DialogTitle>
-              <div className="whitespace-pre-wrap text-left text-sm text-muted-foreground">
-                <Markdown remarkPlugins={[remarkGfm]}>
-                  {t('page-prompts:message:create-prompt-tips')}
-                </Markdown>
-              </div>
-            </DialogHeader>
-            <PromptForm.Edit
-              id="promptForm"
-              onSubmit={onSubmit}
-              defaultValues={prompt}
+      <DialogContent className="flex max-h-screen py-6">
+        <ScrollArea>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {t('page-prompts:section:update-prompt')}
+            </DialogTitle>
+            <div className="whitespace-pre-wrap text-left text-sm text-muted-foreground">
+              <Markdown remarkPlugins={[remarkGfm]}>
+                {t('page-prompts:message:create-prompt-tips')}
+              </Markdown>
+            </div>
+          </DialogHeader>
+          <PromptForm.Edit
+            id="promptForm"
+            onSubmit={onSubmit}
+            defaultValues={prompt}
+          />
+          <DialogFooter className="gap-4">
+            <DeleteWithConfirmation
+              message={t('page-prompts:message:delete-prompt-warning')}
+              onConfirm={() => onDeleteClick(prompt)}
             />
-            <DialogFooter className="gap-4">
-              <DeleteWithConfirmation
-                message={t('page-prompts:message:delete-prompt-warning')}
-                onConfirm={() => onDeleteClick(prompt)}
-              />
-              <DialogClose asChild>
-                <Button variant="secondary">
-                  {t('generic:action:cancel')}
-                </Button>
-              </DialogClose>
-              <Button form="promptForm">{t('generic:action:save')}</Button>
-            </DialogFooter>
-          </ScrollArea>
-        </div>
+            <DialogClose asChild>
+              <Button variant="secondary">{t('generic:action:cancel')}</Button>
+            </DialogClose>
+            <Button form="promptForm">{t('generic:action:save')}</Button>
+          </DialogFooter>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   ) : null;
