@@ -296,7 +296,7 @@ export function ChatSectionHasModel({
       onRegenerateClick={onRegenerateClick}
       onReceiverReady={onReceiverReady}
     >
-      <ScrollArea className="w-full" viewportRef={viewportRef}>
+      <ScrollArea className="w-full grow" viewportRef={viewportRef}>
         <div className="relative mx-auto w-[640px]">
           {isSuccess && <MemoizedMessageList />}
           {/* Spacer */}

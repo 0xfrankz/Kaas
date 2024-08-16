@@ -80,7 +80,7 @@ export function ChatSection({ conversation }: Props) {
   );
 
   return (
-    <TwoRows className="max-h-screen">
+    <TwoRows className="h-screen max-h-screen">
       <TwoRows.Top>
         <MemoizedTitleBar
           conversation={conversation}
