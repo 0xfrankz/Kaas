@@ -97,8 +97,7 @@ const config = {
         110: '1.1',
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
-        noto_sans_sc: ['Noto Sans SC', 'sans-serif'],
+        kaas: ['Inter', 'Noto Sans SC', 'sans-serif'],
       },
     },
     typography: {
