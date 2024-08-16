@@ -15,7 +15,7 @@ import type { ConversationDetails } from '@/lib/types';
 
 import { ChatSectionHasModel } from './ChatSectionHasModel';
 import { ChatSectionNoModel } from './ChatSectionNoModel';
-import { ConversationTitleBar } from './ConversationTitleBar';
+import { ConversationTitleBar } from './Conversation/ConversationTitleBar';
 import {
   ContextMenu,
   ContextMenuContent,

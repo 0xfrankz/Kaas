@@ -42,7 +42,7 @@ export function SystemMessageIndicator({
             <OnOffIndicator on={!!data} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent side="bottom">
           <span>{`${t('generic:label:system-message')} ${t(onOffKey)}`}</span>
         </TooltipContent>
       </Tooltip>

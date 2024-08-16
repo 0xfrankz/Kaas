@@ -41,7 +41,7 @@ export function ProxyIndicator({
             <OnOffIndicator on={proxySetting.on} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent side="bottom">
           <span>{`${t('generic:label:proxy')} ${t(onOffKey)}`}</span>
         </TooltipContent>
       </Tooltip>

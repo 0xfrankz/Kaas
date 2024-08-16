@@ -296,15 +296,18 @@ export function ChatSectionHasModel({
       onRegenerateClick={onRegenerateClick}
       onReceiverReady={onReceiverReady}
     >
-      <ScrollArea className="w-full grow" viewportRef={viewportRef}>
-        <div className="relative mx-auto w-[640px]">
+      <ScrollArea
+        className="flex w-full grow justify-center"
+        viewportRef={viewportRef}
+      >
+        <div className="relative w-full px-4 md:mx-auto md:w-[640px] md:px-0">
           {isSuccess && <MemoizedMessageList />}
           {/* Spacer */}
           <div className="mt-4 h-8" />
           <MemoizedScrollBottom scrollContainerRef={viewportRef} />
         </div>
       </ScrollArea>
-      <div className="w-[640px] bg-background">
+      <div className="w-full px-4 md:w-[640px] md:px-0">
         <div className="relative flex w-full flex-col items-center justify-center">
           {renderBottomSection()}
         </div>
