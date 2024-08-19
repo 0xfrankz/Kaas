@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
+import { ScrollArea } from '../ui/scroll-area';
 
 type NewModelFormDialogContentProps = {
   provider: AllProviders;
@@ -57,25 +58,29 @@ function NewModelFormDialogContent({
       form = <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
   }
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <NumberedBullet number={2} />
-          {t('page-models:section:create-model', { provider })}
-        </DialogTitle>
-        <DialogDescription className="ml-10 text-left">
-          {t('page-models:message:create-model-tips', {
-            provider,
-          })}
-        </DialogDescription>
-      </DialogHeader>
-      {form}
-      <DialogFooter className="gap-4">
-        <Button variant="secondary" onClick={onResetClick}>
-          {t('generic:action:change-provider')}
-        </Button>
-        <Button form="modelForm">{t('generic:action:save')}</Button>
-      </DialogFooter>
+    <DialogContent className="flex max-h-screen">
+      <ScrollArea className="grow">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <NumberedBullet number={2} />
+            <span className="text-left">
+              {t('page-models:section:create-model', { provider })}
+            </span>
+          </DialogTitle>
+          <DialogDescription className="ml-10 text-left">
+            {t('page-models:message:create-model-tips', {
+              provider,
+            })}
+          </DialogDescription>
+        </DialogHeader>
+        {form}
+        <DialogFooter className="gap-4">
+          <Button variant="secondary" onClick={onResetClick}>
+            {t('generic:action:change-provider')}
+          </Button>
+          <Button form="modelForm">{t('generic:action:save')}</Button>
+        </DialogFooter>
+      </ScrollArea>
     </DialogContent>
   );
 }
@@ -134,26 +139,28 @@ function EditModelFormDialogContent({
       );
   }
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle className="flex items-center">
-          {t('page-models:section:update-model')}
-        </DialogTitle>
-        <DialogDescription className="text-left">
-          {t('page-models:message:update-model-tips')}
-        </DialogDescription>
-      </DialogHeader>
-      {form}
-      <DialogFooter className="gap-4">
-        <DeleteWithConfirmation
-          message={t('page-models:message:delete-model-warning')}
-          onConfirm={() => onDelete(model)}
-        />
-        <DialogClose asChild>
-          <Button variant="secondary">{t('generic:action:cancel')}</Button>
-        </DialogClose>
-        <Button form="modelForm">{t('generic:action:save')}</Button>
-      </DialogFooter>
+    <DialogContent className="flex max-h-screen">
+      <ScrollArea className="grow">
+        <DialogHeader>
+          <DialogTitle className="flex items-center">
+            {t('page-models:section:update-model')}
+          </DialogTitle>
+          <DialogDescription className="text-left">
+            {t('page-models:message:update-model-tips')}
+          </DialogDescription>
+        </DialogHeader>
+        {form}
+        <DialogFooter className="gap-4">
+          <DeleteWithConfirmation
+            message={t('page-models:message:delete-model-warning')}
+            onConfirm={() => onDelete(model)}
+          />
+          <DialogClose asChild>
+            <Button variant="secondary">{t('generic:action:cancel')}</Button>
+          </DialogClose>
+          <Button form="modelForm">{t('generic:action:save')}</Button>
+        </DialogFooter>
+      </ScrollArea>
     </DialogContent>
   );
 }
