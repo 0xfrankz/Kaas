@@ -10,19 +10,17 @@ import {
   useMessageCreator,
   useMessageListContext,
 } from '@/lib/hooks';
-import type { ContentItem, Message } from '@/lib/types';
+import type { ContentItem, ConversationDetails, Message } from '@/lib/types';
 import { getTextFromContent } from '@/lib/utils';
 
 import PromptInput from './PromptInput';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
-const HEIGHT_LIMIT = 20 * 20;
-
 type Props = {
-  conversationId: number;
+  conversation: ConversationDetails;
 };
 
-export function UserPromptInput({ conversationId }: Props) {
+export function UserPromptInput({ conversation }: Props) {
   const queryClient = useQueryClient();
   const { messages } = useMessageListContext();
   const { t } = useTranslation();
@@ -38,7 +36,7 @@ export function UserPromptInput({ conversationId }: Props) {
       } else {
         // insert placeholder to trigger generation
         const placeholder: Message = {
-          conversationId,
+          conversationId: conversation.id,
           role: MESSAGE_BOT,
           content: [],
           id: -1,
@@ -49,7 +47,7 @@ export function UserPromptInput({ conversationId }: Props) {
           [
             ...LIST_MESSAGES_KEY,
             {
-              conversationId,
+              conversationId: conversation.id,
             },
           ],
           (old) => {
@@ -69,13 +67,13 @@ export function UserPromptInput({ conversationId }: Props) {
         toast.error(t('error:validation:empty-prompt'));
       } else {
         creator({
-          conversationId,
+          conversationId: conversation.id,
           role: MESSAGE_USER,
           content,
         });
       }
     },
-    [conversationId, creator, t]
+    [conversation.id, creator, t]
   );
 
   return (
@@ -100,6 +98,7 @@ export function UserPromptInput({ conversationId }: Props) {
       <PromptInput
         onSubmit={onSubmit}
         placeHolder={t('page-conversation:message:input-placeholder')}
+        conversation={conversation}
       />
     </div>
   );

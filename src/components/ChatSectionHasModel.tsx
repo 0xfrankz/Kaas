@@ -283,7 +283,7 @@ export function ChatSectionHasModel({
         </div>
         <div id="continue-or-input" className="h-fit w-full">
           <FileUploaderContextProvider>
-            <UserPromptInput conversationId={conversation.id} />
+            <UserPromptInput conversation={conversation} />
           </FileUploaderContextProvider>
         </div>
       </>

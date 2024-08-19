@@ -43,10 +43,6 @@ function ConversationPage() {
             conversation={conversation as ConversationDetails}
             key={conversation.id}
           />
-          <ConversationOptionsDialog
-            conversation={conversation}
-            className="absolute bottom-[38px] right-10 size-9 rounded-full p-0 shadow"
-          />
         </TwoColumns.Right>
       </TwoColumns>
     </SlideLeftTransition>

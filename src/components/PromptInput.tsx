@@ -1,4 +1,4 @@
-import { ImagePlus, Puzzle, SendHorizonal, X } from 'lucide-react';
+import { ImagePlus, Puzzle, SendHorizonal, Settings2, X } from 'lucide-react';
 import {
   forwardRef,
   useCallback,
@@ -21,12 +21,14 @@ import { useAppStateStore } from '@/lib/store';
 import type {
   ContentItem,
   ContentItemTypes,
+  ConversationDetails,
   DialogHandler,
   PromptInputHandler,
 } from '@/lib/types';
 import { cn, getFileExt } from '@/lib/utils';
 
 import { AutoFitTextarea } from './AutoFitTextarea';
+import { ConversationOptionsDialog } from './ConversationOptionsDialog';
 import { ImagePreviwer } from './ImagePreviewer';
 import { ImageUploader } from './ImageUploader';
 import { PromptApplyDialog } from './PromptApplyDialog';
@@ -38,10 +40,12 @@ type Props = {
   enableUpload?: boolean;
   enablePromptTemplate?: boolean;
   enableSetting?: boolean;
+  enableOptions?: boolean;
   showSendButton?: boolean;
   maxHeight?: number;
   defaultValue?: string;
   placeHolder?: string;
+  conversation: ConversationDetails;
   onSubmit: (content: ContentItem[]) => void;
 };
 
@@ -52,10 +56,12 @@ const PromptInput = forwardRef<PromptInputHandler, Props>(
       enableUpload = true,
       enablePromptTemplate = true,
       enableSetting = true,
+      enableOptions = true,
       showSendButton = true,
       maxHeight = MAX_HEIGHT,
       defaultValue,
       placeHolder,
+      conversation,
       onSubmit,
     },
     ref
@@ -69,6 +75,7 @@ const PromptInput = forwardRef<PromptInputHandler, Props>(
     );
     const promptRef = useRef<HTMLTextAreaElement>(null);
     const promptGridDialogRef = useRef<DialogHandler<void>>(null);
+    const optionsDialogRef = useRef<DialogHandler<void>>(null);
     const { t } = useTranslation(['generic', 'page-conversation']);
 
     // Queries
@@ -77,6 +84,10 @@ const PromptInput = forwardRef<PromptInputHandler, Props>(
     // Callbacks
     const onUsePromptClick = useCallback(() => {
       promptGridDialogRef.current?.open();
+    }, []);
+
+    const onOpenOptionsClick = useCallback(() => {
+      optionsDialogRef.current?.open();
     }, []);
 
     const onClick = useCallback(async () => {
@@ -221,6 +232,15 @@ const PromptInput = forwardRef<PromptInputHandler, Props>(
                 <Puzzle className="size-[14px]" />
               </Button>
             ) : null}
+            {enableOptions ? (
+              <Button
+                className="size-6 p-0"
+                variant="secondary"
+                onClick={onOpenOptionsClick}
+              >
+                <Settings2 className="size-4" />
+              </Button>
+            ) : null}
           </div>
           <div className="flex w-full">
             <div className="my-auto grow">
@@ -259,6 +279,10 @@ const PromptInput = forwardRef<PromptInputHandler, Props>(
           </div>
         ) : null}
         <PromptApplyDialog ref={promptGridDialogRef} onUseClick={onUseClick} />
+        <ConversationOptionsDialog
+          ref={optionsDialogRef}
+          conversation={conversation}
+        />
       </>
     );
   }

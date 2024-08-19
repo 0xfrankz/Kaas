@@ -165,23 +165,6 @@ function PromptEditor({ prompt, onCancel, onUseClick }: EditorProps) {
         </Button>
         <NewPromptMaker onUseClick={onUseClick} />
       </div>
-      {/* <div className="flex max-h-[600px] gap-4 overflow-hidden">
-        <ScrollArea className="flex-1">
-          {prompt.alias}
-          <PromptForm.Use id="promptForm" />
-        </ScrollArea>
-        <div className="flex flex-1 flex-col">
-          <ScrollArea className="flex-1 rounded-2xl bg-muted">
-            <PromptPreviewer />
-          </ScrollArea>
-          <div className="flex h-fit items-center justify-end gap-2">
-            <Button variant="secondary" onClick={onCancel}>
-              {t('generic:action:cancel')}
-            </Button>
-            <NewPromptMaker onUseClick={onUseClick} />
-          </div>
-        </div>
-      </div> */}
     </FilledPromptContextProvider>
   ) : null;
 }
