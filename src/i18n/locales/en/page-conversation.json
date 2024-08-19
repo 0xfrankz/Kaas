@@ -3,7 +3,8 @@
         "choose-model": "Choose a model for {{subject}}",
         "set-system-message": "Set the system message for {{subject}}",
         "conversation-history": "Conversation History",
-        "use-prompt": "Use a prompt template"
+        "use-prompt": "Use a prompt template",
+        "change-options": "Change model options of this conversation"
     },
     "label": {
         "enter-to-send": "Press Enter to send",
@@ -34,6 +35,7 @@
         "use-prompt-tips": "Replace variables in your prompt template with real values.",
         "insert-into-prompt": "Insert into prompt",
         "token-usage": "Tokens used for this message: {{usage}}",
-        "total-token-usage": "Tokens used for this conversation: {{totalUsage}}"
+        "total-token-usage": "Tokens used for this conversation: {{totalUsage}}",
+        "change-options-tips": "Altering the options can cause unpredictable behaviors and even errors. Change with caution."
     }
 }

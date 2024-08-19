@@ -3,7 +3,8 @@
         "choose-model": "为{{subject}}选择一个模型",
         "set-system-message": "为{{subject}}设置系统消息",
         "conversation-history": "对话历史",
-        "use-prompt": "使用prompt模板"
+        "use-prompt": "使用prompt模板",
+        "change-options": "更改此对话的模型设置"
     },
     "label": {
         "enter-to-send": "按回车发送",
@@ -34,6 +35,7 @@
         "use-prompt-tips": "将模板中的变量替换为真实值。",
         "insert-into-prompt": "插入prompt",
         "token-usage": "此消息消耗: {{usage}} tokens",
-        "total-token-usage": "此对话共消耗: {{totalUsage}} tokens"
+        "total-token-usage": "此对话共消耗: {{totalUsage}} tokens",
+        "change-options-tips": "更改选项可能会导致不可预测的行为和错误，请谨慎修改。"
     }
 }

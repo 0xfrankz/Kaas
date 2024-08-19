@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import {
@@ -31,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { ScrollArea } from './ui/scroll-area';
 
 type Props = {
   conversation: ConversationDetails;
@@ -49,6 +51,7 @@ export const ConversationOptionsDialog = forwardRef<DialogHandler<void>, Props>(
     const model = useAppStateStore((state) =>
       state.models.find((m) => m.id === conversation.modelId)
     );
+    const { t } = useTranslation('page-conversation');
 
     useImperativeHandle(ref, () => ({
       open: () => {
@@ -139,26 +142,26 @@ export const ConversationOptionsDialog = forwardRef<DialogHandler<void>, Props>(
 
     return isSuccess && options ? (
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        {/* <DialogTrigger asChild>
-          <Button variant="outline" className={className}>
-            <Settings2 className="size-4" />
-          </Button>
-        </DialogTrigger> */}
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Change options of this conversation</DialogTitle>
-            <DialogDescription>
-              Altering the options can cause unpredictable behaviors and even
-              errors. Make sure you know what you are changing.
-            </DialogDescription>
-          </DialogHeader>
-          {renderForm()}
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="secondary">Cancel</Button>
-            </DialogClose>
-            <Button form="optionsForm">Save</Button>
-          </DialogFooter>
+        <DialogContent className="flex max-h-screen max-w-xl">
+          <ScrollArea className="grow">
+            <DialogHeader>
+              <DialogTitle className="flex items-center text-left">
+                {t('page-conversation:section:change-options')}
+              </DialogTitle>
+              <DialogDescription className="text-left">
+                {t('page-conversation:message:change-options-tips')}
+              </DialogDescription>
+            </DialogHeader>
+            {renderForm()}
+            <DialogFooter className="gap-4">
+              <DialogClose asChild>
+                <Button variant="secondary">
+                  {t('generic:action:cancel')}
+                </Button>
+              </DialogClose>
+              <Button form="optionsForm">{t('generic:action:save')}</Button>
+            </DialogFooter>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     ) : null;

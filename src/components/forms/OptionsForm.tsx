@@ -66,10 +66,12 @@ const InputField = <T extends Options>({
       name={name}
       render={({ field }) => (
         <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">{label}</FormLabel>
+          <FormLabel className="col-span-1 text-right sm:col-span-2">
+            {label}
+          </FormLabel>
           <FormControl>
             <Input
-              className="col-span-2"
+              className="col-span-3 sm:col-span-2"
               {...field}
               value={(field.value ?? '') as string}
               placeholder={placeholder}
@@ -123,7 +125,9 @@ const StreamField = <T extends Options>({
       name={name}
       render={({ field }) => (
         <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-          <FormLabel className="col-span-2 text-right">{label}</FormLabel>
+          <FormLabel className="col-span-1 text-right sm:col-span-2">
+            {label}
+          </FormLabel>
           <FormControl>
             <Switch
               checked={field.value as boolean}
@@ -167,7 +171,7 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
-          <div className="grid grid-cols-2 gap-4 py-8">
+          <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2">
             <InputField
               control={form.control}
               name="contextLength"
@@ -245,7 +249,7 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
-          <div className="grid grid-cols-2 gap-4 py-8">
+          <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2">
             <InputField
               control={form.control}
               name="contextLength"
@@ -323,7 +327,7 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
-          <div className="grid grid-cols-2 gap-4 py-8">
+          <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2">
             <InputField
               control={form.control}
               name="contextLength"
@@ -389,7 +393,7 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
-          <div className="grid grid-cols-2 gap-4 py-8">
+          <div className="grid grid-cols-1 gap-4 py-8 sm:grid-cols-2">
             <InputField
               control={form.control}
               name="contextLength"
