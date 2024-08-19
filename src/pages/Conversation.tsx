@@ -1,9 +1,8 @@
 import { useParams } from 'react-router-dom';
 
 import { SlideLeftTransition } from '@/components/animation/SlideLeftTransition';
-import { ChatSection } from '@/components/ChatSection';
+import { ChatSection } from '@/components/Conversation/ChatSection';
 import { ConversationHistory } from '@/components/ConversationHistory';
-import { ConversationOptionsDialog } from '@/components/ConversationOptionsDialog';
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useConversationsContext } from '@/lib/hooks';

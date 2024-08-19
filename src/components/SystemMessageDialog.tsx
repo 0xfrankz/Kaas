@@ -34,6 +34,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
@@ -165,43 +166,35 @@ export const SystemMessageDialog = forwardRef<
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="line-clamp-2 whitespace-pre-wrap leading-5">
+          <DialogTitle className="line-clamp-2 whitespace-pre-wrap text-left leading-5">
             {t('page-conversation:section:set-system-message', {
               subject: conversation.subject,
             })}
           </DialogTitle>
-          <DialogDescription className="whitespace-pre-wrap">
+          <DialogDescription className="whitespace-pre-wrap text-left">
             {t('page-conversation:message:set-system-message-tips')}
           </DialogDescription>
         </DialogHeader>
-        {/* <div>
-          <AutoFitTextarea
-            maxHeight={400}
-            ref={taRef}
-            className="rounded-xl p-2"
-            rows={5}
-            defaultValue={message ? getTextFromMessage(message) : ''}
-          />
-        </div> */}
-
         <div>
           <FileUploaderContextProvider>
             <PromptInput
               ref={promptInputRef}
               enableUpload={false}
               enableSetting={false}
+              enableOptions={false}
               showSendButton={false}
               onSubmit={onSubmit}
               defaultValue={message ? getTextFromMessage(message) : ''}
+              conversation={conversation}
             />
           </FileUploaderContextProvider>
         </div>
-        <div className="flex h-fit items-center justify-end gap-2">
+        <DialogFooter className="gap-4">
           <Button variant="secondary" onClick={() => setShowDialog(false)}>
             {t('generic:action:cancel')}
           </Button>
           <Button onClick={onClick}>{t('generic:action:set')}</Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   ) : null;

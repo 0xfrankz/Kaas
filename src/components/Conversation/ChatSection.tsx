@@ -13,15 +13,15 @@ import {
 import { useAppStateStore, useConfirmationStateStore } from '@/lib/store';
 import type { ConversationDetails } from '@/lib/types';
 
-import { ChatSectionHasModel } from './ChatSectionHasModel';
-import { ChatSectionNoModel } from './ChatSectionNoModel';
-import { ConversationTitleBar } from './Conversation/ConversationTitleBar';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from './ui/context-menu';
+} from '../ui/context-menu';
+import { ChatSectionHasModel } from './ChatSectionHasModel';
+import { ChatSectionNoModel } from './ChatSectionNoModel';
+import { ConversationTitleBar } from './ConversationTitleBar';
 
 const MemoizedTitleBar = memo(ConversationTitleBar);
 

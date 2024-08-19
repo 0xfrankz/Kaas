@@ -14,8 +14,8 @@ import type {
   StatefulDialogHandler,
 } from '@/lib/types';
 
-import { ModelPickerDialog } from './ModelPickerDialog';
-import { Button } from './ui/button';
+import { ModelPickerDialog } from '../ModelPickerDialog';
+import { Button } from '../ui/button';
 
 export function ChatSectionNoModel({
   conversation,
@@ -64,7 +64,7 @@ export function ChatSectionNoModel({
 
   return (
     <div className="flex size-full flex-col items-center justify-center gap-4">
-      <h2 className="text-3xl font-semibold tracking-tight">
+      <h2 className="text-center text-3xl font-semibold tracking-tight">
         {t('page-conversation:message:no-model')}
       </h2>
       <Button onClick={onChooseClick}>
