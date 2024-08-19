@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 
 import { ConversationCreator } from './ConversationCreator';
 import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
 
 type Props = {
   activeConversationId: number;
@@ -25,7 +24,7 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
       asChild
       variant="ghost"
       className={cn(
-        'flex size-full items-center box-border px-3 justify-start rounded-2xl hover:bg-[--yellow-a4] active:bg-[--yellow-a5] shadow-none',
+        'flex items-center box-border justify-start rounded-2xl hover:bg-[--yellow-a4] active:bg-[--yellow-a5] shadow-none',
         active
           ? 'bg-[--yellow-a3] text-[--yellow-a11]'
           : 'bg-transparent text-[--gray-a11]'
@@ -45,24 +44,22 @@ export function ConversationHistory({ activeConversationId }: Props) {
   const { conversations } = useConversationsContext();
   const { t } = useTranslation(['page-conversation']);
   return (
-    <div className="box-border flex h-full max-h-screen w-72 flex-col gap-6 border-r border-border bg-background px-5 py-6">
-      <h3 className="px-2 text-xs font-medium tracking-wide text-gray-400">
-        {t('page-conversation:section:conversation-history')}
+    <div className="box-border flex h-fit w-full flex-col gap-2">
+      <h3 className="text-xs font-medium tracking-wide text-gray-400">
+        {t('page-conversation:section:recent')}
       </h3>
-      <ScrollArea>
-        <ul className="mt-3 flex flex-col gap-2">
-          {conversations.map((c) => {
-            return (
-              <li key={c.id} className="h-12">
-                <ConversationHistoryItem
-                  conversation={c}
-                  active={c.id === activeConversationId}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      </ScrollArea>
+      <ul className="flex flex-col gap-2">
+        {conversations.map((c) => {
+          return (
+            <li key={c.id}>
+              <ConversationHistoryItem
+                conversation={c}
+                active={c.id === activeConversationId}
+              />
+            </li>
+          );
+        })}
+      </ul>
       <ConversationCreator />
     </div>
   );

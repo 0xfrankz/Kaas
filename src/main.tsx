@@ -70,11 +70,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'conversations',
-        element: (
-          <ConversationsContextProvider>
-            <Outlet />
-          </ConversationsContextProvider>
-        ),
+        element: <Outlet />,
         children: [
           {
             index: true,
@@ -217,9 +213,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             <ThemeProvider defaultTheme="system" attribute="class">
               <TooltipProvider delayDuration={0}>
                 <Suspense fallback={<PageSkeleton />}>
-                  <InitializationProvider>
-                    <RouterProvider router={router} />
-                  </InitializationProvider>
+                  <ConversationsContextProvider>
+                    <InitializationProvider>
+                      <RouterProvider router={router} />
+                    </InitializationProvider>
+                  </ConversationsContextProvider>
                 </Suspense>
               </TooltipProvider>
             </ThemeProvider>

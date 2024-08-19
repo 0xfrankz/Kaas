@@ -2,7 +2,7 @@
     "section": {
         "choose-model": "Choose a model for {{subject}}",
         "set-system-message": "Set the system message for {{subject}}",
-        "conversation-history": "Conversation History",
+        "recent": "Recent",
         "use-prompt": "Use a prompt template",
         "change-options": "Change model options of this conversation"
     },

@@ -2,7 +2,6 @@ import { useParams } from 'react-router-dom';
 
 import { SlideLeftTransition } from '@/components/animation/SlideLeftTransition';
 import { ChatSection } from '@/components/Conversation/ChatSection';
-import { ConversationHistory } from '@/components/ConversationHistory';
 import TwoColumns from '@/layouts/TwoColumns';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useConversationsContext } from '@/lib/hooks';
@@ -34,9 +33,9 @@ function ConversationPage() {
   return (
     <SlideLeftTransition motionKey={`conversation-${conversation.id}`}>
       <TwoColumns className="h-screen grow">
-        <TwoColumns.Left className="hidden lg:block">
+        {/* <TwoColumns.Left className="hidden lg:block">
           <ConversationHistory activeConversationId={cid} />
-        </TwoColumns.Left>
+        </TwoColumns.Left> */}
         <TwoColumns.Right className="relative">
           <ChatSection
             conversation={conversation as ConversationDetails}

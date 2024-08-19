@@ -2,7 +2,7 @@
     "section": {
         "choose-model": "为{{subject}}选择一个模型",
         "set-system-message": "为{{subject}}设置系统消息",
-        "conversation-history": "对话历史",
+        "recent": "最近",
         "use-prompt": "使用prompt模板",
         "change-options": "更改此对话的模型设置"
     },

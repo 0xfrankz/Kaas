@@ -1,10 +1,12 @@
 import { Bug, MessageSquare, Package, Puzzle, Settings } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import type { Params } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { cn } from '@/lib/utils';
+import { cn, parseNumberOrNull } from '@/lib/utils';
 
+import { ConversationHistory } from './ConversationHistory';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -13,6 +15,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from './ui/context-menu';
+import { ScrollArea } from './ui/scroll-area';
 
 type MenuProps = {
   expanded: boolean;
@@ -33,25 +36,67 @@ function SideNavMenuItem({
   icon,
   expanded,
   active,
-  className: extraClassName = '',
+  className,
 }: MenuItemProps) {
   return (
-    <Button
-      className={cn(
-        'flex text-base font-bold rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-foreground transition-all overflow-hidden',
-        expanded ? 'w-72 ml-4' : 'w-12 ml-2',
-        active ? 'bg-[--gray-a3]' : 'bg-transparent',
-        extraClassName
-      )}
-      title={text}
-      variant="ghost"
-      asChild
-    >
-      <Link to={to}>
-        <span className="my-auto">{icon}</span>
-        <span className={cn('my-auto ml-4')}>{text}</span>
-      </Link>
-    </Button>
+    <li className={className}>
+      <Button
+        className={cn(
+          'flex text-base font-bold rounded-2xl h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-foreground transition-all overflow-hidden',
+          expanded ? 'w-72 ml-4' : 'w-12 ml-2',
+          active ? 'bg-[--gray-a3]' : 'bg-transparent'
+        )}
+        title={text}
+        variant="ghost"
+        asChild
+      >
+        <Link to={to}>
+          <span className="my-auto">{icon}</span>
+          <span className={cn('my-auto ml-4')}>{text}</span>
+        </Link>
+      </Button>
+    </li>
+  );
+}
+
+function SideNavMenuConversationsItem({
+  expanded,
+  active,
+}: {
+  expanded: boolean;
+  active: boolean;
+}) {
+  const { t } = useTranslation('generic');
+  const { conversationId } = useParams<Params>();
+  const cid = parseNumberOrNull(conversationId) ?? -1;
+  return (
+    <li>
+      <Button
+        className={cn(
+          'flex text-base font-bold rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-foreground transition-all overflow-hidden',
+          expanded ? 'w-72 ml-4' : 'w-12 ml-2',
+          active ? 'bg-[--gray-a3]' : 'bg-transparent'
+        )}
+        title={t('nav.conversations')}
+        variant="ghost"
+        asChild
+      >
+        <Link to="/conversations">
+          <span className="my-auto">
+            <MessageSquare className="size-4 text-foreground" />
+          </span>
+          <span className={cn('my-auto ml-4')}>{t('nav.conversations')}</span>
+        </Link>
+      </Button>
+      <ScrollArea
+        className={cn(
+          'h-96 transition-all overflow-hidden max-w-60',
+          expanded ? 'w-60 ml-16' : 'w-0 ml-10'
+        )}
+      >
+        <ConversationHistory activeConversationId={cid} />
+      </ScrollArea>
+    </li>
   );
 }
 
@@ -63,16 +108,13 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
   return (
     <ul
       className={cn(
-        'grow flex-col justify-start items-start transition-[margin] mt-32',
+        'grow flex-col justify-start items-start transition-[margin] mt-16',
         expanded ? 'flex' : 'hidden md:flex'
       )}
     >
-      <SideNavMenuItem
-        text={t('nav.conversations')}
-        icon={<MessageSquare className="size-4 text-foreground" />}
+      <SideNavMenuConversationsItem
         expanded={expanded}
         active={pathname === '/conversations'}
-        to="/conversations"
       />
       <SideNavMenuItem
         text={t('nav.prompts')}
