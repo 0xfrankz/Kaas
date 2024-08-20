@@ -9,12 +9,21 @@ import { SideNavMenu } from './SideNavMenu';
 export function SideNav() {
   const ref = useRef(null);
   const isHovering = useHover(ref);
+  // const isHovering = true;
+
+  const onClick = () => {
+    // cancel hover of ref
+    if (ref.current) {
+      const element = ref.current as HTMLElement;
+      element.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    }
+  };
 
   return (
     <div className="flex-none md:relative md:min-h-full md:w-16">
       <div
         className={cn(
-          'absolute top-0 left-0 flex flex-col box-border z-50 transition-[width] overflow-hidden pt-5',
+          'absolute top-0 left-0 flex flex-col box-border z-50 transition-[width] overflow-hidden pt-5 justify-between',
           isHovering
             ? 'w-80 h-screen border-r border-border bg-background/70 backdrop-blur-lg'
             : 'size-16 md:w-16 md:h-screen md:border-r md:border-border',

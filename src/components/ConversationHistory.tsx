@@ -6,11 +6,11 @@ import { useConversationsContext } from '@/lib/hooks';
 import type { ConversationDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-import { ConversationCreator } from './ConversationCreator';
 import { Button } from './ui/button';
 
 type Props = {
   activeConversationId: number;
+  numToShow?: number;
 };
 
 type ItemProps = {
@@ -40,7 +40,10 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
   );
 }
 
-export function ConversationHistory({ activeConversationId }: Props) {
+export function ConversationHistory({
+  activeConversationId,
+  numToShow = 5,
+}: Props) {
   const { conversations } = useConversationsContext();
   const { t } = useTranslation(['page-conversation']);
   return (
@@ -49,7 +52,7 @@ export function ConversationHistory({ activeConversationId }: Props) {
         {t('page-conversation:section:recent')}
       </h3>
       <ul className="flex flex-col gap-2">
-        {conversations.map((c) => {
+        {conversations.slice(0, numToShow).map((c) => {
           return (
             <li key={c.id}>
               <ConversationHistoryItem
@@ -59,8 +62,27 @@ export function ConversationHistory({ activeConversationId }: Props) {
             </li>
           );
         })}
+        {conversations.length - numToShow > 0 ? (
+          <li>
+            <Button
+              asChild
+              variant="link"
+              className={cn(
+                'flex items-center box-border justify-start',
+                'bg-transparent text-[--gray-a11]'
+              )}
+            >
+              <Link to="/conversations/">
+                <span className="text-left text-xs">
+                  {t('generic:message:n-more-conversations', {
+                    n: conversations.length - numToShow,
+                  })}
+                </span>
+              </Link>
+            </Button>
+          </li>
+        ) : null}
       </ul>
-      <ConversationCreator />
     </div>
   );
 }

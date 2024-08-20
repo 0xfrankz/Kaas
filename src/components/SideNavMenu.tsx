@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { cn, parseNumberOrNull } from '@/lib/utils';
 
+import { ConversationCreator } from './ConversationCreator';
 import { ConversationHistory } from './ConversationHistory';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -70,10 +71,10 @@ function SideNavMenuConversationsItem({
   const { conversationId } = useParams<Params>();
   const cid = parseNumberOrNull(conversationId) ?? -1;
   return (
-    <li>
+    <li className="flex flex-col gap-2">
       <Button
         className={cn(
-          'flex text-base font-bold rounded-2xl mb-4 h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-foreground transition-all overflow-hidden',
+          'flex text-base font-bold rounded-2xl h-12 cursor-pointer items-start justify-start shadow-none hover:bg-[--gray-a4] active:bg-[--gray-a5] text-foreground transition-all overflow-hidden',
           expanded ? 'w-72 ml-4' : 'w-12 ml-2',
           active ? 'bg-[--gray-a3]' : 'bg-transparent'
         )}
@@ -88,14 +89,24 @@ function SideNavMenuConversationsItem({
           <span className={cn('my-auto ml-4')}>{t('nav.conversations')}</span>
         </Link>
       </Button>
-      <ScrollArea
+      <div
         className={cn(
-          'h-96 transition-all overflow-hidden max-w-60',
-          expanded ? 'w-60 ml-16' : 'w-0 ml-10'
+          'transition-all overflow-hidden max-w-60 flex flex-col gap-2 pl-2 pb-2 border-l border-border',
+          expanded ? 'w-60 ml-16' : 'w-0 ml-10 invisible'
         )}
       >
-        <ConversationHistory activeConversationId={cid} />
-      </ScrollArea>
+        <ScrollArea
+          className={cn('h-64 transition-all overflow-hidden rounded-xl')}
+        >
+          <div className="p-4">
+            <ConversationHistory activeConversationId={cid} numToShow={8} />
+          </div>
+        </ScrollArea>
+        <ConversationCreator
+          forceShowText
+          className="bg-accent shadow-none hover:bg-accent-hover"
+        />
+      </div>
     </li>
   );
 }
@@ -108,7 +119,7 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
   return (
     <ul
       className={cn(
-        'grow flex-col justify-start items-start transition-[margin] mt-16',
+        'grow flex-col justify-start items-start transition-[margin] gap-2 py-6',
         expanded ? 'flex' : 'hidden md:flex'
       )}
     >
@@ -142,7 +153,7 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         <ContextMenuTrigger>
           <Badge
             className={cn(
-              'w-12 flex justify-center my-6 rounded-full border-none bg-muted text-muted-foreground transition-all',
+              'w-12 flex justify-center rounded-full border-none bg-muted text-muted-foreground transition-all',
               expanded ? 'ml-4' : 'ml-2'
             )}
           >

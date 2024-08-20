@@ -48,7 +48,8 @@
         "are-you-sure": "Are you absolutely sure?",
         "drag-file-here": "Drop images here to upload\n\nPNG (.png), JPEG (.jpeg and .jpg) and WEBP (.webp) files are supported\nYou can upload a maximum of {{maxNumOfUploadFiles}} files, each less than 20MB.",
         "release-to-upload": "Release to upload",
-        "max-upload-files-warning": "You can only upload a maximum of {{maxNumOfUploadFiles}} files"
+        "max-upload-files-warning": "You can only upload a maximum of {{maxNumOfUploadFiles}} files",
+        "n-more-conversations": "{{n}} more conversations"
     },
     "label": {
         "default": "Default",
