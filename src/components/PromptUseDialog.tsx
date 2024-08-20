@@ -200,12 +200,7 @@ export const PromptUseDialog = forwardRef<
             </div>
             <div className="mt-4 flex grow flex-col gap-4 overflow-hidden lg:flex-row">
               <ScrollArea className="flex-1 lg:max-h-96 lg:w-1/2 lg:max-w-[1/2]">
-                <PromptForm.Use
-                  id="promptForm"
-                  onSubmit={() => {
-                    console.log('onSubmit');
-                  }}
-                />
+                <PromptForm.Use id="promptForm" />
               </ScrollArea>
               <ScrollArea className="flex-1 lg:max-h-96 lg:w-1/2 lg:max-w-[1/2]">
                 <PromptPreviewer />

@@ -304,7 +304,8 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
           insert(insertPos, { label: nv, value: '' }, { shouldFocus: false });
         }
       });
-    }, [fields, insert, prompt, remove]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [prompt]);
 
     useEffect(() => {
       const data = {
