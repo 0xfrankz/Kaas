@@ -114,6 +114,7 @@ export type ConversationDetails = {
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
+  lastMessageAt?: string;
   messageCount?: number;
   modelProvider?: AllProviders;
 };

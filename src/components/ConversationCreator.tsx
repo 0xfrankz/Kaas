@@ -11,13 +11,13 @@ import type { ButtonProps } from './ui/button';
 import { Button } from './ui/button';
 
 type ExtraProps = {
-  forceShowText?: boolean;
+  showText?: 'show' | 'hide' | 'auto';
 };
 
 export const ConversationCreator = forwardRef<
   HTMLButtonElement,
   ButtonProps & ExtraProps
->(({ className, forceShowText = false, ...props }, ref) => {
+>(({ className, showText = 'auto', ...props }, ref) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const creator = useBlankConversationCreator({
@@ -39,12 +39,28 @@ export const ConversationCreator = forwardRef<
     creator(t('generic:label:new-conversation'));
   };
 
+  const renderText = () => {
+    if (showText === 'show') {
+      return (
+        <span className={cn('ml-2')}>
+          {t('generic:action:start-new-conversation')}
+        </span>
+      );
+    }
+    if (showText === 'hide') {
+      return null;
+    }
+    return (
+      <span className="ml-2 hidden md:inline">
+        {t('generic:action:start-new-conversation')}
+      </span>
+    );
+  };
+
   return (
     <Button onClick={onCreateClick} ref={ref} {...props} className={className}>
       <Plus className="size-4" />
-      <span className={cn('ml-2', forceShowText ? null : 'hidden md:inline')}>
-        {t('generic:action:start-new-conversation')}
-      </span>
+      {renderText()}
     </Button>
   );
 });

@@ -1,4 +1,3 @@
-import { MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -31,7 +30,7 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
       )}
     >
       <Link to={`/conversations/${conversation.id}`}>
-        <MessageSquare className="size-4" />
+        {/* <MessagesSquare className="size-4" /> */}
         <span className="ml-2 w-40 overflow-hidden text-ellipsis text-left text-sm">
           {conversation.subject}
         </span>

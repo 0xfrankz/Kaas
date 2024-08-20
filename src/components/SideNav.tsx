@@ -9,15 +9,6 @@ import { SideNavMenu } from './SideNavMenu';
 export function SideNav() {
   const ref = useRef(null);
   const isHovering = useHover(ref);
-  // const isHovering = true;
-
-  const onClick = () => {
-    // cancel hover of ref
-    if (ref.current) {
-      const element = ref.current as HTMLElement;
-      element.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
-    }
-  };
 
   return (
     <div className="flex-none md:relative md:min-h-full md:w-16">

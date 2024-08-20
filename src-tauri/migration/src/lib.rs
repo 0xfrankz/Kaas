@@ -8,6 +8,8 @@ mod m20240101_000005_create_prompts;
 mod m20240101_000006_create_contents;
 mod m20240101_100001_seed_settings;
 mod m20240101_100002_seed_prompts;
+mod m20240820_000001_conversations_add_last_message_at;
+
 
 pub struct Migrator;
 
@@ -22,7 +24,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20240101_000005_create_prompts::Migration),
             Box::new(m20240101_000006_create_contents::Migration),
             Box::new(m20240101_100001_seed_settings::Migration),
-            Box::new(m20240101_100002_seed_prompts::Migration)
+            Box::new(m20240101_100002_seed_prompts::Migration),
+            Box::new(m20240820_000001_conversations_add_last_message_at::Migration),
         ]
     }
 }

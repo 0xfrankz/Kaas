@@ -27,6 +27,9 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
     pub deleted_at: Option<DateTimeLocal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub last_message_at: Option<DateTimeLocal>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -97,6 +100,7 @@ impl From<UpdateConversationDTO> for ActiveModel {
             created_at: NotSet,
             updated_at: NotSet,
             deleted_at: NotSet,
+            last_message_at: NotSet,
         }
     }
 }

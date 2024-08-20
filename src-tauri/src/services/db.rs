@@ -7,7 +7,7 @@ use entity::entities::settings::{self, Model as Setting};
 use entity::entities::contents::{self, Model as Content, ActiveModel as ActiveContent};
 use log::{error, info};
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{DbErr, IntoActiveModel, JoinType, LoaderTrait, QueryFilter, QuerySelect};
+use sea_orm::{DbErr, IntoActiveModel, JoinType, LoaderTrait, Order, QueryFilter, QueryOrder, QuerySelect};
 use sea_orm::{
     sea_query, 
     ActiveModelTrait,
@@ -210,6 +210,8 @@ impl Repository {
         }
         
         active_model.created_at = Set(chrono::Local::now());
+        // Set last message at to created at, so new conversation is shown at the top of the list
+        active_model.last_message_at = Set(Some(chrono::Local::now()));
         let result: Conversation = active_model.insert(&self.connection).await.map_err(|err| {
             error!("{}", err);
             "Failed to create conversation".to_owned()
@@ -247,6 +249,8 @@ impl Repository {
                     }
                 }
                 conv_am.created_at = Set(chrono::Local::now());
+                // Set last message at to created at, so new conversation is shown at the top of the list
+                conv_am.last_message_at = Set(Some(chrono::Local::now()));
 
                 let conv_m: Conversation = conv_am
                     .insert(txn)
@@ -296,6 +300,8 @@ impl Repository {
                 .column_as(models::Column::Provider, "model_provider")
                 .column_as(messages::Column::Id.count(), "message_count")
                 .group_by(conversations::Column::Id)
+                .order_by(conversations::Column::LastMessageAt, Order::Desc)
+                .order_by(conversations::Column::CreatedAt, Order::Desc)
                 .into_model::<ConversationDetailsDTO>()
                 .all(&self.connection)
                 .await
@@ -620,6 +626,7 @@ impl Repository {
      */
     pub async fn create_message(&self, message: MessageDTO) -> Result<MessageDTO, String> {
         let contents = message.content.clone();
+        let conversation_id = message.conversation_id;
         let mut msg_am = message.into_active_model();
         msg_am.created_at  = Set(chrono::Local::now());
         let result = self.connection.transaction::<_, MessageDTO, DbErr>(|txn| {
@@ -641,6 +648,12 @@ impl Repository {
                 let contents = msg_m
                     .find_related(contents::Entity)
                     .all(txn)
+                    .await?;
+                // Update conversation's last message at
+                conversations::Entity::update_many()
+                    .filter(conversations::Column::Id.eq(conversation_id))
+                    .col_expr(conversations::Column::LastMessageAt, sea_query::Expr::value(chrono::Local::now()))
+                    .exec(txn)
                     .await?;
                 // Return DTO
                 let dto = MessageDTO::from((msg_m, contents));

@@ -387,6 +387,19 @@ export function useMessageCreator(
           }
         );
       }
+      // Move conversation to top of the list
+      queryClient.setQueryData<ConversationDetails[]>(
+        LIST_CONVERSATIONS_KEY,
+        (old) =>
+          produce(old, (draft) => {
+            const index =
+              draft?.findIndex((c) => c.id === msg.conversationId) ?? -1;
+            if (index !== -1 && draft) {
+              // Move to top
+              draft.unshift(draft.splice(index, 1)[0]);
+            }
+          })
+      );
     },
     ...options,
   }).mutate;

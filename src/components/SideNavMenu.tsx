@@ -91,20 +91,19 @@ function SideNavMenuConversationsItem({
       </Button>
       <div
         className={cn(
-          'transition-all overflow-hidden max-w-60 flex flex-col gap-2 pl-2 pb-2 border-l border-border',
-          expanded ? 'w-60 ml-16' : 'w-0 ml-10 invisible'
+          'transition-all overflow-hidden max-w-64 flex flex-col gap-2 pl-2 pb-2 border-l border-border',
+          expanded ? 'w-64 ml-10' : 'w-0 ml-8 invisible'
         )}
       >
-        <ScrollArea
-          className={cn('h-64 transition-all overflow-hidden rounded-xl')}
-        >
+        <ScrollArea className="h-64 overflow-hidden rounded-xl transition-all">
           <div className="p-4">
             <ConversationHistory activeConversationId={cid} numToShow={8} />
           </div>
         </ScrollArea>
         <ConversationCreator
-          forceShowText
-          className="bg-accent shadow-none hover:bg-accent-hover"
+          className="shadow-none"
+          variant="outline"
+          showText="hide"
         />
       </div>
     </li>
