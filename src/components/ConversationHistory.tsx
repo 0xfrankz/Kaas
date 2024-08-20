@@ -47,41 +47,49 @@ export function ConversationHistory({
   const { t } = useTranslation(['page-conversation']);
   return (
     <div className="box-border flex h-fit w-full flex-col gap-2">
-      <h3 className="text-xs font-medium tracking-wide text-gray-400">
-        {t('page-conversation:section:recent')}
-      </h3>
-      <ul className="flex flex-col gap-2">
-        {conversations.slice(0, numToShow).map((c) => {
-          return (
-            <li key={c.id}>
-              <ConversationHistoryItem
-                conversation={c}
-                active={c.id === activeConversationId}
-              />
-            </li>
-          );
-        })}
-        {conversations.length - numToShow > 0 ? (
-          <li>
-            <Button
-              asChild
-              variant="link"
-              className={cn(
-                'flex items-center box-border justify-start',
-                'bg-transparent text-[--gray-a11]'
-              )}
-            >
-              <Link to="/conversations/">
-                <span className="text-left text-xs">
-                  {t('generic:message:n-more-conversations', {
-                    n: conversations.length - numToShow,
-                  })}
-                </span>
-              </Link>
-            </Button>
-          </li>
-        ) : null}
-      </ul>
+      {conversations.length > 0 ? (
+        <>
+          <h3 className="w-full overflow-hidden whitespace-nowrap text-xs font-medium tracking-wide text-gray-400">
+            {t('page-conversation:section:recent')}
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {conversations.slice(0, numToShow).map((c) => {
+              return (
+                <li key={c.id}>
+                  <ConversationHistoryItem
+                    conversation={c}
+                    active={c.id === activeConversationId}
+                  />
+                </li>
+              );
+            })}
+            {conversations.length - numToShow > 0 ? (
+              <li>
+                <Button
+                  asChild
+                  variant="link"
+                  className={cn(
+                    'flex items-center box-border justify-start',
+                    'bg-transparent text-[--gray-a11]'
+                  )}
+                >
+                  <Link to="/conversations/">
+                    <span className="text-left text-xs">
+                      {t('generic:message:n-more-conversations', {
+                        n: conversations.length - numToShow,
+                      })}
+                    </span>
+                  </Link>
+                </Button>
+              </li>
+            ) : null}
+          </ul>
+        </>
+      ) : (
+        <h3 className="w-full overflow-hidden whitespace-nowrap text-xs font-medium tracking-wide text-gray-400">
+          {t('page-conversations:message:no-conversation')}
+        </h3>
+      )}
     </div>
   );
 }

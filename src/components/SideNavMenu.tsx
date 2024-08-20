@@ -95,13 +95,13 @@ function SideNavMenuConversationsItem({
           expanded ? 'w-64 ml-10' : 'w-0 ml-8 invisible'
         )}
       >
-        <ScrollArea className="h-64 overflow-hidden rounded-xl transition-all">
+        <ScrollArea className="h-fit max-h-64 overflow-hidden rounded-xl transition-all">
           <div className="p-4">
             <ConversationHistory activeConversationId={cid} numToShow={8} />
           </div>
         </ScrollArea>
         <ConversationCreator
-          className="shadow-none"
+          className="mx-4 shadow-none"
           variant="outline"
           showText="hide"
         />
