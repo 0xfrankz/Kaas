@@ -8,6 +8,7 @@ import { ProxyIndicator } from '../ProxyIndicator';
 import { SystemMessageSetter } from '../SystemMessageSetter';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { UsageCounter } from './UsageCounter';
 
 type Props = {
   conversation: ConversationDetails;
@@ -28,6 +29,7 @@ export default function InfoSection({ conversation, model }: Props) {
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <ModelTag model={model} />
+          <UsageCounter conversation={conversation} />
           <ProxyIndicator
             onClick={() => {
               navigate(`/settings`);
@@ -38,6 +40,7 @@ export default function InfoSection({ conversation, model }: Props) {
       </Popover>
       <div className="ml-auto hidden gap-2 sm:flex">
         <ModelTag model={model} />
+        <UsageCounter conversation={conversation} />
         <ProxyIndicator
           onClick={() => {
             navigate(`/settings`);

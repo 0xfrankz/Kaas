@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Coins } from 'lucide-react';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -14,7 +13,6 @@ import type { ContentItem, ConversationDetails, Message } from '@/lib/types';
 import { getTextFromContent } from '@/lib/utils';
 
 import PromptInput from './PromptInput';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 type Props = {
   conversation: ConversationDetails;
@@ -78,23 +76,6 @@ export function UserPromptInput({ conversation }: Props) {
 
   return (
     <div className="relative size-full">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="absolute -top-6 right-4 overflow-hidden rounded-t bg-muted px-2 py-1 text-muted-foreground">
-            <div className="ml-auto flex items-center gap-1 text-xs">
-              <Coins className="size-[14px]" />
-              {totalUsage}
-            </div>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          <span>
-            {t('page-conversation:message:total-token-usage', {
-              totalUsage,
-            })}
-          </span>
-        </TooltipContent>
-      </Tooltip>
       <PromptInput
         onSubmit={onSubmit}
         placeHolder={t('page-conversation:message:input-placeholder')}
