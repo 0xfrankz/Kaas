@@ -300,7 +300,7 @@ export function ChatSectionHasModel({
         className="flex w-full grow justify-center"
         viewportRef={viewportRef}
       >
-        <div className="relative w-full px-4 md:mx-auto md:w-[640px] md:px-0">
+        <div className="relative w-full p-4 md:mx-auto md:w-[640px] md:px-0">
           {isSuccess && <MemoizedMessageList />}
           {/* Spacer */}
           <div className="mt-4 h-8" />

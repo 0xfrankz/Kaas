@@ -401,7 +401,7 @@ const User = ({ message }: MessageProps) => {
     <HoverContextProvider>
       <ContextMenu>
         <ContextMenuTrigger>
-          <div className="flex w-auto flex-col rounded-2xl px-6 py-12">
+          <div className="flex w-auto flex-col rounded-2xl p-6">
             <MetaBar
               avatar={USER_AVATAR}
               name={userName}
@@ -439,7 +439,14 @@ const Bot = ({ message }: MessageProps) => {
     if (message.isError) {
       return (
         <>
-          <ErrorContent error={getTextFromMessage(message)} />
+          <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
+            <MetaBar
+              avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
+              name={model ? `${model.provider}` : t('generic:model:unknown')}
+              time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+            />
+            <ErrorContent error={getTextFromMessage(message)} />
+          </div>
           <ErrorActionBar
             onRegenerateClick={() => onRegenerateClick(message)}
           />
@@ -447,11 +454,27 @@ const Bot = ({ message }: MessageProps) => {
       );
     }
     if (message.isReceiving) {
-      return <ContentReceiver message={message} />;
+      return (
+        <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
+          <MetaBar
+            avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
+            name={model ? `${model.provider}` : t('generic:model:unknown')}
+            time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+          />
+          <ContentReceiver message={message} />
+        </div>
+      );
     }
     return (
       <>
-        <MarkdownContent content={message.content} />
+        <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
+          <MetaBar
+            avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
+            name={model ? `${model.provider}` : t('generic:model:unknown')}
+            time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
+          />
+          <MarkdownContent content={message.content} />
+        </div>
         <BotActionBar
           onRegenerateClick={() => onRegenerateClick(message)}
           onCopyClick={onCopyClick}
@@ -464,16 +487,7 @@ const Bot = ({ message }: MessageProps) => {
   return (
     <HoverContextProvider>
       <ContextMenu>
-        <ContextMenuTrigger>
-          <div className="box-border flex w-auto flex-col rounded-2xl bg-[--gray-a2] p-6 shadow">
-            <MetaBar
-              avatar={message.isError ? BOT_AVATAR_WITH_ERROR : BOT_AVATAR}
-              name={model ? `${model.provider}` : t('generic:model:unknown')}
-              time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
-            />
-            {render()}
-          </div>
-        </ContextMenuTrigger>
+        <ContextMenuTrigger>{render()}</ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem
             className="cursor-pointer gap-2"

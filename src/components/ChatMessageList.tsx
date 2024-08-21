@@ -7,7 +7,7 @@ export function ChatMessageList() {
   const { messages } = useMessageListContext();
   const renderMessages = () => {
     const inner = messages ? (
-      <ul className="box-border pt-6">
+      <ul className="box-border flex flex-col gap-4">
         {messages.map((message) => {
           switch (message.role) {
             case MESSAGE_USER:

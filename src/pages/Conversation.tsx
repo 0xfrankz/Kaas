@@ -33,9 +33,6 @@ function ConversationPage() {
   return (
     <SlideLeftTransition motionKey={`conversation-${conversation.id}`}>
       <TwoColumns className="h-screen grow">
-        {/* <TwoColumns.Left className="hidden lg:block">
-          <ConversationHistory activeConversationId={cid} />
-        </TwoColumns.Left> */}
         <TwoColumns.Right className="relative">
           <ChatSection
             conversation={conversation as ConversationDetails}
