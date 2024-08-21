@@ -112,9 +112,9 @@ export default function DebugPage() {
         <TwoRows.Top>
           <TitleBar title={t('page-debug:title')} />
         </TwoRows.Top>
-        <TwoRows.Bottom className="flex overflow-hidden">
-          <ScrollArea className="w-full grow">
-            <div className="mx-auto mb-6 mt-12 w-[960px] columns-2 gap-8 text-foreground">
+        <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
+          <ScrollArea className="w-full grow px-4">
+            <div className="mx-auto mb-6 mt-12 box-border columns-1 text-foreground md:columns-2 md:gap-4 lg:w-[924px] lg:gap-8">
               <SystemInfoSection />
             </div>
           </ScrollArea>
