@@ -15,7 +15,7 @@ export function PromptPreviewer() {
       <h4 className="mt-2 text-sm font-semibold">
         {t('page-prompts:section:preview')}
       </h4>
-      <div className="whitespace-pre-wrap rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
+      <div className="select-text whitespace-pre-wrap rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
         {promptStr}
       </div>
     </div>

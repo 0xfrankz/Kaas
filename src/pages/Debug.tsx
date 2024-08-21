@@ -52,7 +52,7 @@ function SystemInfoSection() {
       <span className="mb-1 text-sm font-semibold">
         {t('page-debug:label:sys-info')}
       </span>
-      <Card className="mt-1 flex flex-col gap-4 px-4 py-6">
+      <Card className="mt-1 flex select-text flex-col gap-4 px-4 py-6">
         {sysInfo && (
           <>
             <Table>

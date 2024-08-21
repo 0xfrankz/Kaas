@@ -160,7 +160,7 @@ const CodeHighlighter = ({
 
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
-    <div className="prose mt-2 max-w-none text-foreground prose-p:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
+    <div className="prose mt-2 max-w-none select-text text-foreground prose-p:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
@@ -176,7 +176,9 @@ const MarkdownContent = ({ content }: ContentProps) => {
 
 const ErrorContent = ({ error }: { error: string }) => {
   return (
-    <div className="prose mt-2 flex max-w-none gap-2 text-red-600">{error}</div>
+    <div className="prose mt-2 flex max-w-none select-text gap-2 text-red-600">
+      {error}
+    </div>
   );
 };
 
@@ -206,7 +208,7 @@ const Content = ({ content }: ContentProps) => {
     <div className="flex flex-col gap-4">
       <div
         className={cn(
-          'mt-2 prose max-w-none text-foreground whitespace-pre-wrap'
+          'mt-2 prose max-w-none text-foreground whitespace-pre-wrap select-text'
         )}
       >
         {getTextFromContent(content)}
