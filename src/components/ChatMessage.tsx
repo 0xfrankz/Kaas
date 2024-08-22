@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ExtraProps } from 'react-markdown';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark as highlighterTheme } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -137,9 +138,10 @@ const MetaBar = ({ avatar, name, time }: MetaBarProps) => {
 
 const CodeHighlighter = ({
   children,
+  node: _,
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => {
+}: React.HTMLAttributes<HTMLDivElement> & ExtraProps) => {
   const match = /language-(\w+)/.exec(className || '');
   const childrenStr = String(children).replace(/\n$/, '');
   return match ? (
@@ -152,15 +154,15 @@ const CodeHighlighter = ({
       style={highlighterTheme}
     />
   ) : (
-    <code {...props} className={cn('text-wrap', className)}>
+    <div {...props} className={cn('text-wrap font-kaas italic', className)}>
       {children}
-    </code>
+    </div>
   );
 };
 
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
-    <div className="prose mt-2 max-w-none select-text text-foreground prose-p:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
+    <div className="prose mt-2 max-w-none select-text text-foreground prose-p:mb-6 prose-pre:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
