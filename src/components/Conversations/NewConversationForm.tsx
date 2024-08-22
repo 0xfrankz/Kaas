@@ -72,7 +72,7 @@ export function NewConversationForm() {
   return (
     <div className="flex flex-col">
       <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
-        {t('page-conversations:label:start-new')}
+        {t('page-conversations:label:quick-start')}
       </h2>
       <Form {...form}>
         <form

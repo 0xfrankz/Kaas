@@ -1,7 +1,7 @@
 {
     "title": "Conversations",
     "label": {
-        "start-new": "Start a new conversation",
+        "quick-start": "Quick start a new conversation",
         "num-of-conversations": "{{num}} conversations"
     },
     "message": {

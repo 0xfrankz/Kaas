@@ -152,7 +152,7 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         <ContextMenuTrigger>
           <Badge
             className={cn(
-              'w-12 flex justify-center rounded-full border-none bg-muted text-muted-foreground transition-all',
+              'w-12 flex justify-center rounded-full border-none bg-muted text-muted-foreground transition-all mt-2',
               expanded ? 'ml-4' : 'ml-2'
             )}
           >

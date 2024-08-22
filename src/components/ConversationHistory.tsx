@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { PROVIDER_UNKNOWN } from '@/lib/constants';
 import { useConversationsContext } from '@/lib/hooks';
 import type { ConversationDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { ProviderTag } from './ProviderTag';
 import { Button } from './ui/button';
 
 type Props = {
@@ -30,7 +32,10 @@ function ConversationHistoryItem({ conversation, active }: ItemProps) {
       )}
     >
       <Link to={`/conversations/${conversation.id}`}>
-        {/* <MessagesSquare className="size-4" /> */}
+        <ProviderTag
+          provider={conversation.modelProvider ?? PROVIDER_UNKNOWN}
+          showText={false}
+        />
         <span className="ml-2 w-40 overflow-hidden text-ellipsis text-left text-sm">
           {conversation.subject}
         </span>

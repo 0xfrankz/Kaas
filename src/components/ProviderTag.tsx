@@ -6,9 +6,12 @@ import { cn, getProviderStyles } from '@/lib/utils';
 
 import { ProviderIcon } from './ProviderIcon';
 
-type Attrs = HTMLAttributes<HTMLDivElement> & { provider: AllProviders };
+type Attrs = HTMLAttributes<HTMLDivElement> & {
+  provider: AllProviders;
+  showText?: boolean;
+};
 export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
-  ({ provider, className, ...prop }, ref) => {
+  ({ provider, showText = true, className, ...prop }, ref) => {
     const { theme } = useTheme();
     const styles = getProviderStyles(provider);
     return (
@@ -25,7 +28,7 @@ export const ProviderTag = forwardRef<HTMLDivElement, Attrs>(
         }}
       >
         <ProviderIcon provider={provider} />
-        {provider}
+        {showText ? provider : null}
       </div>
     );
   }
