@@ -35,6 +35,15 @@ export function ConversationTitleBar({
     setIsEditing(false);
   };
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onConfirm();
+    }
+    if (e.key === 'Escape') {
+      onCancel();
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -49,6 +58,8 @@ export function ConversationTitleBar({
             defaultValue={titleText}
             size={titleText.length}
             ref={inputRef}
+            onKeyDown={onKeyDown}
+            autoFocus
           />
           <Button
             className="ml-2 size-6 rounded-full p-0 md:size-9"
