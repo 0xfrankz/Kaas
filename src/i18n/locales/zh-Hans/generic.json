@@ -39,6 +39,7 @@
         "OpenAI": "OpenAI",
         "Claude": "Anthropic Claude",
         "Ollama": "Ollama",
+        "Openrouter": "OpenRouter",
         "CUSTOM": "自定义",
         "unknown": "未知"
     },

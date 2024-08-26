@@ -10,6 +10,7 @@ pub const DEFAULT_CLAUDE_API_VERSION: &str = "2023-06-01";
 pub const CLAUDE_API_KEY_HEADER: &str = "x-api-key";
 pub const CLAUDE_API_VERSION_HEADER: &str = "anthropic-version";
 pub const DEFAULT_OLLAMA_API_BASE: &str = "http://localhost:11434";
+pub const DEFAULT_OPENROUTER_API_BASE: &str = "https://openrouter.ai/api/v1";
 
 /// Configuration for Anthropic Claude API
 #[derive(Clone, Debug, Deserialize)]

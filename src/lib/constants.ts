@@ -3,6 +3,7 @@ export const PROVIDER_OPENAI = 'OpenAI';
 export const PROVIDER_AZURE = 'Azure';
 export const PROVIDER_CLAUDE = 'Claude';
 export const PROVIDER_OLLAMA = 'Ollama';
+export const PROVIDER_OPENROUTER = 'Openrouter';
 export const PROVIDER_CUSTOM = 'CUSTOM';
 export const PROVIDER_UNKNOWN = 'Unknown';
 export const SUPPORTED_PROVIDERS = [
@@ -10,6 +11,7 @@ export const SUPPORTED_PROVIDERS = [
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
   PROVIDER_OLLAMA,
+  PROVIDER_OPENROUTER,
   PROVIDER_CUSTOM,
 ] as const;
 export const ALL_PROVIDERS = [
@@ -55,6 +57,16 @@ export const PROVIDER_STYLES = {
     color: {
       light: '#EEEEEE',
       dark: '#999999',
+    },
+  },
+  [PROVIDER_OPENROUTER]: {
+    icon: {
+      light: 'openrouter_logo_b.svg',
+      dark: 'openrouter_logo_w.svg',
+    },
+    color: {
+      light: '#18181B',
+      dark: '#FAFAFA',
     },
   },
   [PROVIDER_CUSTOM]: {

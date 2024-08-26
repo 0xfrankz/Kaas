@@ -39,7 +39,7 @@ export function ProviderCard({ provider, onClick }: Props) {
         />
       </div>
       <CardHeader className="px-2 pb-2">
-        <CardTitle className="mx-auto min-h-10 text-center font-medium leading-5">
+        <CardTitle className="mx-auto min-h-10 text-center font-medium leading-5 text-background">
           {t(`generic:model:${provider}`)}
         </CardTitle>
       </CardHeader>

@@ -6,7 +6,7 @@ use entity::entities::{conversations::GenericOptions, messages::MessageDTO, mode
 use reqwest;
 use serde::Deserialize;
 
-use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, config::{ClaudeConfig, OllamaConfig}, models::{ListModelsRequest, RemoteModel}, utils::build_http_client};
+use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, config::{ClaudeConfig, OllamaConfig, DEFAULT_OPENROUTER_API_BASE}, models::{ListModelsRequest, RemoteModel}, utils::build_http_client};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -95,6 +95,7 @@ pub enum LLMClient {
     AzureClient(Client<AzureConfig>),
     ClaudeClient(Client<ClaudeConfig>, String),
     OllamaClient(Client<OllamaConfig>, Option<String>),
+    OpenrouterClient(Client<OpenAIConfig>),
 }
 
 impl LLMClient {
@@ -129,6 +130,13 @@ impl LLMClient {
                 let client = Client::with_config(raw_config.into());
                 Ok(LLMClient::OllamaClient(client, model))
             },
+            Providers::Openrouter => {
+                let raw_config: RawOpenAIConfig = serde_json::from_str(&config.config)
+                    .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+                let config = Into::<OpenAIConfig>::into(raw_config).with_api_base(DEFAULT_OPENROUTER_API_BASE);
+                let client = Client::with_config(config);
+                Ok(LLMClient::OpenrouterClient(client))
+            }
             _ => {
                 Err(format!("Complete chat with {} not supported yet", config.provider.as_str()))
             }
@@ -170,6 +178,9 @@ impl LLMClient {
                     },
                     None => Err(format!("Ollama model not set for chat"))
                 }
+            },
+            LLMClient::OpenrouterClient(client) => {
+                todo!();
             }
         }
     }
@@ -209,6 +220,9 @@ impl LLMClient {
                     },
                     None => Err(format!("Ollama model not set for chat stream"))
                 }
+            },
+            LLMClient::OpenrouterClient(client) => {
+                todo!();
             }
         }
     }
@@ -231,6 +245,12 @@ impl LLMClient {
             },
             LLMClient::OllamaClient(client, _) => {
                 let result = ListModelsRequest::ollama(client)
+                    .execute()
+                    .await?;
+                Ok(result)
+            },
+            LLMClient::OpenrouterClient(client) => {
+                let result = ListModelsRequest::openrouter(client)
                     .execute()
                     .await?;
                 Ok(result)

@@ -3,8 +3,10 @@ import type { z } from 'zod';
 import type {
   ALL_PROVIDERS,
   CONTENT_ITEM_TYPES,
+  PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
+  PROVIDER_OPENROUTER,
   SUPPORTED_PROVIDERS,
 } from './constants';
 import type {
@@ -65,7 +67,10 @@ export type GenericModel = {
 };
 
 export type RawOpenAIConfig = {
-  provider: typeof PROVIDER_OPENAI;
+  provider:
+    | typeof PROVIDER_OPENAI
+    | typeof PROVIDER_OPENROUTER
+    | typeof PROVIDER_CUSTOM;
   apiKey: string;
   model?: string;
   endpoint?: string;

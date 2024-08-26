@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { PROVIDER_OLLAMA, PROVIDER_OPENAI } from '@/lib/constants';
+import {
+  PROVIDER_OLLAMA,
+  PROVIDER_OPENAI,
+  PROVIDER_OPENROUTER,
+} from '@/lib/constants';
 import { LIST_REMOTE_MODELS_KEY, useListRemoteModelsQuery } from '@/lib/hooks';
 import type { RawConfig } from '@/lib/types';
 
@@ -39,8 +43,11 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const queryClient = useQueryClient();
 
   const onClick = useCallback(() => {
-    if (config.provider === PROVIDER_OPENAI) {
-      // check api key when user is using OpenAI
+    if (
+      config.provider === PROVIDER_OPENAI ||
+      config.provider === PROVIDER_OPENROUTER
+    ) {
+      // check api key when user is using OpenAI or OpenRouter
       const apiKey = form.getValues('apiKey');
       if (apiKey && apiKey.length === 0) {
         form.setError('apiKey', {
