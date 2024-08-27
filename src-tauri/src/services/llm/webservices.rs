@@ -6,7 +6,7 @@ use entity::entities::{conversations::GenericOptions, messages::MessageDTO, mode
 use reqwest;
 use serde::Deserialize;
 
-use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, config::{ClaudeConfig, OllamaConfig, DEFAULT_OPENROUTER_API_BASE}, models::{ListModelsRequest, RemoteModel}, utils::build_http_client};
+use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, models::{ListModelsRequest, RemoteModel}, providers::{claude::config::ClaudeConfig, ollama::config::{OllamaConfig, DEFAULT_OPENROUTER_API_BASE}}, utils::build_http_client};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -127,14 +127,14 @@ impl LLMClient {
                 let raw_config: RawOllamaConfig = serde_json::from_str(&config.config)
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
                 let model = raw_config.model.clone();
-                let client = Client::with_config(raw_config.into());
+                let client = Client::with_config(raw_config.into()).with_http_client(http_client);
                 Ok(LLMClient::OllamaClient(client, model))
             },
             Providers::Openrouter => {
                 let raw_config: RawOpenAIConfig = serde_json::from_str(&config.config)
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
                 let config = Into::<OpenAIConfig>::into(raw_config).with_api_base(DEFAULT_OPENROUTER_API_BASE);
-                let client = Client::with_config(config);
+                let client = Client::with_config(config).with_http_client(http_client);
                 Ok(LLMClient::OpenrouterClient(client))
             }
             _ => {

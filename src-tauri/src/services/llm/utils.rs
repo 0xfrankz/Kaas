@@ -5,9 +5,7 @@ use entity::entities::{
     contents::ContentType, conversations::{AzureOptions, OpenAIOptions, GenericOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
 };
 
-use crate::{log_utils::warn, services::{cache, llm::chat::OllamaMessageContent}};
-
-use super::chat::{ClaudeAssistantMessage, ClaudeImageSource, ClaudeMessage, ClaudeMessageContentPart, ClaudeMessageContentPartImage, ClaudeMessageContentPartText, ClaudeRequestMessageContent, ClaudeUserMessage, OllamaMessage};
+use crate::{log_utils::warn, services::cache};
 
 pub fn sum_option(a: Option<u32>, b: Option<u32>) -> Option<u32> {
     match (a, b) {
@@ -85,73 +83,6 @@ pub fn message_to_openai_request_message(message: MessageDTO) -> ChatCompletionR
                     .unwrap_or(ChatCompletionRequestAssistantMessage::default())
             );
         }
-    }
-}
-
-pub fn message_to_claude_request_message(message: MessageDTO) -> ClaudeMessage {
-    let content_parts = message
-        .content
-        .into_iter()
-        .map(|item| {
-            let part: ClaudeMessageContentPart = match item.r#type {
-                ContentType::Image => ClaudeMessageContentPart::Image(ClaudeMessageContentPartImage{
-                    source: ClaudeImageSource {
-                        r#type: "base64".to_string(),
-                        media_type: item.mimetype.as_deref().unwrap_or("image/jpeg").to_string(),
-                        data: cache::read_as_base64_with_mime(item.data.as_str(), item.mimetype.as_deref()).map(|r| r.1).unwrap_or(String::default())
-                    }
-                }),
-                ContentType::Text => ClaudeMessageContentPart::Text(ClaudeMessageContentPartText{
-                    text: item.data
-                })
-            };
-            part
-        })
-        .collect::<Vec<ClaudeMessageContentPart>>();
-    match message.role.into() {
-        Roles::User => {
-            return ClaudeMessage::User(ClaudeUserMessage {
-                content: ClaudeRequestMessageContent::Array(content_parts)
-            });
-        },
-        Roles::Bot => {
-            return ClaudeMessage::Assistant(ClaudeAssistantMessage {
-                content: ClaudeRequestMessageContent::Array(content_parts)
-            });
-        },
-        _ => {panic!("Claude doesn't accept system message as part of context!")}
-    }
-}
-
-pub fn message_to_ollama_request_message(message: MessageDTO) -> OllamaMessage {
-    let mut content: OllamaMessageContent = OllamaMessageContent::default();
-
-    message
-        .content
-        .into_iter()
-        .for_each(|c| {
-            match c.r#type {
-                ContentType::Image => {
-                    if content.images.is_none() {
-                        content.images = Some(Vec::new());
-                    }
-                    content.images.as_mut().unwrap().push(cache::read_as_base64_with_mime(c.data.as_str(), c.mimetype.as_deref()).map(|r| r.1).unwrap_or(String::default()));
-                },
-                ContentType::Text => {
-                    content.content = c.data;
-                }
-            }
-        });
-    match message.role.into() {
-        Roles::User => {
-            return OllamaMessage::User(content);
-        },
-        Roles::Bot => {
-            return OllamaMessage::Assistant(content);
-        },
-        Roles::System => {
-            return OllamaMessage::System(content);
-        },
     }
 }
 
