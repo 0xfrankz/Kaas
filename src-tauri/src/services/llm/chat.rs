@@ -1,12 +1,12 @@
 use std::pin::Pin;
 
-use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatCompletionRequestMessage, ChatCompletionResponseStream, CreateChatCompletionRequest}, Client};
+use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatChoice, ChatCompletionRequestMessage, ChatCompletionResponseStream, CompletionUsage, CreateChatCompletionRequest}, Client};
 use entity::entities::{conversations::{AzureOptions, ClaudeOptions, GenericOptions, OllamaOptions, OpenAIOptions}, messages::MessageDTO};
 use serde::Serialize;
 use tokio_stream::{Stream, StreamExt};
 use crate::log_utils::warn;
 
-use super::{providers::{claude::{chat::{ClaudeChat, ClaudeChatCompletionRequest, ClaudeChatCompletionResponseStream, ClaudeChatCompletionStreamResponse, ClaudeMessage, ClaudeMetadata, ClaudeResponseMessageContent}, config::ClaudeConfig}, ollama::{chat::{OllamaChat, OllamaChatCompletionRequest, OllamaChatCompletionResponseStream, OllamaMessage}, config::OllamaConfig}}, utils::{message_to_openai_request_message, sum_option}};
+use super::{providers::{claude::{chat::{ClaudeChat, ClaudeChatCompletionRequest, ClaudeChatCompletionResponseStream, ClaudeChatCompletionStreamResponse, ClaudeMessage, ClaudeMetadata, ClaudeResponseMessageContent}, config::ClaudeConfig}, ollama::{chat::{OllamaChat, OllamaChatCompletionRequest, OllamaChatCompletionResponseStream, OllamaMessage}, config::OllamaConfig}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionResponseStream}}, utils::{message_to_openai_request_message, sum_option}};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
@@ -34,6 +34,7 @@ pub enum ChatRequest<'c> {
     AzureChatRequest(&'c Client<AzureConfig>, CreateChatCompletionRequest),
     ClaudeChatRequest(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
     OllamaChatRequest(&'c Client<OllamaConfig>, OllamaChatCompletionRequest),
+    OpenrouterChatRequest(&'c Client<OpenAIConfig>, CreateChatCompletionRequest),
 }
 
 impl<'c> ChatRequest<'c> {
@@ -129,6 +130,50 @@ impl<'c> ChatRequest<'c> {
         Ok(ChatRequest::OllamaChatRequest(client, request))
     }
 
+    pub fn openrouter(client: &'c Client<OpenAIConfig>, messages: Vec<MessageDTO>, options: GenericOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
+        let request: CreateChatCompletionRequest;
+        // set messages
+        let req_messages: Vec<ChatCompletionRequestMessage> = messages.into_iter().map(message_to_openai_request_message).collect();
+        // set options
+        let options: OpenAIOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        request = CreateChatCompletionRequest {
+            model: model.to_string(),
+            messages: req_messages,
+            frequency_penalty: options.frequency_penalty,
+            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+            // n: options.n,
+            presence_penalty: options.presence_penalty,
+            stream: options.stream,
+            temperature: options.temperature,
+            top_p: options.top_p,
+            user: options.user,
+            ..Default::default()
+        };
+        Ok(ChatRequest::OpenrouterChatRequest(client, request))
+    }
+
+    fn convert_openai_compatible_response_data_to_botreply(&self, choices: Vec<ChatChoice>, usage: Option<CompletionUsage>) -> Result<BotReply, String> {
+        let choice = choices
+            .first()
+            .ok_or("Api returned empty choices".to_string())?;
+        let message = choice
+            .message
+            .content
+            .as_ref()
+            .ok_or("Api returned empty message".to_string())?
+            .to_string();
+        let reply = BotReply {
+            message,
+            prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+            completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+            total_token: usage.as_ref().map(|usage| usage.total_tokens),
+        };
+
+        Ok(reply)
+    }
+
     async fn execute_openai_compatible_request<C: Config>(&self, client: &Client<C>, request: CreateChatCompletionRequest) -> Result<BotReply, String> {
         let response = client
             .chat()
@@ -138,26 +183,26 @@ impl<'c> ChatRequest<'c> {
                 log::error!("execute_chat_complete_request: {:?}", err);
                 format!("Failed to get chat completion response: {}", err)
             })?;
-        // extract data & build reply
-        let choice = response
-            .choices
-            .first()
-            .ok_or("Api returned empty choices".to_string())?;
-        let message = choice
-            .message
-            .content
-            .as_ref()
-            .ok_or("Api returned empty message".to_string())?
-            .to_string();
-        let usage = response.usage;
-        let reply = BotReply {
-            message,
-            prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-            completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-            total_token: usage.as_ref().map(|usage| usage.total_tokens),
-        };
+            // extract data & build reply
+            let choice = response
+                .choices
+                .first()
+                .ok_or("Api returned empty choices".to_string())?;
+            let message = choice
+                .message
+                .content
+                .as_ref()
+                .ok_or("Api returned empty message".to_string())?
+                .to_string();
+            let usage = response.usage;
+            let reply = BotReply {
+                message,
+                prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                total_token: usage.as_ref().map(|usage| usage.total_tokens),
+            };
 
-        return Ok(reply)
+            Ok(reply)
     }
 
     async fn execute_openai_compatible_stream_request<C: Config>(&self, client: &Client<C>, request: CreateChatCompletionRequest) -> Result<BotReplyStream, String> {
@@ -250,6 +295,35 @@ impl<'c> ChatRequest<'c> {
                     completion_token: response.eval_count,
                     total_token: sum_option(response.prompt_eval_count, response.eval_count),
                 })
+            },
+            ChatRequest::OpenrouterChatRequest(client, request) => {
+                let response = OpenrouterChat::new(client)
+                    .create(request.clone())
+                    .await
+                    .map_err(|err| {
+                        log::error!("execute ChatRequest::OpenrouterChatRequest: {:?}", err);
+                        format!("Failed to get chat completion response: {}", err)
+                    })?;
+                // extract data & build reply
+            let choice = response
+                .choices
+                .first()
+                .ok_or("Api returned empty choices".to_string())?;
+            let message = choice
+                .message
+                .content
+                .as_ref()
+                .ok_or("Api returned empty message".to_string())?
+                .to_string();
+            let usage = response.usage;
+            let reply = BotReply {
+                    message,
+                    prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                    completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                    total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                };
+
+                Ok(reply)
             }
         }
     }
@@ -318,6 +392,29 @@ impl<'c> ChatRequest<'c> {
                             completion_token: response.eval_count,
                             total_token: sum_option(response.prompt_eval_count, response.eval_count),
                         }
+                    })
+                });
+                Ok(Box::pin(result))
+            },
+            ChatRequest::OpenrouterChatRequest(client, request) => {
+                let stream: OpenrouterChatCompletionResponseStream = OpenrouterChat::new(&client)
+                    .create_stream(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                let result = stream.map(|item| {
+                    item.map(|resp| {
+                        let first_choice = resp.choices
+                            .first()
+                            .map_or(BotReply::default(), |choice| {
+                                let usage = resp.usage.clone();
+                                BotReply {
+                                    message: choice.delta.content.clone().unwrap_or(String::default()),
+                                    prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                                    completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                                    total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                                }
+                            });
+                        first_choice
                     })
                 });
                 Ok(Box::pin(result))

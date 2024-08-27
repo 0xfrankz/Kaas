@@ -93,9 +93,9 @@ impl Into<OllamaConfig> for RawOllamaConfig {
 pub enum LLMClient {
     OpenAIClient(Client<OpenAIConfig>, Option<String>),
     AzureClient(Client<AzureConfig>),
-    ClaudeClient(Client<ClaudeConfig>, String),
+    ClaudeClient(Client<ClaudeConfig>, Option<String>),
     OllamaClient(Client<OllamaConfig>, Option<String>),
-    OpenrouterClient(Client<OpenAIConfig>),
+    OpenrouterClient(Client<OpenAIConfig>, Option<String>),
 }
 
 impl LLMClient {
@@ -121,7 +121,7 @@ impl LLMClient {
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
                 let model = raw_config.model.clone();
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
-                Ok(LLMClient::ClaudeClient(client, model))
+                Ok(LLMClient::ClaudeClient(client, Some(model)))
             },
             Providers::Ollama => {
                 let raw_config: RawOllamaConfig = serde_json::from_str(&config.config)
@@ -133,9 +133,10 @@ impl LLMClient {
             Providers::Openrouter => {
                 let raw_config: RawOpenAIConfig = serde_json::from_str(&config.config)
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+                let model = raw_config.model.clone();
                 let config = Into::<OpenAIConfig>::into(raw_config).with_api_base(DEFAULT_OPENROUTER_API_BASE);
                 let client = Client::with_config(config).with_http_client(http_client);
-                Ok(LLMClient::OpenrouterClient(client))
+                Ok(LLMClient::OpenrouterClient(client, model))
             }
             _ => {
                 Err(format!("Complete chat with {} not supported yet", config.provider.as_str()))
@@ -163,10 +164,15 @@ impl LLMClient {
                 return Ok(reply)
             },
             LLMClient::ClaudeClient(client, model) => {
-                let reply = ChatRequest::claude(client, messages, options, global_settings, model.to_string())?
-                    .execute()
-                    .await?;                
-                return Ok(reply)
+                match model.as_ref() {
+                    Some(model_str) => {
+                        let reply = ChatRequest::claude(client, messages, options, global_settings, model_str.to_string())?
+                            .execute()
+                            .await?;                
+                        Ok(reply)
+                    },
+                    None => Err(format!("Claude model not set for chat"))
+                }
             },
             LLMClient::OllamaClient(client, model) => {
                 match model.as_ref() {
@@ -179,8 +185,16 @@ impl LLMClient {
                     None => Err(format!("Ollama model not set for chat"))
                 }
             },
-            LLMClient::OpenrouterClient(client) => {
-                todo!();
+            LLMClient::OpenrouterClient(client, model) => {
+                match model.as_ref() {
+                    Some(model_str) => {
+                        let reply = ChatRequest::openrouter(client, messages, options, global_settings, model_str.to_string())?
+                            .execute()
+                            .await?;                
+                        Ok(reply)
+                    },
+                    None => Err(format!("OpenRouter model not set for chat"))
+                }
             }
         }
     }
@@ -205,10 +219,15 @@ impl LLMClient {
                 return Ok(stream)
             },
             LLMClient::ClaudeClient(client, model) => {
-                let stream = ChatRequest::claude(client, messages, options, global_settings, model.to_string())?
-                    .execute_stream()
-                    .await?;                
-                return Ok(stream)
+                match model.as_ref() {
+                    Some(model_str) => {
+                        let stream = ChatRequest::claude(client, messages, options, global_settings, model_str.to_string())?
+                            .execute_stream()
+                            .await?;                
+                        return Ok(stream)
+                    },
+                    None => Err(format!("Claude model not set for chat stream"))
+                }
             },
             LLMClient::OllamaClient(client, model) => {
                 match model.as_ref() {
@@ -221,8 +240,16 @@ impl LLMClient {
                     None => Err(format!("Ollama model not set for chat stream"))
                 }
             },
-            LLMClient::OpenrouterClient(client) => {
-                todo!();
+            LLMClient::OpenrouterClient(client, model) => {
+                match model.as_ref() {
+                    Some(model_str) => {
+                        let stream = ChatRequest::openai(client, messages, options, global_settings, model_str.to_string())?
+                            .execute_stream()
+                            .await?;                
+                        Ok(stream)
+                    },
+                    None => Err(format!("OpenRouter model not set for chat stream"))
+                }
             }
         }
     }
@@ -249,7 +276,7 @@ impl LLMClient {
                     .await?;
                 Ok(result)
             },
-            LLMClient::OpenrouterClient(client) => {
+            LLMClient::OpenrouterClient(client, _) => {
                 let result = ListModelsRequest::openrouter(client)
                     .execute()
                     .await?;
