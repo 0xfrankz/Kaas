@@ -117,12 +117,13 @@ impl<'c> ChatRequest<'c> {
         let options: OllamaOptions = serde_json::from_str(&options.options)
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
-        let stream = options.stream.clone();
+        // Stream must be set to false explictly for Ollama, or it will treat the request as a Stream request
+        let stream = options.stream.clone().unwrap_or(false);
         request = OllamaChatCompletionRequest {
             model: model.to_string(),
             messages: req_messages,
             options: Some(options.into()),
-            stream,
+            stream: Some(stream),
             ..Default::default()
         };
         Ok(ChatRequest::OllamaChatRequest(client, request))
