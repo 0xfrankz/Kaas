@@ -49,7 +49,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
     ) {
       // check api key when user is using OpenAI or OpenRouter
       const apiKey = form.getValues('apiKey');
-      if (!!apiKey || apiKey.length === 0) {
+      if (!apiKey || apiKey.length === 0) {
         form.setError('apiKey', {
           type: 'custom',
           message: t('error:validation:empty-api-key'),
@@ -60,7 +60,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
     } else if (config.provider === PROVIDER_OLLAMA) {
       // check endpoint when user is using Ollama
       const endpoint = form.getValues('endpoint');
-      if (!!endpoint || endpoint.length === 0) {
+      if (!endpoint || endpoint.length === 0) {
         form.setError('endpoint', {
           type: 'custom',
           message: t('error:validation:empty-endpoint'),
