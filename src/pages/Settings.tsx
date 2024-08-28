@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { open } from '@tauri-apps/api/shell';
-import { Heart } from 'lucide-react';
+import { Github, Heart, Smile, Tag } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, Suspense, useEffect, useRef, useState } from 'react';
@@ -27,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { TwitterIcon } from '@/components/ui/icons/TwitterIcon';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -634,37 +635,61 @@ function AboutUs() {
       <span className="mb-1 text-sm font-semibold">
         {t('page-settings:label:aboutus')}
       </span>
-      <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
-        <ul className="flex flex-col gap-2 text-sm">
-          <li>
+      <Card className="mt-1 flex flex-col px-4 py-6">
+        <ul className="flex flex-col gap-4 text-sm">
+          <li className="flex items-center gap-2">
+            <Tag className="size-[14px]" />
             <span className="mr-2 font-medium">
               {t('page-settings:label:version')}:
             </span>
             {import.meta.env.VITE_APP_VERSION}_{import.meta.env.COMMIT_HASH}
           </li>
-          <li>
-            <Trans
-              i18nKey="page-settings:message:built-by"
-              values={{ name: 'Frank Zhang' }}
-              components={{
-                userLink: (
-                  <Button
-                    variant="link"
-                    onClick={() => open('https://github.com/0xfrankz')}
-                    className="mx-1 inline p-0"
-                  />
-                ),
-                icon: (
-                  <Heart className="mx-1 inline-block size-4 fill-red-600" />
-                ),
-                depsLink: (
-                  <Link
-                    to="/dependencies"
-                    className="ml-1 text-primary underline-offset-4 hover:underline"
-                  />
-                ),
-              }}
-            />
+          <li className="flex gap-2">
+            <Smile className="mt-1 size-[14px] flex-none" />
+            <p className="leading-6">
+              <Trans
+                i18nKey="page-settings:message:built-by"
+                values={{ name: 'Frank Zhang' }}
+                components={{
+                  userLink: (
+                    <Button
+                      variant="link"
+                      onClick={() => open('https://github.com/0xfrankz')}
+                      className="mx-1 inline h-fit p-0 leading-6"
+                    />
+                  ),
+                  icon: (
+                    <Heart className="mx-1 inline-block size-4 fill-red-600" />
+                  ),
+                  depsLink: (
+                    <Link
+                      to="/dependencies"
+                      className="ml-1 text-primary underline-offset-4 hover:underline"
+                    />
+                  ),
+                }}
+              />
+            </p>
+          </li>
+          <li className="flex items-center gap-2">
+            <Github className="size-[14px]" />
+            <Button
+              variant="link"
+              onClick={() => open('https://github.com/0xfrankz')}
+              className="mx-1 inline h-fit p-0 leading-6"
+            >
+              GitHub Repo
+            </Button>
+          </li>
+          <li className="flex items-center gap-2">
+            <TwitterIcon className="size-[14px]" />
+            <Button
+              variant="link"
+              onClick={() => open('https://x.com/thekaasapp')}
+              className="mx-1 inline h-fit p-0 leading-6"
+            >
+              X / Twitter
+            </Button>
           </li>
         </ul>
       </Card>
