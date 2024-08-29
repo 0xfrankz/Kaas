@@ -118,7 +118,7 @@ const KeyboardBlocker = () => {
     'f12',
     'ctrl.a',
     'ctrl.b',
-    'ctrl.c',
+    // 'ctrl.c',
     'ctrl.d',
     'ctrl.e',
     'ctrl.f',
@@ -137,11 +137,11 @@ const KeyboardBlocker = () => {
     'ctrl.s',
     'ctrl.t',
     'ctrl.u',
-    'ctrl.v',
+    // 'ctrl.v',
     'ctrl.w',
-    'ctrl.x',
-    'ctrl.y',
-    'ctrl.z',
+    // 'ctrl.x',
+    // 'ctrl.y',
+    // 'ctrl.z',
     'ctrl.0',
     'ctrl.1',
     'ctrl.2',
@@ -164,13 +164,66 @@ const KeyboardBlocker = () => {
     'ctrl.period',
     'ctrl.forwardslash',
     'ctrl.f5',
+    'ctrl.shift.i',
+    'ctrl.shift.j',
     'ctrl.shift.r',
+    'meta.a',
+    'meta.b',
+    // 'meta.c',
+    'meta.d',
+    'meta.e',
+    'meta.f',
+    'meta.g',
+    'meta.h',
+    'meta.i',
+    'meta.j',
+    'meta.k',
+    'meta.l',
+    'meta.m',
+    'meta.n',
+    'meta.o',
+    'meta.p',
+    'meta.q',
+    'meta.r',
+    'meta.s',
+    'meta.t',
+    'meta.u',
+    // 'meta.v',
+    'meta.w',
+    // 'meta.x',
+    // 'meta.y',
+    // 'meta.z',
+    'meta.0',
+    'meta.1',
+    'meta.2',
+    'meta.3',
+    'meta.4',
+    'meta.5',
+    'meta.6',
+    'meta.7',
+    'meta.8',
+    'meta.9',
+    'meta.graveaccent',
+    'meta.dash',
+    'meta.equalsign',
+    'meta.openbracket',
+    'meta.closebracket',
+    'meta.backslash',
+    'meta.semicolon',
+    'meta.singlequote',
+    'meta.comma',
+    'meta.period',
+    'meta.forwardslash',
+    'meta.f5',
+    'meta.shift.i',
+    'meta.shift.j',
+    'meta.shift.r',
   ];
   useKeyPress(
     filter,
     (e, key) => {
       switch (key) {
-        case 'ctrl.a':
+        case 'ctrl.a' || 'meta.a':
           // ctrl+a is allowed on input and textarea
           if (e.target instanceof Element) {
             const tagName = e.target?.tagName.toLowerCase();
@@ -180,22 +233,36 @@ const KeyboardBlocker = () => {
             }
           }
           break;
-        case 'ctrl.c':
-          // ctrl+c is allowed
-          break;
-        case 'ctrl.v':
-          // ctrl+v is allowed
-          break;
-        case 'ctrl.x':
-          // ctrl+x is allowed
-          break;
+        // case 'ctrl.c':
+        //   console.log('ctrl c pressed');
+        //   // ctrl+c is allowed
+        //   break;
+        // case 'ctrl.v':
+        //   console.log('ctrl v pressed');
+        //   // ctrl+v is allowed
+        //   break;
+        // case 'ctrl.x':
+        //   console.log('ctrl x pressed');
+        //   // ctrl+x is allowed
+        //   break;
+        // case 'ctrl.y':
+        //   // ctrl+y is allowed
+        //   console.log('ctrl y pressed');
+        //   break;
+        // case 'ctrl.z':
+        //   // ctrl+z is allowed
+        //   console.log('ctrl z pressed');
+        //   break;
         default:
+          console.log('key:', key);
           e.preventDefault();
           e.stopPropagation();
+          break;
       }
     },
     {
       exactMatch: true,
+      useCapture: true,
     }
   );
   return null;
