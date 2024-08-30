@@ -21,7 +21,9 @@ import {
 import type { FilledPrompt, FormHandler, NewPrompt, Prompt } from '@/lib/types';
 import { debounce } from '@/lib/utils';
 
+import { InputWithMenu } from '../InputWithMenu';
 import { PromptVariables } from '../PromptVariables';
+import { TextAreaWithMenu } from '../TextareaWithMenu';
 import { Button } from '../ui/button';
 import {
   Form,
@@ -32,7 +34,6 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
 
 type NewFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
   onSubmit: (newPrompt: NewPrompt) => void;
@@ -88,9 +89,8 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                     {t('generic:label:prompt')}
                   </FormLabel>
                   <FormControl>
-                    <Textarea
-                      className="col-span-4 rounded-md py-1 sm:col-span-3"
-                      rows={10}
+                    <TextAreaWithMenu
+                      className="col-span-4 h-52 rounded-md py-1 sm:col-span-3"
                       {...field}
                       onChange={(ev) => {
                         field.onChange(ev);
@@ -114,7 +114,7 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                     {t('generic:label:alias')}
                   </FormLabel>
                   <FormControl>
-                    <Input
+                    <InputWithMenu
                       className="col-span-4 rounded-md py-1 sm:col-span-3"
                       {...field}
                     />
@@ -182,9 +182,8 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
                     {t('generic:label:prompt')}
                   </FormLabel>
                   <FormControl>
-                    <Textarea
-                      className="col-span-4 rounded-md py-1 sm:col-span-3"
-                      rows={10}
+                    <TextAreaWithMenu
+                      className="col-span-4 h-52 rounded-md py-1 sm:col-span-3"
                       {...field}
                       onChange={(ev) => {
                         field.onChange(ev);
@@ -208,7 +207,7 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
                     {t('generic:label:alias')}
                   </FormLabel>
                   <FormControl>
-                    <Input
+                    <InputWithMenu
                       className="col-span-4 rounded-md py-1 sm:col-span-3"
                       {...field}
                     />
@@ -340,7 +339,11 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
                       >
                         {item.label}
                       </label>
-                      <Input {...field} id={field.name} className="mt-1" />
+                      <InputWithMenu
+                        {...field}
+                        id={field.name}
+                        className="mt-1"
+                      />
                     </div>
                   );
                 }}
@@ -362,9 +365,8 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
                     <FormControl>
-                      <Textarea
-                        className="col-span-4 rounded-md py-1"
-                        rows={10}
+                      <TextAreaWithMenu
+                        className="col-span-4 h-52 rounded-md py-1"
                         {...field}
                       />
                     </FormControl>

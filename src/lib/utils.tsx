@@ -132,3 +132,7 @@ export function getOSName() {
 
   return 'Unknown';
 }
+
+export function isMacOS() {
+  return getOSName() === 'macOS';
+}

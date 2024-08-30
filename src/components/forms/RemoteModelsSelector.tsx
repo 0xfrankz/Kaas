@@ -12,10 +12,10 @@ import {
 import { LIST_REMOTE_MODELS_KEY, useListRemoteModelsQuery } from '@/lib/hooks';
 import type { RawConfig } from '@/lib/types';
 
+import { InputWithMenu } from '../InputWithMenu';
 import { Button } from '../ui/button';
 import { FormControl, FormField, FormItem } from '../ui/form';
 import { LoadingIcon } from '../ui/icons/LoadingIcon';
-import { Input } from '../ui/input';
 import {
   Select,
   SelectContent,
@@ -79,7 +79,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input {...field} className="w-44 max-w-44" />
+              <InputWithMenu {...field} className="w-44 max-w-44" />
             </FormControl>
           </FormItem>
         )}

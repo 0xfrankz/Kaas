@@ -4,8 +4,8 @@ import { useRef, useState } from 'react';
 import type { ConversationDetails, Model } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { InputWithMenu } from '../InputWithMenu';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import InfoSection from './InfoSection';
 
 type Props = {
@@ -53,7 +53,7 @@ export function ConversationTitleBar({
     >
       {isEditing ? (
         <div className="flex grow items-center">
-          <Input
+          <InputWithMenu
             className="size-fit max-w-40 text-base font-semibold text-foreground sm:max-w-60 md:max-w-screen-sm md:text-lg"
             defaultValue={titleText}
             size={titleText.length}

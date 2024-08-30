@@ -233,26 +233,6 @@ const KeyboardBlocker = () => {
             }
           }
           break;
-        // case 'ctrl.c':
-        //   console.log('ctrl c pressed');
-        //   // ctrl+c is allowed
-        //   break;
-        // case 'ctrl.v':
-        //   console.log('ctrl v pressed');
-        //   // ctrl+v is allowed
-        //   break;
-        // case 'ctrl.x':
-        //   console.log('ctrl x pressed');
-        //   // ctrl+x is allowed
-        //   break;
-        // case 'ctrl.y':
-        //   // ctrl+y is allowed
-        //   console.log('ctrl y pressed');
-        //   break;
-        // case 'ctrl.z':
-        //   // ctrl+z is allowed
-        //   console.log('ctrl z pressed');
-        //   break;
         default:
           console.log('key:', key);
           e.preventDefault();

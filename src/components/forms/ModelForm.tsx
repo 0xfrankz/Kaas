@@ -40,6 +40,7 @@ import type {
   RawOpenAIConfig,
 } from '@/lib/types';
 
+import { InputWithMenu } from '../InputWithMenu';
 import {
   Form,
   FormControl,
@@ -94,7 +95,7 @@ const InputField = <T extends NewModel | Model>({
         <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
           <FormLabel className="text-right">{label}</FormLabel>
           <FormControl>
-            <Input
+            <InputWithMenu
               className="col-span-3"
               {...field}
               value={(field.value ?? '') as string}
@@ -123,7 +124,7 @@ const HiddenInputField = <T extends NewModel | Model>({
       render={({ field }) => (
         <FormItem>
           <FormControl>
-            <Input
+            <InputWithMenu
               type="hidden"
               {...field}
               value={(field.value ?? '') as string}
@@ -330,85 +331,29 @@ const GenericClaudeModelForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
-          <FormField
+          <InputField
             control={form.control}
             name="alias"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:alias')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:alias-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:alias')}
+            tips={t('page-models:message:alias-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiKey"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-key')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:api-key-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-key')}
+            tips={t('page-models:message:api-key-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="model"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:model')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:model-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:model')}
+            tips={t('page-models:message:model-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiVersion"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-version')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:claude-api-version-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-version')}
+            tips={t('page-models:message:claude-api-version-tips')}
           />
           <FormField
             control={form.control}

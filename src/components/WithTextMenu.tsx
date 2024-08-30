@@ -1,17 +1,22 @@
-import { readText, writeText } from '@tauri-apps/api/clipboard';
-import { ClipboardPaste, Copy, Scissors } from 'lucide-react';
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { readText } from '@tauri-apps/api/clipboard';
+import {
+  ClipboardPaste,
+  Copy,
+  Redo,
+  Scissors,
+  TextSelect,
+  Undo,
+} from 'lucide-react';
+import React, { forwardRef, useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { isMacOS } from '@/lib/utils';
 
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from './ui/context-menu';
@@ -23,80 +28,53 @@ export function withTextMenu<T extends HTMLInputElement | HTMLTextAreaElement>(
 ) {
   return forwardRef<T, React.ComponentPropsWithoutRef<typeof InputComponent>>(
     (props, ref) => {
+      const { t } = useTranslation('generic');
       const icRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
-      const [textSelected, setTextSelected] = useState(false);
+      const [commandState, setCommandState] = useState<{
+        undo: boolean;
+        redo: boolean;
+        copy: boolean;
+        cut: boolean;
+        selectAll: boolean;
+      }>({
+        undo: false,
+        redo: false,
+        copy: false,
+        cut: false,
+        selectAll: false,
+      });
 
-      const getSelection = () => {
-        if (icRef.current) {
-          const start = icRef.current.selectionStart;
-          const end = icRef.current.selectionEnd;
-          if (start !== null && end !== null && start !== end) {
-            return icRef.current.value.substring(start, end);
-          }
-        }
-        return '';
+      const isCommandEnabled = (cmd: string) => {
+        return document.queryCommandEnabled(cmd);
       };
 
-      const copy = useCallback(async () => {
-        const selectedText = getSelection();
-        if (selectedText) {
-          await writeText(selectedText);
-        }
-      }, []);
+      const runCommand = (cmd: string) => {
+        document.execCommand(cmd);
+      };
 
-      const cut = useCallback(async () => {
-        const selectedText = getSelection();
-        if (selectedText && icRef.current) {
-          await writeText(selectedText);
-          const start = icRef.current.selectionStart;
-          const end = icRef.current.selectionEnd;
-          if (start !== null && end !== null) {
-            const currentValue = icRef.current.value;
-            const newValue =
-              currentValue.substring(0, start) + currentValue.substring(end);
-            icRef.current.value = newValue;
-            icRef.current.setSelectionRange(start, start);
-            // Trigger any necessary events or state updates
-            const event = new Event('input', { bubbles: true });
-            icRef.current.dispatchEvent(event);
-          }
+      const onOpenChange = useCallback((open: boolean) => {
+        if (open) {
+          setCommandState({
+            undo: isCommandEnabled('undo'),
+            redo: isCommandEnabled('redo'),
+            copy: isCommandEnabled('copy'),
+            cut: isCommandEnabled('cut'),
+            selectAll: isCommandEnabled('selectAll'),
+          });
         }
       }, []);
 
       const paste = useCallback(async () => {
         if (icRef.current) {
           const clipboardText = await readText();
-          const textLength = clipboardText ? clipboardText.length : 0;
-          const start = icRef.current.selectionStart;
-          const end = icRef.current.selectionEnd;
-          if (start !== null && end !== null) {
-            const currentValue = icRef.current.value;
-            const newValue =
-              currentValue.substring(0, start) +
-              clipboardText +
-              currentValue.substring(end);
-            icRef.current.value = newValue;
-            icRef.current.setSelectionRange(
-              start + textLength,
-              start + textLength
-            );
-            // Trigger any necessary events or state updates
-            const event = new Event('input', { bubbles: true });
-            icRef.current.dispatchEvent(event);
+          if (clipboardText) {
+            document.execCommand('insertText', false, clipboardText);
           }
         }
       }, []);
 
-      useEffect(() => {
-        if (icRef.current) {
-          icRef.current.onselectionchange = () => {
-            setTextSelected(getSelection().length !== 0);
-          };
-        }
-      }, []);
-
       return (
-        <ContextMenu>
+        <ContextMenu onOpenChange={onOpenChange}>
           <ContextMenuTrigger asChild>
             <InputComponent
               {...props}
@@ -112,22 +90,63 @@ export function withTextMenu<T extends HTMLInputElement | HTMLTextAreaElement>(
               }}
             />
           </ContextMenuTrigger>
-          <ContextMenuContent>
+          <ContextMenuContent className="w-48">
             <ContextMenuItem
               className="gap-2"
-              disabled={!textSelected}
-              onClick={copy}
+              disabled={!commandState.undo}
+              onClick={() => runCommand('undo')}
             >
-              <ClipboardPaste className="size-[14px]" /> Copy
-              <ContextMenuShortcut>⌘[</ContextMenuShortcut>
+              <Undo className="size-[14px]" /> {t('action.undo')}
+              <ContextMenuShortcut>
+                {isMacOS() ? '⌘+Z' : 'Ctrl+Z'}
+              </ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem
+              className="gap-2"
+              disabled={!commandState.redo}
+              onClick={() => runCommand('redo')}
+            >
+              <Redo className="size-[14px]" /> {t('action.redo')}
+              <ContextMenuShortcut>
+                {isMacOS() ? '⌘+Y' : 'Ctrl+Y'}
+              </ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              className="gap-2"
+              disabled={!commandState.copy}
+              onClick={() => runCommand('copy')}
+            >
+              <ClipboardPaste className="size-[14px]" /> {t('action.copy')}
+              <ContextMenuShortcut>
+                {isMacOS() ? '⌘+C' : 'Ctrl+C'}
+              </ContextMenuShortcut>
             </ContextMenuItem>
             <ContextMenuItem className="gap-2" onClick={paste}>
-              <Copy className="size-[14px]" /> Paste
-              <ContextMenuShortcut>⌘[</ContextMenuShortcut>
+              <Copy className="size-[14px]" /> {t('action.paste')}
+              <ContextMenuShortcut>
+                {isMacOS() ? '⌘+V' : 'Ctrl+V'}
+              </ContextMenuShortcut>
             </ContextMenuItem>
-            <ContextMenuItem className="gap-2" onClick={cut}>
-              <Scissors className="size-[14px]" /> Cut
-              <ContextMenuShortcut>⌘[</ContextMenuShortcut>
+            <ContextMenuItem
+              className="gap-2"
+              disabled={!commandState.cut}
+              onClick={() => runCommand('cut')}
+            >
+              <Scissors className="size-[14px]" /> {t('action.cut')}
+              <ContextMenuShortcut>
+                {isMacOS() ? '⌘+X' : 'Ctrl+X'}
+              </ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem
+              className="gap-2"
+              disabled={!commandState.selectAll}
+              onClick={() => runCommand('selectAll')}
+            >
+              <TextSelect className="size-[14px]" /> {t('action.select-all')}
+              <ContextMenuShortcut>
+                {isMacOS() ? '⌘+A' : 'Ctrl+A'}
+              </ContextMenuShortcut>
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>

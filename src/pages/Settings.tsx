@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { FieldErrorMessage } from '@/components/FieldErrorMessage';
+import { InputWithMenu } from '@/components/InputWithMenu';
 import { OnOffIndicator } from '@/components/OnOffIndicator';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { TwitterIcon } from '@/components/ui/icons/TwitterIcon';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -238,7 +238,7 @@ function SettingName() {
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="name">{t('page-settings:label:name')}</Label>
       <div className="flex justify-between">
-        <Input
+        <InputWithMenu
           ref={nameRef}
           className="w-52"
           id="name"
@@ -299,7 +299,7 @@ function SettingContextLength() {
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="context-length">{ctxLengthLabel}</Label>
       <div className="flex justify-between">
-        <Input
+        <InputWithMenu
           ref={ctxLengthRef}
           className="w-52"
           id="context-length"
@@ -360,7 +360,7 @@ function SettingMaxTokens() {
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
       <div className="flex justify-between">
-        <Input
+        <InputWithMenu
           ref={maxTokensRef}
           className="w-52"
           id="max-tokens"
@@ -458,7 +458,7 @@ function SettingProxy() {
                     <Label htmlFor="proxy-server" className="font-normal">
                       {t('page-settings:label:proxy-server')}
                     </Label>
-                    <Input
+                    <InputWithMenu
                       className="w-52"
                       id="proxy-server"
                       placeholder="http://127.0.0.1:1234"
@@ -533,7 +533,11 @@ function SettingProxy() {
                     <Label htmlFor="proxy-username" className="font-normal">
                       {t('page-settings:label:proxy-username')}
                     </Label>
-                    <Input className="w-52" id="proxy-username" {...field} />
+                    <InputWithMenu
+                      className="w-52"
+                      id="proxy-username"
+                      {...field}
+                    />
                     <FormDescription>
                       {t('page-settings:label:proxy-name-psw-tips')}
                     </FormDescription>
@@ -548,7 +552,7 @@ function SettingProxy() {
                     <Label htmlFor="proxy-password" className="font-normal">
                       {t('page-settings:label:proxy-password')}
                     </Label>
-                    <Input
+                    <InputWithMenu
                       type="password"
                       className="w-52"
                       id="proxy-password"
