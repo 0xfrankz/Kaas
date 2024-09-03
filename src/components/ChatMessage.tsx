@@ -56,6 +56,7 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
+import { Table as TableInner } from './ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 type WrapperProps = {
@@ -160,6 +161,14 @@ const CodeHighlighter = ({
   );
 };
 
+const Table = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableElement> & ExtraProps) => {
+  return <TableInner {...props}>{children}</TableInner>;
+};
+
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
     <div className="prose mt-2 max-w-none select-text text-foreground prose-p:mb-6 prose-pre:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
@@ -168,6 +177,7 @@ const MarkdownContent = ({ content }: ContentProps) => {
         rehypePlugins={[rehypeKatex]}
         components={{
           code: CodeHighlighter,
+          table: Table,
         }}
       >
         {preprocessLaTeX(getTextFromContent(content))}
