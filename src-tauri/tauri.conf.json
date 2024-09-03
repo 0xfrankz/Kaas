@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Kaas",
-    "version": "1.0.3"
+    "version": "1.0.4"
   },
   "tauri": {
     "allowlist": {
