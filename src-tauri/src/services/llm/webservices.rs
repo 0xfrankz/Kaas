@@ -6,7 +6,7 @@ use entity::entities::{conversations::GenericOptions, messages::MessageDTO, mode
 use reqwest;
 use serde::Deserialize;
 
-use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, models::{ListModelsRequest, RemoteModel}, providers::{claude::config::ClaudeConfig, ollama::config::{OllamaConfig, DEFAULT_OPENROUTER_API_BASE}}, utils::build_http_client};
+use super::{chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings}, models::{ListModelsRequest, RemoteModel}, providers::{claude::config::ClaudeConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE}, utils::build_http_client};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

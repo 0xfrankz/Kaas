@@ -5,7 +5,6 @@ use reqwest::header::HeaderMap;
 
 
 pub const DEFAULT_OLLAMA_API_BASE: &str = "http://localhost:11434";
-pub const DEFAULT_OPENROUTER_API_BASE: &str = "https://openrouter.ai/api/v1";
 
 /// Configuration for Ollama API
 #[derive(Clone, Debug, Deserialize)]

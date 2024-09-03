@@ -73,7 +73,7 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChangeDebounded(e.target.value);
       },
-      []
+      [onChangeDebounded]
     );
 
     return (
@@ -154,7 +154,7 @@ const EditPromptForm = forwardRef<FormHandler, EditFormProps>(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChangeDebounded(e.target.value);
       },
-      []
+      [onChangeDebounded]
     );
 
     // Hooks
