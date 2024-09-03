@@ -6,11 +6,16 @@ import {
   PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
+  PROVIDER_OPENROUTER,
 } from '@/lib/constants';
 
 export const newOpenAIModelFormSchema = z.object({
   alias: z.string(),
-  provider: z.enum([PROVIDER_OPENAI, PROVIDER_CUSTOM] as const),
+  provider: z.enum([
+    PROVIDER_OPENAI,
+    PROVIDER_OPENROUTER,
+    PROVIDER_CUSTOM,
+  ] as const),
   apiKey: z.string().min(1, 'API Key is required'),
   model: z.string().min(1, 'Model is required'),
   endpoint: z.string().url().optional(),
@@ -136,7 +141,11 @@ export const azureOptionsFormSchema = commonOptionsFormSchema.extend({
 });
 
 export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
-  provider: z.enum([PROVIDER_OPENAI, PROVIDER_CUSTOM] as const),
+  provider: z.enum([
+    PROVIDER_OPENAI,
+    PROVIDER_OPENROUTER,
+    PROVIDER_CUSTOM,
+  ] as const),
 });
 
 export const claudeOptionsFormSchema = commonOptionsFormSchema

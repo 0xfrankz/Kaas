@@ -4,14 +4,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { PROVIDER_OLLAMA, PROVIDER_OPENAI } from '@/lib/constants';
+import {
+  PROVIDER_OLLAMA,
+  PROVIDER_OPENAI,
+  PROVIDER_OPENROUTER,
+} from '@/lib/constants';
 import { LIST_REMOTE_MODELS_KEY, useListRemoteModelsQuery } from '@/lib/hooks';
 import type { RawConfig } from '@/lib/types';
 
+import { InputWithMenu } from '../InputWithMenu';
 import { Button } from '../ui/button';
 import { FormControl, FormField, FormItem } from '../ui/form';
 import { LoadingIcon } from '../ui/icons/LoadingIcon';
-import { Input } from '../ui/input';
 import {
   Select,
   SelectContent,
@@ -39,10 +43,13 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const queryClient = useQueryClient();
 
   const onClick = useCallback(() => {
-    if (config.provider === PROVIDER_OPENAI) {
-      // check api key when user is using OpenAI
+    if (
+      config.provider === PROVIDER_OPENAI ||
+      config.provider === PROVIDER_OPENROUTER
+    ) {
+      // check api key when user is using OpenAI or OpenRouter
       const apiKey = form.getValues('apiKey');
-      if (apiKey && apiKey.length === 0) {
+      if (!apiKey || apiKey.length === 0) {
         form.setError('apiKey', {
           type: 'custom',
           message: t('error:validation:empty-api-key'),
@@ -72,7 +79,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input {...field} className="w-44 max-w-44" />
+              <InputWithMenu {...field} className="w-44 max-w-44" />
             </FormControl>
           </FormItem>
         )}
@@ -139,6 +146,10 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
       queryKey: LIST_REMOTE_MODELS_KEY,
       exact: true,
     });
+
+    return () => {
+      queryClient.cancelQueries({ queryKey: LIST_REMOTE_MODELS_KEY });
+    };
   }, [queryClient]);
 
   useEffect(() => {

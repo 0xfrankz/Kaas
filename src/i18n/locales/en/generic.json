@@ -28,7 +28,12 @@
         "debug": "Debug",
         "load-models": "Load from API",
         "insert": "Insert",
-        "change-provider": "Change provider"
+        "change-provider": "Change provider",
+        "redo": "Redo",
+        "undo": "Undo",
+        "paste": "Paste",
+        "cut": "Cut",
+        "select-all": "Select all"
     },
     "select": {
         "language-en": "English",
@@ -39,6 +44,7 @@
         "OpenAI": "OpenAI",
         "Claude": "Anthropic Claude",
         "Ollama": "Ollama",
+        "Openrouter": "OpenRouter",
         "CUSTOM": "Custom",
         "unknown": "Unknown"
     },

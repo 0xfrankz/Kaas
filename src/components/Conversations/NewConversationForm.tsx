@@ -33,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { withTextMenu } from '../WithTextMenu';
+
+const InputWithMenu = withTextMenu(Input);
 
 export function NewConversationForm() {
   const { models, getDefaultModel } = useAppStateStore();
@@ -87,7 +90,7 @@ export function NewConversationForm() {
               render={({ field }) => (
                 <FormItem className="mx-4 grow">
                   <FormControl>
-                    <Input
+                    <InputWithMenu
                       placeholder={t('page-conversations:message:ask-anything')}
                       {...field}
                       className="border-0 px-0"

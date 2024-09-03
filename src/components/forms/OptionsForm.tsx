@@ -27,6 +27,7 @@ import type {
   Options,
 } from '@/lib/types';
 
+import { InputWithMenu } from '../InputWithMenu';
 import {
   Form,
   FormControl,
@@ -35,7 +36,6 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 
 type FormProps<T extends Options> = Omit<
@@ -70,7 +70,7 @@ const InputField = <T extends Options>({
             {label}
           </FormLabel>
           <FormControl>
-            <Input
+            <InputWithMenu
               className="col-span-3 sm:col-span-2"
               {...field}
               value={(field.value ?? '') as string}
@@ -98,7 +98,7 @@ const HiddenInputField = <T extends Options>({
       render={({ field }) => (
         <FormItem>
           <FormControl>
-            <Input
+            <InputWithMenu
               type="hidden"
               {...field}
               value={(field.value ?? '') as string}

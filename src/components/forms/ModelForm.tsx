@@ -11,6 +11,7 @@ import {
   PROVIDER_CUSTOM,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
+  PROVIDER_OPENROUTER,
 } from '@/lib/constants';
 import {
   editAzureModelFormSchema,
@@ -39,6 +40,7 @@ import type {
   RawOpenAIConfig,
 } from '@/lib/types';
 
+import { InputWithMenu } from '../InputWithMenu';
 import {
   Form,
   FormControl,
@@ -93,7 +95,7 @@ const InputField = <T extends NewModel | Model>({
         <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
           <FormLabel className="text-right">{label}</FormLabel>
           <FormControl>
-            <Input
+            <InputWithMenu
               className="col-span-3"
               {...field}
               value={(field.value ?? '') as string}
@@ -122,7 +124,7 @@ const HiddenInputField = <T extends NewModel | Model>({
       render={({ field }) => (
         <FormItem>
           <FormControl>
-            <Input
+            <InputWithMenu
               type="hidden"
               {...field}
               value={(field.value ?? '') as string}
@@ -226,14 +228,19 @@ const GenericOpenAIModelForm = ({
   form,
   onSubmit,
   loadModelsOnInit,
-  isCustom = false,
+  allowEndpointEdit = false,
+  allowModelSelection = false,
   ...props
-}: GenericFormProps<NewModel | Model> & { isCustom?: boolean }) => {
+}: GenericFormProps<NewOpenAIModel | OpenAIModel> & {
+  allowEndpointEdit?: boolean;
+  allowModelSelection?: boolean;
+}) => {
   const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
+  const provider = form.getValues('provider');
   const apiKey = useWatch({ name: 'apiKey', control: form.control });
   const config: RawOpenAIConfig = {
-    provider: PROVIDER_OPENAI,
+    provider,
     apiKey,
   };
   return (
@@ -252,22 +259,15 @@ const GenericOpenAIModelForm = ({
             label={t('page-models:label:api-key')}
             tips={t('page-models:message:api-key-tips')}
           />
-          {isCustom ? (
-            <>
-              <InputField
-                control={form.control}
-                name="endpoint"
-                label={t('page-models:label:endpoint')}
-                tips={t('page-models:message:endpoint-tips')}
-              />
-              <InputField
-                control={form.control}
-                name="model"
-                label={t('page-models:label:model')}
-                tips={t('page-models:message:model-tips')}
-              />
-            </>
-          ) : (
+          {allowEndpointEdit ? (
+            <InputField
+              control={form.control}
+              name="endpoint"
+              label={t('page-models:label:endpoint')}
+              tips={t('page-models:message:endpoint-tips')}
+            />
+          ) : null}
+          {allowModelSelection ? (
             <ModelField
               control={form.control}
               name="model"
@@ -275,6 +275,13 @@ const GenericOpenAIModelForm = ({
               tips={t('page-models:message:model-tips')}
               config={config}
               loadOnInit={!!loadModelsOnInit}
+            />
+          ) : (
+            <InputField
+              control={form.control}
+              name="model"
+              label={t('page-models:label:model')}
+              tips={t('page-models:message:model-tips')}
             />
           )}
           <FormField
@@ -324,85 +331,29 @@ const GenericClaudeModelForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
         <div className="grid gap-4 py-8">
-          <FormField
+          <InputField
             control={form.control}
             name="alias"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:alias')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:alias-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:alias')}
+            tips={t('page-models:message:alias-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiKey"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-key')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-start-2 col-end-4">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:api-key-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-key')}
+            tips={t('page-models:message:api-key-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="model"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:model')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:model-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:model')}
+            tips={t('page-models:message:model-tips')}
           />
-          <FormField
+          <InputField
             control={form.control}
             name="apiVersion"
-            render={({ field }) => (
-              <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                <FormLabel className="text-right">
-                  {t('page-models:label:api-version')}
-                </FormLabel>
-                <FormControl>
-                  <Input className="col-span-3" {...field} />
-                </FormControl>
-                <div className="col-span-3 col-start-2">
-                  <FormMessage />
-                  <FormDescription>
-                    {t('page-models:message:claude-api-version-tips')}
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
+            label={t('page-models:label:api-version')}
+            tips={t('page-models:message:claude-api-version-tips')}
           />
           <FormField
             control={form.control}
@@ -561,8 +512,9 @@ const NewOpenAIModelForm = forwardRef<ModelFormHandler, NewFormProps>(
 
     return (
       <GenericOpenAIModelForm
-        form={form as UseFormReturn<NewModel, any, undefined>}
+        form={form as UseFormReturn<NewOpenAIModel, any, undefined>}
         onSubmit={onSubmit}
+        allowModelSelection
         {...props}
       />
     );
@@ -584,8 +536,11 @@ const EditOpenAIModelForm = forwardRef<ModelFormHandler, EditFormProps>(
 
     return (
       <GenericOpenAIModelForm
-        form={form as UseFormReturn<NewModel | Model, any, undefined>}
+        form={
+          form as UseFormReturn<NewOpenAIModel | OpenAIModel, any, undefined>
+        }
         onSubmit={onSubmit as (model: NewModel | Model) => void}
+        allowModelSelection
         loadModelsOnInit
         {...props}
       />
@@ -697,6 +652,35 @@ const EditOllamaModelForm = forwardRef<ModelFormHandler, EditFormProps>(
   }
 );
 
+const NewOpenrouterModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewOpenAIModel>({
+      resolver: zodResolver(newOpenAIModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_OPENROUTER,
+        alias: '',
+        apiKey: '',
+        model: '',
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={form as UseFormReturn<NewOpenAIModel, any, undefined>}
+        onSubmit={onSubmit}
+        allowModelSelection
+        {...props}
+      />
+    );
+  }
+);
+
 const NewCustomModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   ({ onSubmit, ...props }, ref) => {
     const form = useForm<NewOpenAIModel>({
@@ -718,9 +702,9 @@ const NewCustomModelForm = forwardRef<ModelFormHandler, NewFormProps>(
 
     return (
       <GenericOpenAIModelForm
-        form={form as UseFormReturn<NewModel, any, undefined>}
+        form={form as UseFormReturn<NewOpenAIModel, any, undefined>}
         onSubmit={onSubmit}
-        isCustom
+        allowEndpointEdit
         {...props}
       />
     );
@@ -742,9 +726,11 @@ const EditCustomModelForm = forwardRef<ModelFormHandler, EditFormProps>(
 
     return (
       <GenericOpenAIModelForm
-        form={form as UseFormReturn<NewModel | Model, any, undefined>}
+        form={
+          form as UseFormReturn<NewOpenAIModel | OpenAIModel, any, undefined>
+        }
         onSubmit={onSubmit as (model: NewModel | Model) => void}
-        isCustom
+        allowEndpointEdit
         {...props}
       />
     );
@@ -767,6 +753,9 @@ export default {
   Ollama: {
     New: NewOllamaModelForm,
     Edit: EditOllamaModelForm,
+  },
+  Openrouter: {
+    New: NewOpenrouterModelForm,
   },
   CUSTOM: {
     New: NewCustomModelForm,

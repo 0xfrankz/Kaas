@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { open } from '@tauri-apps/api/shell';
-import { Heart } from 'lucide-react';
+import { Github, Heart, Smile, Tag } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, Suspense, useEffect, useRef, useState } from 'react';
@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 import { SlideUpTransition } from '@/components/animation/SlideUpTransition';
 import { FieldErrorMessage } from '@/components/FieldErrorMessage';
+import { InputWithMenu } from '@/components/InputWithMenu';
 import { OnOffIndicator } from '@/components/OnOffIndicator';
 import { TitleBar } from '@/components/TitleBar';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { TwitterIcon } from '@/components/ui/icons/TwitterIcon';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -237,7 +238,7 @@ function SettingName() {
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="name">{t('page-settings:label:name')}</Label>
       <div className="flex justify-between">
-        <Input
+        <InputWithMenu
           ref={nameRef}
           className="w-52"
           id="name"
@@ -298,7 +299,7 @@ function SettingContextLength() {
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="context-length">{ctxLengthLabel}</Label>
       <div className="flex justify-between">
-        <Input
+        <InputWithMenu
           ref={ctxLengthRef}
           className="w-52"
           id="context-length"
@@ -359,7 +360,7 @@ function SettingMaxTokens() {
     <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="max-tokens">{t('page-settings:label:max-tokens')}</Label>
       <div className="flex justify-between">
-        <Input
+        <InputWithMenu
           ref={maxTokensRef}
           className="w-52"
           id="max-tokens"
@@ -457,7 +458,7 @@ function SettingProxy() {
                     <Label htmlFor="proxy-server" className="font-normal">
                       {t('page-settings:label:proxy-server')}
                     </Label>
-                    <Input
+                    <InputWithMenu
                       className="w-52"
                       id="proxy-server"
                       placeholder="http://127.0.0.1:1234"
@@ -532,7 +533,11 @@ function SettingProxy() {
                     <Label htmlFor="proxy-username" className="font-normal">
                       {t('page-settings:label:proxy-username')}
                     </Label>
-                    <Input className="w-52" id="proxy-username" {...field} />
+                    <InputWithMenu
+                      className="w-52"
+                      id="proxy-username"
+                      {...field}
+                    />
                     <FormDescription>
                       {t('page-settings:label:proxy-name-psw-tips')}
                     </FormDescription>
@@ -547,7 +552,7 @@ function SettingProxy() {
                     <Label htmlFor="proxy-password" className="font-normal">
                       {t('page-settings:label:proxy-password')}
                     </Label>
-                    <Input
+                    <InputWithMenu
                       type="password"
                       className="w-52"
                       id="proxy-password"
@@ -634,37 +639,61 @@ function AboutUs() {
       <span className="mb-1 text-sm font-semibold">
         {t('page-settings:label:aboutus')}
       </span>
-      <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
-        <ul className="flex flex-col gap-2 text-sm">
-          <li>
+      <Card className="mt-1 flex flex-col px-4 py-6">
+        <ul className="flex flex-col gap-4 text-sm">
+          <li className="flex items-center gap-2">
+            <Tag className="size-[14px]" />
             <span className="mr-2 font-medium">
               {t('page-settings:label:version')}:
             </span>
             {import.meta.env.VITE_APP_VERSION}_{import.meta.env.COMMIT_HASH}
           </li>
-          <li>
-            <Trans
-              i18nKey="page-settings:message:built-by"
-              values={{ name: 'Frank Zhang' }}
-              components={{
-                userLink: (
-                  <Button
-                    variant="link"
-                    onClick={() => open('https://github.com/0xfrankz')}
-                    className="mx-1 inline p-0"
-                  />
-                ),
-                icon: (
-                  <Heart className="mx-1 inline-block size-4 fill-red-600" />
-                ),
-                depsLink: (
-                  <Link
-                    to="/dependencies"
-                    className="ml-1 text-primary underline-offset-4 hover:underline"
-                  />
-                ),
-              }}
-            />
+          <li className="flex gap-2">
+            <Smile className="mt-1 size-[14px] flex-none" />
+            <p className="leading-6">
+              <Trans
+                i18nKey="page-settings:message:built-by"
+                values={{ name: 'Frank Zhang' }}
+                components={{
+                  userLink: (
+                    <Button
+                      variant="link"
+                      onClick={() => open('https://github.com/0xfrankz')}
+                      className="mx-1 inline h-fit p-0 leading-6"
+                    />
+                  ),
+                  icon: (
+                    <Heart className="mx-1 inline-block size-4 fill-red-600" />
+                  ),
+                  depsLink: (
+                    <Link
+                      to="/dependencies"
+                      className="ml-1 text-primary underline-offset-4 hover:underline"
+                    />
+                  ),
+                }}
+              />
+            </p>
+          </li>
+          <li className="flex items-center gap-2">
+            <Github className="size-[14px]" />
+            <Button
+              variant="link"
+              onClick={() => open('https://github.com/0xfrankz')}
+              className="mx-1 inline h-fit p-0 leading-6"
+            >
+              GitHub Repo
+            </Button>
+          </li>
+          <li className="flex items-center gap-2">
+            <TwitterIcon className="size-[14px]" />
+            <Button
+              variant="link"
+              onClick={() => open('https://x.com/thekaasapp')}
+              className="mx-1 inline h-fit p-0 leading-6"
+            >
+              X / Twitter
+            </Button>
           </li>
         </ul>
       </Card>

@@ -4,8 +4,8 @@ import { useRef, useState } from 'react';
 import type { ConversationDetails, Model } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
+import { InputWithMenu } from '../InputWithMenu';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import InfoSection from './InfoSection';
 
 type Props = {
@@ -35,6 +35,15 @@ export function ConversationTitleBar({
     setIsEditing(false);
   };
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onConfirm();
+    }
+    if (e.key === 'Escape') {
+      onCancel();
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -44,11 +53,13 @@ export function ConversationTitleBar({
     >
       {isEditing ? (
         <div className="flex grow items-center">
-          <Input
+          <InputWithMenu
             className="size-fit max-w-40 text-base font-semibold text-foreground sm:max-w-60 md:max-w-screen-sm md:text-lg"
             defaultValue={titleText}
             size={titleText.length}
             ref={inputRef}
+            onKeyDown={onKeyDown}
+            autoFocus
           />
           <Button
             className="ml-2 size-6 rounded-full p-0 md:size-9"

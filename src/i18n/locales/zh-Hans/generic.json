@@ -1,5 +1,5 @@
 {
-    "kaas": "咔嚓!",
+    "kaas": "KAAS!",
     "nav": {
         "home": "首页",
         "conversations": "对话",
@@ -28,7 +28,12 @@
         "debug": "调试",
         "load-models": "从API加载",
         "insert": "插入",
-        "change-provider": "切换供应商"
+        "change-provider": "切换供应商",
+        "redo": "重做",
+        "undo": "撤销",
+        "paste": "粘贴",
+        "cut": "剪切",
+        "select-all": "全选"
     },
     "select": {
         "language-en": "英文",
@@ -39,6 +44,7 @@
         "OpenAI": "OpenAI",
         "Claude": "Anthropic Claude",
         "Ollama": "Ollama",
+        "Openrouter": "OpenRouter",
         "CUSTOM": "自定义",
         "unknown": "未知"
     },

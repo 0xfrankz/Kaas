@@ -5,7 +5,7 @@ import type { AllProviders } from '@/lib/types';
 
 import NumberedBullet from '../NumberedBullet';
 import { ProviderCard } from '../ProviderCard';
-import { DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { DialogHeader, DialogTitle } from '../ui/dialog';
 
 type Props = {
   onClick: (provider: AllProviders) => void;
@@ -13,7 +13,7 @@ type Props = {
 export default function ProvidersGridDialogContent({ onClick }: Props) {
   const { t } = useTranslation(['page-models']);
   return (
-    <DialogContent>
+    <>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <NumberedBullet number={1} />
@@ -31,6 +31,6 @@ export default function ProvidersGridDialogContent({ onClick }: Props) {
           />
         ))}
       </div>
-    </DialogContent>
+    </>
   );
 }

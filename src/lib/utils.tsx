@@ -120,3 +120,19 @@ export const preprocessLaTeX = (content: string) => {
   );
   return inlineProcessedContent;
 };
+
+export function getOSName() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+
+  if (userAgent.includes('win')) return 'Windows';
+  if (userAgent.includes('mac')) return 'macOS';
+  if (userAgent.includes('linux')) return 'Linux';
+  if (userAgent.includes('android')) return 'Android';
+  if (userAgent.includes('ios')) return 'iOS';
+
+  return 'Unknown';
+}
+
+export function isMacOS() {
+  return getOSName() === 'macOS';
+}

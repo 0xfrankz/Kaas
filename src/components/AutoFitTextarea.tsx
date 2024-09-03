@@ -3,14 +3,14 @@ import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { Textarea } from './ui/textarea';
+import { TextAreaWithMenu } from './TextareaWithMenu';
 
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   maxHeight: number;
 };
 
 export const AutoFitTextarea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ maxHeight, className, onChange, ...props }, ref) => {
+  ({ maxHeight, className, ...props }, ref) => {
     const taRef: MutableRefObject<HTMLTextAreaElement | null> = useRef(null);
     // Callbacks
     const fitHeight = useCallback(() => {
@@ -38,7 +38,7 @@ export const AutoFitTextarea = forwardRef<HTMLTextAreaElement, Props>(
     }, [fitHeight]);
 
     return (
-      <Textarea
+      <TextAreaWithMenu
         ref={(el) => {
           if (ref) {
             if (typeof ref === 'function') {

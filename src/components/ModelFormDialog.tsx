@@ -1,11 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 
 import type { AllProviders, DialogHandler, Model, NewModel } from '@/lib/types';
 
 import ModelFormDialogContent from './Models/ModelFormDialogContent';
 import ProvidersGridDialogContent from './Models/ProvidersGridDialogContent';
-import { Dialog } from './ui/dialog';
+import { Dialog, DialogContent } from './ui/dialog';
 
 type NewModelDialogProps = {
   onSubmit: (model: NewModel) => void;
@@ -16,44 +15,63 @@ type EditModelDialogProps = {
   onDelete: (model: Model) => void;
 };
 
+const NewModelFormDialogInner = ({
+  onFormSubmit,
+}: {
+  onFormSubmit: (model: NewModel) => void;
+}) => {
+  const [provider, setProvider] = useState<AllProviders>();
+
+  const onCloseAutoFocus = useCallback(() => {
+    setProvider(undefined);
+  }, []);
+
+  const render = () => {
+    return provider ? (
+      <ModelFormDialogContent.New
+        provider={provider as AllProviders}
+        onResetClick={() => setProvider(undefined)}
+        onFormSubmit={onFormSubmit}
+      />
+    ) : (
+      <ProvidersGridDialogContent onClick={setProvider} />
+    );
+  };
+
+  return (
+    <DialogContent
+      className="flex max-h-screen flex-col"
+      onCloseAutoFocus={onCloseAutoFocus}
+    >
+      {render()}
+    </DialogContent>
+  );
+};
+
 const NewModelFormDialog = forwardRef<DialogHandler<void>, NewModelDialogProps>(
   ({ onSubmit }, ref) => {
     const [showDialog, setShowDialog] = useState(false);
-    const [provider, setProvider] = useState<AllProviders>();
-    const { t } = useTranslation(['generic']);
 
     useImperativeHandle(ref, () => ({
       open: () => {
         setShowDialog(true);
       },
       close: () => {
-        setProvider(undefined);
         setShowDialog(false);
       },
     }));
 
-    const onFormSubmit = (model: NewModel) => {
-      onSubmit(model);
-      setShowDialog(false);
-    };
-
-    useEffect(() => {
-      if (!showDialog) {
-        setProvider(undefined);
-      }
-    }, [showDialog]);
+    const onFormSubmit = useCallback(
+      (model: NewModel) => {
+        onSubmit(model);
+        setShowDialog(false);
+      },
+      [onSubmit]
+    );
 
     return (
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        {provider ? (
-          <ModelFormDialogContent.New
-            provider={provider as AllProviders}
-            onResetClick={() => setProvider(undefined)}
-            onFormSubmit={onFormSubmit}
-          />
-        ) : (
-          <ProvidersGridDialogContent onClick={setProvider} />
-        )}
+        <NewModelFormDialogInner onFormSubmit={onFormSubmit} />
       </Dialog>
     );
   }
@@ -84,11 +102,13 @@ const EditModelFormDialog = forwardRef<
 
   return model ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <ModelFormDialogContent.Edit
-        model={model}
-        onFormSubmit={onFormSubmit}
-        onDelete={onDelete}
-      />
+      <DialogContent className="flex max-h-screen">
+        <ModelFormDialogContent.Edit
+          model={model}
+          onFormSubmit={onFormSubmit}
+          onDelete={onDelete}
+        />
+      </DialogContent>
     </Dialog>
   ) : null;
 });
