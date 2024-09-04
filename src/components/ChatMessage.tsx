@@ -56,7 +56,16 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 import { LoadingIcon } from './ui/icons/LoadingIcon';
-import { Table as TableInner } from './ui/table';
+import {
+  Table as TableInner,
+  TableBody as TableBodyInner,
+  TableCaption as TableCaptionInner,
+  TableCell as TableCellInner,
+  TableFooter as TableFooterInner,
+  TableHead as TableHeadInner,
+  TableHeader as TableHeaderInner,
+  TableRow as TableRowInner,
+} from './ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 type WrapperProps = {
@@ -169,6 +178,62 @@ const Table = ({
   return <TableInner {...props}>{children}</TableInner>;
 };
 
+const TableHeader = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableSectionElement> & ExtraProps) => {
+  return <TableHeaderInner {...props}>{children}</TableHeaderInner>;
+};
+
+const TableBody = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableSectionElement> & ExtraProps) => {
+  return <TableBodyInner {...props}>{children}</TableBodyInner>;
+};
+
+const TableFooter = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableSectionElement> & ExtraProps) => {
+  return <TableFooterInner {...props}>{children}</TableFooterInner>;
+};
+
+const TableRow = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableRowElement> & ExtraProps) => {
+  return <TableRowInner {...props}>{children}</TableRowInner>;
+};
+
+const TableHead = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableCellElement> & ExtraProps) => {
+  return <TableHeadInner {...props}>{children}</TableHeadInner>;
+};
+
+const TableCell = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableCellElement> & ExtraProps) => {
+  return <TableCellInner {...props}>{children}</TableCellInner>;
+};
+
+const TableCaption = ({
+  children,
+  node: _,
+  ...props
+}: React.HTMLAttributes<HTMLTableCaptionElement> & ExtraProps) => {
+  return <TableCaptionInner {...props}>{children}</TableCaptionInner>;
+};
+
 const MarkdownContent = ({ content }: ContentProps) => {
   return (
     <div className="prose mt-2 max-w-none select-text text-foreground prose-p:mb-6 prose-pre:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
@@ -178,6 +243,13 @@ const MarkdownContent = ({ content }: ContentProps) => {
         components={{
           code: CodeHighlighter,
           table: Table,
+          thead: TableHeader,
+          tbody: TableBody,
+          tfoot: TableFooter,
+          tr: TableRow,
+          td: TableCell,
+          th: TableHead,
+          caption: TableCaption,
         }}
       >
         {preprocessLaTeX(getTextFromContent(content))}
