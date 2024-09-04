@@ -332,7 +332,7 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
                 name={`variables.${index}.value`}
                 render={({ field }) => {
                   return (
-                    <div className="col-span-4">
+                    <div>
                       <label
                         htmlFor={field.name}
                         className="text-sm text-muted-foreground"

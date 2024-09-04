@@ -199,10 +199,10 @@ export const PromptUseDialog = forwardRef<
               </h3>
             </div>
             <div className="mt-4 flex grow flex-col gap-4 overflow-hidden lg:flex-row">
-              <ScrollArea className="flex-1 lg:max-h-96 lg:w-1/2 lg:max-w-[1/2]">
+              <ScrollArea className="flex-1 lg:max-h-96">
                 <PromptForm.Use id="promptForm" />
               </ScrollArea>
-              <ScrollArea className="flex-1 lg:max-h-96 lg:w-1/2 lg:max-w-[1/2]">
+              <ScrollArea className="flex-1 lg:max-h-96">
                 <PromptPreviewer />
               </ScrollArea>
             </div>
