@@ -20,7 +20,7 @@ export default function PromptsPage() {
   const { t } = useTranslation(['generic', 'page-prompts']);
 
   // Queries
-  const { data: prompts, isSuccess } = useListPromptsQuery();
+  const { data: prompts } = useListPromptsQuery();
 
   const hasPrompts = prompts && prompts.length > 0;
 

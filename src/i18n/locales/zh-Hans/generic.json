@@ -33,7 +33,8 @@
         "undo": "撤销",
         "paste": "粘贴",
         "cut": "剪切",
-        "select-all": "全选"
+        "select-all": "全选",
+        "duplicate": "复制"
     },
     "select": {
         "language-en": "英文",
@@ -55,7 +56,8 @@
         "drag-file-here": "拖拽图片到这里\n支持PNG (.png)，JPEG (.jpeg and .jpg)及WEBP (.webp)图片\n可上传最多{{maxNumOfUploadFiles}}个文件，单个文件不超过20MB",
         "release-to-upload": "松手进行上传",
         "max-upload-files-warning": "仅可上传最多{{maxNumOfUploadFiles}}个文件",
-        "n-more-conversations": "剩余{{n}}条对话"
+        "n-more-conversations": "剩余{{n}}条对话",
+        "copy-of": "{{original}}的副本"
     },
     "label": {
         "default": "默认",

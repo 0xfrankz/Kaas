@@ -5,6 +5,7 @@
         "create-prompt": "Create new prompt template",
         "update-prompt": "Edit prompt template",
         "use-prompt": "Start a conversation with this prompt",
+        "delete-prompt": "Delete {{promptAlias}} ?",
         "template": "Template",
         "preview": "Preview",
         "variables": "Variables"

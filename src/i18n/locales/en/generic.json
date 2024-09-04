@@ -33,7 +33,8 @@
         "undo": "Undo",
         "paste": "Paste",
         "cut": "Cut",
-        "select-all": "Select all"
+        "select-all": "Select all",
+        "duplicate": "Duplicate"
     },
     "select": {
         "language-en": "English",
@@ -55,7 +56,8 @@
         "drag-file-here": "Drop images here to upload\n\nPNG (.png), JPEG (.jpeg and .jpg) and WEBP (.webp) files are supported\nYou can upload a maximum of {{maxNumOfUploadFiles}} files, each less than 20MB.",
         "release-to-upload": "Release to upload",
         "max-upload-files-warning": "You can only upload a maximum of {{maxNumOfUploadFiles}} files",
-        "n-more-conversations": "{{n}} more conversations"
+        "n-more-conversations": "{{n}} more conversations",
+        "copy-of": "Copy of {{original}}"
     },
     "label": {
         "default": "Default",

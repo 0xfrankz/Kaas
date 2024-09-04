@@ -1,14 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { produce } from 'immer';
-import { Calendar } from 'lucide-react';
-import { useCallback, useRef } from 'react';
+import { Calendar, Copy, Pencil, Send, Trash } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { DEFAULT_DATE_FORMAT } from '@/lib/constants';
 import {
   LIST_PROMPTS_KEY,
+  usePromptCreator,
   usePromptDeleter,
   usePromptUpdater,
 } from '@/lib/hooks';
@@ -18,6 +19,16 @@ import { cn } from '@/lib/utils';
 
 import PromptFormDialog from './PromptFormDialog';
 import { PromptUseDialog } from './PromptUseDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 import { Button } from './ui/button';
 import {
   Card,
@@ -26,6 +37,13 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from './ui/context-menu';
 
 type GridItemProps = {
   prompt: Prompt;
@@ -77,6 +95,7 @@ function PromptGridItem({ prompt, onEditClick, onUseClick }: GridItemProps) {
 }
 
 export function PromptGrid({ prompts }: { prompts: Prompt[] }) {
+  const [deletePrompt, setDeletePrompt] = useState<Prompt | null>(null);
   const queryClient = useQueryClient();
   const { t } = useTranslation(['generic', 'page-prompts']);
   const editPromptDialogRef = useRef<DialogHandler<Prompt>>(null);
@@ -125,6 +144,19 @@ export function PromptGrid({ prompts }: { prompts: Prompt[] }) {
       toast.error(`Failed to delete prompt: ${error.message}`);
     },
   });
+  const creator = usePromptCreator({
+    onSuccess: async (prompt) => {
+      // Update cache
+      queryClient.setQueryData<Prompt[]>(LIST_PROMPTS_KEY, (old) =>
+        old ? [...old, prompt] : [prompt]
+      );
+      // Show toast
+      toast.success(t('page-prompts:message:create-prompt-success'));
+    },
+    onError: async (error, _variables) => {
+      toast.error(`Failed to create prompt: ${error.message}`);
+    },
+  });
 
   // Callbacks
   const onEditClick = useCallback((prompt: Prompt) => {
@@ -149,16 +181,63 @@ export function PromptGrid({ prompts }: { prompts: Prompt[] }) {
     [deleter]
   );
 
+  const onDuplicateClick = useCallback(
+    (prompt: Prompt) => {
+      creator({
+        alias: t('generic:message:copy-of', { original: prompt.alias }),
+        content: prompt.content,
+      });
+    },
+    [creator, t]
+  );
+
+  const onAlertDialogOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      setDeletePrompt(null);
+    }
+  }, []);
+
   return (
     <>
       <div className="mx-auto mt-6 grid w-full grid-cols-1 gap-5 text-foreground sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {prompts.map((prompt) => (
-          <PromptGridItem
-            key={prompt.id}
-            prompt={prompt}
-            onEditClick={onEditClick}
-            onUseClick={onUseClick}
-          />
+          <ContextMenu key={prompt.id}>
+            <ContextMenuTrigger>
+              <PromptGridItem
+                key={prompt.id}
+                prompt={prompt}
+                onEditClick={onEditClick}
+                onUseClick={onUseClick}
+              />
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                className="cursor-pointer gap-2"
+                onClick={() => onUseClick(prompt)}
+              >
+                <Send className="size-4" /> {t('generic:action:use')}
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="cursor-pointer gap-2"
+                onClick={() => onEditClick(prompt)}
+              >
+                <Pencil className="size-4" /> {t('generic:action:edit')}
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="cursor-pointer gap-2"
+                onClick={() => onDuplicateClick(prompt)}
+              >
+                <Copy className="size-4" /> {t('generic:action:duplicate')}
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                className="cursor-pointer gap-2"
+                onClick={() => setDeletePrompt(prompt)}
+              >
+                <Trash className="size-4" /> {t('generic:action:delete')}
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         ))}
       </div>
       <PromptFormDialog.Edit
@@ -167,6 +246,33 @@ export function PromptGrid({ prompts }: { prompts: Prompt[] }) {
         onDeleteClick={onDeleteClick}
       />
       <PromptUseDialog ref={usePromptDialogRef} />
+      <AlertDialog open={!!deletePrompt} onOpenChange={onAlertDialogOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('page-prompts:section:delete-prompt', {
+                promptAlias: deletePrompt?.alias,
+              })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('page-prompts:message:delete-prompt-warning')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-none bg-secondary text-foreground hover:bg-secondary/80 hover:text-foreground">
+              {t('generic:action:cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                onDeleteClick(deletePrompt as Prompt);
+              }}
+            >
+              {t('generic:action:confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

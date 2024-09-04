@@ -5,6 +5,7 @@
         "create-prompt": "创建新提示词模板",
         "update-prompt": "编辑提示词模板",
         "use-prompt": "使用此提示词开始新对话",
+        "delete-prompt": "删除 {{promptAlias}} ?",
         "template": "模板",
         "preview": "预览",
         "variables": "变量"
