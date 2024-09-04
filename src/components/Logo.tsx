@@ -14,7 +14,7 @@ export function Logo({ expanded = false }: Props) {
     <div
       className={cn(
         'flex transition-all overflow-hidden',
-        expanded ? 'w-64 ml-8' : 'w-8 ml-4'
+        expanded ? 'w-64 ml-7' : 'w-8 ml-5'
       )}
     >
       <Link to="/" className="flex h-6 gap-2">
