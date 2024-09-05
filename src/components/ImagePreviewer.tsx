@@ -1,7 +1,13 @@
+import { save } from '@tauri-apps/api/dialog';
+import { writeBinaryFile } from '@tauri-apps/api/fs';
+import { downloadDir } from '@tauri-apps/api/path';
 import { useHover } from 'ahooks';
-import { X } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import { forwardRef, type HtmlHTMLAttributes, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
+import log from '@/lib/log';
 import type { FileData } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -13,7 +19,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from './ui/carousel';
-import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from './ui/context-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from './ui/dialog';
 
 type ImagePreviewerProps = {
   files: FileData[];
@@ -43,7 +60,7 @@ export function ImageThumbnail({
     <div className="relative size-12" ref={ref}>
       <button
         type="button"
-        className="m-0 border-0 bg-transparent p-0"
+        className="m-0 size-full border-0 bg-transparent p-0"
         onClick={onClick}
         aria-label={`View ${imageData.fileName}`}
       >
@@ -70,6 +87,27 @@ export const ImagePreviwer = forwardRef<
   HtmlHTMLAttributes<HTMLDivElement> & ImagePreviewerProps
 >(({ className, files, deletable = true, onDelete }, ref) => {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const onSaveAsClick = async (imageData: FileData) => {
+    const downloadDirPath = await downloadDir();
+    const filePath = await save({
+      defaultPath: `${downloadDirPath}/${imageData.fileName}`,
+    });
+    if (filePath) {
+      try {
+        await writeBinaryFile({ path: filePath, contents: imageData.fileData });
+        toast.success(t('generic:message:image-saved-as', { path: filePath }));
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          await log.error(`Error saving file: ${error.message}`);
+        } else {
+          await log.error(`Error saving file: ${String(error)}`);
+        }
+        toast.error(t('error:image-save-error'));
+      }
+    }
+  };
   return (
     <div className={cn('w-full', className)} ref={ref}>
       <ul className="m-0 flex min-h-12 list-none gap-2 p-0">
@@ -88,23 +126,47 @@ export const ImagePreviwer = forwardRef<
         })}
       </ul>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-fit px-20">
           <DialogTitle className="hidden">Images Carousel</DialogTitle>
-          <Carousel className="w-full max-w-xs">
-            <CarouselContent>
+          <DialogDescription className="hidden">
+            {files.length} images
+          </DialogDescription>
+          <Carousel className="w-full max-w-lg">
+            <CarouselContent className="my-6">
               {files.map((f, idx) => {
                 const key = `carousel_${f.fileName}_${idx}`;
                 const blob = new Blob([f.fileData], { type: f.fileType });
                 const imageSrc = URL.createObjectURL(blob);
                 return (
-                  <CarouselItem key={key}>
-                    <img src={imageSrc} alt={f.fileName} />
+                  <CarouselItem key={key} className="flex">
+                    <ContextMenu>
+                      <ContextMenuTrigger className="m-auto size-fit">
+                        <img
+                          src={imageSrc}
+                          alt={f.fileName}
+                          className="max-h-96 max-w-lg"
+                        />
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem
+                          className="cursor-pointer gap-2"
+                          onClick={() => onSaveAsClick(f)}
+                        >
+                          <Save className="size-4" />
+                          {t('generic:action:save-as')}
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   </CarouselItem>
                 );
               })}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            {files.length > 1 ? (
+              <>
+                <CarouselPrevious />
+                <CarouselNext />
+              </>
+            ) : null}
           </Carousel>
         </DialogContent>
       </Dialog>

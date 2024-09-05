@@ -7,5 +7,6 @@
         "empty-prompt": "You prompt is blank. Blank prompt is a waste of your tokens quota.",
         "empty-api-key": "API key cannot be empty.",
         "empty-endpoint": "Endpoint cannot be empty."
-    }
+    },
+    "image-save-error": "Failed to save image"
 }

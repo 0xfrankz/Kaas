@@ -15,6 +15,7 @@
         "delete": "删除",
         "edit": "编辑",
         "save": "保存",
+        "save-as": "另存为",
         "use": "使用",
         "set": "设置",
         "retry": "重试",
@@ -57,7 +58,8 @@
         "release-to-upload": "松手进行上传",
         "max-upload-files-warning": "仅可上传最多{{maxNumOfUploadFiles}}个文件",
         "n-more-conversations": "剩余{{n}}条对话",
-        "copy-of": "{{original}}的副本"
+        "copy-of": "{{original}}的副本",
+        "image-saved-as": "图片已保存为{{path}}"
     },
     "label": {
         "default": "默认",

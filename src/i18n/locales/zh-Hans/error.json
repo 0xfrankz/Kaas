@@ -7,5 +7,6 @@
         "empty-prompt": "你输入了空的提示词。空提示词只会浪费你的接口资源。",
         "empty-api-key": "API密钥不能为空。",
         "empty-endpoint": "Endpoint不能为空。"
-    }
+    },
+    "image-save-error": "图片保存失败"
 }

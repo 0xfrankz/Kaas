@@ -15,6 +15,7 @@
         "delete": "Delete",
         "edit": "Edit",
         "save": "Save",
+        "save-as": "Save as",
         "use": "Use",
         "set": "Set",
         "retry": "Retry",
@@ -57,7 +58,8 @@
         "release-to-upload": "Release to upload",
         "max-upload-files-warning": "You can only upload a maximum of {{maxNumOfUploadFiles}} files",
         "n-more-conversations": "{{n}} more conversations",
-        "copy-of": "Copy of {{original}}"
+        "copy-of": "Copy of {{original}}",
+        "image-saved-as": "Image saved as {{path}}"
     },
     "label": {
         "default": "Default",
