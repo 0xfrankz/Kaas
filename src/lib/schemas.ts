@@ -79,7 +79,12 @@ const commonOptionsFormSchema = z.object({
         message: 'Only two decimal places are supported',
       }
     ),
-  maxTokens: z.coerce.number().int().min(1).max(65535).optional(),
+  maxTokens: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(2 ** 32 - 1)
+    .optional(),
   // n: z.coerce.number().int().min(1).max(128).optional().default(1),
   presencePenalty: z.coerce
     .number()
