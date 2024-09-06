@@ -16,6 +16,8 @@
 
 # 📄Description
 
+![Conversations with different models](https://github.com/user-attachments/assets/4e17f3b6-7b6a-4437-9da1-3ca03bc4b1fa)
+
 Kaas is a ChatGPT client designed to serve multiple platforms. Built using Tauri and React, this client places significant emphasis on data privacy and security. It ensures this through local data storage practices, thereby reinforcing data safety.
 
 With Rust in its development stack, Kaas also makes the most of high-speed execution and robust security.

@@ -16,6 +16,8 @@
 
 # 📄描述
 
+![和不同的模型对话](https://github.com/user-attachments/assets/4e17f3b6-7b6a-4437-9da1-3ca03bc4b1fa)
+
 Kaas 是一个为多平台设计的 ChatGPT 客户端，使用 Tauri 和 React 构建。Kaas 非常注重数据隐私和安全。它通过本地数据存储来确保这一点，从而加强数据安全性。
 
 Kaas 还充分利用了Rust语言的高速执行和强大的安全性。
