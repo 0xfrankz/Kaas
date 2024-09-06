@@ -95,11 +95,10 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
         </div>
       );
     }
+    if (manual) {
+      return renderManualInput();
+    }
     if (inited && data && data.length > 0) {
-      if (manual) {
-        return renderManualInput();
-      }
-
       return (
         <FormField
           control={form.control}
