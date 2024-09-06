@@ -43,6 +43,11 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const queryClient = useQueryClient();
 
   const onClick = useCallback(() => {
+    queryClient.resetQueries({
+      queryKey: LIST_REMOTE_MODELS_KEY,
+      exact: true,
+    });
+
     if (
       config.provider === PROVIDER_OPENAI ||
       config.provider === PROVIDER_OPENROUTER
@@ -69,7 +74,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
         setEnabled(true);
       }
     }
-  }, [config, form, t]);
+  }, [config.provider, form, queryClient, t]);
 
   const renderManualInput = () => {
     return (
