@@ -113,16 +113,16 @@ export async function invokeDeleteConversation(
 
 export async function invokeUpdateConversationModel({
   conversationId,
-  modelId,
+  modelIds,
 }: {
   conversationId: number;
-  modelId: number;
+  modelIds: number[];
 }): Promise<ConversationDetails> {
   const result = await invoke<ConversationDetails>(
     'update_conversation_model',
     {
       conversationId,
-      modelId,
+      modelIds,
     }
   );
   return result;

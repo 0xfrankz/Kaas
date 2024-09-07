@@ -262,7 +262,7 @@ export function useConversationModelUpdater(
       CommandError,
       {
         conversationId: number;
-        modelId: number;
+        modelIds: number[];
       }
     >,
     'mutationFn'

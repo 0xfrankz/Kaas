@@ -30,6 +30,11 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
     pub last_message_at: Option<DateTimeLocal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub parent_id: Option<i32>,
+    #[serde(default)]
+    pub is_multi_models: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -72,6 +77,8 @@ pub struct ConversationDetailsDTO {
     pub updated_at: Option<DateTimeLocal>,
     pub message_count: Option<i32>,
     pub model_provider: Option<String>,
+    pub parent_id: Option<i32>,
+    pub is_multi_models: bool,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -101,6 +108,8 @@ impl From<UpdateConversationDTO> for ActiveModel {
             updated_at: NotSet,
             deleted_at: NotSet,
             last_message_at: NotSet,
+            parent_id: NotSet,
+            is_multi_models: NotSet,
         }
     }
 }
@@ -258,6 +267,19 @@ pub struct OllamaOptions {
     /// Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MultiModelsOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context_length: Option<u16>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,

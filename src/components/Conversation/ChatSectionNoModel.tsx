@@ -48,7 +48,7 @@ export function ChatSectionNoModel({
     (selectedModel: Model) => {
       modelUpdater({
         conversationId: conversation.id,
-        modelId: selectedModel.id,
+        modelIds: [selectedModel.id],
       });
     },
     [conversation.id, modelUpdater]

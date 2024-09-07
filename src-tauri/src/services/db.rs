@@ -1,5 +1,5 @@
 
-use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ClaudeOptions, ConversationDTO, ConversationDetailsDTO, GenericOptions, Model as Conversation, OllamaOptions, OpenAIOptions, UpdateConversationDTO};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ClaudeOptions, ConversationDTO, ConversationDetailsDTO, GenericOptions, Model as Conversation, MultiModelsOptions, OllamaOptions, OpenAIOptions, UpdateConversationDTO};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
 use entity::entities::models::{self, Model, NewModel, GenericConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
@@ -202,6 +202,13 @@ impl Repository {
                     let options_str = serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default());
                     active_model.options = Set(Some(options_str));
                 },
+                Providers::MULTI => {
+                    // Normally this branch should be unreachable since
+                    // neither a blank conversation nor a multi-models conversation
+                    // has model_id
+                    let options_str = serde_json::to_string(&MultiModelsOptions::default()).unwrap_or(String::default());
+                    active_model.options = Set(Some(options_str));
+                },
                 _ => {
                     let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
                     active_model.options = Set(Some(options_str));
@@ -288,6 +295,7 @@ impl Repository {
      */
     pub async fn list_conversations(&self) -> Result<Vec<ConversationDetailsDTO>, String> {
         let result = conversations::Entity::find()
+                .filter(conversations::Column::ParentId.is_null())
                 .filter(conversations::Column::DeletedAt.is_null())
                 .join(
                     JoinType::LeftJoin,
@@ -341,28 +349,55 @@ impl Repository {
      * Get model provider and requeset options of a conversation
      */
     pub async fn get_conversation_options(&self, conversation_id: i32) -> Result<GenericOptions, String> {
-        let result = conversations::Entity::find_by_id(conversation_id)
-                .select_only()
-                .column(conversations::Column::Options)
-                .join(
-                    JoinType::InnerJoin, 
-                    conversations::Relation::Models.def()
+        // Get options from conversation
+        let options_strs: Vec<(String, bool, Option<i32>)> = conversations::Entity::find_by_id(conversation_id)
+            .select_only()
+            .column(conversations::Column::Options)
+            .column(conversations::Column::IsMultiModels)
+            .column(conversations::Column::ModelId)
+            .into_tuple()
+            .all(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                format!("Failed to get options of conversation with id = {}", conversation_id)
+            })?;
+        let (option_str, is_multi_models, model_id) = options_strs.get(0).ok_or(
+            format!(
+                "Cannot retrieve options of conversation with id = {}", 
+                conversation_id
+            )
+        )?;
+        
+        if *is_multi_models {
+            Ok(GenericOptions {
+                provider: Providers::MULTI.into(),
+                options: option_str.clone(),
+            })
+        } else {
+            // model id cannot be null if conversation is not multi-models
+            let model_id = model_id.ok_or(
+                format!(
+                    "Cannot retrieve model of conversation with id = {}", 
+                    conversation_id
                 )
+            )?;
+            let provider = models::Entity::find_by_id(model_id)
+                .select_only()
                 .column(models::Column::Provider)
-                .into_model::<GenericOptions>()
+                .into_tuple()
                 .one(&self.connection)
                 .await
                 .map_err(|err| {
                     error!("{}", err);
-                    format!("Failed to get options of conversation with id = {}", conversation_id)
+                    format!("Failed to get provider of conversation with id = {}", conversation_id)
                 })?
-                .ok_or(
-                    format!(
-                        "Cannot retrieve options of conversation with id = {}", 
-                        conversation_id
-                    )
-                )?;
-        Ok(result)
+                .unwrap_or(Providers::Unknown.into());
+            Ok(GenericOptions {
+                provider,
+                options: option_str.clone(),
+            })
+        }
     }
 
     /**
@@ -398,23 +433,39 @@ impl Repository {
     pub async fn update_conversation_options(&self, conversation_id: i32, options: String) -> Result<GenericOptions, String> {
         // Get conversation model
         let conversation = conversations::Entity::find_by_id(conversation_id)
-                .one(&self.connection)
-                .await
-                .map_err(|err| { 
-                    error!("{}", err);
-                    format!("Failed to find conversation with id = {}", conversation_id)
-                })?
-                .ok_or(
-                    format!(
-                        "Conversation with id {} doesn't exist", 
-                        conversation_id
-                    )
-                )?;
-        // Convert to active model
-        let model_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
-        let mut c_am: conversations::ActiveModel = conversation.into();
-        // Get provider string
-        let provider: String = models::Entity::find_by_id(model_id)
+            .one(&self.connection)
+            .await
+            .map_err(|err| { 
+                error!("{}", err);
+                format!("Failed to find conversation with id = {}", conversation_id)
+            })?
+            .ok_or(
+                format!(
+                    "Conversation with id {} doesn't exist", 
+                    conversation_id
+                )
+            )?;
+
+        let provider: String;
+        let options_str: String;
+        let mut c_am: conversations::ActiveModel = conversation.clone().into();
+
+        if conversation.is_multi_models {
+            provider = Providers::MULTI.into();
+            // Deserialize & serialize the options as validation
+            let multi_options: MultiModelsOptions = serde_json::from_str(&options)
+                .unwrap_or_else(|err| {
+                    // record error and return default
+                    error!("db::update_conversation_options: Error deserializing Multi-models options: {}", err);
+                    MultiModelsOptions::default()
+                });
+            options_str = serde_json::to_string(&multi_options).unwrap_or(String::default());
+            c_am.options = Set(Some(options_str.clone()));
+        } else {
+            // Convert to active model
+            let model_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
+            // Get provider string
+            provider = models::Entity::find_by_id(model_id)
                 .select_only()
                 .column(models::Column::Provider)
                 .into_tuple()
@@ -422,61 +473,66 @@ impl Repository {
                 .await
                 .map_err(|_| format!("Failed to get provider of conversation with id = {}", conversation_id))?
                 .unwrap_or(Providers::Unknown.into());
-        // Validate & set options string of active model
-        let options_str;
-        match provider.clone().into() {
-            Providers::Azure => {
-                // Deserialize & serialize the options as validation
-                let azure_options: AzureOptions = serde_json::from_str(&options)
-                    .unwrap_or_else(|err| {
-                        // record error and return default
-                        error!("db::update_conversation_options: Error deserializing Azure options: {}", err);
-                        AzureOptions::default()
-                    });
-                options_str = serde_json::to_string(&azure_options).unwrap_or(String::default());
-                c_am.options = Set(Some(options_str.clone()));
-            },
-            Providers::Claude => {
-                // Deserialize & serialize the options as validation
-                let claude_options: ClaudeOptions = serde_json::from_str(&options)
-                    .unwrap_or_else(|err| {
-                        // record error and return default
-                        error!("db::update_conversation_options: Error deserializing Claude options: {}", err);
-                        ClaudeOptions::default()
-                    });
-                options_str = serde_json::to_string(&claude_options).unwrap_or(String::default());
-                c_am.options = Set(Some(options_str.clone()));
-            },
-            Providers::Ollama => {
-                // Deserialize & serialize the options as validation
-                let ollama_options: OllamaOptions = serde_json::from_str(&options)
-                    .unwrap_or_else(|err| {
-                        // record error and return default
-                        error!("db::update_conversation_options: Error deserializing Ollama options: {}", err);
-                        OllamaOptions::default()
-                    });
-                options_str = serde_json::to_string(&ollama_options).unwrap_or(String::default());
-                c_am.options = Set(Some(options_str.clone()));
-            },
-            _ => {
-                // Deserialize & serialize the options as validation
-                let openai_options: OpenAIOptions = serde_json::from_str(&options)
-                    .unwrap_or_else(|err| {
-                        // record error and return default
-                        error!("db::update_conversation_options: Error deserializing OpenAI options: {}", err);
-                        OpenAIOptions::default()
-                    });
-                options_str = serde_json::to_string(&openai_options).unwrap_or(String::default());
-                c_am.options = Set(Some(options_str.clone()));
+            // Validate & set options string of active model
+            match provider.clone().into() {
+                Providers::Azure => {
+                    // Deserialize & serialize the options as validation
+                    let azure_options: AzureOptions = serde_json::from_str(&options)
+                        .unwrap_or_else(|err| {
+                            // record error and return default
+                            error!("db::update_conversation_options: Error deserializing Azure options: {}", err);
+                            AzureOptions::default()
+                        });
+                    options_str = serde_json::to_string(&azure_options).unwrap_or(String::default());
+                    c_am.options = Set(Some(options_str.clone()));
+                },
+                Providers::Claude => {
+                    // Deserialize & serialize the options as validation
+                    let claude_options: ClaudeOptions = serde_json::from_str(&options)
+                        .unwrap_or_else(|err| {
+                            // record error and return default
+                            error!("db::update_conversation_options: Error deserializing Claude options: {}", err);
+                            ClaudeOptions::default()
+                        });
+                    options_str = serde_json::to_string(&claude_options).unwrap_or(String::default());
+                    c_am.options = Set(Some(options_str.clone()));
+                },
+                Providers::Ollama => {
+                    // Deserialize & serialize the options as validation
+                    let ollama_options: OllamaOptions = serde_json::from_str(&options)
+                        .unwrap_or_else(|err| {
+                            // record error and return default
+                            error!("db::update_conversation_options: Error deserializing Ollama options: {}", err);
+                            OllamaOptions::default()
+                        });
+                    options_str = serde_json::to_string(&ollama_options).unwrap_or(String::default());
+                    c_am.options = Set(Some(options_str.clone()));
+                },
+                Providers::MULTI => {
+                    // Throw error, MULTI should not be here
+                    return Err(format!("Conversation with id {} is a multi-models conversation", conversation_id));
+                },
+                _ => {
+                    // Deserialize & serialize the options as validation
+                    let openai_options: OpenAIOptions = serde_json::from_str(&options)
+                        .unwrap_or_else(|err| {
+                            // record error and return default
+                            error!("db::update_conversation_options: Error deserializing OpenAI options: {}", err);
+                            OpenAIOptions::default()
+                        });
+                    options_str = serde_json::to_string(&openai_options).unwrap_or(String::default());
+                    c_am.options = Set(Some(options_str.clone()));
+                }
             }
+            // Update DB
+            c_am.update(&self.connection)
+                .await
+                .map_err(|err| {
+                    error!("{}", err);
+                    format!("Failed to update options of conversation with id = {}", conversation_id)
+                })?;
         }
-        // Update DB
-        c_am.update(&self.connection)
-            .await
-            .map_err(|err| {
-                error!("{}", err);
-                format!("Failed to update options of conversation with id = {}", conversation_id)
-            })?;
+
         Ok(GenericOptions { provider, options: options_str })
     }
 
@@ -504,39 +560,83 @@ impl Repository {
      * Update model of a conversation
      * @return String model's privider
      */
-    pub async fn update_conversation_model(&self, conversation_id: i32, model_id: i32) -> Result<ConversationDetailsDTO, String> {
-        let model = self.get_model(model_id).await?;
-        let mut active_model = conversations::ActiveModel {
-            id: Set(conversation_id),
-            model_id: Set(Some(model_id)),
-            ..Default::default()
-        };
-        match (&model.provider).into() {
-            Providers::Azure => {
-                let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
-                active_model.options = Set(Some(options_str));
-            },
-            Providers::Claude => {
-                let options_str = serde_json::to_string(&ClaudeOptions::default()).unwrap_or(String::default());
-                active_model.options = Set(Some(options_str));
-            },
-            Providers::Ollama => {
-                let options_str = serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default());
-                active_model.options = Set(Some(options_str));
-            },
-            _ => {
-                let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                active_model.options = Set(Some(options_str));
-            }
-        }
-        active_model.updated_at = Set(Some(chrono::Local::now()));
-        active_model
-            .update(&self.connection)
+    pub async fn update_conversation_model(&self, conversation_id: i32, model_ids: Vec<i32>) -> Result<ConversationDetailsDTO, String> {
+        if model_ids.len() == 1 {
+            // Conversation with one model
+            let model_id = model_ids[0];
+            let model = self.get_model(model_id).await?;
+            
+            let options_str: String= match (&model.provider).into() {
+                Providers::Azure => {
+                    serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default())
+                },
+                Providers::Claude => {
+                    serde_json::to_string(&ClaudeOptions::default()).unwrap_or(String::default())
+                },
+                Providers::Ollama => {
+                    serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default())
+                },
+                Providers::MULTI => {
+                    // Throw error
+                    return Err(format!("Conversation with id {} is a multi-models conversation", conversation_id));
+                },
+                _ => {
+                    serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default())
+                }
+            };
+
+            let active_model = conversations::ActiveModel {
+                id: Set(conversation_id),
+                model_id: Set(Some(model_id)),
+                options: Set(Some(options_str)),
+                updated_at: Set(Some(chrono::Local::now())),
+                ..Default::default()
+            };
+            active_model
+                .update(&self.connection)
+                .await
+                .map_err(|err| {
+                    error!("{}", err);
+                    "Failed to update single-model conversation".to_string()
+                })?;
+        } else {
+            // Conversation with multiple models
+            self.connection.transaction::<_, (), DbErr>(|txn| {
+                Box::pin(async move {
+                    for model_id in model_ids {
+                        let mut sub_conversation = conversations::ActiveModel {
+                            parent_id: Set(Some(conversation_id)),
+                            model_id: Set(Some(model_id)),
+                            ..Default::default()
+                        };
+                        // Sub conversation uses parent's options
+                        sub_conversation.options = Set(None);
+                        sub_conversation.created_at = Set(chrono::Local::now());
+                        sub_conversation.last_message_at = Set(Some(chrono::Local::now()));
+                        sub_conversation.insert(txn).await?;
+                    }
+                    // Use default multi-models options
+                    let options_str = serde_json::to_string(&MultiModelsOptions::default()).unwrap_or(String::default());
+                    // Update parent conversation
+                    let active_model = conversations::ActiveModel {
+                        id: Set(conversation_id),
+                        model_id: Set(None),
+                        options: Set(Some(options_str)),
+                        is_multi_models: Set(true),
+                        updated_at: Set(Some(chrono::Local::now())),
+                        ..Default::default()
+                    };
+                    
+                    active_model.update(txn).await?;
+                    Ok(())
+                })
+            })
             .await
             .map_err(|err| {
                 error!("{}", err);
-                "Failed to update conversation".to_string()
+                "Failed to update multi-model conversation".to_string()
             })?;
+        }
         
         // fetch details and return
         self.get_conversation_details(conversation_id).await
@@ -585,6 +685,33 @@ impl Repository {
                     "Failed to list conversations".to_string()
                 })?
                 .ok_or(format!("Conversation with id {} doesn't exist", conversation_id))?;
+        Ok(result)
+    }
+
+    pub async fn list_sub_conversations(&self, parent_conversation_id: i32) -> Result<Vec<ConversationDetailsDTO>, String> {
+        let result = conversations::Entity::find()
+            .filter(conversations::Column::ParentId.eq(parent_conversation_id))
+            .filter(conversations::Column::DeletedAt.is_null())
+            .join(
+                JoinType::LeftJoin,
+                conversations::Relation::Messages.def()
+            )
+            .join(
+                JoinType::LeftJoin,
+                conversations::Relation::Models.def()
+            )
+            .column_as(models::Column::Provider, "model_provider")
+            .column_as(messages::Column::Id.count(), "message_count")
+            .group_by(conversations::Column::Id)
+            .order_by(conversations::Column::LastMessageAt, Order::Desc)
+            .order_by(conversations::Column::CreatedAt, Order::Desc)
+            .into_model::<ConversationDetailsDTO>()
+            .all(&self.connection)
+            .await
+            .map_err(|err| {
+                error!("{}", err);
+                "Failed to list sub conversations".to_string()
+            })?;
         Ok(result)
     }
 
