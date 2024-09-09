@@ -276,7 +276,7 @@ function SettingContextLength() {
     const validation = z.coerce
       .number()
       .int()
-      .min(0)
+      .min(1)
       .max(65535)
       .safeParse(ctxLengthRef.current?.value);
     if (!validation.success) {
