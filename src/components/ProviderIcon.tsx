@@ -17,7 +17,7 @@ export const ProviderIcon = forwardRef<HTMLImageElement, Attrs>(
         ref={ref}
         src={`/images/${theme === 'light' ? styles.icon.light : styles.icon.dark}`}
         alt={provider}
-        className={cn('m-auto size-[14px]', className)}
+        className={cn('size-[14px]', className)}
         {...prop}
       />
     );

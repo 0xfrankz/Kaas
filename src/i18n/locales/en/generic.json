@@ -23,6 +23,8 @@
         "create-new-model": "Create new model",
         "choose-a-model": "Choose a model",
         "use-this-model": "Use this model",
+        "use-selected-models": "Use selected models",
+        "use-multiple-models": "Use multiple models",
         "create-prompt": "Create new prompt template",
         "regenerate": "Regenerate",
         "restart": "Restart conversation",

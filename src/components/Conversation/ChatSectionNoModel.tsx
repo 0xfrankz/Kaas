@@ -45,10 +45,11 @@ export function ChatSectionNoModel({
   }, [conversation.subject]);
 
   const onChooseSubmit = useCallback(
-    (selectedModel: Model) => {
+    (selectedModels: Model[]) => {
+      const modelIds = selectedModels.map((m) => m.id);
       modelUpdater({
         conversationId: conversation.id,
-        modelIds: [selectedModel.id],
+        modelIds,
       });
     },
     [conversation.id, modelUpdater]

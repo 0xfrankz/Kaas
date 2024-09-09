@@ -23,6 +23,8 @@
         "create-new-model": "创建新模型",
         "choose-a-model": "选择模型",
         "use-this-model": "使用此模型",
+        "use-selected-models": "使用选定模型",
+        "use-multiple-models": "使用多个模型",
         "create-prompt": "创建新提示词模板",
         "regenerate": "重新生成",
         "restart": "重新开始对话",
