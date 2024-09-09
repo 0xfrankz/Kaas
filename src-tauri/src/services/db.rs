@@ -599,14 +599,20 @@ impl Repository {
                     error!("{}", err);
                     "Failed to update single-model conversation".to_string()
                 })?;
+            
+            // fetch details and return
+            self.get_conversation_details(conversation_id).await
         } else {
             // Conversation with multiple models
+            let conversation = self.get_conversation_details(conversation_id).await?;
+            let subject = conversation.subject.clone();
             self.connection.transaction::<_, (), DbErr>(|txn| {
                 Box::pin(async move {
                     for model_id in model_ids {
                         let mut sub_conversation = conversations::ActiveModel {
                             parent_id: Set(Some(conversation_id)),
                             model_id: Set(Some(model_id)),
+                            subject: Set(subject.clone()),
                             ..Default::default()
                         };
                         // Sub conversation uses parent's options
@@ -636,10 +642,8 @@ impl Repository {
                 error!("{}", err);
                 "Failed to update multi-model conversation".to_string()
             })?;
+            return Ok(conversation);
         }
-        
-        // fetch details and return
-        self.get_conversation_details(conversation_id).await
     }
 
 
