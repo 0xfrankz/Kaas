@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 
-import type { ConversationDetails, DialogHandler } from '@/lib/types';
+import type { Conversation, DialogHandler } from '@/lib/types';
 
 import { SystemMessageDialog } from './SystemMessageDialog';
 import { SystemMessageIndicator } from './SystemMessageIndicator';
@@ -8,9 +8,9 @@ import { SystemMessageIndicator } from './SystemMessageIndicator';
 export function SystemMessageSetter({
   conversation,
 }: {
-  conversation: ConversationDetails;
+  conversation: Conversation;
 }) {
-  const dialogRef = useRef<DialogHandler<ConversationDetails>>(null);
+  const dialogRef = useRef<DialogHandler<Conversation>>(null);
 
   return (
     <>

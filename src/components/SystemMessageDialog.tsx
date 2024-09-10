@@ -21,7 +21,7 @@ import { FileUploaderContextProvider } from '@/lib/providers';
 import type {
   CommandError,
   ContentItem,
-  ConversationDetails,
+  Conversation,
   DialogHandler,
   Message,
   PromptInputHandler,
@@ -42,13 +42,13 @@ import {
 type DialogProps = {};
 
 export const SystemMessageDialog = forwardRef<
-  DialogHandler<ConversationDetails>,
+  DialogHandler<Conversation>,
   DialogProps
 >((_, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const promptInputRef = useRef<PromptInputHandler>(null);
   const [conversation, setConversation] = useState<
-    ConversationDetails | undefined
+    Conversation | undefined
   >(undefined);
   const { data: message } = useGetSystemMessageQuery({
     conversationId: conversation?.id ?? 0,

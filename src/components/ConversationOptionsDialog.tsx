@@ -14,7 +14,7 @@ import { useAppStateStore } from '@/lib/store';
 import type {
   AzureOptions,
   ClaudeOptions,
-  ConversationDetails,
+  Conversation,
   DialogHandler,
   OllamaOptions,
   OpenAIOptions,
@@ -35,7 +35,7 @@ import {
 import { ScrollArea } from './ui/scroll-area';
 
 type Props = {
-  conversation: ConversationDetails;
+  conversation: Conversation;
 };
 
 export const ConversationOptionsDialog = forwardRef<DialogHandler<void>, Props>(

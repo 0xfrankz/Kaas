@@ -33,6 +33,7 @@ fn main() {
             commands::create_conversation,
             commands::create_blank_conversation,
             commands::list_conversations,
+            commands::list_sub_conversations,
             commands::delete_conversation,
             commands::update_conversation,
             commands::get_options,

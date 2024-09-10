@@ -2,20 +2,24 @@ import { useQueryClient } from '@tanstack/react-query';
 import { emit } from '@tauri-apps/api/event';
 import { animate, motion } from 'framer-motion';
 import { produce } from 'immer';
+import { ListRestart } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
   useBotCaller,
   useListMessagesQuery,
+  useMessagesHardDeleter,
 } from '@/lib/hooks';
 import {
   FileUploaderContextProvider,
   MessageListContextProvider,
 } from '@/lib/providers';
-import type { ConversationDetails, Message } from '@/lib/types';
+import { useConfirmationStateStore } from '@/lib/store';
+import type { Conversation, Message } from '@/lib/types';
 import { getMessageTag } from '@/lib/utils';
 
 import { ChatMessageList } from '../ChatMessageList';
@@ -23,26 +27,50 @@ import { ChatStop } from '../ChatStop';
 import { ScrollBottom } from '../ScrollBottom';
 import { ToBottom } from '../ToBottom';
 import { Button } from '../ui/button';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '../ui/context-menu';
 import { ScrollArea } from '../ui/scroll-area';
 import { UserPromptInput } from '../UserPromptInput';
 
 const MemoizedMessageList = memo(ChatMessageList);
 const MemoizedScrollBottom = memo(ScrollBottom);
 
-export function ChatSectionHasModel({
-  conversation,
-}: {
-  conversation: ConversationDetails;
-}) {
+export function SingleChat({ conversation }: { conversation: Conversation }) {
   const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
   const atBottomRef = useRef<boolean>(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation(['page-conversation']);
+  const { open } = useConfirmationStateStore();
 
   // Queries
   const queryClient = useQueryClient();
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
   const botCaller = useBotCaller();
+  const deleter = useMessagesHardDeleter({
+    onSettled: (_, error) => {
+      if (error) {
+        toast.error(
+          t('page-conversation:message:restart-conversation-error', {
+            errorMsg: error.message,
+          })
+        );
+      } else {
+        queryClient.setQueryData(
+          [...LIST_MESSAGES_KEY, { conversationId: conversation.id }],
+          () => {
+            return [];
+          }
+        );
+        toast.success(
+          t('page-conversation:message:restart-conversation-success')
+        );
+      }
+    },
+  });
 
   // Derived states
   const receiving = useMemo(() => {
@@ -67,6 +95,16 @@ export function ChatSectionHasModel({
   }, [conversation.modelId, messages]);
 
   // Callbacks
+  const onRestartClick = () => {
+    open({
+      title: t('generic:message:are-you-sure'),
+      message: t('page-conversation:message:restart-conversation-warning'),
+      onConfirm: () => {
+        deleter(conversation.id);
+      },
+    });
+  };
+
   const onReceiverReady = useCallback(() => {
     const placeholder = messages?.find((m) => m.isReceiving);
     if (placeholder) {
@@ -291,27 +329,39 @@ export function ChatSectionHasModel({
   };
 
   return (
-    <MessageListContextProvider
-      messages={messagesWithModelId}
-      onRegenerateClick={onRegenerateClick}
-      onReceiverReady={onReceiverReady}
-    >
-      <ScrollArea
-        className="flex w-full grow justify-center"
-        viewportRef={viewportRef}
-      >
-        <div className="relative w-full p-4 md:mx-auto md:w-[640px] md:px-0">
-          {isSuccess && <MemoizedMessageList />}
-          {/* Spacer */}
-          <div className="mt-4 h-8" />
-          <MemoizedScrollBottom scrollContainerRef={viewportRef} />
-        </div>
-      </ScrollArea>
-      <div className="w-full px-4 md:w-[640px] md:px-0">
-        <div className="relative flex w-full flex-col items-center justify-center">
-          {renderBottomSection()}
-        </div>
-      </div>
-    </MessageListContextProvider>
+    <ContextMenu>
+      <ContextMenuTrigger className="flex size-full flex-col items-center justify-between overflow-hidden">
+        <MessageListContextProvider
+          messages={messagesWithModelId}
+          onRegenerateClick={onRegenerateClick}
+          onReceiverReady={onReceiverReady}
+        >
+          <ScrollArea
+            className="flex w-full grow justify-center"
+            viewportRef={viewportRef}
+          >
+            <div className="relative w-full p-4 md:mx-auto md:w-[640px] md:px-0">
+              {isSuccess && <MemoizedMessageList />}
+              {/* Spacer */}
+              <div className="mt-4 h-8" />
+              <MemoizedScrollBottom scrollContainerRef={viewportRef} />
+            </div>
+          </ScrollArea>
+          <div className="w-full px-4 md:w-[640px] md:px-0">
+            <div className="relative flex w-full flex-col items-center justify-center">
+              {renderBottomSection()}
+            </div>
+          </div>
+        </MessageListContextProvider>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem
+          className="cursor-pointer gap-2"
+          onClick={onRestartClick}
+        >
+          <ListRestart className="size-4" /> {t('generic:action:restart')}
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

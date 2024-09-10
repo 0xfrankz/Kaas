@@ -9,7 +9,7 @@ import {
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
 import type {
-  ConversationDetails,
+  Conversation,
   Model,
   StatefulDialogHandler,
 } from '@/lib/types';
@@ -17,10 +17,10 @@ import type {
 import { ModelPickerDialog } from '../ModelPickerDialog';
 import { Button } from '../ui/button';
 
-export function ChatSectionNoModel({
+export function NoModel({
   conversation,
 }: {
-  conversation: ConversationDetails;
+  conversation: Conversation;
 }) {
   const dialogRef = useRef<StatefulDialogHandler<string>>(null);
   const model = useAppStateStore((state) =>

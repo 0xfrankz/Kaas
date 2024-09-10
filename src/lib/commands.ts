@@ -2,7 +2,6 @@ import { invoke } from '@tauri-apps/api';
 
 import type {
   Conversation,
-  ConversationDetails,
   GenericConfig,
   GenericModel,
   GenericOptions,
@@ -85,20 +84,23 @@ export async function invokeCreateConversation(
 export async function invokeCreateBlankConversation(
   subject: string
 ): Promise<Conversation> {
-  const blankConversation = {
-    id: 0,
-    subject,
-  };
   const result = await invoke<Conversation>('create_blank_conversation', {
-    blankConversation,
+    subject,
   });
   return result;
 }
 
-export async function invokeListConversations(): Promise<
-  ConversationDetails[]
-> {
-  const result = await invoke<ConversationDetails[]>('list_conversations');
+export async function invokeListConversations(): Promise<Conversation[]> {
+  const result = await invoke<Conversation[]>('list_conversations');
+  return result;
+}
+
+export async function invokeListSubConversations(
+  conversationId: number
+): Promise<Conversation[]> {
+  const result = await invoke<Conversation[]>('list_sub_conversations', {
+    conversationId,
+  });
   return result;
 }
 
@@ -117,21 +119,18 @@ export async function invokeUpdateConversationModel({
 }: {
   conversationId: number;
   modelIds: number[];
-}): Promise<ConversationDetails> {
-  const result = await invoke<ConversationDetails>(
-    'update_conversation_model',
-    {
-      conversationId,
-      modelIds,
-    }
-  );
+}): Promise<Conversation> {
+  const result = await invoke<Conversation>('update_conversation_model', {
+    conversationId,
+    modelIds,
+  });
   return result;
 }
 
 export async function invokeUpdateConversation(
   conversation: UpdateConversation
-): Promise<ConversationDetails> {
-  const result = await invoke<ConversationDetails>('update_conversation', {
+): Promise<Conversation> {
+  const result = await invoke<Conversation>('update_conversation', {
     conversation,
   });
   return result;

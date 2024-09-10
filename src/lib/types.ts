@@ -109,26 +109,18 @@ export type Conversation = {
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
-};
-
-export type ConversationDetails = {
-  id: number;
-  modelId?: number;
-  subject: string;
-  options?: string;
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
   lastMessageAt?: string;
+  parentId?: number;
+  isMultiModels: boolean;
   messageCount?: number;
   modelProvider?: AllProviders;
 };
 
-export type UpdateConversation = Omit<
-  Conversation,
-  'subject' | 'createdAt' | 'updatedAt' | 'deletedAt'
-> & {
+export type UpdateConversation = {
+  id: number;
+  modelId?: number;
   subject?: string;
+  options?: string;
 };
 
 export type ContentItem = {
@@ -210,9 +202,9 @@ export type FileData = {
 
 // Contexts
 export type TConversationsContext = {
-  conversations: ConversationDetails[];
+  conversations: Conversation[];
   isLoading: boolean;
-  get: (id: number) => ConversationDetails | undefined;
+  get: (id: number) => Conversation | undefined;
 };
 
 export type TFilledPromptContext = {

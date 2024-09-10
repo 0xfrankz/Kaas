@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use entity::entities::{
     contents::{ContentType, Model as Content}, 
-    conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, GenericOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
+    conversations::{ConversationDTO, NewConversationDTO, GenericOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
     messages::MessageDTO,
     models::{Model, NewModel, GenericConfig}, 
     prompts::{Model as Prompt, NewPrompt}, 
@@ -117,9 +117,9 @@ pub async fn upsert_setting(
 pub async fn create_conversation(
     new_conversation: NewConversationDTO,
     repo: State<'_, Repository>,
-) -> CommandResult<Conversation> {
+) -> CommandResult<ConversationDTO> {
     // Assemble conversation & message models
-    let conversation = Conversation {
+    let conversation = ConversationDTO {
         model_id: Some(new_conversation.model_id),
         subject: new_conversation.message.clone(),
         ..Default::default()
@@ -138,9 +138,13 @@ pub async fn create_conversation(
 }
 
 #[tauri::command]
-pub async fn create_blank_conversation(blank_conversation: Conversation, repo: State<'_, Repository>) -> CommandResult<Conversation> {
+pub async fn create_blank_conversation(subject: String, repo: State<'_, Repository>) -> CommandResult<ConversationDTO> {
+    let blank_conversation = ConversationDTO {
+        subject,
+        ..Default::default()
+    };
     let conversation = repo
-        .create_conversation(blank_conversation)
+        .create_blank_conversation(blank_conversation)
         .await
         .map_err(|message| DbError { message })?;
 
@@ -148,7 +152,7 @@ pub async fn create_blank_conversation(blank_conversation: Conversation, repo: S
 }
 
 #[tauri::command]
-pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationDetailsDTO>> {
+pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationDTO>> {
     let now = Instant::now();
     let result = repo
         .list_conversations()
@@ -208,7 +212,7 @@ pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'
 }
 
 #[tauri::command]
-pub async fn update_conversation_model(conversation_id: i32, model_ids: Vec<i32>, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
+pub async fn update_conversation_model(conversation_id: i32, model_ids: Vec<i32>, repo: State<'_, Repository>) -> CommandResult<ConversationDTO> {
     let now = Instant::now();
     let result = repo
         .update_conversation_model(conversation_id, model_ids)
@@ -220,7 +224,7 @@ pub async fn update_conversation_model(conversation_id: i32, model_ids: Vec<i32>
 }
 
 #[tauri::command]
-pub async fn list_sub_conversations(parent_conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<ConversationDetailsDTO>> {
+pub async fn list_sub_conversations(parent_conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<ConversationDTO>> {
     let now = Instant::now();
     let result = repo
         .list_sub_conversations(parent_conversation_id)
@@ -232,7 +236,7 @@ pub async fn list_sub_conversations(parent_conversation_id: i32, repo: State<'_,
 }
 
 #[tauri::command]
-pub async fn update_conversation(conversation: UpdateConversationDTO, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
+pub async fn update_conversation(conversation: UpdateConversationDTO, repo: State<'_, Repository>) -> CommandResult<ConversationDTO> {
     let now = Instant::now();
     let result = repo
         .update_conversation(conversation)

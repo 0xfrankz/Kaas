@@ -1,5 +1,5 @@
 
-use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ClaudeOptions, ConversationDTO, ConversationDetailsDTO, GenericOptions, Model as Conversation, MultiModelsOptions, OllamaOptions, OpenAIOptions, UpdateConversationDTO};
+use entity::entities::conversations::{self, ActiveModel as ActiveConversation, AzureOptions, ClaudeOptions, ConversationDTO, GenericOptions, Model as Conversation, MultiModelsOptions, OllamaOptions, OpenAIOptions, UpdateConversationDTO};
 use entity::entities::messages::{self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message};
 use entity::entities::models::{self, Model, NewModel, GenericConfig, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
@@ -181,41 +181,12 @@ impl Repository {
     /**
      * Insert a new conversation
      */
-    pub async fn create_conversation(
+    pub async fn create_blank_conversation(
         &self,
-        conversation: Conversation,
-    ) -> Result<Conversation, String> {
-        let mut active_model: ActiveConversation = conversation.clone().into();
+        conv_dto: ConversationDTO,
+    ) -> Result<ConversationDTO, String> {
+        let mut active_model: ActiveConversation = conv_dto.clone().into();
         active_model.id = ActiveValue::NotSet;
-        if let Some(model_id) = conversation.model_id {
-            let model = self.get_model(model_id).await?;
-            match model.provider.into() {
-                Providers::Azure => {
-                    let options_str = serde_json::to_string(&AzureOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(Some(options_str));
-                },
-                Providers::Claude => {
-                    let options_str = serde_json::to_string(&ClaudeOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(Some(options_str));
-                },
-                Providers::Ollama => {
-                    let options_str = serde_json::to_string(&OllamaOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(Some(options_str));
-                },
-                Providers::MULTI => {
-                    // Normally this branch should be unreachable since
-                    // neither a blank conversation nor a multi-models conversation
-                    // has model_id
-                    let options_str = serde_json::to_string(&MultiModelsOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(Some(options_str));
-                },
-                _ => {
-                    let options_str = serde_json::to_string(&OpenAIOptions::default()).unwrap_or(String::default());
-                    active_model.options = Set(Some(options_str));
-                }
-            }
-        }
-        
         active_model.created_at = Set(chrono::Local::now());
         // Set last message at to created at, so new conversation is shown at the top of the list
         active_model.last_message_at = Set(Some(chrono::Local::now()));
@@ -223,19 +194,19 @@ impl Repository {
             error!("{}", err);
             "Failed to create conversation".to_owned()
         })?;
-        Ok(result)
+        Ok(result.into())
     }
 
-    pub async fn create_conversation_with_content(&self, conversation: Conversation, content: Content) -> Result<(Conversation, Message, Content), String> {
+    pub async fn create_conversation_with_content(&self, conv_dto: ConversationDTO, content: Content) -> Result<(ConversationDTO, Message, Content), String> {
         // when created with a message
         // model id must be present
-        let mode_id = conversation.model_id.ok_or("Model id is missing".to_owned())?;
+        let mode_id = conv_dto.model_id.ok_or("Model id is missing".to_owned())?;
         let model = self
                 .get_model(mode_id)
                 .await?;
         let result = self.connection.transaction::<_, (Conversation, Message, Content), DbErr>(|txn| {
             Box::pin(async move {
-                let mut conv_am: ActiveConversation = conversation.into();
+                let mut conv_am: ActiveConversation = conv_dto.into();
                 conv_am.id = ActiveValue::NotSet;
                 match model.provider.into() {
                     Providers::Azure => {
@@ -287,13 +258,13 @@ impl Repository {
             error!("Failed to create conversation with message: {}", err);
             err.to_string()
         })?;
-        Ok(result)
+        Ok((result.0.into(), result.1, result.2))
     }
 
     /**
      * List all conversations
      */
-    pub async fn list_conversations(&self) -> Result<Vec<ConversationDetailsDTO>, String> {
+    pub async fn list_conversations(&self) -> Result<Vec<ConversationDTO>, String> {
         let result = conversations::Entity::find()
                 .filter(conversations::Column::ParentId.is_null())
                 .filter(conversations::Column::DeletedAt.is_null())
@@ -310,7 +281,7 @@ impl Repository {
                 .group_by(conversations::Column::Id)
                 .order_by(conversations::Column::LastMessageAt, Order::Desc)
                 .order_by(conversations::Column::CreatedAt, Order::Desc)
-                .into_model::<ConversationDetailsDTO>()
+                .into_model::<ConversationDTO>()
                 .all(&self.connection)
                 .await
                 .map_err(|err| {
@@ -342,7 +313,7 @@ impl Repository {
                 error!("{}", err);
                 format!("Failed to delete conversation with id = {}", conversation_id)
             })?;
-        Ok(result)
+        Ok(result.into())
     }
 
     /**
@@ -560,7 +531,7 @@ impl Repository {
      * Update model of a conversation
      * @return String model's privider
      */
-    pub async fn update_conversation_model(&self, conversation_id: i32, model_ids: Vec<i32>) -> Result<ConversationDetailsDTO, String> {
+    pub async fn update_conversation_model(&self, conversation_id: i32, model_ids: Vec<i32>) -> Result<ConversationDTO, String> {
         if model_ids.len() == 1 {
             // Conversation with one model
             let model_id = model_ids[0];
@@ -650,7 +621,7 @@ impl Repository {
     /**
      * Update a conversation
      */
-    pub async fn update_conversation(&self, conversation: UpdateConversationDTO) -> Result<ConversationDetailsDTO, String> {
+    pub async fn update_conversation(&self, conversation: UpdateConversationDTO) -> Result<ConversationDTO, String> {
         let conversation_id = conversation.id;
         let mut active_model = conversations::ActiveModel::from(conversation);
         active_model.updated_at = Set(Some(chrono::Local::now()));
@@ -668,7 +639,7 @@ impl Repository {
     /**
      * Get details of a conversation
      */
-    pub async fn get_conversation_details(&self, conversation_id: i32) -> Result<ConversationDetailsDTO, String> {
+    pub async fn get_conversation_details(&self, conversation_id: i32) -> Result<ConversationDTO, String> {
         let result = conversations::Entity::find_by_id(conversation_id)
                 .join(
                     JoinType::LeftJoin,
@@ -681,7 +652,7 @@ impl Repository {
                 .column_as(models::Column::Provider, "model_provider")
                 .column_as(messages::Column::Id.count(), "message_count")
                 .group_by(conversations::Column::Id)
-                .into_model::<ConversationDetailsDTO>()
+                .into_model::<ConversationDTO>()
                 .one(&self.connection)
                 .await
                 .map_err(|err| {
@@ -692,7 +663,7 @@ impl Repository {
         Ok(result)
     }
 
-    pub async fn list_sub_conversations(&self, parent_conversation_id: i32) -> Result<Vec<ConversationDetailsDTO>, String> {
+    pub async fn list_sub_conversations(&self, parent_conversation_id: i32) -> Result<Vec<ConversationDTO>, String> {
         let result = conversations::Entity::find()
             .filter(conversations::Column::ParentId.eq(parent_conversation_id))
             .filter(conversations::Column::DeletedAt.is_null())
@@ -709,7 +680,7 @@ impl Repository {
             .group_by(conversations::Column::Id)
             .order_by(conversations::Column::LastMessageAt, Order::Desc)
             .order_by(conversations::Column::CreatedAt, Order::Desc)
-            .into_model::<ConversationDetailsDTO>()
+            .into_model::<ConversationDTO>()
             .all(&self.connection)
             .await
             .map_err(|err| {

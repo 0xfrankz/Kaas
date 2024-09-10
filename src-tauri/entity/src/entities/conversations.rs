@@ -65,21 +65,63 @@ impl Related<super::models::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-pub type ConversationDTO = Model;
-#[derive(Clone, Debug, FromQueryResult, Serialize)]
+#[derive(Clone, Debug, FromQueryResult, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ConversationDetailsDTO {
+pub struct ConversationDTO {
     pub id: i32,
     pub model_id: Option<i32>,
     pub subject: String,
     pub options: Option<String>,
     pub created_at: DateTimeLocal,
     pub updated_at: Option<DateTimeLocal>,
-    pub message_count: Option<i32>,
-    pub model_provider: Option<String>,
+    pub last_message_at: Option<DateTimeLocal>,
     pub parent_id: Option<i32>,
     pub is_multi_models: bool,
+    pub message_count: Option<i32>,
+    pub model_provider: Option<String>,
 }
+
+impl From<Model> for ConversationDTO {
+    fn from(c: Model) -> Self {
+        Self {
+            id: c.id,
+            model_id: c.model_id,
+            subject: c.subject,
+            options: c.options,
+            created_at: c.created_at,
+            updated_at: c.updated_at,
+            last_message_at: c.last_message_at,
+            parent_id: c.parent_id,
+            is_multi_models: c.is_multi_models,
+            ..Default::default()
+        }
+    }
+}
+
+impl From<ConversationDTO> for Model {
+    fn from(c: ConversationDTO) -> Self {
+        Self {
+            id: c.id,
+            model_id: c.model_id,
+            subject: c.subject,
+            options: c.options,
+            created_at: c.created_at,
+            updated_at: c.updated_at,
+            deleted_at: None,
+            last_message_at: c.last_message_at,
+            parent_id: c.parent_id,
+            is_multi_models: c.is_multi_models,
+        }
+    }
+}
+
+impl From<ConversationDTO> for ActiveModel {
+    fn from(value: ConversationDTO) -> Self {
+        let c: Model = value.into();
+        c.into()
+    }
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

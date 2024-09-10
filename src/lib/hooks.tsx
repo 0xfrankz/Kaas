@@ -41,6 +41,7 @@ import {
   invokeListPrompts,
   invokeListRemoteModels,
   invokeListSettings,
+  invokeListSubConversations,
   invokeUpdateConversation,
   invokeUpdateConversationModel,
   invokeUpdateMessage,
@@ -67,30 +68,30 @@ import {
 } from './contexts';
 import { proxySchema } from './schemas';
 import { useAppStateStore } from './store';
-import {
-  type BotReply,
-  type CommandError,
-  type ConversationDetails,
-  type GenericModel,
-  type Message,
-  type Model,
-  type NewConversation,
-  type NewMessage,
-  type NewModel,
-  type NewPrompt,
-  type Options,
-  type Prompt,
-  type ProxySetting,
-  type RawConfig,
-  type RemoteModel,
-  type Setting,
-  type TConversationsContext,
-  type TFileUploaderContext,
-  type TFilledPromptContext,
-  type TMessageListContext,
-  toGenericConfig,
-  type UpdateConversation,
+import type {
+  BotReply,
+  CommandError,
+  Conversation,
+  GenericModel,
+  Message,
+  Model,
+  NewConversation,
+  NewMessage,
+  NewModel,
+  NewPrompt,
+  Options,
+  Prompt,
+  ProxySetting,
+  RawConfig,
+  RemoteModel,
+  Setting,
+  TConversationsContext,
+  TFileUploaderContext,
+  TFilledPromptContext,
+  TMessageListContext,
+  UpdateConversation,
 } from './types';
+import { toGenericConfig } from './types';
 
 export const LIST_MODELS_KEY = ['list-models'];
 export const LIST_REMOTE_MODELS_KEY = ['list-remote-models'];
@@ -99,6 +100,7 @@ export const LIST_CONVERSATIONS_KEY = ['list-conversations'];
 export const DETAIL_CONVERSATION_KEY = ['detail-conversation'];
 export const OPTIONS_CONVERSATION_KEY = ['options-conversation'];
 export const LIST_MESSAGES_KEY = ['list-messages'];
+export const LIST_SUB_CONVERSATIONS_KEY = ['list-sub-conversations'];
 export const SYSTEM_MESSAGE_KEY = ['system-message'];
 export const LIST_PROMPTS_KEY = ['list-prompts'];
 export const SYS_INFO_KEY = ['sys-info'];
@@ -193,7 +195,7 @@ export function useSettingUpserter(
 }
 
 export function useCreateConversationMutation(): UseMutationResult<
-  ConversationDetails,
+  Conversation,
   CommandError,
   NewConversation
 > {
@@ -203,7 +205,7 @@ export function useCreateConversationMutation(): UseMutationResult<
 }
 
 export function useListConversationsQuery(): UseQueryResult<
-  ConversationDetails[],
+  Conversation[],
   CommandError
 > {
   return useQuery({
@@ -212,9 +214,18 @@ export function useListConversationsQuery(): UseQueryResult<
   });
 }
 
+export function useSubConversationsLister(
+  conversationId: number
+): UseQueryResult<Conversation[], CommandError> {
+  return useQuery({
+    queryKey: [...LIST_SUB_CONVERSATIONS_KEY, { conversationId }],
+    queryFn: () => invokeListSubConversations(conversationId),
+  });
+}
+
 export function useConversationDeleter(
   options?: Omit<
-    UseMutationOptions<ConversationDetails, CommandError, number>,
+    UseMutationOptions<Conversation, CommandError, number>,
     'mutationFn'
   >
 ) {
@@ -223,12 +234,10 @@ export function useConversationDeleter(
     mutationFn: invokeDeleteConversation,
     onSuccess: (conversation) => {
       // default onsucess behaviour
-      queryClient.setQueryData<ConversationDetails[]>(
-        LIST_CONVERSATIONS_KEY,
-        (old) =>
-          produce(old, (draft) => {
-            return draft?.filter((p) => p.id !== conversation.id);
-          })
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          return draft?.filter((p) => p.id !== conversation.id);
+        })
       );
     },
     ...options,
@@ -237,7 +246,7 @@ export function useConversationDeleter(
 
 export function useBlankConversationCreator(
   options?: Omit<
-    UseMutationOptions<ConversationDetails, CommandError, string>,
+    UseMutationOptions<Conversation, CommandError, string>,
     'mutationFn'
   >
 ) {
@@ -258,7 +267,7 @@ export function useBlankConversationCreator(
 export function useConversationModelUpdater(
   options?: Omit<
     UseMutationOptions<
-      ConversationDetails,
+      Conversation,
       CommandError,
       {
         conversationId: number;
@@ -273,16 +282,13 @@ export function useConversationModelUpdater(
     mutationFn: invokeUpdateConversationModel,
     onSuccess: (conversation) => {
       // default onsucess behaviour
-      queryClient.setQueryData<ConversationDetails[]>(
-        LIST_CONVERSATIONS_KEY,
-        (old) =>
-          produce(old, (draft) => {
-            const index =
-              draft?.findIndex((c) => c.id === conversation.id) ?? -1;
-            if (index !== -1 && draft) {
-              draft[index] = conversation;
-            }
-          })
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          const index = draft?.findIndex((c) => c.id === conversation.id) ?? -1;
+          if (index !== -1 && draft) {
+            draft[index] = conversation;
+          }
+        })
       );
     },
     ...options,
@@ -291,7 +297,7 @@ export function useConversationModelUpdater(
 
 export function useConversationUpdater(
   options?: Omit<
-    UseMutationOptions<ConversationDetails, CommandError, UpdateConversation>,
+    UseMutationOptions<Conversation, CommandError, UpdateConversation>,
     'mutationFn'
   >
 ) {
@@ -300,16 +306,13 @@ export function useConversationUpdater(
     mutationFn: invokeUpdateConversation,
     onSuccess: (conversation) => {
       // default onsucess behaviour
-      queryClient.setQueryData<ConversationDetails[]>(
-        LIST_CONVERSATIONS_KEY,
-        (old) =>
-          produce(old, (draft) => {
-            const index =
-              draft?.findIndex((c) => c.id === conversation.id) ?? -1;
-            if (index !== -1 && draft) {
-              draft[index] = conversation;
-            }
-          })
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          const index = draft?.findIndex((c) => c.id === conversation.id) ?? -1;
+          if (index !== -1 && draft) {
+            draft[index] = conversation;
+          }
+        })
       );
     },
     ...options,
@@ -388,17 +391,15 @@ export function useMessageCreator(
         );
       }
       // Move conversation to top of the list
-      queryClient.setQueryData<ConversationDetails[]>(
-        LIST_CONVERSATIONS_KEY,
-        (old) =>
-          produce(old, (draft) => {
-            const index =
-              draft?.findIndex((c) => c.id === msg.conversationId) ?? -1;
-            if (index !== -1 && draft) {
-              // Move to top
-              draft.unshift(draft.splice(index, 1)[0]);
-            }
-          })
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          const index =
+            draft?.findIndex((c) => c.id === msg.conversationId) ?? -1;
+          if (index !== -1 && draft) {
+            // Move to top
+            draft.unshift(draft.splice(index, 1)[0]);
+          }
+        })
       );
     },
     ...options,
@@ -499,11 +500,11 @@ export function useSubjectUpdater(
     mutationFn: invokeUpdateSubject,
     onMutate: async ({ conversationId, subject }) => {
       // Snapshot the previous value
-      const previousConversations = queryClient.getQueryData<
-        ConversationDetails[]
-      >(LIST_CONVERSATIONS_KEY);
+      const previousConversations = queryClient.getQueryData<Conversation[]>(
+        LIST_CONVERSATIONS_KEY
+      );
       // Optimistically update
-      queryClient.setQueryData<ConversationDetails[]>(
+      queryClient.setQueryData<Conversation[]>(
         LIST_CONVERSATIONS_KEY,
         (old) => {
           return produce(old, (draft) => {

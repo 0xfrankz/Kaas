@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { PROVIDER_UNKNOWN } from '@/lib/constants';
 import { useConversationsContext } from '@/lib/hooks';
-import type { ConversationDetails } from '@/lib/types';
+import type { Conversation } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { ProviderTag } from './ProviderTag';
@@ -15,7 +15,7 @@ type Props = {
 };
 
 type ItemProps = {
-  conversation: ConversationDetails;
+  conversation: Conversation;
   active: boolean;
 };
 

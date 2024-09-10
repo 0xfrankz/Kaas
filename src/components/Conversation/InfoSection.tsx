@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import type { ConversationDetails, Model } from '@/lib/types';
+import type { Conversation, Model } from '@/lib/types';
 
 import { ModelTag } from '../ModelTag';
 import { ProxyIndicator } from '../ProxyIndicator';
@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { UsageCounter } from './UsageCounter';
 
 type Props = {
-  conversation: ConversationDetails;
+  conversation: Conversation;
   model?: Model;
 };
 export default function InfoSection({ conversation, model }: Props) {

@@ -1,7 +1,7 @@
 import { Check, SquarePen, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-import type { ConversationDetails, Model } from '@/lib/types';
+import type { Conversation, Model } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { InputWithMenu } from '../InputWithMenu';
@@ -9,7 +9,7 @@ import { Button } from '../ui/button';
 import InfoSection from './InfoSection';
 
 type Props = {
-  conversation: ConversationDetails;
+  conversation: Conversation;
   model?: Model;
   onEditDone: (newTitle: string) => void;
 };

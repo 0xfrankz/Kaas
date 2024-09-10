@@ -4,14 +4,14 @@ import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useListMessagesQuery } from '@/lib/hooks';
-import type { ConversationDetails } from '@/lib/types';
+import type { Conversation } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 export const UsageCounter = forwardRef<
   HTMLDivElement,
-  HTMLAttributes<HTMLDivElement> & { conversation: ConversationDetails }
+  HTMLAttributes<HTMLDivElement> & { conversation: Conversation }
 >(({ className, conversation, ...props }, ref) => {
   const { data: messages } = useListMessagesQuery(conversation.id);
   const { t } = useTranslation();

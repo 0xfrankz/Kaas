@@ -21,7 +21,7 @@ import { useAppStateStore } from '@/lib/store';
 import type {
   ContentItem,
   ContentItemTypes,
-  ConversationDetails,
+  Conversation,
   DialogHandler,
   PromptInputHandler,
 } from '@/lib/types';
@@ -45,7 +45,7 @@ type Props = {
   maxHeight?: number;
   defaultValue?: string;
   placeHolder?: string;
-  conversation: ConversationDetails;
+  conversation: Conversation;
   onSubmit: (content: ContentItem[]) => void;
 };
 
