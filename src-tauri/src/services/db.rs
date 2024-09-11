@@ -678,8 +678,7 @@ impl Repository {
             .column_as(models::Column::Provider, "model_provider")
             .column_as(messages::Column::Id.count(), "message_count")
             .group_by(conversations::Column::Id)
-            .order_by(conversations::Column::LastMessageAt, Order::Desc)
-            .order_by(conversations::Column::CreatedAt, Order::Desc)
+            .order_by(conversations::Column::CreatedAt, Order::Asc)
             .into_model::<ConversationDTO>()
             .all(&self.connection)
             .await

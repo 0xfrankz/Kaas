@@ -214,7 +214,7 @@ export function useListConversationsQuery(): UseQueryResult<
   });
 }
 
-export function useSubConversationsLister(
+export function useListSubConversationsQuery(
   conversationId: number
 ): UseQueryResult<Conversation[], CommandError> {
   return useQuery({

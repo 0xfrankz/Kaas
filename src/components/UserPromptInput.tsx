@@ -12,37 +12,43 @@ import PromptInput from './PromptInput';
 
 type Props = {
   conversation: Conversation;
+  subConversations?: Conversation[];
 };
 
-export function UserPromptInput({ conversation }: Props) {
+export function UserPromptInput({ conversation, subConversations }: Props) {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   const creator = useMessageCreator({
-    onSettled: (_, error) => {
+    onSettled: (msg, error) => {
       if (error) {
         toast.error(error.message);
-      } else {
+      } else if (msg?.role === MESSAGE_USER) {
+        // when the just created message is from user,
         // insert placeholder to trigger generation
-        const placeholder: Message = {
-          conversationId: conversation.id,
-          role: MESSAGE_BOT,
-          content: [],
-          id: -1,
-          isReceiving: true,
-        };
-        // add placeholder message
-        queryClient.setQueryData<Message[]>(
-          [
-            ...LIST_MESSAGES_KEY,
-            {
-              conversationId: conversation.id,
-            },
-          ],
-          (old) => {
-            return old ? [...old, placeholder] : [placeholder];
-          }
-        );
+        // if subConversations is provided, insert placeholder to all sub conversations
+        const targetConversations = subConversations || [conversation];
+        targetConversations.forEach((c) => {
+          const placeholder: Message = {
+            conversationId: c.id,
+            role: MESSAGE_BOT,
+            content: [],
+            id: -1,
+            isReceiving: true,
+          };
+          // add placeholder message
+          queryClient.setQueryData<Message[]>(
+            [
+              ...LIST_MESSAGES_KEY,
+              {
+                conversationId: c.id,
+              },
+            ],
+            (old) => {
+              return old ? [...old, placeholder] : [placeholder];
+            }
+          );
+        });
       }
     },
   });

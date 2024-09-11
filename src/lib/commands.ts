@@ -99,7 +99,7 @@ export async function invokeListSubConversations(
   conversationId: number
 ): Promise<Conversation[]> {
   const result = await invoke<Conversation[]>('list_sub_conversations', {
-    conversationId,
+    parentConversationId: conversationId,
   });
   return result;
 }
