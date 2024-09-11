@@ -1,7 +1,7 @@
 use std::pin::Pin;
 
 use async_openai::{config::{AzureConfig, Config, OpenAIConfig}, error::OpenAIError, types::{ChatChoice, ChatCompletionRequestMessage, ChatCompletionResponseStream, CompletionUsage, CreateChatCompletionRequest}, Client};
-use entity::entities::{conversations::{AzureOptions, ClaudeOptions, GenericOptions, OllamaOptions, OpenAIOptions}, messages::MessageDTO};
+use entity::entities::{contents::ContentType, conversations::{AzureOptions, ClaudeOptions, GenericOptions, OllamaOptions, OpenAIOptions}, messages::{MessageDTO, Roles}};
 use serde::Serialize;
 use tokio_stream::{Stream, StreamExt};
 use crate::log_utils::warn;
@@ -87,8 +87,28 @@ impl<'c> ChatRequest<'c> {
 
     pub fn claude(client: &'c Client<ClaudeConfig>, messages: Vec<MessageDTO>, options: GenericOptions, global_settings: GlobalSettings, model: String) -> Result<ChatRequest, String> {
         let request: ClaudeChatCompletionRequest;
+        // Extract system messages
+        let mut system_messages = Vec::new();
+        let mut filtered_messages = Vec::new();
+
+        for message in messages {
+            if let Roles::System = message.role.into() {
+                system_messages.push(message);
+            } else {
+                filtered_messages.push(message);
+            }
+        }
+
+        // Combine system messages into a single string
+        let system_prompt = system_messages
+            .into_iter()
+            .next()
+            .and_then(|msg| msg.content.into_iter().next())
+            .filter(|content| content.r#type == ContentType::Text)
+            .map(|content| content.data);
+        
         // set messages
-        let req_messages: Vec<ClaudeMessage> = messages.into_iter().map(Into::<ClaudeMessage>::into).collect();
+        let req_messages: Vec<ClaudeMessage> = filtered_messages.into_iter().map(Into::<ClaudeMessage>::into).collect();
         // set options
         let options: ClaudeOptions = serde_json::from_str(&options.options)
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
@@ -100,6 +120,7 @@ impl<'c> ChatRequest<'c> {
             stream: options.stream,
             temperature: options.temperature,
             top_p: options.top_p,
+            system: system_prompt,
             metadata: options.user.map(|user| {
                 ClaudeMetadata {
                     user_id: user,
