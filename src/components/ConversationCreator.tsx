@@ -51,7 +51,7 @@ export const ConversationCreator = forwardRef<
       return null;
     }
     return (
-      <span className="ml-2 hidden md:inline">
+      <span className="ml-2 hidden lg:inline">
         {t('generic:action:start-new-conversation')}
       </span>
     );

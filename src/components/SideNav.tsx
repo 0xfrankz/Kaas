@@ -41,9 +41,11 @@ export function SideNav() {
         {/* The bordered inner wrapper */}
         <div
           className={cn(
-            'box-border flex flex-col py-4 transition-[width] border-0 rounded-none md:ml-2',
+            'box-border flex flex-col py-5 transition-[width] border-0 rounded-none',
             isExpanded ? 'w-80 border-r' : 'w-16',
-            isPinned ? 'rounded-none border-r' : 'md:border md:rounded-lg my-1'
+            isPinned
+              ? 'rounded-none border-r'
+              : 'md:border md:rounded-lg md:my-1 md:ml-2 md:py-4'
           )}
           id="side-nav-inner"
         >
@@ -56,10 +58,7 @@ export function SideNav() {
             id="side-nav-top"
           >
             <Logo expanded={isExpanded} />
-            <Pin
-              className="hidden h-6 p-1 lg:block"
-              onPinnedChange={setIsPinned}
-            />
+            <Pin className="h-6 p-1" onPinnedChange={setIsPinned} />
           </div>
           {/* The menu content */}
           <SideNavMenu expanded={isExpanded} />

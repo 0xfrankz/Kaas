@@ -82,7 +82,7 @@ export function NewConversationForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex grow flex-col"
         >
-          <div className="mx-4 mt-6 box-border flex h-fit grow flex-col rounded-2xl border border-input bg-transparent hover:border-input-hover md:h-[72px] md:flex-row md:items-center lg:mx-auto lg:w-[720px]">
+          <div className="mt-6 box-border flex h-fit grow flex-col rounded-2xl border border-input hover:border-input-hover md:h-[72px] md:flex-row md:items-center lg:mx-auto lg:w-full lg:max-w-[720px]">
             <FormField
               control={form.control}
               name="message"

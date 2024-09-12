@@ -19,7 +19,7 @@ export default function ConversationsPage() {
   const render = () => {
     return (
       <>
-        <div>
+        <div className="w-full px-4 md:px-8">
           <NewConversationForm />
         </div>
         <div className="mt-12 flex grow">

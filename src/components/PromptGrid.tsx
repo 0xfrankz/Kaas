@@ -199,7 +199,7 @@ export function PromptGrid({ prompts }: { prompts: Prompt[] }) {
 
   return (
     <>
-      <div className="mx-auto mt-6 grid w-full grid-cols-1 gap-5 text-foreground sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+      <div className="mx-auto mt-6 grid w-full grid-cols-1 gap-5 text-foreground md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {prompts.map((prompt) => (
           <ContextMenu key={prompt.id}>
             <ContextMenuTrigger>
