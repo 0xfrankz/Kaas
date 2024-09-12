@@ -717,7 +717,7 @@ export default function SettingsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex size-full justify-center overflow-hidden bg-background">
           <ScrollArea className="w-full grow px-4">
-            <div className="mx-auto mb-6 mt-12 box-border columns-1 text-foreground md:columns-2 md:gap-4 lg:w-[924px] lg:gap-8">
+            <div className="mx-auto mb-6 mt-12 box-border columns-1 text-foreground md:columns-2 md:gap-4 lg:max-w-[924px] lg:gap-8">
               <SettingGroupDisplay />
               <SettingGroupProfile />
               <SettingGroupModels className="md:break-after-column" />
