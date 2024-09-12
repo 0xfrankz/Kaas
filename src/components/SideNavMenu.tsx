@@ -121,6 +121,7 @@ export function SideNavMenu({ expanded = false }: MenuProps) {
         'grow flex-col justify-start items-start transition-[margin] gap-2 py-6',
         expanded ? 'flex' : 'hidden md:flex'
       )}
+      id="side-nav-menu"
     >
       <SideNavMenuConversationsItem
         expanded={expanded}

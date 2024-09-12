@@ -1,29 +1,69 @@
 import { useHover } from 'ahooks';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
 import { Logo } from './Logo';
+import { Pin } from './Pin';
 import { SideNavMenu } from './SideNavMenu';
 
 export function SideNav() {
+  const [isPinned, setIsPinned] = useState(false);
   const ref = useRef(null);
   const isHovering = useHover(ref);
+  // const isHovering = true;
+
+  const isExpanded = isHovering || isPinned;
+  // const isExpanded = true;
 
   return (
-    <div className="flex-none md:relative md:min-h-full md:w-16">
+    // The placeholder is used to make the sidebar expand to its full width when pinned
+    <div
+      className={cn(
+        'flex-none md:relative md:min-h-screen transition-[width]',
+        isPinned ? 'md:w-80' : 'md:w-[72px]'
+      )}
+      id="side-nav-placeholder"
+    >
+      {/* The sidebar content */}
       <div
         className={cn(
-          'absolute top-0 left-0 flex flex-col box-border z-50 transition-[width] overflow-hidden pt-5 justify-between',
-          isHovering
-            ? 'w-80 h-screen border-r border-border bg-background/70 backdrop-blur-lg'
-            : 'size-16 md:w-16 md:h-screen md:border-r md:border-border',
-          'md:bg-background/70 md:backdrop-blur-lg'
+          'flex absolute top-0 left-0 box-border z-50 transition-[width] overflow-hidden justify-between md:backdrop-blur-lg',
+          'md:bg-background/70',
+          isExpanded
+            ? `${isPinned ? 'w-80' : 'w-80 md:w-[328px]'} h-screen bg-background/70 backdrop-blur-lg`
+            : 'size-16 md:w-[72px] md:h-screen md:border-border',
+          isPinned ? 'shadow-none' : 'md:shadow-lg'
         )}
         ref={ref}
+        id="side-nav"
       >
-        <Logo expanded={isHovering} />
-        <SideNavMenu expanded={isHovering} />
+        {/* The bordered inner wrapper */}
+        <div
+          className={cn(
+            'box-border flex flex-col py-4 transition-[width] border-0 rounded-none md:ml-2',
+            isExpanded ? 'w-80 border-r' : 'w-16',
+            isPinned ? 'rounded-none border-r' : 'md:border md:rounded-lg my-1'
+          )}
+          id="side-nav-inner"
+        >
+          {/* The top content */}
+          <div
+            className={cn(
+              'flex box-border justify-between transition-[padding] w-72',
+              isExpanded ? 'pl-7' : 'pl-5'
+            )}
+            id="side-nav-top"
+          >
+            <Logo expanded={isExpanded} />
+            <Pin
+              className="hidden h-6 p-1 lg:block"
+              onPinnedChange={setIsPinned}
+            />
+          </div>
+          {/* The menu content */}
+          <SideNavMenu expanded={isExpanded} />
+        </div>
       </div>
     </div>
   );
