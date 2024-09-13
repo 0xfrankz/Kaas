@@ -6,6 +6,8 @@ import { Fallback } from '@/components/Fallback';
 import { SideNav } from '@/components/SideNav';
 import { Toaster } from '@/components/ui/sonner';
 
+import TwoColumns from './TwoColumns';
+
 export default function CommonLayout({
   children,
 }: {
@@ -14,8 +16,12 @@ export default function CommonLayout({
   return (
     <div className="relative flex min-h-screen overflow-hidden font-kaas">
       <ErrorBoundary FallbackComponent={Fallback}>
-        <SideNav />
-        {children}
+        <TwoColumns>
+          <TwoColumns.Left>
+            <SideNav />
+          </TwoColumns.Left>
+          <TwoColumns.Right>{children}</TwoColumns.Right>
+        </TwoColumns>
         <Toaster />
         <ConfirmationDialog />
       </ErrorBoundary>

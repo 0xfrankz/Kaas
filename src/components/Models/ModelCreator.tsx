@@ -55,7 +55,7 @@ export const ModelCreator = forwardRef<
       >
         <Plus className="size-4" />
         <span
-          className={cn('ml-2', forceShowText ? 'inline' : 'hidden sm:inline')}
+          className={cn('ml-2', forceShowText ? 'inline' : 'hidden lg:inline')}
         >
           {t('generic:action:create-new-model')}
         </span>

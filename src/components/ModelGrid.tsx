@@ -79,7 +79,7 @@ export function ModelGrid({
     parseInt(settings[SETTING_USER_DEFAULT_MODEL], 10) || (models[0]?.id ?? 0);
 
   return (
-    <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+    <div className="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {models.map((model) => {
         return (
           <ModelGridItem
