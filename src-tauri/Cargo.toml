@@ -1,7 +1,7 @@
 workspace = { members = [".", "entity", "migration"] }
 [package]
 name = "kaas"
-version = "1.0.4"
+version = "1.0.5"
 description = "A LLM client designed to serve multiple providers and platforms."
 authors = ["Frank Zhang"]
 license = "MIT"
