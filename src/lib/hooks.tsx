@@ -178,7 +178,11 @@ export function useUpsertSettingMutation(
 
 export function useSettingUpserter(
   onSuccess: () => void = () => {},
-  onError: () => void = () => {}
+  onError: (
+    error: CommandError,
+    variables: Setting,
+    context: unknown
+  ) => void = () => {}
 ) {
   const { updateSetting } = useAppStateStore();
   const upsertSettingMutation = useUpsertSettingMutation({

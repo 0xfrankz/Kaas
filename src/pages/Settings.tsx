@@ -51,59 +51,40 @@ import {
   SETTING_NETWORK_PROXY,
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
-import { useProxySetting, useUpsertSettingMutation } from '@/lib/hooks';
+import { useProxySetting, useSettingUpserter } from '@/lib/hooks';
 import log from '@/lib/log';
 import { proxySchema } from '@/lib/schemas';
 import { useAppStateStore } from '@/lib/store';
 import type { ProxySetting } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-function useUpsertSetting(
-  successMsg: string,
-  failureMsg: string,
-  onSuccess: () => void = () => {}
-) {
-  const upsertSettingMutation = useUpsertSettingMutation({
-    onSuccess: () => {
-      // callback
-      onSuccess();
-      // toast
-      toast.success(successMsg);
-      // update settings
-    },
-    onError: async (error, variables) => {
-      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
-      await log.error(errMsg);
-      toast.error(failureMsg);
-    },
-  });
-
-  return upsertSettingMutation.mutate;
-}
-
 function SettingLanguage() {
   const { t, i18n } = useTranslation(['generic', 'page-settings']);
   const languageRef = useRef<string>(i18n.language);
-  const [languageSetting, updateSetting] = useAppStateStore((state) => [
+  const [languageSetting] = useAppStateStore((state) => [
     state.settings[SETTING_DISPLAY_LANGUAGE],
     state.updateSetting,
   ]);
   const languageLabel = t('page-settings:label:language');
-  const updater = useUpsertSetting(
-    t('page-settings:message:change-setting-success', {
-      setting: languageLabel,
-    }),
-    t('page-settings:message:change-setting-failure', {
-      setting: languageLabel,
-    }),
+  const updater = useSettingUpserter(
     () => {
       // apply new language
       i18n.changeLanguage(languageRef.current);
-      // update settings
-      updateSetting({
-        key: SETTING_DISPLAY_LANGUAGE,
-        value: languageRef.current,
-      });
+      // toast
+      toast.success(
+        t('page-settings:message:change-setting-success', {
+          setting: languageLabel,
+        })
+      );
+    },
+    (error, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
+      log.error(errMsg);
+      toast.error(
+        t('page-settings:message:change-setting-failure', {
+          setting: languageLabel,
+        })
+      );
     }
   );
 
@@ -155,9 +136,7 @@ function SettingTheme() {
   ]);
   const themeRef = useRef<string>(themeSetting);
   const themeLabel = t('page-settings:label:theme');
-  const updater = useUpsertSetting(
-    t('page-settings:message:change-setting-success', { setting: themeLabel }),
-    t('page-settings:message:change-setting-failure', { setting: themeLabel }),
+  const updater = useSettingUpserter(
     () => {
       // apply dark/light mode
       if (themeRef.current !== theme) {
@@ -168,6 +147,21 @@ function SettingTheme() {
         key: SETTING_DISPLAY_THEME,
         value: themeRef.current,
       });
+      // toast
+      toast.success(
+        t('page-settings:message:change-setting-success', {
+          setting: themeLabel,
+        })
+      );
+    },
+    (error, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
+      log.error(errMsg);
+      toast.error(
+        t('page-settings:message:change-setting-failure', {
+          setting: themeLabel,
+        })
+      );
     }
   );
 
@@ -222,9 +216,24 @@ function SettingName() {
   );
   const nameRef = useRef<HTMLInputElement>(null);
   const nameLabel = t('page-settings:label:name');
-  const updater = useUpsertSetting(
-    t('page-settings:message:change-setting-success', { setting: nameLabel }),
-    t('page-settings:message:change-setting-failure', { setting: nameLabel })
+  const updater = useSettingUpserter(
+    () => {
+      // toast
+      toast.success(
+        t('page-settings:message:change-setting-success', {
+          setting: nameLabel,
+        })
+      );
+    },
+    (error, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
+      log.error(errMsg);
+      toast.error(
+        t('page-settings:message:change-setting-failure', {
+          setting: nameLabel,
+        })
+      );
+    }
   );
 
   const onSaveClick = () => {
@@ -263,13 +272,24 @@ function SettingContextLength() {
   const [error, setError] = useState('');
   const ctxLengthRef = useRef<HTMLInputElement>(null);
   const ctxLengthLabel = t('page-settings:label:context-length');
-  const updater = useUpsertSetting(
-    t('page-settings:message:change-setting-success', {
-      setting: ctxLengthLabel,
-    }),
-    t('page-settings:message:change-setting-failure', {
-      setting: ctxLengthLabel,
-    })
+  const updater = useSettingUpserter(
+    () => {
+      // toast
+      toast.success(
+        t('page-settings:message:change-setting-success', {
+          setting: ctxLengthLabel,
+        })
+      );
+    },
+    (err, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${err.message}`;
+      log.error(errMsg);
+      toast.error(
+        t('page-settings:message:change-setting-failure', {
+          setting: ctxLengthLabel,
+        })
+      );
+    }
   );
 
   const onSaveClick = () => {
@@ -324,13 +344,24 @@ function SettingMaxTokens() {
   const [error, setError] = useState('');
   const maxTokensRef = useRef<HTMLInputElement>(null);
   const maxTokensLabel = t('page-settings:label:max-tokens');
-  const updater = useUpsertSetting(
-    t('page-settings:message:change-setting-success', {
-      setting: maxTokensLabel,
-    }),
-    t('page-settings:message:change-setting-failure', {
-      setting: maxTokensLabel,
-    })
+  const updater = useSettingUpserter(
+    () => {
+      // toast
+      toast.success(
+        t('page-settings:message:change-setting-success', {
+          setting: maxTokensLabel,
+        })
+      );
+    },
+    (err, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${err.message}`;
+      log.error(errMsg);
+      toast.error(
+        t('page-settings:message:change-setting-failure', {
+          setting: maxTokensLabel,
+        })
+      );
+    }
   );
 
   const onSaveClick = () => {
@@ -386,11 +417,25 @@ function SettingProxy() {
   });
   const useProxy = useWatch({ name: 'on', control: form.control });
   const proxyLabel = t('page-settings:label:proxy');
-  const updater = useUpsertSetting(
-    t('page-settings:message:change-setting-success', { setting: proxyLabel }),
-    t('page-settings:message:change-setting-failure', { setting: proxyLabel }),
+  const updater = useSettingUpserter(
     () => {
+      // apply proxy setting
       setProxySetting(form.getValues());
+      // toast
+      toast.success(
+        t('page-settings:message:change-setting-success', {
+          setting: proxyLabel,
+        })
+      );
+    },
+    (error, variables) => {
+      const errMsg = `Upserting settings failed: key = ${variables.key}, value = ${variables.value}, ${error.message}`;
+      log.error(errMsg);
+      toast.error(
+        t('page-settings:message:change-setting-failure', {
+          setting: proxyLabel,
+        })
+      );
     }
   );
 
