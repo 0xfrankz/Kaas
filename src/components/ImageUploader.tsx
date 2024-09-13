@@ -85,7 +85,6 @@ export const ImageUploader = forwardRef<
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
-      console.log('onFileChange', files);
       processFiles(files);
       e.target.value = '';
     },
