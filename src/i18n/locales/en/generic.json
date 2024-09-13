@@ -54,7 +54,7 @@
         "last-message": "Last message: {{lastMessage}}",
         "created-at": "Created at: {{createdAt}}",
         "are-you-sure": "Are you absolutely sure?",
-        "drag-file-here": "Drop images here to upload\n\nPNG (.png), JPEG (.jpeg and .jpg) and WEBP (.webp) files are supported\nYou can upload a maximum of {{maxNumOfUploadFiles}} files, each less than 20MB.",
+        "drag-file-here": "Drop & Drop here or <browseButton>Choose files</browseButton> to upload\nMaximum of {{maxNumOfUploadFiles}} images, each less than 20MB.",
         "release-to-upload": "Release to upload",
         "max-upload-files-warning": "You can only upload a maximum of {{maxNumOfUploadFiles}} files",
         "n-more-conversations": "{{n}} more conversations",

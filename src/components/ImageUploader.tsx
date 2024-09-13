@@ -1,14 +1,16 @@
 import type { HtmlHTMLAttributes } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useCallback, useRef } from 'react';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { NativeTypes } from 'react-dnd-html5-backend';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { MAX_NUM_OF_UPLOAD_FILES } from '@/lib/constants';
 import { useFileUploaderContext } from '@/lib/hooks';
 import { cn } from '@/lib/utils';
+
+import { Button } from './ui/button';
 
 export const ImageUploader = forwardRef<
   HTMLDivElement,
@@ -16,40 +18,46 @@ export const ImageUploader = forwardRef<
 >(({ className }, ref) => {
   const { t } = useTranslation();
   const { files: pendingFiles, addFiles } = useFileUploaderContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const processFiles = useCallback(
+    (files: File[]) => {
+      const numOfSlotsLeft = Math.min(
+        MAX_NUM_OF_UPLOAD_FILES - pendingFiles.length,
+        files.length
+      );
+      for (let i = 0; i < numOfSlotsLeft; i += 1) {
+        const file = files[i];
+        const fr = new FileReader();
+        fr.onload = () => {
+          addFiles([
+            {
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+              fileData: new Uint8Array(fr.result as ArrayBuffer),
+            },
+          ]);
+        };
+        fr.readAsArrayBuffer(file);
+      }
+      if (numOfSlotsLeft < files.length) {
+        // show toast about max number of files allowed for upload
+        toast.warning(
+          t('generic:message:max-upload-files-warning', {
+            maxNumOfUploadFiles: MAX_NUM_OF_UPLOAD_FILES,
+          })
+        );
+      }
+    },
+    [addFiles, pendingFiles.length, t]
+  );
   const [{ canDrop, isOver }, drop] = useDrop(
     () => ({
       accept: [NativeTypes.FILE],
       drop(item: { files: File[] }) {
-        const numOfSlotsLeft = Math.min(
-          MAX_NUM_OF_UPLOAD_FILES - pendingFiles.length,
-          item.files.length
-        );
-        for (let i = 0; i < numOfSlotsLeft; i += 1) {
-          const file = item.files[i];
-          const fr = new FileReader();
-          fr.onload = () => {
-            addFiles([
-              {
-                fileName: file.name,
-                fileSize: file.size,
-                fileType: file.type,
-                fileData: new Uint8Array(fr.result as ArrayBuffer),
-              },
-            ]);
-          };
-          fr.readAsArrayBuffer(file);
-        }
-        if (numOfSlotsLeft < item.files.length) {
-          // show toast about max number of files allowed for upload
-          toast.warning(
-            t('generic:message:max-upload-files-warning', {
-              maxNumOfUploadFiles: MAX_NUM_OF_UPLOAD_FILES,
-            })
-          );
-        }
+        processFiles(item.files);
       },
       canDrop(item: { files: File[] }) {
-        console.log('canDrop', item);
         const imgTypeReg = /^image\/(jpe?g|png|webp)$/;
         const typeCheck = item.files.every((file) =>
           imgTypeReg.test(file.type)
@@ -70,10 +78,24 @@ export const ImageUploader = forwardRef<
   );
   const isActive = canDrop && isOver;
 
+  const onBrowseClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const onFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      console.log('onFileChange', files);
+      processFiles(files);
+      e.target.value = '';
+    },
+    [processFiles]
+  );
+
   return (
     <div
       className={cn(
-        'h-28 w-full overflow-hidden rounded-lg border border-dashed bg-subtle text-muted-foreground',
+        'h-28 w-full overflow-hidden rounded-lg border border-dashed bg-subtle text-muted-foreground flex flex-col items-center',
         isActive ? 'border-solid' : null,
         className
       )}
@@ -81,14 +103,36 @@ export const ImageUploader = forwardRef<
     >
       <div
         ref={drop}
-        className="flex size-full items-center justify-center whitespace-pre-wrap text-center"
+        className="flex grow items-center justify-center whitespace-pre-wrap text-center"
       >
-        {isActive
-          ? t('generic:message:release-to-upload')
-          : t('generic:message:drag-file-here', {
-              maxNumOfUploadFiles: MAX_NUM_OF_UPLOAD_FILES,
-            })}
+        {isActive ? (
+          t('generic:message:release-to-upload')
+        ) : (
+          <p className="leading-6">
+            <Trans
+              i18nKey="generic:message:drag-file-here"
+              values={{ maxNumOfUploadFiles: MAX_NUM_OF_UPLOAD_FILES }}
+              components={{
+                browseButton: (
+                  <Button
+                    variant="link"
+                    className="mx-1 inline h-fit p-0 leading-6"
+                    onClick={onBrowseClick}
+                  />
+                ),
+              }}
+            />
+          </p>
+        )}
       </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+      />
     </div>
   );
 });

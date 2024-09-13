@@ -54,7 +54,7 @@
         "last-message": "最近一条消息: {{lastMessage}}",
         "created-at": "创建于: {{createdAt}}",
         "are-you-sure": "你确定吗？",
-        "drag-file-here": "拖拽图片到这里\n支持PNG (.png)，JPEG (.jpeg and .jpg)及WEBP (.webp)图片\n可上传最多{{maxNumOfUploadFiles}}个文件，单个文件不超过20MB",
+        "drag-file-here": "拖拽至此或<browseButton>浏览文件</browseButton>进行上传\n最多{{maxNumOfUploadFiles}}张图片，单张图片不超过20MB",
         "release-to-upload": "松手进行上传",
         "max-upload-files-warning": "仅可上传最多{{maxNumOfUploadFiles}}个文件",
         "n-more-conversations": "剩余{{n}}条对话",
