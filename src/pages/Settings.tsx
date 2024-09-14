@@ -61,10 +61,9 @@ import { cn } from '@/lib/utils';
 function SettingLanguage() {
   const { t, i18n } = useTranslation(['generic', 'page-settings']);
   const languageRef = useRef<string>(i18n.language);
-  const [languageSetting] = useAppStateStore((state) => [
-    state.settings[SETTING_DISPLAY_LANGUAGE],
-    state.updateSetting,
-  ]);
+  const languageSetting = useAppStateStore(
+    (state) => state.settings[SETTING_DISPLAY_LANGUAGE]
+  );
   const languageLabel = t('page-settings:label:language');
   const updater = useSettingUpserter(
     () => {
@@ -130,10 +129,9 @@ function SettingLanguage() {
 function SettingTheme() {
   const { t } = useTranslation(['generic', 'page-settings']);
   const { theme, setTheme } = useTheme();
-  const [themeSetting, updateSetting] = useAppStateStore((state) => [
-    state.settings[SETTING_DISPLAY_THEME],
-    state.updateSetting,
-  ]);
+  const themeSetting = useAppStateStore(
+    (state) => state.settings[SETTING_DISPLAY_THEME]
+  );
   const themeRef = useRef<string>(themeSetting);
   const themeLabel = t('page-settings:label:theme');
   const updater = useSettingUpserter(
@@ -142,11 +140,6 @@ function SettingTheme() {
       if (themeRef.current !== theme) {
         setTheme(themeRef.current);
       }
-      // update settings
-      updateSetting({
-        key: SETTING_DISPLAY_THEME,
-        value: themeRef.current,
-      });
       // toast
       toast.success(
         t('page-settings:message:change-setting-success', {
