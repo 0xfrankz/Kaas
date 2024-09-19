@@ -1,6 +1,9 @@
 import { useHover } from 'ahooks';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 
+import { SETTING_IS_SIDEBAR_PINNED } from '@/lib/constants';
+import { useSettingUpserter } from '@/lib/hooks';
+import { useAppStateStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 import { Logo } from './Logo';
@@ -8,13 +11,29 @@ import { Pin } from './Pin';
 import { SideNavMenu } from './SideNavMenu';
 
 export function SideNav() {
-  const [isPinned, setIsPinned] = useState(false);
+  const [isPinned, updateSetting] = useAppStateStore((state) => [
+    state.settings[SETTING_IS_SIDEBAR_PINNED] === 'true',
+    state.updateSetting,
+  ]);
+  const upserter = useSettingUpserter();
   const ref = useRef(null);
   const isHovering = useHover(ref);
-  // const isHovering = true;
 
   const isExpanded = isHovering || isPinned;
-  // const isExpanded = true;
+
+  const onPinnedChange = useCallback(
+    (pinned: boolean) => {
+      updateSetting({
+        key: SETTING_IS_SIDEBAR_PINNED,
+        value: pinned.toString(),
+      });
+      upserter({
+        key: SETTING_IS_SIDEBAR_PINNED,
+        value: pinned.toString(),
+      });
+    },
+    [updateSetting, upserter]
+  );
 
   return (
     // The placeholder is used to make the sidebar expand to its full width when pinned
@@ -58,7 +77,11 @@ export function SideNav() {
             id="side-nav-top"
           >
             <Logo expanded={isExpanded} />
-            <Pin className="h-6 p-1" onPinnedChange={setIsPinned} />
+            <Pin
+              className="h-6 p-1"
+              onPinnedChange={onPinnedChange}
+              pinned={isPinned}
+            />
           </div>
           {/* The menu content */}
           <SideNavMenu expanded={isExpanded} />

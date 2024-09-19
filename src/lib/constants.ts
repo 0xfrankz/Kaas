@@ -115,6 +115,7 @@ export const SETTING_USER_DEFAULT_MODEL = 'user:default_model';
 export const SETTING_USER_ENTER_TO_SEND = 'user:enter_to_send';
 export const SETTING_DISPLAY_LANGUAGE = 'display:language';
 export const SETTING_DISPLAY_THEME = 'display:darkmode';
+export const SETTING_IS_SIDEBAR_PINNED = 'display:is_sidebar_pinned';
 export const SETTING_PROFILE_NAME = 'profile:name';
 export const SETTING_MODELS_CONTEXT_LENGTH = 'models:context_length';
 export const SETTING_MODELS_MAX_TOKENS = 'models:max_tokens';
@@ -126,6 +127,7 @@ export const DEFAULT_DATETIME_FORMAT = 'HH:mm MMM D, YYYY';
 export const DEFAULT_PROFILE_NAME = 'ME';
 export const DEFAULT_CONTEXT_LENGTH = 1;
 export const DEFAULT_MAX_TOKENS = 256;
+export const DEFAULT_IS_SIDEBAR_PINNED = false;
 
 // Constatns
 export const MAX_NUM_OF_UPLOAD_FILES = 10;
