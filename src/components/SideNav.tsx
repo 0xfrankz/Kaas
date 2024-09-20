@@ -7,7 +7,7 @@ import { useAppStateStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 import { Logo } from './Logo';
-import { Pin } from './Pin';
+import { PinToggler } from './Pin';
 import { SideNavMenu } from './SideNavMenu';
 
 export function SideNav() {
@@ -77,7 +77,7 @@ export function SideNav() {
             id="side-nav-top"
           >
             <Logo expanded={isExpanded} />
-            <Pin
+            <PinToggler
               className="h-6 p-1"
               onPinnedChange={onPinnedChange}
               pinned={isPinned}

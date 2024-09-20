@@ -73,6 +73,8 @@
         "system-message": "System message",
         "set": "SET",
         "not-set": "NOT SET",
-        "unknown": "Unknown"
+        "unknown": "Unknown",
+        "wide-layout": "Wide layout",
+        "narrow-layout": "Narrow layout"
     }
 }

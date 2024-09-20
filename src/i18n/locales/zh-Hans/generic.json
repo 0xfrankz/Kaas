@@ -73,6 +73,8 @@
         "system-message": "系统消息",
         "set": "已设置",
         "not-set": "未设置",
-        "unknown": "未知"
+        "unknown": "未知",
+        "wide-layout": "宽屏布局",
+        "narrow-layout": "窄屏布局"
     }
 }
