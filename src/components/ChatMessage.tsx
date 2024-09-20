@@ -47,6 +47,7 @@ import {
   preprocessLaTeX,
 } from '@/lib/utils';
 
+import { CopyCode } from './CopyCode';
 import { ImagePreviwer } from './ImagePreviewer';
 import { Button } from './ui/button';
 import {
@@ -154,19 +155,29 @@ const CodeHighlighter = ({
 }: React.HTMLAttributes<HTMLDivElement> & ExtraProps) => {
   const match = /language-(\w+)/.exec(className || '');
   const childrenStr = String(children).replace(/\n$/, '');
+
+  const onCopyClick = () => {
+    navigator.clipboard.writeText(childrenStr);
+  };
+
   return match ? (
-    <SyntaxHighlighter
-      {...props}
-      PreTag="div"
-      // eslint-disable-next-line react/no-children-prop
-      children={childrenStr}
-      language={match[1]}
-      style={highlighterTheme}
-    />
-  ) : (
-    <div {...props} className={cn('text-wrap font-kaas italic', className)}>
-      {children}
+    <div className="group relative">
+      <SyntaxHighlighter
+        {...props}
+        // eslint-disable-next-line react/no-children-prop
+        children={childrenStr}
+        language={match[1]}
+        style={highlighterTheme}
+      />
+      <CopyCode
+        className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-80"
+        onClick={onCopyClick}
+      />
     </div>
+  ) : (
+    <code {...props} className={cn('text-wrap font-kaas italic', className)}>
+      {children}
+    </code>
   );
 };
 
