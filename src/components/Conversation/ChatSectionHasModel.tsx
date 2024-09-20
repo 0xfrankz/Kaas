@@ -310,7 +310,7 @@ export function ChatSectionHasModel({
       >
         <div
           className={cn(
-            'relative w-full p-4 md:mx-auto md:px-0',
+            'relative w-full p-4 md:mx-auto md:px-0 transition-[width]',
             isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
           )}
         >
@@ -322,7 +322,7 @@ export function ChatSectionHasModel({
       </ScrollArea>
       <div
         className={cn(
-          'w-full px-4 md:w-[640px] md:px-0',
+          'w-full px-4 md:w-[640px] md:px-0 transition-[width]',
           isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
         )}
       >
