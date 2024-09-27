@@ -1,10 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { produce } from 'immer';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
-import { LIST_MESSAGES_KEY, useMessageCreator } from '@/lib/hooks';
+import {
+  LIST_CONVERSATIONS_KEY,
+  LIST_MESSAGES_KEY,
+  useMessageCreator,
+} from '@/lib/hooks';
 import type { ContentItem, Conversation, Message } from '@/lib/types';
 import { getTextFromContent } from '@/lib/utils';
 
@@ -20,6 +25,25 @@ export function UserPromptInput({ conversation, subConversations }: Props) {
   const { t } = useTranslation();
 
   const creator = useMessageCreator({
+    onSuccess: (msg) => {
+      // Update cache
+      // Add user message to list
+      queryClient.setQueryData<Message[]>(
+        [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+        (messages) => (messages ? [...messages, msg] : [msg])
+      );
+      // Move conversation to top of the list
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          const index =
+            draft?.findIndex((c) => c.id === msg.conversationId) ?? -1;
+          if (index !== -1 && draft) {
+            // Move to top
+            draft.unshift(draft.splice(index, 1)[0]);
+          }
+        })
+      );
+    },
     onSettled: (msg, error) => {
       if (error) {
         toast.error(error.message);

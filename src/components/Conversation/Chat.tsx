@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { animate } from 'framer-motion';
 import { produce } from 'immer';
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { MESSAGE_BOT } from '@/lib/constants';
 import {
@@ -10,17 +11,25 @@ import {
 } from '@/lib/hooks';
 import { MessageListContextProvider } from '@/lib/providers';
 import type { Conversation, Message } from '@/lib/types';
-import { getMessageTag } from '@/lib/utils';
+import { cn, getMessageTag } from '@/lib/utils';
 
 import { ChatMessageList } from '../ChatMessageList';
 import { ScrollBottom } from '../ScrollBottom';
+import { ToBottom } from '../ToBottom';
 import { ScrollArea } from '../ui/scroll-area';
 
 const MemoizedMessageList = memo(ChatMessageList);
 const MemoizedScrollBottom = memo(ScrollBottom);
 
-export function Chat({ conversation }: { conversation: Conversation }) {
+type Props = {
+  conversation: Conversation;
+  wide?: boolean;
+};
+
+export function Chat({ conversation, wide = false }: Props) {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const atBottomRef = useRef<boolean>(false);
+  const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Queries
   const queryClient = useQueryClient();
@@ -93,6 +102,57 @@ export function Chat({ conversation }: { conversation: Conversation }) {
     [conversation.id, queryClient]
   );
 
+  const onToBottomClick = useCallback(() => {
+    if (viewportRef.current) {
+      viewportRef.current.scrollTo({
+        top: viewportRef.current?.scrollHeight ?? 0,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
+  const checkBottom = useCallback(() => {
+    const el = document.getElementById('to-bottom');
+    if (
+      (viewportRef.current?.scrollTop ?? 0) +
+        (viewportRef.current?.clientHeight ?? 0) ===
+      viewportRef.current?.scrollHeight
+    ) {
+      // at bottom, hide go-to-bottom button
+      el?.classList.add('hidden');
+      atBottomRef.current = true;
+    } else {
+      // not at bottom and button not shown, show go-to-bottom button
+      atBottomRef.current = false;
+      if (
+        el?.classList.contains('hidden') &&
+        showBottomTimerRef.current === null
+      ) {
+        showBottomTimerRef.current = setTimeout(() => {
+          if (!atBottomRef.current) {
+            // show go-to-bottom if still not at bottom when timeout
+            if (el) {
+              el.classList.remove('hidden');
+              animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
+            }
+          }
+          showBottomTimerRef.current = null;
+        }, 600);
+      }
+    }
+  }, []);
+
+  // Hooks
+  useEffect(() => {
+    // check position upon initialization
+    checkBottom();
+    if (viewportRef.current) {
+      viewportRef.current.onscroll = () => {
+        checkBottom();
+      };
+    }
+  }, [checkBottom]);
+
   return (
     <MessageListContextProvider
       messages={messagesWithModelId}
@@ -100,14 +160,25 @@ export function Chat({ conversation }: { conversation: Conversation }) {
       onReceiverReady={onReceiverReady}
     >
       <ScrollArea
-        className="flex w-full grow justify-center bg-blue-300"
+        className="flex w-full grow justify-center pb-2"
         viewportRef={viewportRef}
       >
-        <div className="relative w-full p-4 md:mx-auto md:w-[640px] md:px-0">
+        <div
+          className={cn(
+            'relative w-full p-4 md:mx-auto md:px-0 transition-[width]',
+            wide ? 'md:w-[800px]' : 'md:w-[640px]'
+          )}
+        >
           {isSuccess && <MemoizedMessageList />}
           {/* Spacer */}
-          <div className="mt-4 h-8" />
+          <div className="h-12" />
           <MemoizedScrollBottom scrollContainerRef={viewportRef} />
+        </div>
+        <div
+          id="to-bottom"
+          className="absolute bottom-4 flex w-full justify-center"
+        >
+          <ToBottom onClick={onToBottomClick} />
         </div>
       </ScrollArea>
     </MessageListContextProvider>

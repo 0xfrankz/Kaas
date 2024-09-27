@@ -53,7 +53,6 @@ import {
 } from './commands';
 import {
   MESSAGE_BOT,
-  MESSAGE_USER,
   SETTING_NETWORK_PROXY,
   STREAM_DONE,
   STREAM_ERROR,
@@ -369,43 +368,6 @@ export function useMessageCreator(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: invokeCreateMessage,
-    onSuccess: (msg) => {
-      // Update cache
-      if (msg.role === MESSAGE_USER) {
-        // Add to list if it is a user message
-        queryClient.setQueryData<Message[]>(
-          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
-          (messages) => (messages ? [...messages, msg] : [msg])
-        );
-      } else if (msg.role === MESSAGE_BOT) {
-        // Replace placeholder if it is a bot message
-        queryClient.setQueryData<Message[]>(
-          [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
-          (messages) => {
-            if (messages) {
-              const lastMsg = messages.at(-1);
-              if (lastMsg && lastMsg.id < 0) {
-                // remove last placeholder message
-                messages.pop();
-              }
-              return [...messages, msg];
-            }
-            return [msg];
-          }
-        );
-      }
-      // Move conversation to top of the list
-      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
-        produce(old, (draft) => {
-          const index =
-            draft?.findIndex((c) => c.id === msg.conversationId) ?? -1;
-          if (index !== -1 && draft) {
-            // Move to top
-            draft.unshift(draft.splice(index, 1)[0]);
-          }
-        })
-      );
-    },
     ...options,
   }).mutate;
 }

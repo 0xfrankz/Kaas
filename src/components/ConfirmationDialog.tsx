@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { useConfirmationStateStore } from '@/lib/store';
 
 import {
@@ -13,6 +15,7 @@ import {
 
 export function ConfirmationDialog() {
   const { data, close } = useConfirmationStateStore();
+  const { t } = useTranslation(['generic']);
   const onCancel = () => {
     if (data && data.onCancel) {
       data.onCancel();
@@ -31,8 +34,12 @@ export function ConfirmationDialog() {
           <AlertDialogDescription>{data?.message}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Confirm</AlertDialogAction>
+          <AlertDialogCancel onClick={onCancel}>
+            {t('generic:action:cancel')}
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>
+            {t('generic:action:confirm')}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

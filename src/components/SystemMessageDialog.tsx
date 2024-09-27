@@ -47,9 +47,9 @@ export const SystemMessageDialog = forwardRef<
 >((_, ref) => {
   const [showDialog, setShowDialog] = useState(false);
   const promptInputRef = useRef<PromptInputHandler>(null);
-  const [conversation, setConversation] = useState<
-    Conversation | undefined
-  >(undefined);
+  const [conversation, setConversation] = useState<Conversation | undefined>(
+    undefined
+  );
   const { data: message } = useGetSystemMessageQuery({
     conversationId: conversation?.id ?? 0,
     // enabled: !!conversation,
@@ -80,9 +80,6 @@ export const SystemMessageDialog = forwardRef<
     [queryClient, t]
   );
   const creator = useMessageCreator({
-    onSuccess: () => {
-      // override default behaviour to avoid system message appear in list
-    },
     onSettled: (sysMsg, error) => {
       defaultCallback(sysMsg, error);
     },

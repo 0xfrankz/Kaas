@@ -30,6 +30,7 @@ import {
   SETTING_PROFILE_NAME,
 } from '@/lib/constants';
 import {
+  LIST_CONVERSATIONS_KEY,
   LIST_MESSAGES_KEY,
   useMessageCreator,
   useMessageListContext,
@@ -37,7 +38,7 @@ import {
   useReplyListener,
 } from '@/lib/hooks';
 import { useAppStateStore } from '@/lib/store';
-import type { ContentItem, FileData, Message } from '@/lib/types';
+import type { ContentItem, Conversation, FileData, Message } from '@/lib/types';
 import {
   buildTextContent,
   cn,
@@ -416,9 +417,38 @@ const ContentReceiver = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
   const { ready, receiving, reply, error } = useReplyListener(tag);
   const { onReceiverReady } = useMessageListContext();
-  const creator = useMessageCreator();
-  const updater = useMessageUpdater();
   const queryClient = useQueryClient();
+  const creator = useMessageCreator({
+    onSuccess: (msg) => {
+      // Replace placeholder
+      queryClient.setQueryData<Message[]>(
+        [...LIST_MESSAGES_KEY, { conversationId: msg.conversationId }],
+        (messages) => {
+          if (messages) {
+            const lastMsg = messages.at(-1);
+            if (lastMsg && lastMsg.id < 0) {
+              // remove last placeholder message
+              messages.pop();
+            }
+            return [...messages, msg];
+          }
+          return [msg];
+        }
+      );
+      // Move conversation to top of the list
+      queryClient.setQueryData<Conversation[]>(LIST_CONVERSATIONS_KEY, (old) =>
+        produce(old, (draft) => {
+          const index =
+            draft?.findIndex((c) => c.id === msg.conversationId) ?? -1;
+          if (index !== -1 && draft) {
+            // Move to top
+            draft.unshift(draft.splice(index, 1)[0]);
+          }
+        })
+      );
+    },
+  });
+  const updater = useMessageUpdater();
 
   const renderContent = () => {
     // if (hasError) {

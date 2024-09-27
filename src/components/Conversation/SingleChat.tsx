@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { emit } from '@tauri-apps/api/event';
-import { animate, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { produce } from 'immer';
 import { ListRestart } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -14,23 +14,15 @@ import {
 } from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
-  useBotCaller,
   useListMessagesQuery,
   useMessagesHardDeleter,
 } from '@/lib/hooks';
-import {
-  FileUploaderContextProvider,
-  MessageListContextProvider,
-} from '@/lib/providers';
-import { useAppStateStore } from '@/lib/store';
-import { useConfirmationStateStore } from '@/lib/store';
+import { FileUploaderContextProvider } from '@/lib/providers';
+import { useAppStateStore, useConfirmationStateStore } from '@/lib/store';
 import type { Conversation, Message } from '@/lib/types';
-import { cn, getMessageTag } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
-import { ChatMessageList } from '../ChatMessageList';
 import { ChatStop } from '../ChatStop';
-import { ScrollBottom } from '../ScrollBottom';
-import { ToBottom } from '../ToBottom';
 import { Button } from '../ui/button';
 import {
   ContextMenu,
@@ -38,16 +30,10 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '../ui/context-menu';
-import { ScrollArea } from '../ui/scroll-area';
 import { UserPromptInput } from '../UserPromptInput';
-
-const MemoizedMessageList = memo(ChatMessageList);
-const MemoizedScrollBottom = memo(ScrollBottom);
+import { Chat } from './Chat';
 
 export function SingleChat({ conversation }: { conversation: Conversation }) {
-  const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const atBottomRef = useRef<boolean>(false);
-  const viewportRef = useRef<HTMLDivElement>(null);
   const isWideScreen = useAppStateStore(
     (state) => state.settings[SETTING_IS_WIDE_SCREEN] === 'true'
   );
@@ -57,7 +43,6 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
   // Queries
   const queryClient = useQueryClient();
   const { data: messages, isSuccess } = useListMessagesQuery(conversation.id);
-  const botCaller = useBotCaller();
   const deleter = useMessagesHardDeleter({
     onSettled: (_, error) => {
       if (error) {
@@ -91,16 +76,6 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
       messages.at(-1)?.role === MESSAGE_USER
     );
   }, [isSuccess, messages]);
-  const messagesWithModelId = useMemo(() => {
-    return (
-      messages?.map((msg) => {
-        return {
-          ...msg,
-          modelId: msg.modelId ? msg.modelId : conversation.modelId,
-        };
-      }) ?? []
-    );
-  }, [conversation.modelId, messages]);
 
   // Callbacks
   const onRestartClick = () => {
@@ -112,59 +87,6 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
       },
     });
   };
-
-  const onReceiverReady = useCallback(() => {
-    const placeholder = messages?.find((m) => m.isReceiving);
-    if (placeholder) {
-      // listener's tag
-      const tag = getMessageTag(placeholder);
-      const data = {
-        conversationId: conversation.id,
-        tag,
-        beforeMessageId: placeholder.id > 0 ? placeholder.id : undefined,
-      };
-      botCaller(data);
-    }
-  }, [messages, botCaller, conversation.id]);
-
-  const onRegenerateClick = useCallback(
-    (msg: Message) => {
-      // set message to receive
-      queryClient.setQueryData<Message[]>(
-        [
-          ...LIST_MESSAGES_KEY,
-          {
-            conversationId: conversation.id,
-          },
-        ],
-        (old) =>
-          produce(old, (draft) => {
-            if (msg.id < 0) {
-              // regenerating the lastest bot message
-              // normally happens when the last bot call failed
-              const placeholder = {
-                conversationId: conversation.id,
-                role: MESSAGE_BOT,
-                content: [],
-                id: -1,
-                isReceiving: true,
-              };
-              draft?.pop();
-              draft?.push(placeholder);
-            } else {
-              // regenerating an existing bot message
-              const target = draft?.find((m) => m.id === msg.id);
-              if (target) {
-                target.isReceiving = true;
-                // set isError to false in case we need to retry from errors with regenerating a message
-                target.isError = false;
-              }
-            }
-          })
-      );
-    },
-    [conversation.id, queryClient]
-  );
 
   const onStopClick = useCallback(async () => {
     await emit('stop-bot');
@@ -185,15 +107,6 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
         })
     );
   }, [conversation.id, queryClient]);
-
-  const onToBottomClick = useCallback(() => {
-    if (viewportRef.current) {
-      viewportRef.current.scrollTo({
-        top: viewportRef.current?.scrollHeight ?? 0,
-        behavior: 'smooth',
-      });
-    }
-  }, []);
 
   const onContinueClick = useCallback(() => {
     // insert placeholder to trigger generation
@@ -218,51 +131,10 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
         return old ? [...old, placeholder] : [placeholder];
       }
     );
-    onToBottomClick();
-  }, [conversation.id, onToBottomClick, queryClient]);
-
-  const checkBottom = useCallback(() => {
-    const el = document.getElementById('to-bottom');
-    if (
-      (viewportRef.current?.scrollTop ?? 0) +
-        (viewportRef.current?.clientHeight ?? 0) ===
-      viewportRef.current?.scrollHeight
-    ) {
-      // at bottom, hide go-to-bottom button
-      el?.classList.add('hidden');
-      atBottomRef.current = true;
-    } else {
-      // not at bottom and button not shown, show go-to-bottom button
-      atBottomRef.current = false;
-      if (
-        el?.classList.contains('hidden') &&
-        showBottomTimerRef.current === null
-      ) {
-        showBottomTimerRef.current = setTimeout(() => {
-          if (!atBottomRef.current) {
-            // show go-to-bottom if still not at bottom when timeout
-            if (el) {
-              el.classList.remove('hidden');
-              animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
-            }
-          }
-          showBottomTimerRef.current = null;
-        }, 600);
-      }
-    }
-  }, []);
+    // onToBottomClick();
+  }, [conversation.id, queryClient]);
 
   // Hooks
-  useEffect(() => {
-    // check position upon initialization
-    checkBottom();
-    if (viewportRef.current) {
-      viewportRef.current.onscroll = () => {
-        checkBottom();
-      };
-    }
-  }, [checkBottom]);
-
   useEffect(() => {
     return () => {
       // reset message list when leaving
@@ -324,9 +196,9 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
     // other wise, display input & go-to-bottom button
     return (
       <>
-        <div id="to-bottom" className="absolute -top-12 mx-auto hidden">
+        {/* <div id="to-bottom" className="absolute -top-12 mx-auto hidden">
           <ToBottom onClick={onToBottomClick} />
-        </div>
+        </div> */}
         <div id="continue-or-input" className="h-fit w-full">
           <FileUploaderContextProvider>
             <UserPromptInput conversation={conversation} />
@@ -337,49 +209,30 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger className="flex size-full flex-col items-center justify-between overflow-hidden">
-        <MessageListContextProvider
-          messages={messagesWithModelId}
-          onRegenerateClick={onRegenerateClick}
-          onReceiverReady={onReceiverReady}
-        >
-          <ScrollArea
-            className="flex w-full grow justify-center"
-            viewportRef={viewportRef}
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger className="flex size-full flex-col items-center justify-between overflow-hidden">
+          <Chat conversation={conversation} wide={isWideScreen} />
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem
+            className="cursor-pointer gap-2"
+            onClick={onRestartClick}
           >
-            <div
-          className={cn(
-            'relative w-full p-4 md:mx-auto md:px-0 transition-[width]',
-            isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
-          )}
-        >
-              {isSuccess && <MemoizedMessageList />}
-              {/* Spacer */}
-              <div className="mt-4 h-8" />
-              <MemoizedScrollBottom scrollContainerRef={viewportRef} />
-            </div>
-          </ScrollArea>
-          <div
+            <ListRestart className="size-4" /> {t('generic:action:restart')}
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+      <div
         className={cn(
           'w-full px-4 md:w-[640px] md:px-0 transition-[width]',
           isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
         )}
       >
-            <div className="relative flex w-full flex-col items-center justify-center">
-              {renderBottomSection()}
-            </div>
-          </div>
-        </MessageListContextProvider>
-      </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem
-          className="cursor-pointer gap-2"
-          onClick={onRestartClick}
-        >
-          <ListRestart className="size-4" /> {t('generic:action:restart')}
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+        <div className="relative flex w-full flex-col items-center justify-center">
+          {renderBottomSection()}
+        </div>
+      </div>
+    </>
   );
 }
