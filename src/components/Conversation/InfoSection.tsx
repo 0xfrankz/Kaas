@@ -8,6 +8,7 @@ import { ProxyIndicator } from '../ProxyIndicator';
 import { SystemMessageSetter } from '../SystemMessageSetter';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { WideScreenSetter } from '../WideScreenSetter';
 import { UsageCounter } from './UsageCounter';
 
 type Props = {
@@ -47,6 +48,7 @@ export default function InfoSection({ conversation, model }: Props) {
           }}
         />
         <SystemMessageSetter conversation={conversation} />
+        <WideScreenSetter />
       </div>
     </>
   );

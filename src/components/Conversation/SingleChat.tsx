@@ -7,7 +7,11 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { MESSAGE_BOT, MESSAGE_USER } from '@/lib/constants';
+import {
+  MESSAGE_BOT,
+  MESSAGE_USER,
+  SETTING_IS_WIDE_SCREEN,
+} from '@/lib/constants';
 import {
   LIST_MESSAGES_KEY,
   useBotCaller,
@@ -18,9 +22,10 @@ import {
   FileUploaderContextProvider,
   MessageListContextProvider,
 } from '@/lib/providers';
+import { useAppStateStore } from '@/lib/store';
 import { useConfirmationStateStore } from '@/lib/store';
 import type { Conversation, Message } from '@/lib/types';
-import { getMessageTag } from '@/lib/utils';
+import { cn, getMessageTag } from '@/lib/utils';
 
 import { ChatMessageList } from '../ChatMessageList';
 import { ChatStop } from '../ChatStop';
@@ -43,6 +48,9 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
   const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
   const atBottomRef = useRef<boolean>(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const isWideScreen = useAppStateStore(
+    (state) => state.settings[SETTING_IS_WIDE_SCREEN] === 'true'
+  );
   const { t } = useTranslation(['page-conversation']);
   const { open } = useConfirmationStateStore();
 
@@ -340,14 +348,24 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
             className="flex w-full grow justify-center"
             viewportRef={viewportRef}
           >
-            <div className="relative w-full p-4 md:mx-auto md:w-[640px] md:px-0">
+            <div
+          className={cn(
+            'relative w-full p-4 md:mx-auto md:px-0 transition-[width]',
+            isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
+          )}
+        >
               {isSuccess && <MemoizedMessageList />}
               {/* Spacer */}
               <div className="mt-4 h-8" />
               <MemoizedScrollBottom scrollContainerRef={viewportRef} />
             </div>
           </ScrollArea>
-          <div className="w-full px-4 md:w-[640px] md:px-0">
+          <div
+        className={cn(
+          'w-full px-4 md:w-[640px] md:px-0 transition-[width]',
+          isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
+        )}
+      >
             <div className="relative flex w-full flex-col items-center justify-center">
               {renderBottomSection()}
             </div>

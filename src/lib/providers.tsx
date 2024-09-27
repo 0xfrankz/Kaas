@@ -63,8 +63,13 @@ export function InitializationProvider({
   } = useListSettingsQuery();
 
   useEffect(() => {
-    if (isModelsSuccess && isSettingsSuccess) {
+    if (isModelsSuccess) {
       setModels(modelList);
+    }
+  }, [isModelsSuccess, modelList, setModels]);
+
+  useEffect(() => {
+    if (isSettingsSuccess) {
       setSettings(settingList);
       // apply language setting
       const language = settingList.find(
@@ -78,19 +83,14 @@ export function InitializationProvider({
         (s) => s.key === SETTING_DISPLAY_THEME
       )?.value as string;
       setTheme(themeSetting);
+    }
+  }, [i18n, isSettingsSuccess, setModels, setSettings, setTheme, settingList]);
 
+  useEffect(() => {
+    if (isModelsSuccess && isSettingsSuccess) {
       setInitialized(true);
     }
-  }, [
-    i18n,
-    isModelsSuccess,
-    isSettingsSuccess,
-    modelList,
-    setModels,
-    setSettings,
-    setTheme,
-    settingList,
-  ]);
+  }, [isModelsSuccess, isSettingsSuccess]);
 
   if (initialized) {
     // Successfully initialized

@@ -18,7 +18,7 @@
     "message": {
         "no-model": "你还没有创建任何模型",
         "add-model": "立即创建",
-        "update-model-success": "已创建模型",
+        "update-model-success": "已更新模型",
         "delete-model-success": "已删除模型",
         "delete-model-error": "删除模型失败: {{errorMsg}}",
         "create-model-tips": "填写你的$t(generic:model:{{provider}}) API信息。",
