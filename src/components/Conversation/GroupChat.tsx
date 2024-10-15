@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useListSubConversationsQuery } from '@/lib/hooks';
@@ -7,9 +7,9 @@ import { FileUploaderContextProvider } from '@/lib/providers';
 import type { Conversation } from '@/lib/types';
 
 import { ChatStop } from '../ChatStop';
+import { GroupChatPromptInput } from '../GroupChatPromptInput';
 import { ToBottom } from '../ToBottom';
 import { Button } from '../ui/button';
-import { UserPromptInput } from '../UserPromptInput';
 import { Chat } from './Chat';
 
 export function GroupChat({ conversation }: { conversation: Conversation }) {
@@ -86,10 +86,7 @@ export function GroupChat({ conversation }: { conversation: Conversation }) {
         </div>
         <div id="continue-or-input" className="h-fit w-full">
           <FileUploaderContextProvider>
-            <UserPromptInput
-              conversation={conversation}
-              subConversations={subConversations}
-            />
+            <GroupChatPromptInput conversation={conversation} />
           </FileUploaderContextProvider>
         </div>
       </>
@@ -101,12 +98,15 @@ export function GroupChat({ conversation }: { conversation: Conversation }) {
       GroupChat {conversation.id}
       <div className="grow columns-2 gap-5 bg-yellow-300">
         {subConversations?.map((subConversation) => (
-          <>
-            <div className="bg-green-300">
+          <Fragment key={`wrapper-${subConversation.id}`}>
+            <div className="bg-green-300" key={`tab-${subConversation.id}`}>
               Sub Conversation Tab {subConversation.id}
             </div>
-            <Chat key={subConversation.id} conversation={subConversation} />
-          </>
+            <Chat
+              key={`chat-${subConversation.id}`}
+              conversation={subConversation}
+            />
+          </Fragment>
         ))}
       </div>
       <div className="mx-auto w-full bg-purple-300 px-4 md:w-[640px] md:px-0">

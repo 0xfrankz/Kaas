@@ -23,6 +23,7 @@ import type { Conversation, Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { ChatStop } from '../ChatStop';
+import { SingleChatPromptInput } from '../SingleChatPromptInput';
 import { Button } from '../ui/button';
 import {
   ContextMenu,
@@ -30,7 +31,6 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '../ui/context-menu';
-import { UserPromptInput } from '../UserPromptInput';
 import { Chat } from './Chat';
 
 export function SingleChat({ conversation }: { conversation: Conversation }) {
@@ -201,7 +201,7 @@ export function SingleChat({ conversation }: { conversation: Conversation }) {
         </div> */}
         <div id="continue-or-input" className="h-fit w-full">
           <FileUploaderContextProvider>
-            <UserPromptInput conversation={conversation} />
+            <SingleChatPromptInput conversation={conversation} />
           </FileUploaderContextProvider>
         </div>
       </>

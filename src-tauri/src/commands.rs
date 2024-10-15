@@ -262,6 +262,12 @@ pub async fn create_message(message: MessageDTO, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
+pub async fn create_group_chat_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
+    let sub_conversations = list_sub_conversations(message.conversation_id, repo).await?;
+    todo!()
+}
+
+#[tauri::command]
 pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<MessageDTO>> {
     let now = Instant::now();
     let result = repo

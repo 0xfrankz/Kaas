@@ -771,6 +771,13 @@ impl Repository {
     }
 
     /**
+     * Insert a new message to all sub conversations
+     */
+    pub async fn create_message_to_sub_conversations(&self, message: MessageDTO) -> Result<MessageDTO, String> {
+        todo!()
+    }
+
+    /**
      * List all messages of a conversation
      */
     pub async fn list_messages(&self, conversation_id: i32) -> Result<Vec<MessageDTO>, String> {
