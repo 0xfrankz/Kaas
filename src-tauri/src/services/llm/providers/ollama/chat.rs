@@ -1,13 +1,16 @@
 use std::pin::Pin;
 
 use async_openai::{config::Config, error::OpenAIError, Client};
-use entity::entities::{contents::ContentType, conversations::OllamaOptions, messages::{MessageDTO, Roles}};
+use entity::entities::{
+    contents::ContentType,
+    conversations::OllamaOptions,
+    messages::{MessageDTO, Roles},
+};
 use serde::{Deserialize, Serialize};
 use tokio_stream::{Stream, StreamExt};
 
 use super::config::OllamaConfig;
 use crate::services::cache;
-
 
 const OLLAMA_CHAT_PATH: &str = "/api/chat";
 
@@ -89,14 +92,14 @@ pub struct OllamaChatCompletionResponse {
     // fields below will only appear when stream is false
     // or in the last response object when stream is true
     pub total_duration: Option<u64>, // All durations are returned in nanoseconds.
-    pub load_duration: Option<u64>, // All durations are returned in nanoseconds.
+    pub load_duration: Option<u64>,  // All durations are returned in nanoseconds.
     pub prompt_eval_count: Option<u32>,
     pub prompt_eval_duration: Option<u64>, // All durations are returned in nanoseconds.
     pub eval_count: Option<u32>,
     pub eval_duration: Option<u64>, // All durations are returned in nanoseconds.
 }
 
-pub type OllamaChatCompletionResponseStream = 
+pub type OllamaChatCompletionResponseStream =
     Pin<Box<dyn Stream<Item = Result<OllamaChatCompletionResponse, OpenAIError>> + Send>>;
 
 /// Encapsulation of Ollama's chat API
@@ -112,7 +115,7 @@ impl<'c> OllamaChat<'c> {
     /// Creates a model response for the given chat conversation.
     pub async fn create(
         &self,
-        request: OllamaChatCompletionRequest
+        request: OllamaChatCompletionRequest,
     ) -> Result<OllamaChatCompletionResponse, OpenAIError> {
         if request.stream.is_some() && request.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(
@@ -124,7 +127,7 @@ impl<'c> OllamaChat<'c> {
 
     pub async fn create_stream(
         &self,
-        mut request: OllamaChatCompletionRequest
+        mut request: OllamaChatCompletionRequest,
     ) -> Result<OllamaChatCompletionResponseStream, OpenAIError> {
         if request.stream.is_some() && !request.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(
@@ -149,11 +152,15 @@ impl<'c> OllamaChat<'c> {
 
         let stream = res.bytes_stream().map(|res| match res {
             Ok(bytes) => {
-                let resp = serde_json::from_slice::<OllamaChatCompletionResponse>(&bytes)
-                    .map_err(|e| OpenAIError::StreamError(format!("Failed to deserialize response: {}", e)))?;
+                let resp = serde_json::from_slice::<OllamaChatCompletionResponse>(&bytes).map_err(
+                    |e| OpenAIError::StreamError(format!("Failed to deserialize response: {}", e)),
+                )?;
                 Ok(resp)
             }
-            Err(e) => Err(OpenAIError::StreamError(format!("Failed to read from stream: {}", e))),
+            Err(e) => Err(OpenAIError::StreamError(format!(
+                "Failed to read from stream: {}",
+                e
+            ))),
         });
 
         Ok(Box::pin(stream))
@@ -168,31 +175,30 @@ impl Into<OllamaMessage> for MessageDTO {
 pub fn message_to_ollama_request_message(message: MessageDTO) -> OllamaMessage {
     let mut content: OllamaMessageContent = OllamaMessageContent::default();
 
-    message
-        .content
-        .into_iter()
-        .for_each(|c| {
-            match c.r#type {
-                ContentType::Image => {
-                    if content.images.is_none() {
-                        content.images = Some(Vec::new());
-                    }
-                    content.images.as_mut().unwrap().push(cache::read_as_base64_with_mime(c.data.as_str(), c.mimetype.as_deref()).map(|r| r.1).unwrap_or(String::default()));
-                },
-                ContentType::Text => {
-                    content.content = c.data;
-                }
+    message.content.into_iter().for_each(|c| match c.r#type {
+        ContentType::Image => {
+            if content.images.is_none() {
+                content.images = Some(Vec::new());
             }
-        });
+            content.images.as_mut().unwrap().push(
+                cache::read_as_base64_with_mime(c.data.as_str(), c.mimetype.as_deref())
+                    .map(|r| r.1)
+                    .unwrap_or(String::default()),
+            );
+        }
+        ContentType::Text => {
+            content.content = c.data;
+        }
+    });
     match message.role.into() {
         Roles::User => {
             return OllamaMessage::User(content);
-        },
+        }
         Roles::Bot => {
             return OllamaMessage::Assistant(content);
-        },
+        }
         Roles::System => {
             return OllamaMessage::System(content);
-        },
+        }
     }
 }

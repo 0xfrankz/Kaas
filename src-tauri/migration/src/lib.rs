@@ -10,7 +10,6 @@ mod m20240101_100001_seed_settings;
 mod m20240101_100002_seed_prompts;
 mod m20240820_000001_conversations_add_last_message_at;
 
-
 pub struct Migrator;
 
 #[async_trait::async_trait]

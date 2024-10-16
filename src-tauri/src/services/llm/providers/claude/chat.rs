@@ -1,7 +1,10 @@
 use std::pin::Pin;
 
 use async_openai::{config::Config, error::OpenAIError, Client};
-use entity::entities::{contents::ContentType, messages::{MessageDTO, Roles}};
+use entity::entities::{
+    contents::ContentType,
+    messages::{MessageDTO, Roles},
+};
 use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio_stream::{Stream, StreamExt};
@@ -43,10 +46,10 @@ pub struct ClaudeResponseMessageText {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct  ClaudeResponseMessageTool {
+pub struct ClaudeResponseMessageTool {
     pub id: String,
     pub name: String,
-    pub input: serde_json::Value
+    pub input: serde_json::Value,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -93,7 +96,7 @@ pub struct ClaudeMetadata {
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
 pub struct ClaudeNamedTool {
-    name: String
+    name: String,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
@@ -102,7 +105,7 @@ pub struct ClaudeNamedTool {
 pub enum ClaudeToolChoices {
     Auto,
     Any,
-    Tool(ClaudeNamedTool)
+    Tool(ClaudeNamedTool),
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
@@ -110,7 +113,7 @@ pub struct ClaudeTool {
     name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    input_schema: serde_json::Value
+    input_schema: serde_json::Value,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
@@ -235,10 +238,10 @@ pub struct ClaudeChatCompletionStreamMessageDelta {
 #[serde(rename_all = "snake_case")]
 pub enum ClaudeChatCompletionStreamResponse {
     ContentBlockDelta(ClaudeChatCompletionStreamContentBlockDelta),
-    MessageDelta(ClaudeChatCompletionStreamMessageDelta)
+    MessageDelta(ClaudeChatCompletionStreamMessageDelta),
 }
 
-pub type ClaudeChatCompletionResponseStream = 
+pub type ClaudeChatCompletionResponseStream =
     Pin<Box<dyn Stream<Item = Result<ClaudeChatCompletionStreamResponse, OpenAIError>> + Send>>;
 
 pub enum ClaudeStreamEvent<O: DeserializeOwned + std::marker::Send + 'static> {
@@ -246,7 +249,7 @@ pub enum ClaudeStreamEvent<O: DeserializeOwned + std::marker::Send + 'static> {
     Continue,
     Data(O),
     Stop,
-    Error(String)
+    Error(String),
 }
 
 fn parse_claude_stream_event<O>(event: Event) -> ClaudeStreamEvent<O>
@@ -263,23 +266,19 @@ where
                         Ok(output) => ClaudeStreamEvent::Data(output),
                     };
                     response
-                },
-                "message_stop" => {
-                    ClaudeStreamEvent::Stop
-                },
+                }
+                "message_stop" => ClaudeStreamEvent::Stop,
                 "error" => {
                     // eventstream::Event doesn't support error event yet
                     ClaudeStreamEvent::Error(message.data)
-                },
+                }
                 _ => {
                     // Currently, treat all other event types as continue
                     ClaudeStreamEvent::Continue
                 }
             }
-        },
-        Event::Open => {
-            ClaudeStreamEvent::Open
         }
+        Event::Open => ClaudeStreamEvent::Open,
     }
 }
 
@@ -296,7 +295,7 @@ impl<'c> ClaudeChat<'c> {
     /// Creates a model response for the given chat conversation.
     pub async fn create(
         &self,
-        request: ClaudeChatCompletionRequest
+        request: ClaudeChatCompletionRequest,
     ) -> Result<ClaudeChatCompletionResponse, OpenAIError> {
         if request.stream.is_some() && request.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(
@@ -308,7 +307,7 @@ impl<'c> ClaudeChat<'c> {
 
     pub async fn create_stream(
         &self,
-        mut request: ClaudeChatCompletionRequest
+        mut request: ClaudeChatCompletionRequest,
     ) -> Result<ClaudeChatCompletionResponseStream, OpenAIError> {
         if request.stream.is_some() && !request.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(
@@ -356,31 +355,31 @@ where
                     match parse_claude_stream_event(event) {
                         ClaudeStreamEvent::Open => {
                             log::info!("SSE: OPEN");
-                            continue
-                        },
+                            continue;
+                        }
                         ClaudeStreamEvent::Continue => {
                             log::info!("SSE: CONTINUE");
-                            continue
-                        },
+                            continue;
+                        }
                         ClaudeStreamEvent::Data(data) => {
                             if let Err(_e) = tx.send(Ok(data)) {
                                 // rx dropped
                                 break;
                             }
-                        },
+                        }
                         ClaudeStreamEvent::Stop => {
                             log::info!("SSE: STOP");
-                            break
-                        },
+                            break;
+                        }
                         ClaudeStreamEvent::Error(err) => {
                             log::info!("SSE: ERROR: {}", err);
                             if let Err(_e) = tx.send(Err(OpenAIError::StreamError(err))) {
                                 // rx dropped
-                               break;
+                                break;
                             }
                         }
                     }
-                },
+                }
             }
         }
         log::info!("SSE: About to close");
@@ -402,16 +401,27 @@ pub fn message_to_claude_request_message(message: MessageDTO) -> ClaudeMessage {
         .into_iter()
         .map(|item| {
             let part: ClaudeMessageContentPart = match item.r#type {
-                ContentType::Image => ClaudeMessageContentPart::Image(ClaudeMessageContentPartImage{
-                    source: ClaudeImageSource {
-                        r#type: "base64".to_string(),
-                        media_type: item.mimetype.as_deref().unwrap_or("image/jpeg").to_string(),
-                        data: cache::read_as_base64_with_mime(item.data.as_str(), item.mimetype.as_deref()).map(|r| r.1).unwrap_or(String::default())
-                    }
-                }),
-                ContentType::Text => ClaudeMessageContentPart::Text(ClaudeMessageContentPartText{
-                    text: item.data
-                })
+                ContentType::Image => {
+                    ClaudeMessageContentPart::Image(ClaudeMessageContentPartImage {
+                        source: ClaudeImageSource {
+                            r#type: "base64".to_string(),
+                            media_type: item
+                                .mimetype
+                                .as_deref()
+                                .unwrap_or("image/jpeg")
+                                .to_string(),
+                            data: cache::read_as_base64_with_mime(
+                                item.data.as_str(),
+                                item.mimetype.as_deref(),
+                            )
+                            .map(|r| r.1)
+                            .unwrap_or(String::default()),
+                        },
+                    })
+                }
+                ContentType::Text => {
+                    ClaudeMessageContentPart::Text(ClaudeMessageContentPartText { text: item.data })
+                }
             };
             part
         })
@@ -419,14 +429,16 @@ pub fn message_to_claude_request_message(message: MessageDTO) -> ClaudeMessage {
     match message.role.into() {
         Roles::User => {
             return ClaudeMessage::User(ClaudeUserMessage {
-                content: ClaudeRequestMessageContent::Array(content_parts)
+                content: ClaudeRequestMessageContent::Array(content_parts),
             });
-        },
+        }
         Roles::Bot => {
             return ClaudeMessage::Assistant(ClaudeAssistantMessage {
-                content: ClaudeRequestMessageContent::Array(content_parts)
+                content: ClaudeRequestMessageContent::Array(content_parts),
             });
-        },
-        _ => {panic!("Claude doesn't accept system message as part of context!")}
+        }
+        _ => {
+            panic!("Claude doesn't accept system message as part of context!")
+        }
     }
 }

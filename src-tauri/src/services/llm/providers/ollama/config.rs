@@ -1,8 +1,7 @@
-use secrecy::Secret;
-use serde::Deserialize;
 use async_openai::config::Config;
 use reqwest::header::HeaderMap;
-
+use secrecy::Secret;
+use serde::Deserialize;
 
 pub const DEFAULT_OLLAMA_API_BASE: &str = "http://localhost:11434";
 
@@ -13,20 +12,20 @@ pub struct OllamaConfig {
     api_base: String,
     // Ollama doesn't require API key
     // but we need an empty secret here to satisfy async-openai
-    api_key: Secret<String>, 
+    api_key: Secret<String>,
 }
 
 impl Default for OllamaConfig {
     fn default() -> Self {
         Self {
             api_base: DEFAULT_OLLAMA_API_BASE.to_string(),
-            api_key: "".to_string().into()
+            api_key: "".to_string().into(),
         }
     }
 }
 
 impl OllamaConfig {
-    /// Create new config with default [DEFAULT_OLLAMA_API_BASE] url and default 
+    /// Create new config with default [DEFAULT_OLLAMA_API_BASE] url and default
     pub fn new() -> Self {
         Default::default()
     }

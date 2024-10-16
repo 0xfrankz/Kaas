@@ -1,7 +1,7 @@
 use async_openai::config::Config;
+use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
-use reqwest::header::{HeaderMap, CONTENT_TYPE};
 
 /// Default values for Claude
 pub const CLAUDE_ENV_KEY: &str = "CLAUDE_API_KEY";
@@ -24,15 +24,15 @@ impl Default for ClaudeConfig {
         Self {
             api_base: DEFAULT_CLAUDE_API_BASE.to_string(),
             api_key: std::env::var(CLAUDE_ENV_KEY)
-            .unwrap_or_else(|_| "".to_string())
-            .into(),
-            api_version: DEFAULT_CLAUDE_API_VERSION.to_string()
+                .unwrap_or_else(|_| "".to_string())
+                .into(),
+            api_version: DEFAULT_CLAUDE_API_VERSION.to_string(),
         }
     }
 }
 
 impl ClaudeConfig {
-    /// Create new config with default [DEFAULT_CLAUDE_API_BASE] url and default 
+    /// Create new config with default [DEFAULT_CLAUDE_API_BASE] url and default
     pub fn new() -> Self {
         Default::default()
     }
@@ -60,21 +60,11 @@ impl Config for ClaudeConfig {
     fn headers(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(
-            CLAUDE_API_KEY_HEADER, 
-            self.api_key
-                .expose_secret()
-                .as_str()
-                .parse()
-                .unwrap()
+            CLAUDE_API_KEY_HEADER,
+            self.api_key.expose_secret().as_str().parse().unwrap(),
         );
-        headers.insert(
-            CLAUDE_API_VERSION_HEADER, 
-            self.api_version.parse().unwrap()
-        );
-        headers.insert(
-            CONTENT_TYPE,
-            "application/json".parse().unwrap()
-        );
+        headers.insert(CLAUDE_API_VERSION_HEADER, self.api_version.parse().unwrap());
+        headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
 
         headers
     }

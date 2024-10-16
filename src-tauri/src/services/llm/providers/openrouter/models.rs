@@ -6,12 +6,12 @@ const OPENROUTER_LIST_MODELS_PATH: &str = "/models";
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct OpenrouterRemoteModel {
     pub id: String,
-    pub name: String
+    pub name: String,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct OpenrouterModelListResponse {
-    pub data: Vec<OpenrouterRemoteModel>
+    pub data: Vec<OpenrouterRemoteModel>,
 }
 
 /// Encapsulation of OpenRouter's models API
@@ -26,11 +26,9 @@ impl<'c> OpenrouterModels<'c> {
 
     /// Lists the available models
     pub async fn list(&self) -> Result<OpenrouterModelListResponse, OpenAIError> {
-        let response: OpenrouterModelListResponse = self
-            .client
-            .get(OPENROUTER_LIST_MODELS_PATH)
-            .await?;
-        
-       Ok(response)
+        let response: OpenrouterModelListResponse =
+            self.client.get(OPENROUTER_LIST_MODELS_PATH).await?;
+
+        Ok(response)
     }
 }

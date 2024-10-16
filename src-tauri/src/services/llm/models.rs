@@ -1,11 +1,14 @@
+use super::providers::{
+    ollama::{config::OllamaConfig, models::OllamaModels},
+    openrouter::models::OpenrouterModels,
+};
 use async_openai::{config::OpenAIConfig, Client};
 use serde::Serialize;
-use super::providers::{ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub struct RemoteModel {
-    id: String
+    id: String,
 }
 
 pub enum ListModelsRequest<'c> {
@@ -43,30 +46,24 @@ impl<'c> ListModelsRequest<'c> {
                     .map(|m| RemoteModel { id: m.id.clone() })
                     .collect();
                 Ok(result)
-            },
+            }
             ListModelsRequest::OllamaListModelsRequest(client) => {
-                let response = OllamaModels::new(client)
-                    .list()
-                    .await
-                    .map_err(|err| {
-                        log::error!("ListModelsRequest::OllamaListModelsRequest: {}", err);
-                        String::from("Failed to list models")
-                    })?;
+                let response = OllamaModels::new(client).list().await.map_err(|err| {
+                    log::error!("ListModelsRequest::OllamaListModelsRequest: {}", err);
+                    String::from("Failed to list models")
+                })?;
                 let result = response
                     .models
                     .iter()
                     .map(|m| RemoteModel { id: m.name.clone() })
                     .collect();
                 Ok(result)
-            },
+            }
             ListModelsRequest::OpenrouterListModelsRequest(client) => {
-                let response = OpenrouterModels::new(client)
-                    .list()
-                    .await
-                    .map_err(|err| {
-                        log::error!("ListModelsRequest::OpenrouterListModelsRequest: {}", err);
-                        String::from("Failed to list models")
-                    })?;
+                let response = OpenrouterModels::new(client).list().await.map_err(|err| {
+                    log::error!("ListModelsRequest::OpenrouterListModelsRequest: {}", err);
+                    String::from("Failed to list models")
+                })?;
                 let result = response
                     .data
                     .iter()

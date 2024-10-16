@@ -9,7 +9,7 @@ pub enum Conversations {
     Options,
     CreatedAt,
     UpdatedAt,
-    DeletedAt
+    DeletedAt,
 }
 
 #[derive(DeriveMigrationName)]
@@ -33,16 +33,24 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Conversations::ModelId).integer())
                     .col(ColumnDef::new(Conversations::Subject).string().not_null())
                     .col(ColumnDef::new(Conversations::Options).string())
-                    .col(ColumnDef::new(Conversations::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
+                    .col(
+                        ColumnDef::new(Conversations::CreatedAt)
+                            .timestamp()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
                     .col(ColumnDef::new(Conversations::UpdatedAt).timestamp().null())
                     .col(ColumnDef::new(Conversations::DeletedAt).timestamp().null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("FK_conversations_models")
                             .from(Conversations::Table, Conversations::ModelId)
-                            .to(super::m20240101_000001_create_models::Models::Table, super::m20240101_000001_create_models::Models::Id)
+                            .to(
+                                super::m20240101_000001_create_models::Models::Table,
+                                super::m20240101_000001_create_models::Models::Id,
+                            )
                             .on_delete(ForeignKeyAction::Cascade)
-                            .on_update(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .to_owned(),
             )

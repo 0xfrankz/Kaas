@@ -1,7 +1,15 @@
 use std::pin::Pin;
 
-use async_openai::{config::OpenAIConfig, error::OpenAIError, types::{ChatChoiceLogprobs, ChatCompletionResponseMessage, ChatCompletionStreamResponseDelta, CompletionUsage, CreateChatCompletionRequest}, Client};
-use serde::{Serialize, Deserialize};
+use async_openai::{
+    config::OpenAIConfig,
+    error::OpenAIError,
+    types::{
+        ChatChoiceLogprobs, ChatCompletionResponseMessage, ChatCompletionStreamResponseDelta,
+        CompletionUsage, CreateChatCompletionRequest,
+    },
+    Client,
+};
+use serde::{Deserialize, Serialize};
 use tokio_stream::Stream;
 
 const OPENROUTER_CHAT_PATH: &str = "/chat/completions";
@@ -44,7 +52,7 @@ pub struct OpenrouterChatCompletionStreamResponse {
     pub usage: Option<CompletionUsage>,
 }
 
-pub type OpenrouterChatCompletionResponseStream = 
+pub type OpenrouterChatCompletionResponseStream =
     Pin<Box<dyn Stream<Item = Result<OpenrouterChatCompletionStreamResponse, OpenAIError>> + Send>>;
 
 /// Encapsulation of OpenRouter's chat API
@@ -60,7 +68,7 @@ impl<'c> OpenrouterChat<'c> {
     /// Creates a model response for the given chat conversation.
     pub async fn create(
         &self,
-        request: CreateChatCompletionRequest
+        request: CreateChatCompletionRequest,
     ) -> Result<OpenrouterChatCompletionResponse, OpenAIError> {
         if request.stream.is_some() && request.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(

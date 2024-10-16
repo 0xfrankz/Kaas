@@ -18,11 +18,11 @@ export function Fallback({ error, resetErrorBoundary }: FallbackProps) {
     errReason = null;
   }
   return (
-    <div className="flex grow flex-col items-center justify-center">
+    <div className="flex min-h-screen flex-col items-center justify-center">
       <CircleX className="size-20 text-red-500" />
-      <div className="mt-6 max-w-[640px] text-lg">{errMsg}</div>
+      <div className="mt-6 max-w-screen-sm text-lg">{errMsg}</div>
       {errReason && (
-        <div className="mt-2 max-w-[640px] text-sm">{errReason}</div>
+        <div className="mt-2 max-w-screen-sm text-sm">{errReason}</div>
       )}
       <Button
         className="mt-6"

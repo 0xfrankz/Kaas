@@ -1,5 +1,5 @@
-use sea_orm_migration::prelude::*;
 use super::m20240101_000003_create_conversations::Conversations;
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -14,11 +14,7 @@ impl MigrationTrait for Migration {
                 .alter_table(
                     Table::alter()
                         .table(Conversations::Table)
-                        .add_column(
-                            ColumnDef::new(Alias::new(COL_NAME))
-                                .timestamp()
-                                .null(),
-                        )
+                        .add_column(ColumnDef::new(Alias::new(COL_NAME)).timestamp().null())
                         .to_owned(),
                 )
                 .await?
@@ -27,7 +23,10 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        if manager.has_column("conversations", "last_message_at").await? {
+        if manager
+            .has_column("conversations", "last_message_at")
+            .await?
+        {
             manager
                 .alter_table(
                     Table::alter()
@@ -40,4 +39,3 @@ impl MigrationTrait for Migration {
         Ok(())
     }
 }
-

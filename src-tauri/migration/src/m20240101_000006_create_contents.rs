@@ -36,12 +36,15 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("FK_contents_messages")
                             .from(Contents::Table, Contents::MessageId)
-                            .to(super::m20240101_000004_create_messages::Messages::Table, super::m20240101_000004_create_messages::Messages::Id)
+                            .to(
+                                super::m20240101_000004_create_messages::Messages::Table,
+                                super::m20240101_000004_create_messages::Messages::Id,
+                            )
                             .on_delete(ForeignKeyAction::Cascade)
-                            .on_update(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .to_owned(),
-                )
+            )
             .await
     }
 

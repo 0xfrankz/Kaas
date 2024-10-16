@@ -9,7 +9,7 @@ pub enum Models {
     Config,
     CreatedAt,
     UpdatedAt,
-    DeletedAt
+    DeletedAt,
 }
 
 #[derive(DeriveMigrationName)]
@@ -33,7 +33,12 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Models::Alias).string().not_null())
                     .col(ColumnDef::new(Models::Provider).string().not_null())
                     .col(ColumnDef::new(Models::Config).json().not_null())
-                    .col(ColumnDef::new(Models::CreatedAt).timestamp().not_null().default(Expr::current_timestamp()))
+                    .col(
+                        ColumnDef::new(Models::CreatedAt)
+                            .timestamp()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
                     .col(ColumnDef::new(Models::UpdatedAt).timestamp().null())
                     .col(ColumnDef::new(Models::DeletedAt).timestamp().null())
                     .to_owned(),

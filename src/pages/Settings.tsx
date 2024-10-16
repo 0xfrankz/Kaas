@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { open } from '@tauri-apps/api/shell';
+import { open } from '@tauri-apps/plugin-shell';
 import { Github, Heart, Smile, Tag } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import type { HTMLAttributes } from 'react';

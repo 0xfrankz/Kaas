@@ -1,6 +1,6 @@
-import { readTextFile } from '@tauri-apps/api/fs';
+import { readTextFile } from '@tauri-apps/plugin-fs';
 import { resolveResource } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/shell';
+import { open } from '@tauri-apps/plugin-shell';
 import { LinkIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

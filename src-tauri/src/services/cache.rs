@@ -1,7 +1,7 @@
-use std::{io::Read, path::PathBuf};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
-use tauri::api::path::app_data_dir;
 use infer;
+use tauri::Manager;
+use std::{io::Read, path::PathBuf};
 
 use crate::core::handle::Handle;
 
@@ -11,7 +11,10 @@ pub fn read_as_data_url(file_name: &str, mimetype: Option<&str>) -> Result<Strin
     Ok(result)
 }
 
-pub fn read_as_base64_with_mime(file_name: &str, mimetype: Option<&str>) -> Result<(String, String), String> {
+pub fn read_as_base64_with_mime(
+    file_name: &str,
+    mimetype: Option<&str>,
+) -> Result<(String, String), String> {
     let mut file_path = get_cache_dir()?;
     file_path.push(file_name);
     let mut data = vec![];
@@ -22,11 +25,9 @@ pub fn read_as_base64_with_mime(file_name: &str, mimetype: Option<&str>) -> Resu
     // Infer MIME from binary data
     let mime = match mimetype {
         Some(m) => m,
-        None => {
-            infer::get(&data)
-                .map(|m| m.mime_type())
-                .unwrap_or("application/octet-stream")
-        }
+        None => infer::get(&data)
+            .map(|m| m.mime_type())
+            .unwrap_or("application/octet-stream"),
     };
     let base64_str = STANDARD.encode(data);
     Ok((mime.to_string(), base64_str))
@@ -41,8 +42,7 @@ pub fn get_cache_dir() -> Result<PathBuf, String> {
         .clone()
         .expect("App handle is not initialized");
     // get app data path
-    let mut cache_dir = app_data_dir(&app_handle.config())
-        .ok_or("App data path does't exist!")?;
+    let mut cache_dir = app_handle.path().app_data_dir().map_err(|e| format!("App data path does't exist! {}", e))?;
     cache_dir.push("cache");
     return Ok(cache_dir);
 }

@@ -19,9 +19,7 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let delete = Query::delete()
-            .from_table(Prompts::Table)
-            .to_owned();
+        let delete = Query::delete().from_table(Prompts::Table).to_owned();
 
         manager.exec_stmt(delete).await?;
 

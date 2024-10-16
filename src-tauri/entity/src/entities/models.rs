@@ -9,7 +9,7 @@ pub enum Providers {
     Ollama,
     Openrouter,
     CUSTOM,
-    Unknown
+    Unknown,
 }
 
 impl From<&str> for Providers {
@@ -21,7 +21,7 @@ impl From<&str> for Providers {
             "Ollama" => Providers::Ollama,
             "Openrouter" => Providers::Openrouter,
             "CUSTOM" => Providers::CUSTOM,
-            _ => Providers::Unknown
+            _ => Providers::Unknown,
         }
     }
 }
@@ -47,7 +47,7 @@ impl Into<String> for Providers {
             Providers::Ollama => "Ollama".to_owned(),
             Providers::Openrouter => "Openrouter".to_owned(),
             Providers::CUSTOM => "CUSTOM".to_owned(),
-            _ => "Unknown".to_owned()
+            _ => "Unknown".to_owned(),
         }
     }
 }
@@ -89,7 +89,7 @@ impl ActiveModelBehavior for ActiveModel {}
 #[serde(rename_all = "camelCase")]
 pub struct GenericConfig {
     pub provider: String,
-    pub config: String
+    pub config: String,
 }
 
 #[derive(DeriveIntoActiveModel, Deserialize, Debug)]
@@ -99,4 +99,3 @@ pub struct NewModel {
     pub provider: String,
     pub config: String,
 }
-

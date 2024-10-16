@@ -2,9 +2,9 @@
 
 pub mod prelude;
 
-pub mod models;
+pub mod contents;
 pub mod conversations;
 pub mod messages;
-pub mod settings;
+pub mod models;
 pub mod prompts;
-pub mod contents;
+pub mod settings;

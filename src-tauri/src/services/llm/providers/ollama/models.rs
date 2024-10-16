@@ -1,6 +1,6 @@
+use super::config::OllamaConfig;
 use async_openai::{error::OpenAIError, Client};
 use serde::{Deserialize, Serialize};
-use super::config::OllamaConfig;
 
 const OLLAMA_LIST_MODELS_PATH: &str = "/api/tags";
 
@@ -24,7 +24,7 @@ pub struct OllamaRemoteModel {
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct OllamaModelListResponse {
-    pub models: Vec<OllamaRemoteModel>
+    pub models: Vec<OllamaRemoteModel>,
 }
 
 /// Encapsulation of Ollama's models API
@@ -39,11 +39,8 @@ impl<'c> OllamaModels<'c> {
 
     /// Lists the available models
     pub async fn list(&self) -> Result<OllamaModelListResponse, OpenAIError> {
-        let response: OllamaModelListResponse = self
-            .client
-            .get(OLLAMA_LIST_MODELS_PATH)
-            .await?;
-        
+        let response: OllamaModelListResponse = self.client.get(OLLAMA_LIST_MODELS_PATH).await?;
+
         Ok(response)
     }
 }

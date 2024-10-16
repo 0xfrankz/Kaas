@@ -234,7 +234,6 @@ const KeyboardBlocker = () => {
           }
           break;
         default:
-          console.log('key:', key);
           e.preventDefault();
           e.stopPropagation();
           break;

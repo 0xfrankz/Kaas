@@ -1,7 +1,7 @@
 workspace = { members = [".", "entity", "migration"] }
 [package]
 name = "kaas"
-version = "1.0.6"
+version = "1.0.7"
 description = "A LLM client designed to serve multiple providers and platforms."
 authors = ["Frank Zhang"]
 license = "MIT"
@@ -13,7 +13,7 @@ rust-version = "1.60"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 # local crates
@@ -30,8 +30,8 @@ serde = { version = "1.0", features = ["derive"] }
 sqlx = { version = "0.7", features = [ "sqlite", "runtime-tokio", "tls-native-tls" ] }
 strum = "0.26"
 strum_macros = "0.26"
-tauri = { version = "1.5.4", features = [ "dialog-save", "clipboard-write-text", "clipboard-read-text", "updater", "shell-open", "path-all", "fs-write-file", "fs-read-dir", "fs-read-file"] }
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1", features = ["colored"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-log = { features = ["colored"] , version = "2" }
 thiserror = "1.0"
 tokio = "1.36.0"
 tokio-stream = "0.1.15"
@@ -41,9 +41,20 @@ sys-locale = "0.3.1"
 sysinfo = "0.30.13"
 secrecy = "0.8.0"
 reqwest-eventsource = "0.6.0"
+tauri-plugin-clipboard-manager = "2.0.1"
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]
+
+[lib]
+name = "kaas_lib"
+crate-type = ["staticlib", "cdylib", "rlib", "lib"]
+
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-updater = "2"

@@ -1,82 +1,62 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2",
   "build": {
     "beforeBuildCommand": "vite build",
     "beforeDevCommand": "vite dev",
-    "devPath": "http://localhost:3000",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3000"
   },
-  "package": {
-    "productName": "Kaas",
-    "version": "1.0.6"
-  },
-  "tauri": {
-    "allowlist": {
-      "fs": {
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "scope": ["$APPDATA/*", "$APPDATA/cache/*", "$RESOURCE/*", "$RESOURCE/resources/*"]
-      },
-      "path": {
-        "all": true
-      },
-      "shell": {
-        "open": true
-      },
-      "clipboard": {
-        "writeText": true,
-        "readText": true
-      },
-      "dialog": {
-        "save": true
-      }
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "© 2024 Frank Zhang All Rights Reserved",
+    "targets": "all",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "© 2024 Frank Zhang All Rights Reserved",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [
+      "resources/*"
+    ],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "kassapp.com",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": ["resources/*"],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
     },
-    "security": {
-      "csp": null
-    },
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "productName": "Kaas",
+  "mainBinaryName": "Kaas",
+  "version": "1.0.7",
+  "identifier": "kassapp.com",
+  "plugins": {
     "updater": {
-      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU1QUJDMzk1OENERTcyMkMKUldRc2N0Nk1sY09yVlpjZ1ZGWUdTS3c1NlNFVWtNVTFzbG1aMDN3dHJ0a1I5cWROcE9xbnlBR2QK",
       "endpoints": [
         "https://mirror.ghproxy.com/https://gist.githubusercontent.com/0xfrankz/2d501b9e229cb9bf3d24b5946a727b8d/raw/kaas-updater.json",
         "https://gist.githubusercontent.com/0xfrankz/2d501b9e229cb9bf3d24b5946a727b8d/raw/kaas-updater.json"
-      ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU1QUJDMzk1OENERTcyMkMKUldRc2N0Nk1sY09yVlpjZ1ZGWUdTS3c1NlNFVWtNVTFzbG1aMDN3dHJ0a1I5cWROcE9xbnlBR2QK"
-    },
+      ]
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
@@ -85,10 +65,13 @@
         "minWidth": 375,
         "resizable": true,
         "width": 1440,
-        "fileDropEnabled": false,
+        "dragDropEnabled": false,
         "center": true,
         "title": "Kaas"
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }

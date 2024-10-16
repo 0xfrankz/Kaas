@@ -1,4 +1,4 @@
-import { readText } from '@tauri-apps/api/clipboard';
+import { readText } from '@tauri-apps/plugin-clipboard-manager';
 import {
   ClipboardPaste,
   Copy,

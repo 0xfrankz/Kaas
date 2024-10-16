@@ -1,30 +1,47 @@
 use std::time::Instant;
 
 use entity::entities::{
-    contents::{ContentType, Model as Content}, 
-    conversations::{ConversationDTO, ConversationDetailsDTO, Model as Conversation, NewConversationDTO, GenericOptions, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS}, 
+    contents::{ContentType, Model as Content},
+    conversations::{
+        ConversationDTO, ConversationDetailsDTO, GenericOptions, Model as Conversation,
+        NewConversationDTO, UpdateConversationDTO, DEFAULT_CONTEXT_LENGTH, DEFAULT_MAX_TOKENS,
+    },
     messages::MessageDTO,
-    models::{Model, NewModel, GenericConfig}, 
-    prompts::{Model as Prompt, NewPrompt}, 
-    settings::{Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS, SETTING_NETWORK_PROXY}
+    models::{GenericConfig, Model, NewModel},
+    prompts::{Model as Prompt, NewPrompt},
+    settings::{
+        Model as Setting, ProxySetting, SETTING_MODELS_CONTEXT_LENGTH, SETTING_MODELS_MAX_TOKENS,
+        SETTING_NETWORK_PROXY,
+    },
 };
 
 use serde_json::json;
 use sysinfo::System;
 
-use tauri::State;
+use tauri::{Emitter, Listener, State};
 use tokio_stream::StreamExt;
 
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
-    log_utils::{error, info, trace}, 
-    services::{db::Repository, llm::{chat::{BotReply, GlobalSettings}, models::RemoteModel, utils, webservices::LLMClient}}
+    log_utils::{error, info, trace},
+    services::{
+        db::Repository,
+        llm::{
+            chat::{BotReply, GlobalSettings},
+            models::RemoteModel,
+            utils,
+            webservices::LLMClient,
+        },
+    },
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
 
 #[tauri::command]
-pub async fn create_model(new_model: NewModel, repo: State<'_, Repository>) -> CommandResult<Model> {
+pub async fn create_model(
+    new_model: NewModel,
+    repo: State<'_, Repository>,
+) -> CommandResult<Model> {
     log::debug!("Creating model: {:?}", new_model);
     let result = repo
         .create_model(new_model)
@@ -64,7 +81,10 @@ pub async fn delete_model(model_id: i32, repo: State<'_, Repository>) -> Command
 }
 
 #[tauri::command]
-pub async fn list_remote_models(config: GenericConfig, repo: State<'_, Repository>) -> CommandResult<Vec<RemoteModel>> {
+pub async fn list_remote_models(
+    config: GenericConfig,
+    repo: State<'_, Repository>,
+) -> CommandResult<Vec<RemoteModel>> {
     let now = Instant::now();
     let proxy_setting = repo
         .get_setting(SETTING_NETWORK_PROXY)
@@ -72,7 +92,7 @@ pub async fn list_remote_models(config: GenericConfig, repo: State<'_, Repositor
         .map(|setting| {
             if let Ok(p_setting) = serde_json::from_str::<ProxySetting>(&setting.value) {
                 Some(p_setting)
-            } else { 
+            } else {
                 None
             }
         })
@@ -87,8 +107,8 @@ pub async fn list_remote_models(config: GenericConfig, repo: State<'_, Repositor
             let elapsed = now.elapsed();
             log::info!("[Timer][commands::list_remote_models]: {:.2?}", elapsed);
             Ok(result)
-        },
-        Err(message) => Err(ApiError{ message })
+        }
+        Err(message) => Err(ApiError { message }),
     }
 }
 
@@ -138,7 +158,10 @@ pub async fn create_conversation(
 }
 
 #[tauri::command]
-pub async fn create_blank_conversation(blank_conversation: Conversation, repo: State<'_, Repository>) -> CommandResult<Conversation> {
+pub async fn create_blank_conversation(
+    blank_conversation: Conversation,
+    repo: State<'_, Repository>,
+) -> CommandResult<Conversation> {
     let conversation = repo
         .create_conversation(blank_conversation)
         .await
@@ -148,7 +171,9 @@ pub async fn create_blank_conversation(blank_conversation: Conversation, repo: S
 }
 
 #[tauri::command]
-pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Vec<ConversationDetailsDTO>> {
+pub async fn list_conversations(
+    repo: State<'_, Repository>,
+) -> CommandResult<Vec<ConversationDetailsDTO>> {
     let now = Instant::now();
     let result = repo
         .list_conversations()
@@ -160,7 +185,10 @@ pub async fn list_conversations(repo: State<'_, Repository>) -> CommandResult<Ve
 }
 
 #[tauri::command]
-pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<ConversationDTO> {
+pub async fn delete_conversation(
+    conversation_id: i32,
+    repo: State<'_, Repository>,
+) -> CommandResult<ConversationDTO> {
     let now = Instant::now();
     let result = repo
         .delete_conversation(conversation_id)
@@ -172,7 +200,10 @@ pub async fn delete_conversation(conversation_id: i32, repo: State<'_, Repositor
 }
 
 #[tauri::command]
-pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<GenericOptions> {
+pub async fn get_options(
+    conversation_id: i32,
+    repo: State<'_, Repository>,
+) -> CommandResult<GenericOptions> {
     let now = Instant::now();
     let result = repo
         .get_conversation_options(conversation_id)
@@ -184,7 +215,11 @@ pub async fn get_options(conversation_id: i32, repo: State<'_, Repository>) -> C
 }
 
 #[tauri::command]
-pub async fn update_options(conversation_id: i32, options: String, repo: State<'_, Repository>) -> CommandResult<GenericOptions> {
+pub async fn update_options(
+    conversation_id: i32,
+    options: String,
+    repo: State<'_, Repository>,
+) -> CommandResult<GenericOptions> {
     let now = Instant::now();
     let result = repo
         .update_conversation_options(conversation_id, options)
@@ -196,7 +231,11 @@ pub async fn update_options(conversation_id: i32, options: String, repo: State<'
 }
 
 #[tauri::command]
-pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'_, Repository>) -> CommandResult<String> {
+pub async fn update_subject(
+    conversation_id: i32,
+    subject: String,
+    repo: State<'_, Repository>,
+) -> CommandResult<String> {
     let now = Instant::now();
     let result = repo
         .update_conversation_subject(conversation_id, subject)
@@ -208,19 +247,29 @@ pub async fn update_subject(conversation_id: i32, subject: String, repo: State<'
 }
 
 #[tauri::command]
-pub async fn update_conversation_model(conversation_id: i32, model_id: i32, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
+pub async fn update_conversation_model(
+    conversation_id: i32,
+    model_id: i32,
+    repo: State<'_, Repository>,
+) -> CommandResult<ConversationDetailsDTO> {
     let now = Instant::now();
     let result = repo
         .update_conversation_model(conversation_id, model_id)
         .await
         .map_err(|message| DbError { message })?;
     let elapsed = now.elapsed();
-    log::info!("[Timer][commands::update_conversation_model]: {:.2?}", elapsed);
+    log::info!(
+        "[Timer][commands::update_conversation_model]: {:.2?}",
+        elapsed
+    );
     Ok(result)
 }
 
 #[tauri::command]
-pub async fn update_conversation(conversation: UpdateConversationDTO, repo: State<'_, Repository>) -> CommandResult<ConversationDetailsDTO> {
+pub async fn update_conversation(
+    conversation: UpdateConversationDTO,
+    repo: State<'_, Repository>,
+) -> CommandResult<ConversationDetailsDTO> {
     let now = Instant::now();
     let result = repo
         .update_conversation(conversation)
@@ -232,7 +281,10 @@ pub async fn update_conversation(conversation: UpdateConversationDTO, repo: Stat
 }
 
 #[tauri::command]
-pub async fn create_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
+pub async fn create_message(
+    message: MessageDTO,
+    repo: State<'_, Repository>,
+) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     log::info!("create_message: message = {:?}", message);
     let result = repo
@@ -246,7 +298,10 @@ pub async fn create_message(message: MessageDTO, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Vec<MessageDTO>> {
+pub async fn list_messages(
+    conversation_id: i32,
+    repo: State<'_, Repository>,
+) -> CommandResult<Vec<MessageDTO>> {
     let now = Instant::now();
     let result = repo
         .list_messages(conversation_id)
@@ -258,7 +313,10 @@ pub async fn list_messages(conversation_id: i32, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<Option<MessageDTO>> {
+pub async fn get_system_message(
+    conversation_id: i32,
+    repo: State<'_, Repository>,
+) -> CommandResult<Option<MessageDTO>> {
     let now = Instant::now();
     let result: Option<MessageDTO> = repo
         .get_system_message(conversation_id)
@@ -271,7 +329,10 @@ pub async fn get_system_message(conversation_id: i32, repo: State<'_, Repository
 }
 
 #[tauri::command]
-pub async fn update_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
+pub async fn update_message(
+    message: MessageDTO,
+    repo: State<'_, Repository>,
+) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .update_message(message)
@@ -283,7 +344,10 @@ pub async fn update_message(message: MessageDTO, repo: State<'_, Repository>) ->
 }
 
 #[tauri::command]
-pub async fn hard_delete_messages(conversation_id: i32, repo: State<'_, Repository>) -> CommandResult<()> {
+pub async fn hard_delete_messages(
+    conversation_id: i32,
+    repo: State<'_, Repository>,
+) -> CommandResult<()> {
     let now = Instant::now();
     repo.hard_delete_messages(conversation_id)
         .await
@@ -295,7 +359,10 @@ pub async fn hard_delete_messages(conversation_id: i32, repo: State<'_, Reposito
 }
 
 #[tauri::command]
-pub async fn hard_delete_message(message: MessageDTO, repo: State<'_, Repository>) -> CommandResult<MessageDTO> {
+pub async fn hard_delete_message(
+    message: MessageDTO,
+    repo: State<'_, Repository>,
+) -> CommandResult<MessageDTO> {
     let now = Instant::now();
     let result = repo
         .hard_delete_message(message)
@@ -308,7 +375,13 @@ pub async fn hard_delete_message(message: MessageDTO, repo: State<'_, Repository
 }
 
 #[tauri::command]
-pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Option<i32>, window: tauri::Window, repo: State<'_, Repository>) -> CommandResult<()> {
+pub async fn call_bot(
+    conversation_id: i32,
+    tag: String,
+    before_message_id: Option<i32>,
+    window: tauri::Window,
+    repo: State<'_, Repository>,
+) -> CommandResult<()> {
     let now = Instant::now();
     // Retrieve options, config and settings
     let options = repo
@@ -325,7 +398,7 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
         .map(|setting| {
             if let Ok(p_setting) = serde_json::from_str::<ProxySetting>(&setting.value) {
                 Some(p_setting)
-            } else { 
+            } else {
                 None
             }
         })
@@ -333,21 +406,17 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
     let ctx_length_setting: u16 = repo
         .get_setting(SETTING_MODELS_CONTEXT_LENGTH)
         .await
-        .map(|setting| {
-            match setting.value.parse::<u16>() {
-                Ok(value) => value,
-                Err(_) => DEFAULT_CONTEXT_LENGTH,
-            }
+        .map(|setting| match setting.value.parse::<u16>() {
+            Ok(value) => value,
+            Err(_) => DEFAULT_CONTEXT_LENGTH,
         })
         .unwrap_or(DEFAULT_CONTEXT_LENGTH);
     let max_token_setting: u32 = repo
         .get_setting(SETTING_MODELS_MAX_TOKENS)
         .await
-        .map(|setting| {
-            match setting.value.parse::<u32>() {
-                Ok(value) => value,
-                Err(_) => DEFAULT_MAX_TOKENS,
-            }
+        .map(|setting| match setting.value.parse::<u32>() {
+            Ok(value) => value,
+            Err(_) => DEFAULT_MAX_TOKENS,
         })
         .unwrap_or(DEFAULT_MAX_TOKENS);
     // Try to retrieve the context length from the conversation's options.
@@ -368,7 +437,11 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
         .map_err(|message| DbError { message })?;
     // Retrieve message list as context
     let mut context = repo
-        .get_last_messages(conversation_id, (context_length - 1) * 2 + 1, before_message_id) // get last N - 1 turns of conversation plus one to get the last user message
+        .get_last_messages(
+            conversation_id,
+            (context_length - 1) * 2 + 1,
+            before_message_id,
+        ) // get last N - 1 turns of conversation plus one to get the last user message
         .await
         .map_err(|message| DbError { message })?;
     if let Some(sys_m) = sys_message {
@@ -379,10 +452,28 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
     let is_stream_enabled = utils::is_stream_enabled(&options);
     if is_stream_enabled {
         // stream response
-        call_bot_stream(tag, window, context, options, config, proxy_setting, max_token_setting).await;
+        call_bot_stream(
+            tag,
+            window,
+            context,
+            options,
+            config,
+            proxy_setting,
+            max_token_setting,
+        )
+        .await;
     } else {
         // one-off response
-        call_bot_one_off(tag, window, context, options, config, proxy_setting, max_token_setting).await;
+        call_bot_one_off(
+            tag,
+            window,
+            context,
+            options,
+            config,
+            proxy_setting,
+            max_token_setting,
+        )
+        .await;
     }
     let elapsed = now.elapsed();
     log::info!("[Timer][commands::call_bot]: {:.2?}", elapsed);
@@ -390,7 +481,10 @@ pub async fn call_bot(conversation_id: i32, tag: String, before_message_id: Opti
 }
 
 #[tauri::command]
-pub async fn create_prompt(new_prompt: NewPrompt, repo: State<'_, Repository>) -> CommandResult<Prompt> {
+pub async fn create_prompt(
+    new_prompt: NewPrompt,
+    repo: State<'_, Repository>,
+) -> CommandResult<Prompt> {
     let log_tag = "create_prompt";
     let now = Instant::now();
     info(log_tag, &format!("{:?}", new_prompt));
@@ -447,7 +541,15 @@ pub async fn get_sys_info() -> CommandResult<serde_json::Value> {
 /***** Functions for calling model API START *****/
 
 /// Calling chat bot in normal mode
-async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: GenericOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
+async fn call_bot_one_off(
+    tag: String,
+    window: tauri::Window,
+    messages: Vec<MessageDTO>,
+    options: GenericOptions,
+    config: GenericConfig,
+    proxy_setting: Option<ProxySetting>,
+    max_token_setting: u32,
+) {
     log::info!("call_bot_one_off");
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
@@ -458,7 +560,14 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
         let init_client_result = LLMClient::new(config, proxy_setting);
         match init_client_result {
             Ok(client) => {
-                let result = client.chat(messages, options, GlobalSettings { max_tokens: max_token_setting })
+                let result = client
+                    .chat(
+                        messages,
+                        options,
+                        GlobalSettings {
+                            max_tokens: max_token_setting,
+                        },
+                    )
                     .await;
                 match result {
                     Ok(reply) => {
@@ -468,13 +577,13 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
                         emit_stream_data(&tag, &window, reply);
                         emit_stream_done(&tag, &window);
                         log::info!("call_bot_one_off: thread done");
-                    },
+                    }
                     Err(msg) => {
                         emit_stream_error(&tag, &window, &msg);
                         log::error!("call_bot_one_off: {}", &msg);
                     }
                 }
-            },
+            }
             Err(msg) => {
                 emit_stream_error(&tag, &window, &msg);
                 log::error!("call_bot_one_off: {}", &msg);
@@ -492,11 +601,18 @@ async fn call_bot_one_off(tag: String, window: tauri::Window, messages: Vec<Mess
     let _ = task_handle.await;
     // Unbind listener for cancel events before thread ends
     window_clone.unlisten(event_handle);
-
 }
 
 /// Calling chat bot in streaming mode
-async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<MessageDTO>, options: GenericOptions, config: GenericConfig, proxy_setting: Option<ProxySetting>, max_token_setting: u32) {
+async fn call_bot_stream(
+    tag: String,
+    window: tauri::Window,
+    messages: Vec<MessageDTO>,
+    options: GenericOptions,
+    config: GenericConfig,
+    proxy_setting: Option<ProxySetting>,
+    max_token_setting: u32,
+) {
     let log_tag = "call_bot_stream";
     let window_clone = window.clone();
     let window_clone_2 = window.clone();
@@ -508,7 +624,13 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
         match init_client_result {
             Ok(client) => {
                 let stream_result = client
-                    .chat_stream(messages, options, GlobalSettings { max_tokens: max_token_setting })
+                    .chat_stream(
+                        messages,
+                        options,
+                        GlobalSettings {
+                            max_tokens: max_token_setting,
+                        },
+                    )
                     .await;
                 match stream_result {
                     Ok(mut stream) => {
@@ -520,7 +642,7 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
                             match result {
                                 Ok(reply) => {
                                     emit_stream_data(&tag, &window, reply);
-                                },
+                                }
                                 Err(err) => {
                                     let err_reply = format!("[[ERROR]]{}", err);
                                     emit_stream_error(&tag, &window, &err_reply);
@@ -533,14 +655,14 @@ async fn call_bot_stream(tag: String, window: tauri::Window, messages: Vec<Messa
                         trace(log_tag, "Streaming finished!");
                         // stop receiving in frontend
                         emit_stream_done(&tag, &window);
-                    },
+                    }
                     Err(msg) => {
                         let err_reply = format!("[[ERROR]]{}", msg);
                         emit_stream_error(&tag, &window, &err_reply);
                         error(log_tag, &format!("Error starting stream: {}", &err_reply));
                     }
                 }
-            },
+            }
             Err(msg) => {
                 emit_stream_error(&tag, &window, &msg);
                 log::error!("call_bot_stream: {}", &msg);
@@ -570,7 +692,7 @@ fn emit_stream_start(tag: &str, window: &tauri::Window) {
             log::error!("Error when sending event: {}", err);
             // simple retry
             let _ = window.emit(tag, "[[START]]");
-        },
+        }
         _ => {}
     }
 }
@@ -581,7 +703,7 @@ fn emit_stream_done(tag: &str, window: &tauri::Window) {
             log::error!("Error when sending event: {}", err);
             // simple retry
             let _ = window.emit(tag, "[[DONE]]");
-        },
+        }
         _ => {}
     }
 }
@@ -592,7 +714,7 @@ fn emit_stream_stopped(tag: &str, window: &tauri::Window) {
             log::error!("Error when sending event: {}", err);
             // simple retry
             let _ = window.emit(tag, "[[STOPPED]]");
-        },
+        }
         _ => {}
     }
 }
@@ -603,7 +725,7 @@ fn emit_stream_error(tag: &str, window: &tauri::Window, err_message: &String) {
             log::error!("Error when sending event: {}", err);
             // retry
             let _ = window.emit(tag, err_message);
-        },
+        }
         _ => {}
     }
 }

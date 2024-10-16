@@ -1,8 +1,20 @@
 use async_openai::{
-    error::OpenAIError, types::{ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, ImageDetail, ImageUrlArgs}
+    error::OpenAIError,
+    types::{
+        ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageArgs,
+        ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart,
+        ChatCompletionRequestMessageContentPartImageArgs,
+        ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessage,
+        ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, ImageDetail,
+        ImageUrlArgs,
+    },
 };
 use entity::entities::{
-    contents::ContentType, conversations::{AzureOptions, OpenAIOptions, GenericOptions}, messages::{MessageDTO, Roles}, models::Providers, settings::ProxySetting
+    contents::ContentType,
+    conversations::{AzureOptions, GenericOptions, OpenAIOptions},
+    messages::{MessageDTO, Roles},
+    models::Providers,
+    settings::ProxySetting,
 };
 
 use crate::{log_utils::warn, services::cache};
@@ -26,19 +38,29 @@ pub fn message_to_openai_request_message(message: MessageDTO) -> ChatCompletionR
                 .into_iter()
                 .map(|item| {
                     let part: ChatCompletionRequestMessageContentPart = match item.r#type {
-                        ContentType::Image => ChatCompletionRequestMessageContentPartImageArgs::default()
-                            .image_url(
-                                ImageUrlArgs::default()
-                                    .url(cache::read_as_data_url(item.data.as_str(), item.mimetype.as_deref()).unwrap_or(String::default()))
-                                    .detail(ImageDetail::Auto)
-                                    .build()?
-                            )
-                            .build()?
-                            .into(),
-                        ContentType::Text => ChatCompletionRequestMessageContentPartTextArgs::default()
-                            .text(item.data)
-                            .build()?
-                            .into()
+                        ContentType::Image => {
+                            ChatCompletionRequestMessageContentPartImageArgs::default()
+                                .image_url(
+                                    ImageUrlArgs::default()
+                                        .url(
+                                            cache::read_as_data_url(
+                                                item.data.as_str(),
+                                                item.mimetype.as_deref(),
+                                            )
+                                            .unwrap_or(String::default()),
+                                        )
+                                        .detail(ImageDetail::Auto)
+                                        .build()?,
+                                )
+                                .build()?
+                                .into()
+                        }
+                        ContentType::Text => {
+                            ChatCompletionRequestMessageContentPartTextArgs::default()
+                                .text(item.data)
+                                .build()?
+                                .into()
+                        }
                     };
                     Ok(part)
                 })
@@ -50,37 +72,40 @@ pub fn message_to_openai_request_message(message: MessageDTO) -> ChatCompletionR
                         ChatCompletionRequestMessageContentPart::Text(text) => {
                             return ChatCompletionRequestMessage::User(
                                 ChatCompletionRequestUserMessage {
-                                    content: ChatCompletionRequestUserMessageContent::Text(text.text.to_string()),
-                                    name: None
-                                }
+                                    content: ChatCompletionRequestUserMessageContent::Text(
+                                        text.text.to_string(),
+                                    ),
+                                    name: None,
+                                },
                             );
-                        },
-                        _ => {warn(log_tag, format!("User message contains only image content: {:?}", message));}
+                        }
+                        _ => {
+                            warn(
+                                log_tag,
+                                format!("User message contains only image content: {:?}", message),
+                            );
+                        }
                     }
                 }
             }
-            
-            return ChatCompletionRequestMessage::User(
-                ChatCompletionRequestUserMessage {
-                    content: ChatCompletionRequestUserMessageContent::Array(content_parts),
-                    name: None
-                }
-            );
-        },
+
+            return ChatCompletionRequestMessage::User(ChatCompletionRequestUserMessage {
+                content: ChatCompletionRequestUserMessageContent::Array(content_parts),
+                name: None,
+            });
+        }
         Roles::System => {
-            return ChatCompletionRequestMessage::System(
-                ChatCompletionRequestSystemMessage {
-                    content: message.get_text().unwrap_or(String::default()),
-                    name: None
-                }
-            );
-        },
+            return ChatCompletionRequestMessage::System(ChatCompletionRequestSystemMessage {
+                content: message.get_text().unwrap_or(String::default()),
+                name: None,
+            });
+        }
         _ => {
             return ChatCompletionRequestMessage::Assistant(
                 ChatCompletionRequestAssistantMessageArgs::default()
                     .content(message.get_text().unwrap_or(String::default()))
                     .build()
-                    .unwrap_or(ChatCompletionRequestAssistantMessage::default())
+                    .unwrap_or(ChatCompletionRequestAssistantMessage::default()),
             );
         }
     }
@@ -94,7 +119,7 @@ pub fn is_stream_enabled(options: &GenericOptions) -> bool {
             } else {
                 return false;
             }
-        },
+        }
         _ => {
             if let Ok(openai_options) = serde_json::from_str::<OpenAIOptions>(&options.options) {
                 return openai_options.stream.unwrap_or(false);
@@ -143,9 +168,7 @@ pub fn build_http_client(proxy_setting: Option<ProxySetting>) -> reqwest::Client
             };
             if let Some(proxy) = proxy_option {
                 if let (Some(username), Some(password)) = (setting.username, setting.password) {
-                    Some(proxy
-                        .basic_auth(username.as_str(), password.as_str())
-                    )
+                    Some(proxy.basic_auth(username.as_str(), password.as_str()))
                 } else {
                     Some(proxy.to_owned())
                 }
@@ -162,5 +185,7 @@ pub fn build_http_client(proxy_setting: Option<ProxySetting>) -> reqwest::Client
     if let Some(proxy) = proxy_option {
         http_client_builder = http_client_builder.proxy(proxy);
     }
-    http_client_builder.build().unwrap_or(reqwest::Client::new())
+    http_client_builder
+        .build()
+        .unwrap_or(reqwest::Client::new())
 }

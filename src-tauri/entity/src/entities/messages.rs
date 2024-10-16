@@ -2,7 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use sea_orm::entity::Linked;
-use sea_orm::ActiveValue::{Set, NotSet};
+use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveModel;
 use serde::{Deserialize, Serialize};
 
@@ -128,15 +128,13 @@ pub struct MessageDTO {
 
 impl MessageDTO {
     pub fn get_text(&self) -> Option<String> {
-        self.content
-            .iter()
-            .find_map(|item| {
-                if item.r#type == ContentType::Text {
-                    Some(item.data.clone())
-                } else {
-                    None
-                }
-            })
+        self.content.iter().find_map(|item| {
+            if item.r#type == ContentType::Text {
+                Some(item.data.clone())
+            } else {
+                None
+            }
+        })
     }
 }
 
@@ -154,7 +152,7 @@ impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
             created_at: message.created_at,
             updated_at: message.updated_at,
             deleted_at: message.deleted_at,
-            content: contents.into_iter().map(|content| content.into()).collect()
+            content: contents.into_iter().map(|content| content.into()).collect(),
         }
     }
 }
@@ -165,9 +163,15 @@ impl IntoActiveModel<ActiveModel> for MessageDTO {
             id: self.id.map_or(NotSet, |id| Set(id)),
             conversation_id: Set(self.conversation_id),
             role: Set(self.role),
-            prompt_token: self.prompt_token.map_or(NotSet, |prompt_token| Set(Some(prompt_token))),
-            completion_token: self.completion_token.map_or(NotSet, |completion_token| Set(Some(completion_token))),
-            total_token: self.total_token.map_or(NotSet, |total_token| Set(Some(total_token))),
+            prompt_token: self
+                .prompt_token
+                .map_or(NotSet, |prompt_token| Set(Some(prompt_token))),
+            completion_token: self
+                .completion_token
+                .map_or(NotSet, |completion_token| Set(Some(completion_token))),
+            total_token: self
+                .total_token
+                .map_or(NotSet, |total_token| Set(Some(total_token))),
             ..Default::default()
         }
     }

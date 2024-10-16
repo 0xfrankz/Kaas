@@ -109,7 +109,7 @@ impl From<UpdateConversationDTO> for ActiveModel {
 #[serde(rename_all = "camelCase")]
 pub struct GenericOptions {
     pub provider: String,
-    pub options: String
+    pub options: String,
 }
 
 pub trait Options {}
@@ -152,7 +152,7 @@ pub struct AzureOptions {
 
 impl Options for AzureOptions {}
 
-impl Default for AzureOptions{
+impl Default for AzureOptions {
     fn default() -> Self {
         AzureOptions {
             context_length: None,
@@ -192,7 +192,7 @@ pub struct OpenAIOptions {
 
 impl Options for OpenAIOptions {}
 
-impl Default for OpenAIOptions{
+impl Default for OpenAIOptions {
     fn default() -> Self {
         OpenAIOptions {
             context_length: None,
@@ -217,14 +217,14 @@ pub struct ClaudeOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub temperature: Option<f32>, // Defaults to 0.5. Ranges from 0.0 to 1.0. 
+    pub temperature: Option<f32>, // Defaults to 0.5. Ranges from 0.0 to 1.0.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>, // Same as temperature?
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
 }
 
-impl Default for ClaudeOptions{
+impl Default for ClaudeOptions {
     fn default() -> Self {
         ClaudeOptions {
             context_length: None,
@@ -242,7 +242,7 @@ impl Default for ClaudeOptions{
 pub struct OllamaOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub context_length: Option<u16>,
-    
+
     /// The size of the context window used to generate the next token. (Default: 2048)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub num_ctx: Option<u32>,

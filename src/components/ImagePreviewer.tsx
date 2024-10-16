@@ -1,6 +1,6 @@
-import { save } from '@tauri-apps/api/dialog';
-import { writeBinaryFile } from '@tauri-apps/api/fs';
 import { downloadDir } from '@tauri-apps/api/path';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
 import { useHover } from 'ahooks';
 import { Save, X } from 'lucide-react';
 import { forwardRef, type HtmlHTMLAttributes, useRef, useState } from 'react';
@@ -96,7 +96,7 @@ export const ImagePreviwer = forwardRef<
     });
     if (filePath) {
       try {
-        await writeBinaryFile({ path: filePath, contents: imageData.fileData });
+        await writeFile(filePath, imageData.fileData);
         toast.success(t('generic:message:image-saved-as', { path: filePath }));
       } catch (error: unknown) {
         if (error instanceof Error) {
