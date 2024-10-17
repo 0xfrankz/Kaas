@@ -10,7 +10,7 @@ import {
   writeFile,
 } from '@tauri-apps/plugin-fs';
 
-const BASE_PATH = `cache${sep}`;
+const BASE_PATH = `cache${sep()}`;
 
 /**
  * List all files in a directory
