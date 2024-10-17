@@ -1,11 +1,35 @@
 {
+  "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "desktop-capability",
+  "description": "permissions for the desktop version of the app",
   "platforms": [
     "macOS",
     "windows",
     "linux"
   ],
+  "windows": [
+    "main"
+  ],
   "permissions": [
+    "core:default",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$APPDATA/*",
+        "$APPDATA/cache/*",
+        "$RESOURCE/*",
+        "$RESOURCE/resources/*"
+      ]
+    },
+    "shell:allow-open",
+    "dialog:allow-save",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:default",
+    "shell:default",
     "updater:default"
   ]
 }
