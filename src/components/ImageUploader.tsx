@@ -77,6 +77,9 @@ export const ImageUploader = forwardRef<
     [pendingFiles]
   );
   const isActive = canDrop && isOver;
+  console.log('canDrop', canDrop);
+  console.log('isOver', isOver);
+  console.log('isActive', isActive);
 
   const onBrowseClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -102,7 +105,7 @@ export const ImageUploader = forwardRef<
     >
       <div
         ref={drop}
-        className="flex grow items-center justify-center whitespace-pre-wrap text-center"
+        className="flex w-full grow items-center justify-center whitespace-pre-wrap text-center"
       >
         {isActive ? (
           t('generic:message:release-to-upload')
