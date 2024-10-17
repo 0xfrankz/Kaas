@@ -49,7 +49,7 @@ export function ConversationHistory({
   numToShow = 5,
 }: Props) {
   const { conversations } = useConversationsContext();
-  const { t } = useTranslation('page-conversations');
+  const { t } = useTranslation(['page-conversation', 'page-conversations']);
   return (
     <div className="box-border flex h-fit w-full flex-col gap-2">
       {conversations.length > 0 ? (

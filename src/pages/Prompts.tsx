@@ -34,7 +34,7 @@ export default function PromptsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex overflow-hidden">
           <ScrollArea className="grow">
-            <div className="mx-4 mb-6 mt-12 flex flex-col">
+            <div className="mx-4 mb-6 mt-12 flex flex-col md:mx-8">
               {hasPrompts ? (
                 <>
                   <div className="flex justify-between">

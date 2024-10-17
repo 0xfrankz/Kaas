@@ -123,7 +123,7 @@ export default function ModelsPage() {
         </TwoRows.Top>
         <TwoRows.Bottom className="flex overflow-hidden">
           <ScrollArea className="grow">
-            <div className="mx-4 mb-6 mt-12 flex flex-col">
+            <div className="mx-4 mb-6 mt-12 flex flex-col md:mx-8">
               {hasModels ? (
                 <>
                   <div className="flex justify-between">
