@@ -68,6 +68,9 @@ importers:
       '@tauri-apps/plugin-fs':
         specifier: ~2
         version: 2.0.0
+      '@tauri-apps/plugin-log':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@tauri-apps/plugin-shell':
         specifier: ~2
         version: 2.0.0
@@ -164,9 +167,6 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.14(ts-node@10.9.2(@types/node@20.16.11)(typescript@5.6.3)))
-      tauri-plugin-log-api:
-        specifier: https://github.com/tauri-apps/tauri-plugin-log#v1
-        version: git+https://git@github.com:tauri-apps/tauri-plugin-log.git#cc86b2d9878d6ec02c9f25bd48292621a4bc2a6f
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -1324,10 +1324,6 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
-  '@tauri-apps/api@1.6.0':
-    resolution: {integrity: sha512-rqI++FWClU5I2UBp4HXFvl+sBWkdigBkxnpJDQUWttNyG7IZP4FwQGhTNL5EOw0vI8i6eSAJ5frLqO7n7jbJdg==}
-    engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
-
   '@tauri-apps/api@2.0.2':
     resolution: {integrity: sha512-3wSwmG+1kr6WrgAFKK5ijkNFPp8TT3FLj3YHUb5EwMO+3FxX4uWlfSWkeeBy+Kc1RsKzugtYLuuya+98Flj+3w==}
 
@@ -1404,6 +1400,9 @@ packages:
 
   '@tauri-apps/plugin-fs@2.0.0':
     resolution: {integrity: sha512-BNEeQQ5aH8J5SwYuWgRszVyItsmquRuzK2QRkVj8Z0sCsLnSvJFYI3JHRzzr3ltZGq1nMPtblrlZzuKqVzRawA==}
+
+  '@tauri-apps/plugin-log@2.0.0':
+    resolution: {integrity: sha512-C+NII9vzswqnOQE8k7oRtnaw0z5TZsMmnirRhXkCKDEhQQH9841Us/PC1WHtGiAaJ8za1A1JB2xXndEq/47X/w==}
 
   '@tauri-apps/plugin-shell@2.0.0':
     resolution: {integrity: sha512-OpW2+ycgJLrEoZityWeWYk+6ZWP9VyiAfbO+N/O8VfLkqyOym8kXh7odKDfINx9RAotkSGBtQM4abyKfJDkcUg==}
@@ -3927,10 +3926,6 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  tauri-plugin-log-api@git+https://git@github.com:tauri-apps/tauri-plugin-log.git#cc86b2d9878d6ec02c9f25bd48292621a4bc2a6f:
-    resolution: {commit: cc86b2d9878d6ec02c9f25bd48292621a4bc2a6f, repo: git@github.com:tauri-apps/tauri-plugin-log.git, type: git}
-    version: 0.0.0
-
   test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
@@ -5390,8 +5385,6 @@ snapshots:
       '@tanstack/query-core': 5.59.13
       react: 18.3.1
 
-  '@tauri-apps/api@1.6.0': {}
-
   '@tauri-apps/api@2.0.2': {}
 
   '@tauri-apps/cli-darwin-arm64@2.0.3':
@@ -5446,6 +5439,10 @@ snapshots:
       '@tauri-apps/api': 2.0.2
 
   '@tauri-apps/plugin-fs@2.0.0':
+    dependencies:
+      '@tauri-apps/api': 2.0.2
+
+  '@tauri-apps/plugin-log@2.0.0':
     dependencies:
       '@tauri-apps/api': 2.0.2
 
@@ -8720,10 +8717,6 @@ snapshots:
       sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
-
-  tauri-plugin-log-api@git+https://git@github.com:tauri-apps/tauri-plugin-log.git#cc86b2d9878d6ec02c9f25bd48292621a4bc2a6f:
-    dependencies:
-      '@tauri-apps/api': 1.6.0
 
   test-exclude@6.0.0:
     dependencies:

@@ -1,10 +1,10 @@
-import type { LogOptions } from 'tauri-plugin-log-api';
+import type { LogOptions } from '@tauri-apps/plugin-log';
 import {
   attachConsole,
   debug as logDebug,
   error as logError,
   info as logInfo,
-} from 'tauri-plugin-log-api';
+} from '@tauri-apps/plugin-log';
 
 import type { CommandError } from './types';
 
