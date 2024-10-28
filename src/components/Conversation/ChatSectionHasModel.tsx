@@ -25,22 +25,21 @@ import { cn, getMessageTag } from '@/lib/utils';
 
 import { ChatMessageList } from '../ChatMessageList';
 import { ChatStop } from '../ChatStop';
-import { ScrollBottom } from '../ScrollBottom';
 import { ToBottom } from '../ToBottom';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { UserPromptInput } from '../UserPromptInput';
 
 const MemoizedMessageList = memo(ChatMessageList);
-const MemoizedScrollBottom = memo(ScrollBottom);
 
 export function ChatSectionHasModel({
   conversation,
 }: {
   conversation: ConversationDetails;
 }) {
+  const stickToBottomRef = useRef<boolean>(true);
   const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const atBottomRef = useRef<boolean>(false);
+  const goToBottomElRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const isWideScreen = useAppStateStore(
     (state) => state.settings[SETTING_IS_WIDE_SCREEN] === 'true'
@@ -183,47 +182,50 @@ export function ChatSectionHasModel({
     onToBottomClick();
   }, [conversation.id, onToBottomClick, queryClient]);
 
-  const checkBottom = useCallback(() => {
-    const el = document.getElementById('to-bottom');
-    if (
-      (viewportRef.current?.scrollTop ?? 0) +
-        (viewportRef.current?.clientHeight ?? 0) ===
-      viewportRef.current?.scrollHeight
-    ) {
-      // at bottom, hide go-to-bottom button
-      el?.classList.add('hidden');
-      atBottomRef.current = true;
-    } else {
-      // not at bottom and button not shown, show go-to-bottom button
-      atBottomRef.current = false;
-      if (
-        el?.classList.contains('hidden') &&
-        showBottomTimerRef.current === null
-      ) {
-        showBottomTimerRef.current = setTimeout(() => {
-          if (!atBottomRef.current) {
-            // show go-to-bottom if still not at bottom when timeout
-            if (el) {
-              el.classList.remove('hidden');
-              animate(el, { opacity: [0, 1], y: [30, 0] }, { duration: 0.2 });
-            }
-          }
-          showBottomTimerRef.current = null;
-        }, 600);
-      }
-    }
-  }, []);
-
   // Hooks
   useEffect(() => {
-    // check position upon initialization
-    checkBottom();
     if (viewportRef.current) {
       viewportRef.current.onscroll = () => {
-        checkBottom();
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+
+        const isAtBottom =
+          viewport.scrollTop + viewport.clientHeight === viewport.scrollHeight;
+
+        stickToBottomRef.current = isAtBottom;
+
+        if (isAtBottom) {
+          // If at bottom, hide go-to-bottom button
+          goToBottomElRef.current?.classList.add('hidden');
+        } else if (
+          !isAtBottom &&
+          goToBottomElRef.current?.classList.contains('hidden') &&
+          showBottomTimerRef.current === null
+        ) {
+          // If not at bottom, and go-to-bottom button is hidden, show it
+          showBottomTimerRef.current = setTimeout(() => {
+            if (
+              !(
+                viewport.scrollTop + viewport.clientHeight ===
+                viewport.scrollHeight
+              )
+            ) {
+              // show go-to-bottom if still not at bottom when timeout
+              if (goToBottomElRef.current) {
+                goToBottomElRef.current.classList.remove('hidden');
+                animate(
+                  goToBottomElRef.current,
+                  { opacity: [0, 1], y: [10, 0] },
+                  { duration: 0.2 }
+                );
+              }
+            }
+            showBottomTimerRef.current = null;
+          }, 600);
+        }
       };
     }
-  }, [checkBottom]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -251,6 +253,22 @@ export function ChatSectionHasModel({
       }
     }
   }, [conversation.id, isLastMessageFromUser, onContinueClick, receiving]);
+
+  useEffect(() => {
+    // auto scroll to bottom when messages are changed
+    if (
+      messages?.length !== 0 &&
+      viewportRef.current &&
+      stickToBottomRef.current
+    ) {
+      // requestAnimationFrame(() => {
+      viewportRef.current?.scrollTo({
+        top: viewportRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+      // });
+    }
+  }, [messages]);
 
   // Render functions
   const renderBottomSection = () => {
@@ -286,7 +304,11 @@ export function ChatSectionHasModel({
     // other wise, display input & go-to-bottom button
     return (
       <>
-        <div id="to-bottom" className="absolute -top-12 mx-auto hidden">
+        <div
+          id="to-bottom"
+          className="absolute -top-12 mx-auto hidden"
+          ref={goToBottomElRef}
+        >
           <ToBottom onClick={onToBottomClick} />
         </div>
         <div id="continue-or-input" className="h-fit w-full">
@@ -317,7 +339,6 @@ export function ChatSectionHasModel({
           {isSuccess && <MemoizedMessageList />}
           {/* Spacer */}
           <div className="mt-4 h-8" />
-          <MemoizedScrollBottom scrollContainerRef={viewportRef} />
         </div>
       </ScrollArea>
       <div
