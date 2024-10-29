@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { JsonForms } from '@jsonforms/react';
 import type { ForwardedRef, HTMLAttributes } from 'react';
 import {
   forwardRef,
@@ -8,10 +9,15 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import { useFilledPromptContext } from '@/lib/hooks';
+import {
+  buildVariablesSchema,
+  buildVariablesUiSchema,
+} from '@/lib/jsonformsext';
+import renderers from '@/lib/jsonformsext/renderers';
 import { extractVariables } from '@/lib/prompts';
 import {
   editPromptFormSchema,
@@ -262,6 +268,23 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
     const prompt = form.watch('prompt');
     const { t } = useTranslation(['page-prompts']);
 
+    // Derived state
+    const variablesSchema = useMemo(
+      () => buildVariablesSchema(filledPrompt.variables ?? []),
+      [filledPrompt.variables]
+    );
+    const variablesUiSchema = useMemo(
+      () => buildVariablesUiSchema(filledPrompt.variables ?? []),
+      [filledPrompt.variables]
+    );
+    const variablesData = useMemo(() => {
+      const data: Record<string, string> = {};
+      filledPrompt.variables?.forEach((v) => {
+        data[v.label] = v.value;
+      });
+      return data;
+    }, [filledPrompt.variables]);
+
     // Hooks
     useImperativeHandle(ref, () => {
       return {
@@ -324,32 +347,12 @@ const UsePromptForm = forwardRef<FormHandler, HTMLAttributes<HTMLFormElement>>(
           <h4 className="mt-2 text-sm font-semibold">
             {t('page-prompts:section:variables')}
           </h4>
-          {fields.map((item, index) => {
-            return (
-              <Controller
-                key={item.id}
-                control={form.control}
-                name={`variables.${index}.value`}
-                render={({ field }) => {
-                  return (
-                    <div>
-                      <label
-                        htmlFor={field.name}
-                        className="text-sm text-muted-foreground"
-                      >
-                        {item.label}
-                      </label>
-                      <InputWithMenu
-                        {...field}
-                        id={field.name}
-                        className="mt-1"
-                      />
-                    </div>
-                  );
-                }}
-              />
-            );
-          })}
+          <JsonForms
+            schema={variablesSchema}
+            uischema={variablesUiSchema}
+            data={variablesData}
+            renderers={renderers}
+          />
         </div>
       );
     };
