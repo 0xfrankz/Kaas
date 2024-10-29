@@ -186,6 +186,11 @@ export type Prompt = NewPrompt & {
   deletedAt?: string;
 };
 
+export type PromptVariable = {
+  label: string;
+  value: string;
+};
+
 export type FilledPrompt = z.infer<typeof usePromptFormSchema>;
 
 export type ProxySetting = z.infer<typeof proxySchema>;
