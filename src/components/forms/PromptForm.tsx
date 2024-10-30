@@ -40,6 +40,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
+import { PromptEditor } from './PromptEditor';
 
 type NewFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
   onSubmit: (newPrompt: NewPrompt) => void;
@@ -110,6 +111,11 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                   </div>
                 </FormItem>
               )}
+            />
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => <PromptEditor />}
             />
             <FormField
               control={form.control}

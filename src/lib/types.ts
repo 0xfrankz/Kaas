@@ -1,3 +1,6 @@
+import type { BaseEditor, Descendant } from 'slate';
+import type { HistoryEditor } from 'slate-history';
+import type { ReactEditor } from 'slate-react';
 import type { z } from 'zod';
 
 import type {
@@ -264,6 +267,26 @@ export type StatefulDialogHandler<T> = DialogHandler<T> & {
 export type PromptInputHandler = {
   submit: () => void;
 };
+
+// Customized Slate Editor
+export type PromptEditor = BaseEditor & ReactEditor & HistoryEditor;
+
+// Customized Slate Elements
+export type BadgeElement = { type: 'badge'; children: Descendant[] };
+export type ParagraphElement = {
+  type: 'paragraph';
+  align?: string;
+  children: Descendant[];
+};
+type PromptElement = BadgeElement | ParagraphElement;
+
+// Custom Types for Slate
+declare module 'slate' {
+  interface CustomTypes {
+    Editor: PromptEditor;
+    Element: PromptElement;
+  }
+}
 
 // Functions
 export function toGenericModel(model: NewModel | Model): GenericModel {

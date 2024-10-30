@@ -227,7 +227,11 @@ const KeyboardBlocker = () => {
           // ctrl+a is allowed on input and textarea
           if (e.target instanceof Element) {
             const tagName = e.target?.tagName.toLowerCase();
-            if (tagName !== 'input' && tagName !== 'textarea') {
+            const isEditableTag =
+              e.target.getAttribute('contenteditable') === 'true' ||
+              tagName === 'input' ||
+              tagName === 'textarea';
+            if (!isEditableTag) {
               e.preventDefault();
               e.stopPropagation();
             }
