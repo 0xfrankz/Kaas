@@ -115,7 +115,14 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
             <FormField
               control={form.control}
               name="content"
-              render={({ field }) => <PromptEditor />}
+              render={({ field }) => (
+                <PromptEditor
+                // onChange={(ev) => {
+                //   field.onChange(ev);
+                //   onChange(ev);
+                // }}
+                />
+              )}
             />
             <FormField
               control={form.control}

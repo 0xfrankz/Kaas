@@ -275,9 +275,11 @@ export type PromptEditor = BaseEditor & ReactEditor & HistoryEditor;
 export type BadgeElement = { type: 'badge'; children: Descendant[] };
 export type ParagraphElement = {
   type: 'paragraph';
-  align?: string;
   children: Descendant[];
 };
+// export type TextElement = {
+//   text: string;
+// };
 type PromptElement = BadgeElement | ParagraphElement;
 
 // Custom Types for Slate
@@ -329,4 +331,12 @@ export function toGenericConfig(config: RawConfig): GenericConfig {
     provider: config.provider,
     config: JSON.stringify(config),
   };
+}
+
+// Type guard function
+export function hasAttribute<K extends string>(
+  obj: unknown,
+  attr: K
+): obj is { [key in K]: unknown } {
+  return obj !== null && typeof obj === 'object' && attr in obj;
 }
