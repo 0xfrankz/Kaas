@@ -272,7 +272,7 @@ export type PromptInputHandler = {
 export type PromptEditor = BaseEditor & ReactEditor & HistoryEditor;
 
 // Customized Slate Elements
-export type BadgeElement = { type: 'badge'; children: Descendant[] };
+export type VarElement = { type: 'var'; children: Descendant[] }; // Custom element for prompt variables
 export type ParagraphElement = {
   type: 'paragraph';
   children: Descendant[];
@@ -280,7 +280,7 @@ export type ParagraphElement = {
 // export type TextElement = {
 //   text: string;
 // };
-type PromptElement = BadgeElement | ParagraphElement;
+type PromptElement = VarElement | ParagraphElement;
 
 // Custom Types for Slate
 declare module 'slate' {

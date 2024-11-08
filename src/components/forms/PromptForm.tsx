@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import type { Descendant } from 'slate';
 
 import { useFilledPromptContext } from '@/lib/hooks';
 import {
@@ -53,7 +54,7 @@ type EditFormProps = Omit<HTMLAttributes<HTMLFormElement>, 'onSubmit'> & {
 
 const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
   ({ onSubmit, ...props }: NewFormProps, ref: ForwardedRef<FormHandler>) => {
-    const [prompt, setPrompt] = useState<string>();
+    const [promptData, setPromptData] = useState<Descendant[]>();
     const { t } = useTranslation(['generic']);
     const form = useForm<NewPrompt>({
       resolver: zodResolver(newPromptFormSchema),
@@ -71,14 +72,14 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
     }, [form]);
 
     const onChangeDebounded = useMemo(() => {
-      return debounce((value: string) => {
-        setPrompt(value);
+      return debounce((data: Descendant[]) => {
+        setPromptData(data);
       }, 200);
     }, []);
 
     const onChange = useCallback(
-      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        onChangeDebounded(e.target.value);
+      (data: Descendant[]) => {
+        onChangeDebounded(data);
       },
       [onChangeDebounded]
     );
@@ -96,34 +97,42 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                     {t('generic:label:prompt')}
                   </FormLabel>
                   <FormControl>
-                    <TextAreaWithMenu
+                    {/* <TextAreaWithMenu
                       className="col-span-4 h-52 rounded-md py-1 sm:col-span-3"
                       {...field}
                       onChange={(ev) => {
                         field.onChange(ev);
-                        onChange(ev);
+                        onChange(ev.target.value);
                       }}
-                    />
+                    /> */}
+                    <div className="col-span-4 h-52 rounded-md border border-input py-1 sm:col-span-3">
+                      <PromptEditor
+                        onChange={(data) => {
+                          field.onChange(JSON.stringify(data));
+                          onChange(data);
+                        }}
+                      />
+                    </div>
                   </FormControl>
-                  <PromptVariables prompt={prompt} />
+                  {/* <PromptVariables prompt={prompt} /> */}
                   <div className="col-span-4">
                     <FormMessage />
                   </div>
                 </FormItem>
               )}
             />
-            <FormField
+            {/* <FormField
               control={form.control}
               name="content"
               render={({ field }) => (
                 <PromptEditor
-                // onChange={(ev) => {
-                //   field.onChange(ev);
-                //   onChange(ev);
-                // }}
+                  onChange={(data) => {
+                    field.onChange(JSON.stringify(data));
+                    onChange(data);
+                  }}
                 />
               )}
-            />
+            /> */}
             <FormField
               control={form.control}
               name="alias"
