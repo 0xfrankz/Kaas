@@ -13,6 +13,7 @@ import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { Descendant } from 'slate';
 
+import { serialize } from '@/lib/editor';
 import { useFilledPromptContext } from '@/lib/hooks';
 import {
   buildVariablesSchema,
@@ -63,6 +64,7 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
         content: '',
       },
     });
+    const promptStr = form.watch('content');
 
     // Hooks
     useImperativeHandle(ref, () => {
@@ -71,6 +73,7 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
       };
     }, [form]);
 
+    // Callbacks
     const onChangeDebounded = useMemo(() => {
       return debounce((data: Descendant[]) => {
         setPromptData(data);
@@ -84,66 +87,30 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
       [onChangeDebounded]
     );
 
+    const handleSubmit = useCallback(
+      (data: NewPrompt) => {
+        // onSubmit(data);
+        console.log('New prompt:', {
+          ...data,
+          editorStructure: promptData ? JSON.stringify(promptData) : undefined,
+        });
+      },
+      [promptData]
+    );
+
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
-          <div className="flex flex-col gap-4 py-8">
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-4 text-left sm:col-span-1 sm:text-right">
-                    {t('generic:label:prompt')}
-                  </FormLabel>
-                  <FormControl>
-                    {/* <TextAreaWithMenu
-                      className="col-span-4 h-52 rounded-md py-1 sm:col-span-3"
-                      {...field}
-                      onChange={(ev) => {
-                        field.onChange(ev);
-                        onChange(ev.target.value);
-                      }}
-                    /> */}
-                    <div className="col-span-4 h-52 rounded-md border border-input py-1 sm:col-span-3">
-                      <PromptEditor
-                        onChange={(data) => {
-                          field.onChange(JSON.stringify(data));
-                          onChange(data);
-                        }}
-                      />
-                    </div>
-                  </FormControl>
-                  {/* <PromptVariables prompt={prompt} /> */}
-                  <div className="col-span-4">
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            {/* <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <PromptEditor
-                  onChange={(data) => {
-                    field.onChange(JSON.stringify(data));
-                    onChange(data);
-                  }}
-                />
-              )}
-            /> */}
+        <form onSubmit={form.handleSubmit(handleSubmit)} {...props}>
+          <div className="flex flex-col gap-4">
             <FormField
               control={form.control}
               name="alias"
               render={({ field }) => (
-                <FormItem className="grid grid-cols-4 items-center gap-x-4 gap-y-1 space-y-0">
-                  <FormLabel className="col-span-4 text-left sm:col-span-1 sm:text-right">
-                    {t('generic:label:alias')}
-                  </FormLabel>
+                <FormItem className="flex flex-col items-start">
+                  <FormLabel className="">{t('generic:label:alias')}</FormLabel>
                   <FormControl>
                     <InputWithMenu
-                      className="col-span-4 rounded-md py-1 sm:col-span-3"
+                      className="rounded-md py-1 sm:col-span-3"
                       {...field}
                     />
                   </FormControl>
@@ -153,6 +120,31 @@ const NewPromptForm = forwardRef<FormHandler, NewFormProps>(
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem className="flex flex-col items-start">
+                  <FormLabel className="text-left sm:col-span-1 sm:text-right">
+                    {t('generic:label:prompt')}
+                  </FormLabel>
+                  <FormControl>
+                    <div className="h-52 w-full rounded-md border border-input px-3 py-1 text-sm sm:col-span-3">
+                      <PromptEditor
+                        onChange={(data) => {
+                          field.onChange(serialize(data));
+                          onChange(data);
+                        }}
+                      />
+                    </div>
+                  </FormControl>
+                  <div className="col-span-4">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <PromptVariables prompt={promptStr} />
           </div>
         </form>
       </Form>

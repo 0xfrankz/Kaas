@@ -135,7 +135,10 @@ const serializeNode = (v: Descendant): string => {
   return '';
 };
 
-export function serialize(slateValue: Descendant[]): string {
+export function serialize(slateValue?: Descendant[]): string {
+  if (!slateValue) {
+    return '';
+  }
   const serialized = slateValue.map(serializeNode).join('');
   return serialized;
 }

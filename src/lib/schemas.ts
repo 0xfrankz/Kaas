@@ -188,6 +188,8 @@ export const conversationFormSchema = z.object({
 export const newPromptFormSchema = z.object({
   alias: z.string(),
   content: z.string(),
+  variablesSchema: z.string().optional(),
+  editorStructure: z.string().optional(),
 });
 
 export const editPromptFormSchema = newPromptFormSchema.extend({
