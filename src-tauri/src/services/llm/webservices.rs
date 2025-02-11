@@ -293,7 +293,7 @@ impl LLMClient {
             },
             LLMClient::OpenrouterClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let stream = ChatRequest::openai(
+                    let stream = ChatRequest::openrouter(
                         client,
                         messages,
                         options,
