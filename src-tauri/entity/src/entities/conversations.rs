@@ -188,6 +188,8 @@ pub struct OpenAIOptions {
     pub top_p: Option<f32>, // min: 0, max: 1, default: 1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort: Option<String>,
 }
 
 impl Options for OpenAIOptions {}
@@ -203,6 +205,7 @@ impl Default for OpenAIOptions {
             temperature: Some(1.0),
             top_p: Some(1.0),
             user: None,
+            reasoning_effort: None,
         }
     }
 }

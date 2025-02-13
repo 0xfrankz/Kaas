@@ -4,10 +4,7 @@ use crate::log_utils::warn;
 use async_openai::{
     config::{AzureConfig, Config, OpenAIConfig},
     error::OpenAIError,
-    types::{
-        ChatChoice, ChatCompletionRequestMessage, ChatCompletionResponseStream, CompletionUsage,
-        CreateChatCompletionRequest,
-    },
+    types::ChatCompletionRequestMessage,
     Client,
 };
 use entity::entities::{
@@ -26,15 +23,13 @@ use super::{
                 ClaudeResponseMessageContent,
             },
             config::ClaudeConfig,
-        },
-        ollama::{
+        }, ollama::{
             chat::{
                 OllamaChat, OllamaChatCompletionRequest, OllamaChatCompletionResponseStream,
                 OllamaMessage,
             },
             config::OllamaConfig,
-        },
-        openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionResponseStream},
+        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}
     },
     utils::{message_to_openai_request_message, sum_option},
 };
@@ -45,10 +40,16 @@ pub struct BotReply {
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
+    pub reasoning: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
     pub prompt_token: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
     pub completion_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_deserializing)]
+    pub reasoning_token: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(skip_deserializing)]
     pub total_token: Option<u32>,
@@ -61,11 +62,11 @@ pub struct GlobalSettings {
 }
 
 pub enum ChatRequest<'c> {
-    OpenAIChatRequest(&'c Client<OpenAIConfig>, CreateChatCompletionRequest),
-    AzureChatRequest(&'c Client<AzureConfig>, CreateChatCompletionRequest),
+    OpenAIChatRequest(&'c Client<OpenAIConfig>, OpenAIChatCompletionRequest),
+    AzureChatRequest(&'c Client<AzureConfig>, OpenAIChatCompletionRequest),
     ClaudeChatRequest(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
     OllamaChatRequest(&'c Client<OllamaConfig>, OllamaChatCompletionRequest),
-    OpenrouterChatRequest(&'c Client<OpenAIConfig>, CreateChatCompletionRequest),
+    OpenrouterChatRequest(&'c Client<OpenAIConfig>, OpenrouterChatCompletionRequest),
 }
 
 impl<'c> ChatRequest<'c> {
@@ -76,9 +77,9 @@ impl<'c> ChatRequest<'c> {
         global_settings: GlobalSettings,
         model: String,
     ) -> Result<ChatRequest, String> {
-        let request: CreateChatCompletionRequest;
+        let request: OpenAIChatCompletionRequest;
         // set messages
-        let req_messages: Vec<ChatCompletionRequestMessage> = messages
+        let req_messages = messages
             .into_iter()
             .map(message_to_openai_request_message)
             .collect();
@@ -86,8 +87,9 @@ impl<'c> ChatRequest<'c> {
         let options: OpenAIOptions = serde_json::from_str(&options.options)
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
-        request = CreateChatCompletionRequest {
+        request = OpenAIChatCompletionRequest {
             model: model.to_string(),
+            reasoning_effort: options.reasoning_effort.map(|x| x.into()),
             messages: req_messages,
             frequency_penalty: options.frequency_penalty,
             max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
@@ -108,9 +110,9 @@ impl<'c> ChatRequest<'c> {
         options: GenericOptions,
         global_settings: GlobalSettings,
     ) -> Result<ChatRequest, String> {
-        let request: CreateChatCompletionRequest;
+        let request: OpenAIChatCompletionRequest;
         // set messages
-        let req_messages: Vec<ChatCompletionRequestMessage> = messages
+        let req_messages = messages
             .into_iter()
             .map(message_to_openai_request_message)
             .collect();
@@ -118,7 +120,7 @@ impl<'c> ChatRequest<'c> {
         let options: AzureOptions = serde_json::from_str(&options.options)
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
-        request = CreateChatCompletionRequest {
+        request = OpenAIChatCompletionRequest {
             messages: req_messages,
             frequency_penalty: options.frequency_penalty,
             max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
@@ -199,7 +201,6 @@ impl<'c> ChatRequest<'c> {
         global_settings: GlobalSettings,
         model: String,
     ) -> Result<ChatRequest, String> {
-        let request: CreateChatCompletionRequest;
         // set messages
         let req_messages: Vec<ChatCompletionRequestMessage> = messages
             .into_iter()
@@ -209,55 +210,33 @@ impl<'c> ChatRequest<'c> {
         let options: OpenAIOptions = serde_json::from_str(&options.options)
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
-        request = CreateChatCompletionRequest {
+        let request = OpenrouterChatCompletionRequest {
             model: model.to_string(),
             messages: req_messages,
             frequency_penalty: options.frequency_penalty,
             max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            // n: options.n,
             presence_penalty: options.presence_penalty,
             stream: options.stream,
             temperature: options.temperature,
             top_p: options.top_p,
-            user: options.user,
+            include_reasoning: Some(true),
             ..Default::default()
         };
         Ok(ChatRequest::OpenrouterChatRequest(client, request))
     }
 
-    fn convert_openai_compatible_response_data_to_botreply(
-        &self,
-        choices: Vec<ChatChoice>,
-        usage: Option<CompletionUsage>,
-    ) -> Result<BotReply, String> {
-        let choice = choices
-            .first()
-            .ok_or("Api returned empty choices".to_string())?;
-        let message = choice
-            .message
-            .content
-            .as_ref()
-            .ok_or("Api returned empty message".to_string())?
-            .to_string();
-        let reply = BotReply {
-            message,
-            prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-            completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-            total_token: usage.as_ref().map(|usage| usage.total_tokens),
-        };
-
-        Ok(reply)
-    }
-
     async fn execute_openai_compatible_request<C: Config>(
         &self,
         client: &Client<C>,
-        request: CreateChatCompletionRequest,
+        request: OpenAIChatCompletionRequest,
     ) -> Result<BotReply, String> {
-        let response = client.chat().create(request).await.map_err(|err| {
-            log::error!("execute_chat_complete_request: {:?}", err);
-            format!("Failed to get chat completion response: {}", err)
-        })?;
+        let response = OpenAIChat::new(client)
+            .create(request)
+            .await
+            .map_err(|err| {
+                log::error!("execute_chat_complete_request: {:?}", err);
+                format!("Failed to get chat completion response: {}", err)
+            })?;
         // extract data & build reply
         let choice = response
             .choices
@@ -272,8 +251,10 @@ impl<'c> ChatRequest<'c> {
         let usage = response.usage;
         let reply = BotReply {
             message,
+            reasoning: None, // OpenAI doesn't return reasoning text yet
             prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
             completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+            reasoning_token: usage.as_ref().map(|usage| usage.completion_tokens_details.reasoning_tokens),
             total_token: usage.as_ref().map(|usage| usage.total_tokens),
         };
 
@@ -283,10 +264,9 @@ impl<'c> ChatRequest<'c> {
     async fn execute_openai_compatible_stream_request<C: Config>(
         &self,
         client: &Client<C>,
-        request: CreateChatCompletionRequest,
+        request: OpenAIChatCompletionRequest,
     ) -> Result<BotReplyStream, String> {
-        let stream: ChatCompletionResponseStream = client
-            .chat()
+        let stream: OpenAIChatCompletionResponseStream = OpenAIChat::new(client)
             .create_stream(request)
             .await
             .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
@@ -295,9 +275,17 @@ impl<'c> ChatRequest<'c> {
                 let first_choice = resp.choices.first().map_or(BotReply::default(), |choice| {
                     let usage = resp.usage.clone();
                     BotReply {
-                        message: choice.delta.content.clone().unwrap_or(String::default()),
+                        message: choice.delta.content
+                            .clone()
+                            .unwrap_or(String::default()),
+                        reasoning: None, // OpenAI doesn't return reasoning text yet
                         prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-                        completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                        completion_token: usage
+                            .as_ref()
+                            .map(|usage| usage.completion_tokens),
+                        reasoning_token: usage
+                            .as_ref()
+                            .map(|usage| usage.completion_tokens_details.reasoning_tokens),
                         total_token: usage.as_ref().map(|usage| usage.total_tokens),
                     }
                 });
@@ -343,8 +331,10 @@ impl<'c> ChatRequest<'c> {
 
                 Ok(BotReply {
                     message,
+                    reasoning: None,
                     prompt_token: usage.input_tokens,
                     completion_token: usage.output_tokens,
+                    reasoning_token: None,
                     total_token: sum_option(usage.input_tokens, usage.output_tokens),
                 })
             }
@@ -375,8 +365,10 @@ impl<'c> ChatRequest<'c> {
                 // extract data & build reply
                 Ok(BotReply {
                     message,
+                    reasoning: None,
                     prompt_token: response.prompt_eval_count,
                     completion_token: response.eval_count,
+                    reasoning_token: None,
                     total_token: sum_option(response.prompt_eval_count, response.eval_count),
                 })
             }
@@ -402,8 +394,10 @@ impl<'c> ChatRequest<'c> {
                 let usage = response.usage;
                 let reply = BotReply {
                     message,
+                    reasoning: choice.message.reasoning.clone(),
                     prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
                     completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                    reasoning_token: usage.as_ref().map(|usage| usage.reasoning_tokens),
                     total_token: usage.as_ref().map(|usage| usage.total_tokens),
                 };
 
@@ -479,8 +473,10 @@ impl<'c> ChatRequest<'c> {
 
                         BotReply {
                             message,
+                            reasoning: None,
                             prompt_token: response.prompt_eval_count,
                             completion_token: response.eval_count,
+                            reasoning_token: None,
                             total_token: sum_option(response.prompt_eval_count, response.eval_count),
                         }
                     })
@@ -495,18 +491,23 @@ impl<'c> ChatRequest<'c> {
                 let result = stream.map(|item| {
                     item.map(|resp| {
                         let first_choice =
-                            resp.choices.first().map_or(BotReply::default(), |choice| {
+                            resp.choices.first()
+                            .map_or(BotReply::default(), |choice| {
                                 let usage = resp.usage.clone();
+                                let delta = choice.delta.clone();
                                 BotReply {
-                                    message: choice
-                                        .delta
-                                        .content
+                                    message: delta.content
                                         .clone()
                                         .unwrap_or(String::default()),
+                                    reasoning: delta.reasoning
+                                        .clone(),
                                     prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
                                     completion_token: usage
                                         .as_ref()
                                         .map(|usage| usage.completion_tokens),
+                                    reasoning_token: usage
+                                        .as_ref()
+                                        .map(|usage| usage.reasoning_tokens),
                                     total_token: usage.as_ref().map(|usage| usage.total_tokens),
                                 }
                             });
