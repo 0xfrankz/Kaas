@@ -6,7 +6,7 @@ use async_openai::{
     config::OpenAIConfig,
     error::OpenAIError,
     types::{
-        ChatChoiceLogprobs, ChatCompletionMessageToolCall, ChatCompletionMessageToolCallChunk, ChatCompletionRequestMessage, ChatCompletionResponseFormat, ChatCompletionTool, ChatCompletionToolChoiceOption, CompletionUsage, Role, Stop
+        ChatChoiceLogprobs, ChatCompletionMessageToolCall, ChatCompletionMessageToolCallChunk, ChatCompletionRequestMessage, ChatCompletionResponseFormat, ChatCompletionTool, ChatCompletionToolChoiceOption, Role, Stop
     },
     Client,
 };
@@ -170,6 +170,19 @@ pub struct OpenrouterChatCompletionResponse {
     pub system_fingerprint: Option<String>,
     pub object: String,
     pub usage: Option<CompletionUsage>,
+}
+
+/// Usage statistics for the completion request.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct CompletionUsage {
+    /// Number of tokens in the prompt.
+    pub prompt_tokens: u32,
+    /// Number of tokens in the generated completion.
+    pub completion_tokens: u32,
+    /// Number of tokens used for reasoning.
+    pub reasoning_tokens: u32,
+    /// Total number of tokens used in the request (prompt + completion).
+    pub total_tokens: u32,
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
