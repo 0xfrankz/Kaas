@@ -180,7 +180,7 @@ pub struct CompletionUsage {
     /// Number of tokens in the generated completion.
     pub completion_tokens: u32,
     /// Number of tokens used for reasoning.
-    pub reasoning_tokens: u32,
+    pub reasoning_tokens: Option<u32>,
     /// Total number of tokens used in the request (prompt + completion).
     pub total_tokens: u32,
 }

@@ -424,13 +424,21 @@ const ContentReceiver = ({ message }: { message: Message }) => {
     // if (hasError) {
     //   return <ErrorContent error={error} />;
     // }
-    if (reply && reply.message.length > 0) {
-      return <MarkdownContent content={buildTextContent(reply.message)} />;
+    if (reply && reply.message.length + (reply.reasoning?.length ?? 0) > 0) {
+      return (
+        <>
+          <span className="text-sm text-muted-foreground">
+            {reply.reasoning}
+          </span>
+          <MarkdownContent content={buildTextContent(reply.message)} />
+        </>
+      );
     }
     return <LoadingIcon className="mt-2 h-6 self-start" />;
   };
 
   useEffect(() => {
+    console.log('reply:', reply);
     // When bot's reply is fully received
     // create or update message here
     if (!receiving && reply && reply.message.length > 0) {

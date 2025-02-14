@@ -397,7 +397,7 @@ impl<'c> ChatRequest<'c> {
                     reasoning: choice.message.reasoning.clone(),
                     prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
                     completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-                    reasoning_token: usage.as_ref().map(|usage| usage.reasoning_tokens),
+                    reasoning_token: usage.as_ref().map(|usage| usage.reasoning_tokens.unwrap_or(0)),
                     total_token: usage.as_ref().map(|usage| usage.total_tokens),
                 };
 
@@ -507,7 +507,7 @@ impl<'c> ChatRequest<'c> {
                                         .map(|usage| usage.completion_tokens),
                                     reasoning_token: usage
                                         .as_ref()
-                                        .map(|usage| usage.reasoning_tokens),
+                                        .map(|usage| usage.reasoning_tokens.unwrap_or(0)),
                                     total_token: usage.as_ref().map(|usage| usage.total_tokens),
                                 }
                             });

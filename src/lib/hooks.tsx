@@ -729,6 +729,8 @@ export function useReplyListener(tag: string) {
                 return {
                   ...state,
                   message: state.message + botReply.message,
+                  reasoning:
+                    (state.reasoning ?? '') + (botReply.reasoning ?? ''),
                   promptToken: botReply.promptToken,
                   completionToken: botReply.completionToken,
                   totalToken: botReply.totalToken,

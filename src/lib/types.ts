@@ -141,8 +141,10 @@ export type NewMessage = {
   conversationId: number;
   role: number;
   content: ContentItem[];
+  reasoning?: string;
   promptToken?: number;
   completionToken?: number;
+  reasoningToken?: number;
   totalToken?: number;
 };
 
@@ -158,8 +160,10 @@ export type Message = NewMessage & {
 
 export type BotReply = {
   message: string;
+  reasoning?: string;
   promptToken?: number;
   completionToken?: number;
+  reasoningToken?: number;
   totalToken?: number;
 };
 

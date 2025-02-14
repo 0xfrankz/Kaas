@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use super::contents::{ContentDTO, ContentType};
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Roles {
     User,
     Bot,
@@ -43,9 +44,11 @@ pub struct Model {
     pub id: i32,
     pub conversation_id: i32,
     pub role: i32,
+    pub reasoning: Option<String>,
     // token usage
     pub prompt_token: Option<u32>,
     pub completion_token: Option<u32>,
+    pub reasoning_token: Option<u32>,
     pub total_token: Option<u32>,
     #[serde(skip_deserializing)]
     pub created_at: DateTimeLocal,
@@ -110,9 +113,13 @@ pub struct MessageDTO {
     pub conversation_id: i32,
     pub role: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub prompt_token: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub completion_token: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_token: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub total_token: Option<u32>,
     #[serde(skip_deserializing)]
@@ -146,8 +153,10 @@ impl From<(Model, Vec<super::contents::Model>)> for MessageDTO {
             id: Some(message.id),
             conversation_id: message.conversation_id,
             role: message.role,
+            reasoning: message.reasoning,
             prompt_token: message.prompt_token,
             completion_token: message.completion_token,
+            reasoning_token: message.reasoning_token,
             total_token: message.total_token,
             created_at: message.created_at,
             updated_at: message.updated_at,
@@ -163,16 +172,170 @@ impl IntoActiveModel<ActiveModel> for MessageDTO {
             id: self.id.map_or(NotSet, |id| Set(id)),
             conversation_id: Set(self.conversation_id),
             role: Set(self.role),
+            reasoning: self
+                .reasoning
+                .map_or(NotSet, |reasoning| Set(Some(reasoning))),
             prompt_token: self
                 .prompt_token
                 .map_or(NotSet, |prompt_token| Set(Some(prompt_token))),
             completion_token: self
                 .completion_token
                 .map_or(NotSet, |completion_token| Set(Some(completion_token))),
+            reasoning_token: self
+                .reasoning_token
+                .map_or(NotSet, |reasoning_token| Set(Some(reasoning_token))),
             total_token: self
                 .total_token
                 .map_or(NotSet, |total_token| Set(Some(total_token))),
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Local;
+
+    #[test]
+    fn test_roles_conversion() {
+        assert_eq!(0, Into::<i32>::into(Roles::User));
+        assert_eq!(1, Into::<i32>::into(Roles::Bot));
+        assert_eq!(2, Into::<i32>::into(Roles::System));
+
+        assert_eq!(Roles::User, Roles::from(0));
+        assert_eq!(Roles::Bot, Roles::from(1));
+        assert_eq!(Roles::System, Roles::from(2));
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid role")]
+    fn test_invalid_role_conversion() {
+        Roles::from(99);
+    }
+
+    #[test]
+    fn test_message_dto_get_text() {
+        let dto = MessageDTO {
+            id: Some(1),
+            conversation_id: 1,
+            role: 0,
+            reasoning: None,
+            content: vec![
+                ContentDTO {
+                    r#type: ContentType::Text,
+                    mimetype: None,
+                    data: "Hello".to_string(),
+                },
+                ContentDTO {
+                    r#type: ContentType::Image,
+                    mimetype: Some("image/png".to_string()),
+                    data: "base64...".to_string(),
+                },
+            ],
+            prompt_token: None,
+            completion_token: None,
+            reasoning_token: None,
+            total_token: None,
+            created_at: Local::now(),
+            updated_at: None,
+            deleted_at: None,
+        };
+
+        assert_eq!(Some("Hello".to_string()), dto.get_text());
+
+        let dto_no_text = MessageDTO {
+            id: Some(1),
+            conversation_id: 1,
+            role: 0,
+            reasoning: None,
+            content: vec![ContentDTO {
+                r#type: ContentType::Image,
+                mimetype: Some("image/png".to_string()),
+                data: "base64...".to_string(),
+            }],
+            prompt_token: None,
+            completion_token: None,
+            reasoning_token: None,
+            total_token: None,
+            created_at: Local::now(),
+            updated_at: None,
+            deleted_at: None,
+        };
+
+        assert_eq!(None, dto_no_text.get_text());
+    }
+
+    #[test]
+    fn test_message_dto_conversion() {
+        let now = Local::now();
+        let model = Model {
+            id: 1,
+            conversation_id: 2,
+            role: 0,
+            reasoning: Some("Test reasoning".to_string()),
+            prompt_token: Some(10),
+            completion_token: Some(20),
+            reasoning_token: Some(10),
+            total_token: Some(30),
+            created_at: now,
+            updated_at: None,
+            deleted_at: None,
+        };
+
+        let contents = vec![
+            crate::entities::contents::Model {
+                id: 1,
+                message_id: 1,
+                r#type: ContentType::Text,
+                mimetype: None,
+                data: "Test content".to_string(),
+            }
+        ];
+
+        let dto: MessageDTO = (model.clone(), contents.clone()).into();
+
+        assert_eq!(Some(1), dto.id);
+        assert_eq!(2, dto.conversation_id);
+        assert_eq!(0, dto.role);
+        assert_eq!(Some(10), dto.prompt_token);
+        assert_eq!(Some(20), dto.completion_token);
+        assert_eq!(Some(30), dto.total_token);
+        assert_eq!(Some("Test reasoning".to_string()), dto.reasoning);
+        assert_eq!(Some(10), dto.reasoning_token);
+        assert_eq!(now, dto.created_at);
+        assert_eq!(None, dto.updated_at);
+        assert_eq!(None, dto.deleted_at);
+        assert_eq!(1, dto.content.len());
+        assert_eq!(ContentType::Text, dto.content[0].r#type);
+        assert_eq!("Test content", dto.content[0].data);
+    }
+
+    #[test]
+    fn test_message_dto_to_active_model() {
+        let now = Local::now();
+        let dto = MessageDTO {
+            id: Some(1),
+            conversation_id: 2,
+            role: 0,
+            reasoning: Some("Test reasoning".to_string()),
+            reasoning_token: Some(10),
+            prompt_token: Some(10),
+            completion_token: Some(20),
+            total_token: Some(30),
+            content: vec![],
+            created_at: now,
+            updated_at: None,
+            deleted_at: None,
+        };
+
+        let active_model: ActiveModel = dto.into_active_model();
+
+        assert_eq!(Set(1), active_model.id);
+        assert_eq!(Set(2), active_model.conversation_id);
+        assert_eq!(Set(0), active_model.role);
+        assert_eq!(Set(Some(10)), active_model.prompt_token);
+        assert_eq!(Set(Some(20)), active_model.completion_token);
+        assert_eq!(Set(Some(30)), active_model.total_token);
     }
 }
