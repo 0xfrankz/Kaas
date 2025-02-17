@@ -35,7 +35,9 @@
         "paste": "粘贴",
         "cut": "剪切",
         "select-all": "全选",
-        "duplicate": "复制"
+        "duplicate": "复制",
+        "show-reasoning": "显示推理",
+        "hide-reasoning": "隐藏推理"
     },
     "select": {
         "language-en": "英文",

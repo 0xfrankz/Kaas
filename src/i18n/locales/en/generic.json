@@ -35,7 +35,9 @@
         "paste": "Paste",
         "cut": "Cut",
         "select-all": "Select all",
-        "duplicate": "Duplicate"
+        "duplicate": "Duplicate",
+        "show-reasoning": "Show reasoning",
+        "hide-reasoning": "Hide reasoning"
     },
     "select": {
         "language-en": "English",

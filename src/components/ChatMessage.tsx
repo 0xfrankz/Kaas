@@ -5,6 +5,8 @@ import dayjs from 'dayjs';
 import { produce } from 'immer';
 import {
   Bot as BotIcon,
+  ChevronDown,
+  ChevronUp,
   CircleAlert,
   ClipboardCopy,
   Coins,
@@ -412,6 +414,43 @@ const BotActionBar = ({
   );
 };
 
+const ReasoningContent = ({
+  reasoning,
+  defaultShowReasoning = true,
+}: {
+  reasoning: string;
+  defaultShowReasoning?: boolean;
+}) => {
+  const { t } = useTranslation();
+  const [showReasoning, setShowReasoning] = useState(defaultShowReasoning);
+  return (
+    <div className="my-4">
+      {showReasoning ? (
+        <pre className="prose mb-2 max-w-none select-text text-wrap border-l-2 border-border pl-4 text-sm text-muted-foreground prose-p:mb-6 prose-pre:mb-6 prose-ol:mb-6 prose-ol:list-decimal prose-ol:pl-6 prose-ul:mb-6 prose-ul:list-disc prose-ul:pl-6 prose-li:my-3">
+          {reasoning}
+        </pre>
+      ) : null}
+      <Button
+        variant="secondary"
+        className="size-fit gap-2 rounded-full bg-muted text-xs text-muted-foreground shadow-none hover:bg-muted-hover"
+        onClick={() => setShowReasoning(!showReasoning)}
+      >
+        {showReasoning ? (
+          <>
+            {t('generic:action:hide-reasoning')}{' '}
+            <ChevronUp className="size-4" />
+          </>
+        ) : (
+          <>
+            {t('generic:action:show-reasoning')}{' '}
+            <ChevronDown className="size-4" />
+          </>
+        )}
+      </Button>
+    </div>
+  );
+};
+
 const ContentReceiver = ({ message }: { message: Message }) => {
   const tag = getMessageTag(message);
   const { ready, receiving, reply, error } = useReplyListener(tag);
@@ -427,9 +466,9 @@ const ContentReceiver = ({ message }: { message: Message }) => {
     if (reply && reply.message.length + (reply.reasoning?.length ?? 0) > 0) {
       return (
         <>
-          <span className="text-sm text-muted-foreground">
-            {reply.reasoning}
-          </span>
+          {reply.reasoning ? (
+            <ReasoningContent reasoning={reply.reasoning.trim()} />
+          ) : null}
           <MarkdownContent content={buildTextContent(reply.message)} />
         </>
       );
@@ -438,7 +477,6 @@ const ContentReceiver = ({ message }: { message: Message }) => {
   };
 
   useEffect(() => {
-    console.log('reply:', reply);
     // When bot's reply is fully received
     // create or update message here
     if (!receiving && reply && reply.message.length > 0) {
@@ -449,16 +487,20 @@ const ContentReceiver = ({ message }: { message: Message }) => {
           conversationId: message.conversationId,
           role: message.role,
           content,
+          reasoning: reply.reasoning,
           promptToken: reply.promptToken,
           completionToken: reply.completionToken,
+          reasoningToken: reply.reasoningToken,
           totalToken: reply.totalToken,
         });
       } else {
         updater({
           ...message,
           content,
+          reasoning: reply.reasoning,
           promptToken: reply.promptToken,
           completionToken: reply.completionToken,
+          reasoningToken: reply.reasoningToken,
           totalToken: reply.totalToken,
         });
       }
@@ -578,6 +620,9 @@ const Bot = ({ message }: MessageProps) => {
             name={model ? `${model.provider}` : t('generic:model:unknown')}
             time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
           />
+          {message.reasoning ? (
+            <ReasoningContent reasoning={message.reasoning.trim()} />
+          ) : null}
           <MarkdownContent content={message.content} />
         </div>
         <BotActionBar
