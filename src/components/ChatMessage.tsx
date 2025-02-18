@@ -479,7 +479,11 @@ const ContentReceiver = ({ message }: { message: Message }) => {
   useEffect(() => {
     // When bot's reply is fully received
     // create or update message here
-    if (!receiving && reply && reply.message.length > 0) {
+    if (
+      !receiving &&
+      reply &&
+      (reply.message.length > 0 || (reply.reasoning?.length ?? 0) > 0)
+    ) {
       const content = buildTextContent(reply.message);
       if (message.id < 0) {
         // new message

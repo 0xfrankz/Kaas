@@ -429,6 +429,7 @@ export function useMessageUpdater(
               const target = draft?.find((m) => m.id === msg.id);
               if (target) {
                 target.content = msg.content;
+                target.reasoning = msg.reasoning;
                 target.updatedAt = msg.updatedAt;
                 target.isReceiving = false;
                 target.promptToken = msg.promptToken;
