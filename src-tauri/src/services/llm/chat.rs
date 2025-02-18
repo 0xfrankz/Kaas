@@ -455,11 +455,24 @@ impl<'c> ChatRequest<'c> {
                     .create_stream(request.clone())
                     .await
                     .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
-                let result = stream.map(|item| {
+                let mut is_reasoning = false;
+                let result = stream.map(move |item| {
                     item.map(|response| {
-                        let message: String = match response.message {
+                        let content: String = match response.message {
                             Some(response_message) => match response_message{
-                                OllamaMessage::Assistant(content) => content.content,
+                                OllamaMessage::Assistant(content) => {
+                                    // check for reasoning content
+                                    // return empty content for <think> and </think>
+                                    if content.content.contains("<think>") {
+                                        is_reasoning = true;
+                                        String::default()
+                                    } else if content.content.contains("</think>") {
+                                        is_reasoning = false;
+                                        String::default()
+                                    } else {
+                                        content.content
+                                    }
+                                },
                                 _ => {
                                     warn(log_tag, "OllamaChat::create_stream returned a non-assistant message");
                                     String::default()
@@ -472,8 +485,16 @@ impl<'c> ChatRequest<'c> {
                         };
 
                         BotReply {
-                            message,
-                            reasoning: None,
+                            message: if is_reasoning {
+                                String::default()
+                            } else {
+                                content.clone()
+                            },
+                            reasoning: if is_reasoning {
+                                Some(content)
+                            } else {
+                                None
+                            },
                             prompt_token: response.prompt_eval_count,
                             completion_token: response.eval_count,
                             reasoning_token: None,
