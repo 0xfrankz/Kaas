@@ -39,16 +39,16 @@ pub enum Stop {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CompletionTokensDetails {
-    pub accepted_prediction_tokens: u32,
-    pub audio_tokens: u32,
-    pub reasoning_tokens: u32,
-    pub rejected_prediction_tokens: u32
+    pub accepted_prediction_tokens: Option<u32>,
+    pub audio_tokens:  Option<u32>,
+    pub reasoning_tokens: Option<u32>,
+    pub rejected_prediction_tokens: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct PromptTokensDetails {
-    pub audio_tokens: u32,
-    pub cached_tokens: u32
+    pub audio_tokens: Option<u32>,
+    pub cached_tokens: Option<u32>
 }
 
 /// Usage statistics for the completion request.
@@ -60,8 +60,8 @@ pub struct CompletionUsage {
     pub completion_tokens: u32,
     /// Total number of tokens used in the request (prompt + completion).
     pub total_tokens: u32,
-    pub completion_tokens_details: CompletionTokensDetails,
-    pub prompt_tokens_details: PromptTokensDetails
+    pub completion_tokens_details: Option<CompletionTokensDetails>,
+    pub prompt_tokens_details: Option<PromptTokensDetails>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]

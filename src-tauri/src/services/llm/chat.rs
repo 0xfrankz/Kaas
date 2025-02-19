@@ -29,7 +29,7 @@ use super::{
                 OllamaMessage,
             },
             config::OllamaConfig,
-        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}
+        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream, OpenAIChatCompletionStreamOptions}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}
     },
     utils::{message_to_openai_request_message, sum_option},
 };
@@ -96,6 +96,14 @@ impl<'c> ChatRequest<'c> {
             // n: options.n,
             presence_penalty: options.presence_penalty,
             stream: options.stream,
+            stream_options: if options.stream.unwrap_or(false) {
+                // default to return usage when streaming
+                Some(OpenAIChatCompletionStreamOptions {
+                    include_usage: true
+                })
+            } else {
+                None
+            },
             temperature: options.temperature,
             top_p: options.top_p,
             user: options.user,
@@ -254,7 +262,17 @@ impl<'c> ChatRequest<'c> {
             reasoning: None, // OpenAI doesn't return reasoning text yet
             prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
             completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
-            reasoning_token: usage.as_ref().map(|usage| usage.completion_tokens_details.reasoning_tokens),
+            reasoning_token: usage
+                .as_ref()
+                .map(|usage| {
+                    usage
+                        .completion_tokens_details
+                        .as_ref()
+                        .map(|details| {
+                            details.reasoning_tokens.unwrap_or(0)
+                        })
+                        .unwrap_or(0)
+                }),
             total_token: usage.as_ref().map(|usage| usage.total_tokens),
         };
 
@@ -271,26 +289,40 @@ impl<'c> ChatRequest<'c> {
             .await
             .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
         let result = stream.map(|item| {
-            item.map(|resp| {
-                let first_choice = resp.choices.first().map_or(BotReply::default(), |choice| {
-                    let usage = resp.usage.clone();
-                    BotReply {
-                        message: choice.delta.content
+            let reply = item.map(|resp| {
+                // OpenAI returns usage in the last chunk with an empty message/choice
+                let message = resp
+                    .choices
+                    .first()
+                    .map(|choice| {
+                        choice.delta.content
                             .clone()
-                            .unwrap_or(String::default()),
-                        reasoning: None, // OpenAI doesn't return reasoning text yet
-                        prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
-                        completion_token: usage
-                            .as_ref()
-                            .map(|usage| usage.completion_tokens),
-                        reasoning_token: usage
-                            .as_ref()
-                            .map(|usage| usage.completion_tokens_details.reasoning_tokens),
-                        total_token: usage.as_ref().map(|usage| usage.total_tokens),
-                    }
-                });
-                first_choice
-            })
+                            .unwrap_or(String::default())
+                    })
+                    .unwrap_or(String::default());
+                let usage = resp.usage;
+                BotReply {
+                    message,
+                    reasoning: None, // OpenAI doesn't return reasoning text yet
+                    prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                    completion_token: usage
+                        .as_ref()
+                        .map(|usage| usage.completion_tokens),
+                    reasoning_token: usage
+                        .as_ref()
+                        .map(|usage| {
+                            usage
+                                .completion_tokens_details
+                                .as_ref()
+                                .map(|details| {
+                                    details.reasoning_tokens.unwrap_or(0)
+                                })
+                                .unwrap_or(0)
+                        }),
+                    total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                }
+            });
+            reply
         });
         Ok(Box::pin(result))
     }
