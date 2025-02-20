@@ -103,6 +103,7 @@ const commonOptionsFormSchema = z.object({
       }
     ),
   stream: z.boolean().optional().default(false),
+  showReasoning: z.boolean().optional().default(false),
   temperature: z.coerce
     .number()
     .min(0)

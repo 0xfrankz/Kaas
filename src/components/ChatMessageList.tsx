@@ -3,7 +3,11 @@ import { useMessageListContext } from '@/lib/hooks';
 
 import ChatMessage from './ChatMessage';
 
-export function ChatMessageList() {
+export function ChatMessageList({
+  showReasoning,
+}: {
+  showReasoning?: boolean;
+}) {
   const { messages } = useMessageListContext();
   const renderMessages = () => {
     const inner = messages ? (
@@ -19,7 +23,11 @@ export function ChatMessageList() {
             case MESSAGE_BOT:
               return (
                 <li key={message.id}>
-                  <ChatMessage.Bot key={message.id} message={message} />
+                  <ChatMessage.Bot
+                    key={message.id}
+                    message={message}
+                    showReasoning={showReasoning}
+                  />
                 </li>
               );
             default:

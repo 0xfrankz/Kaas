@@ -220,6 +220,7 @@ pub async fn update_options(
     options: String,
     repo: State<'_, Repository>,
 ) -> CommandResult<GenericOptions> {
+    log::info!("[commands::update_options]: {}", options);
     let now = Instant::now();
     let result = repo
         .update_conversation_options(conversation_id, options)

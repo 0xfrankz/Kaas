@@ -113,8 +113,8 @@ const HiddenInputField = <T extends Options>({
   );
 };
 
-// The StreamField component
-const StreamField = <T extends Options>({
+// The SwitchField component
+const SwitchField = <T extends Options>({
   control,
   name,
   label,
@@ -194,10 +194,15 @@ const AzureOptionsForm = forwardRef<FormHandler, FormProps<AzureOptions>>(
               name="presencePenalty"
               label={t('page-conversation:label:presence-penalty')}
             />
-            <StreamField
+            <SwitchField
               control={form.control}
               name="stream"
               label={t('page-conversation:label:stream')}
+            />
+            <SwitchField
+              control={form.control}
+              name="showReasoning"
+              label={t('page-conversation:label:show-reasoning')}
             />
             <InputField
               control={form.control}
@@ -272,10 +277,15 @@ const OpenAIOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
               name="presencePenalty"
               label={t('page-conversation:label:presence-penalty')}
             />
-            <StreamField
+            <SwitchField
               control={form.control}
               name="stream"
               label={t('page-conversation:label:stream')}
+            />
+            <SwitchField
+              control={form.control}
+              name="showReasoning"
+              label={t('page-conversation:label:show-reasoning')}
             />
             <InputField
               control={form.control}
@@ -340,10 +350,15 @@ const ClaudeOptionsForm = forwardRef<FormHandler, FormProps<ClaudeOptions>>(
               label={t('page-conversation:label:max-tokens')}
               placeholder={maxTokens}
             />
-            <StreamField
+            <SwitchField
               control={form.control}
               name="stream"
               label={t('page-conversation:label:stream')}
+            />
+            <SwitchField
+              control={form.control}
+              name="showReasoning"
+              label={t('page-conversation:label:show-reasoning')}
             />
             <InputField
               control={form.control}
@@ -410,10 +425,15 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
               name="numPredict"
               label={t('page-conversation:label:num-predict')}
             />
-            <StreamField
+            <SwitchField
               control={form.control}
               name="stream"
               label={t('page-conversation:label:stream')}
+            />
+            <SwitchField
+              control={form.control}
+              name="showReasoning"
+              label={t('page-conversation:label:show-reasoning')}
             />
             <InputField
               control={form.control}

@@ -19,7 +19,8 @@
         "frequency-penalty": "Frequency Penalty",
         "presence-penalty": "Presence Penalty",
         "max-tokens": "最大tokens数量",
-        "user": "用户"
+        "user": "用户",
+        "show-reasoning": "显示推理过程"
     },
     "message": {
         "no-model": "你需要先选择一个模型",

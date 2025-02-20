@@ -451,7 +451,13 @@ const ReasoningContent = ({
   );
 };
 
-const ContentReceiver = ({ message }: { message: Message }) => {
+const ContentReceiver = ({
+  message,
+  showReasoning = false,
+}: {
+  message: Message;
+  showReasoning?: boolean;
+}) => {
   const tag = getMessageTag(message);
   const { ready, receiving, reply, error } = useReplyListener(tag);
   const { onReceiverReady } = useMessageListContext();
@@ -460,19 +466,13 @@ const ContentReceiver = ({ message }: { message: Message }) => {
   const queryClient = useQueryClient();
 
   const renderContent = () => {
-    // if (hasError) {
-    //   return <ErrorContent error={error} />;
-    // }
-    if (reply && reply.message.length + (reply.reasoning?.length ?? 0) > 0) {
-      return (
-        <>
-          {reply.reasoning ? (
-            <ReasoningContent reasoning={reply.reasoning.trim()} />
-          ) : null}
-          <MarkdownContent content={buildTextContent(reply.message)} />
-        </>
-      );
+    if (reply && (reply.reasoning?.length ?? 0) > 0 && showReasoning) {
+      return <ReasoningContent reasoning={(reply.reasoning ?? '').trim()} />;
     }
+    if (reply && reply.message.length > 0) {
+      return <MarkdownContent content={buildTextContent(reply.message)} />;
+    }
+    // Show loading icon if the reply is not received and reasoning is not shown
     return <LoadingIcon className="mt-2 h-6 self-start" />;
   };
 
@@ -575,7 +575,10 @@ const User = ({ message }: MessageProps) => {
   );
 };
 
-const Bot = ({ message }: MessageProps) => {
+const Bot = ({
+  message,
+  showReasoning = false,
+}: MessageProps & { showReasoning?: boolean }) => {
   const model = useAppStateStore((state) =>
     state.models.find((m) => m.id === message.modelId)
   );
@@ -612,7 +615,7 @@ const Bot = ({ message }: MessageProps) => {
             name={model ? `${model.provider}` : t('generic:model:unknown')}
             time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
           />
-          <ContentReceiver message={message} />
+          <ContentReceiver message={message} showReasoning={showReasoning} />
         </div>
       );
     }
@@ -624,7 +627,7 @@ const Bot = ({ message }: MessageProps) => {
             name={model ? `${model.provider}` : t('generic:model:unknown')}
             time={dayjs(message.createdAt).format(DEFAULT_DATETIME_FORMAT)}
           />
-          {message.reasoning ? (
+          {message.reasoning && showReasoning ? (
             <ReasoningContent reasoning={message.reasoning.trim()} />
           ) : null}
           <MarkdownContent content={message.content} />

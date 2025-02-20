@@ -19,7 +19,8 @@
         "frequency-penalty": "Frequency Penalty",
         "presence-penalty": "Presence Penalty",
         "max-tokens": "Max tokens",
-        "user": "User"
+        "user": "User",
+        "show-reasoning": "Show reasoning"
     },
     "message": {
         "no-model": "You need to choose a model first",

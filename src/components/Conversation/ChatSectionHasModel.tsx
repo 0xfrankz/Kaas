@@ -13,6 +13,7 @@ import {
 import {
   LIST_MESSAGES_KEY,
   useBotCaller,
+  useGetOptionsQuery,
   useListMessagesQuery,
 } from '@/lib/hooks';
 import {
@@ -44,6 +45,9 @@ export function ChatSectionHasModel({
   const isWideScreen = useAppStateStore(
     (state) => state.settings[SETTING_IS_WIDE_SCREEN] === 'true'
   );
+  const {
+    query: { data: options },
+  } = useGetOptionsQuery(conversation.id);
   const { t } = useTranslation(['page-conversation']);
 
   // Queries
@@ -72,6 +76,10 @@ export function ChatSectionHasModel({
       }) ?? []
     );
   }, [conversation.modelId, messages]);
+  const showReasoning = useMemo(
+    () => options?.showReasoning ?? false,
+    [options]
+  );
 
   // Callbacks
   const onReceiverReady = useCallback(() => {
@@ -336,7 +344,7 @@ export function ChatSectionHasModel({
             isWideScreen ? 'md:w-[800px]' : 'md:w-[640px]'
           )}
         >
-          {isSuccess && <MemoizedMessageList />}
+          {isSuccess && <MemoizedMessageList showReasoning={showReasoning} />}
           {/* Spacer */}
           <div className="mt-4 h-8" />
         </div>

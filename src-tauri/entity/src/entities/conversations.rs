@@ -148,6 +148,8 @@ pub struct AzureOptions {
     pub top_p: Option<f32>, // min: 0, max: 1, default: 1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_reasoning: Option<bool>,
 }
 
 impl Options for AzureOptions {}
@@ -163,6 +165,7 @@ impl Default for AzureOptions {
             temperature: Some(1.0),
             top_p: Some(1.0),
             user: None,
+            show_reasoning: None,
         }
     }
 }
@@ -190,6 +193,8 @@ pub struct OpenAIOptions {
     pub user: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reasoning_effort: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_reasoning: Option<bool>,
 }
 
 impl Options for OpenAIOptions {}
@@ -206,6 +211,7 @@ impl Default for OpenAIOptions {
             top_p: Some(1.0),
             user: None,
             reasoning_effort: None,
+            show_reasoning: None,
         }
     }
 }
@@ -225,6 +231,8 @@ pub struct ClaudeOptions {
     pub top_p: Option<f32>, // Same as temperature?
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_reasoning: Option<bool>,
 }
 
 impl Default for ClaudeOptions {
@@ -236,32 +244,46 @@ impl Default for ClaudeOptions {
             temperature: Some(0.5),
             top_p: Some(1.0),
             user: None,
+            show_reasoning: None,
         }
     }
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OllamaOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub context_length: Option<u16>,
-
     /// The size of the context window used to generate the next token. (Default: 2048)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub num_ctx: Option<u32>,
-
     /// Maximum number of tokens to predict when generating text. (Default: 128, -1 = infinite generation, -2 = fill context)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub num_predict: Option<i32>,
-
     /// The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
-
     /// Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
-
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub show_reasoning: Option<bool>,
+}
+
+impl Options for OllamaOptions {}
+
+impl Default for OllamaOptions {
+    fn default() -> Self {
+        OllamaOptions {
+            context_length: None,
+            num_ctx: None,
+            num_predict: None,
+            temperature: Some(0.8),
+            top_p: Some(0.95),
+            stream: None,
+            show_reasoning: None,
+        }
+    }
 }
