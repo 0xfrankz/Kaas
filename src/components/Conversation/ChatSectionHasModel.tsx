@@ -39,6 +39,7 @@ export function ChatSectionHasModel({
   conversation: ConversationDetails;
 }) {
   const stickToBottomRef = useRef<boolean>(true);
+  const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
   const showBottomTimerRef = useRef<NodeJS.Timeout | null>(null);
   const goToBottomElRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -264,19 +265,38 @@ export function ChatSectionHasModel({
 
   useEffect(() => {
     // auto scroll to bottom when messages are changed
+    // normally happens when page is loaded
     if (
       messages?.length !== 0 &&
       viewportRef.current &&
       stickToBottomRef.current
     ) {
-      // requestAnimationFrame(() => {
       viewportRef.current?.scrollTo({
         top: viewportRef.current.scrollHeight,
         behavior: 'smooth',
       });
-      // });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (receiving && viewportRef.current && stickToBottomRef.current) {
+      // auto scroll to bottom when
+      // stickToBottom is set and we're receiving new message
+      autoScrollRef.current = setInterval(() => {
+        if (stickToBottomRef.current) {
+          // check sticky marker again
+          viewportRef.current?.scrollTo({
+            top: viewportRef.current.scrollHeight,
+            behavior: 'instant', // can't use smooth here, it will cause multiple onscroll events and wrongly set the sticky marker
+          });
+        }
+      }, 100);
+    }
+    if (!receiving) {
+      // cancel auto scroll
+      clearInterval(autoScrollRef.current ?? undefined);
+    }
+  }, [receiving]);
 
   // Render functions
   const renderBottomSection = () => {
