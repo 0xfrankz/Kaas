@@ -45,7 +45,7 @@
   },
   "productName": "Kaas",
   "mainBinaryName": "Kaas",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "identifier": "kassapp.com",
   "plugins": {
     "updater": {
