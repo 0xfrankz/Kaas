@@ -4,6 +4,7 @@ import type {
   ALL_PROVIDERS,
   CONTENT_ITEM_TYPES,
   PROVIDER_CUSTOM,
+  PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -70,7 +71,8 @@ export type RawOpenAIConfig = {
   provider:
     | typeof PROVIDER_OPENAI
     | typeof PROVIDER_OPENROUTER
-    | typeof PROVIDER_CUSTOM;
+    | typeof PROVIDER_CUSTOM
+    | typeof PROVIDER_DEEPSEEK;
   apiKey: string;
   model?: string;
   endpoint?: string;

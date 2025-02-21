@@ -4,6 +4,7 @@ import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
+  PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENROUTER,
 } from '@/lib/constants';
@@ -58,6 +59,9 @@ function NewModelFormDialogContent({
       form = (
         <ModelForm.Openrouter.New id="modelForm" onSubmit={onFormSubmit} />
       );
+      break;
+    case PROVIDER_DEEPSEEK:
+      form = <ModelForm.Deepseek.New id="modelForm" onSubmit={onFormSubmit} />;
       break;
     default:
       form = <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
@@ -117,6 +121,24 @@ function EditModelFormDialogContent({
     case PROVIDER_OLLAMA:
       form = (
         <ModelForm.Ollama.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_OPENROUTER:
+      form = (
+        <ModelForm.Openrouter.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_DEEPSEEK:
+      form = (
+        <ModelForm.Deepseek.Edit
           id="modelForm"
           model={model}
           onSubmit={onFormSubmit}

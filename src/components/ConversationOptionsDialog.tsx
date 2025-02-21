@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
+  PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
 } from '@/lib/constants';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
@@ -125,6 +126,15 @@ export const ConversationOptionsDialog = forwardRef<DialogHandler<void>, Props>(
               ref={formRef}
               onSubmit={onFormSubmit}
               defaultValues={options as OllamaOptions}
+            />
+          );
+        case PROVIDER_DEEPSEEK:
+          return (
+            <OptionsForm.Deepseek
+              id="optionsForm"
+              ref={formRef}
+              onSubmit={onFormSubmit}
+              defaultValues={options as OpenAIOptions}
             />
           );
         default:

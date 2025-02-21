@@ -9,6 +9,7 @@ import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
+  PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -681,6 +682,35 @@ const NewOpenrouterModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   }
 );
 
+const NewDeepseekModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewOpenAIModel>({
+      resolver: zodResolver(newOpenAIModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_DEEPSEEK,
+        alias: '',
+        apiKey: '',
+        model: '',
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={form as UseFormReturn<NewOpenAIModel, any, undefined>}
+        onSubmit={onSubmit}
+        allowModelSelection
+        {...props}
+      />
+    );
+  }
+);
+
 const NewCustomModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   ({ onSubmit, ...props }, ref) => {
     const form = useForm<NewOpenAIModel>({
@@ -756,6 +786,11 @@ export default {
   },
   Openrouter: {
     New: NewOpenrouterModelForm,
+    Edit: EditOpenAIModelForm, // use EditOpenAIModelForm for editing
+  },
+  Deepseek: {
+    New: NewDeepseekModelForm,
+    Edit: EditOpenAIModelForm, // use EditOpenAIModelForm for editing
   },
   CUSTOM: {
     New: NewCustomModelForm,

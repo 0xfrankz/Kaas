@@ -4,6 +4,7 @@ import {
   PROVIDER_AZURE,
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
+  PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -14,6 +15,7 @@ export const newOpenAIModelFormSchema = z.object({
   provider: z.enum([
     PROVIDER_OPENAI,
     PROVIDER_OPENROUTER,
+    PROVIDER_DEEPSEEK,
     PROVIDER_CUSTOM,
   ] as const),
   apiKey: z.string().min(1, 'API Key is required'),
@@ -150,6 +152,7 @@ export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
   provider: z.enum([
     PROVIDER_OPENAI,
     PROVIDER_OPENROUTER,
+    PROVIDER_DEEPSEEK,
     PROVIDER_CUSTOM,
   ] as const),
 });

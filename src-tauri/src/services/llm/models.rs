@@ -1,6 +1,5 @@
 use super::providers::{
-    ollama::{config::OllamaConfig, models::OllamaModels},
-    openrouter::models::OpenrouterModels,
+    deepseek::{config::DeepseekConfig, models::DeepseekModels}, ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels
 };
 use async_openai::{config::OpenAIConfig, Client};
 use serde::Serialize;
@@ -15,6 +14,7 @@ pub enum ListModelsRequest<'c> {
     OpenAIListModelsRequest(&'c Client<OpenAIConfig>),
     OllamaListModelsRequest(&'c Client<OllamaConfig>),
     OpenrouterListModelsRequest(&'c Client<OpenAIConfig>),
+    DeepseekListModelsRequest(&'c Client<DeepseekConfig>),
 }
 
 impl<'c> ListModelsRequest<'c> {
@@ -28,6 +28,10 @@ impl<'c> ListModelsRequest<'c> {
 
     pub fn openrouter(client: &'c Client<OpenAIConfig>) -> Self {
         return ListModelsRequest::OpenrouterListModelsRequest(client);
+    }
+
+    pub fn deepseek(client: &'c Client<DeepseekConfig>) -> Self {
+        return ListModelsRequest::DeepseekListModelsRequest(client);
     }
 
     pub async fn execute(&self) -> Result<Vec<RemoteModel>, String> {
@@ -62,6 +66,18 @@ impl<'c> ListModelsRequest<'c> {
             ListModelsRequest::OpenrouterListModelsRequest(client) => {
                 let response = OpenrouterModels::new(client).list().await.map_err(|err| {
                     log::error!("ListModelsRequest::OpenrouterListModelsRequest: {}", err);
+                    String::from("Failed to list models")
+                })?;
+                let result = response
+                    .data
+                    .iter()
+                    .map(|m| RemoteModel { id: m.id.clone() })
+                    .collect();
+                Ok(result)
+            }
+            ListModelsRequest::DeepseekListModelsRequest(client) => {
+                let response = DeepseekModels::new(client).list().await.map_err(|err| {
+                    log::error!("ListModelsRequest::DeepseekListModelsRequest: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response

@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import {
+  PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -45,7 +46,8 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const onClick = useCallback(() => {
     if (
       config.provider === PROVIDER_OPENAI ||
-      config.provider === PROVIDER_OPENROUTER
+      config.provider === PROVIDER_OPENROUTER ||
+      config.provider === PROVIDER_DEEPSEEK
     ) {
       // check api key when user is using OpenAI or OpenRouter
       const apiKey = form.getValues('apiKey');

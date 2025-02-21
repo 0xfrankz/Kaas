@@ -15,8 +15,7 @@ use super::{
     chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings},
     models::{ListModelsRequest, RemoteModel},
     providers::{
-        claude::config::ClaudeConfig, ollama::config::OllamaConfig,
-        openrouter::config::DEFAULT_OPENROUTER_API_BASE,
+        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE
     },
     utils::build_http_client,
 };
@@ -99,6 +98,26 @@ impl Into<OllamaConfig> for RawOllamaConfig {
     }
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RawDeepseekConfig {
+    api_key: String,
+    model: Option<String>,
+    endpoint: Option<String>,
+}
+
+impl Into<DeepseekConfig> for RawDeepseekConfig {
+    fn into(self) -> DeepseekConfig {
+        let mut config = DeepseekConfig::new()
+            .with_api_key(self.api_key);
+        if let Some(endpoint) = self.endpoint {
+            config = config.with_api_base(endpoint);
+        }
+
+        config
+    }
+}
+
 /// Wrapper of async-openai's Client struct
 #[derive(Debug, Clone)]
 pub enum LLMClient {
@@ -107,6 +126,7 @@ pub enum LLMClient {
     ClaudeClient(Client<ClaudeConfig>, Option<String>),
     OllamaClient(Client<OllamaConfig>, Option<String>),
     OpenrouterClient(Client<OpenAIConfig>, Option<String>),
+    DeepseekClient(Client<DeepseekConfig>, Option<String>),
 }
 
 impl LLMClient {
@@ -149,6 +169,13 @@ impl LLMClient {
                     .with_api_base(DEFAULT_OPENROUTER_API_BASE);
                 let client = Client::with_config(config).with_http_client(http_client);
                 Ok(LLMClient::OpenrouterClient(client, model))
+            }
+            Providers::Deepseek => {
+                let raw_config: RawDeepseekConfig = serde_json::from_str(&config.config)
+                    .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+                let model = raw_config.model.clone();
+                let client = Client::with_config(raw_config.into()).with_http_client(http_client);
+                Ok(LLMClient::DeepseekClient(client, model))
             }
             _ => Err(format!(
                 "Complete chat with {} not supported yet",
@@ -230,6 +257,21 @@ impl LLMClient {
                 }
                 None => Err(format!("OpenRouter model not set for chat")),
             },
+            LLMClient::DeepseekClient(client, model) => match model.as_ref() {
+                Some(model_str) => {
+                    let reply = ChatRequest::deepseek(
+                        client,
+                        messages,
+                        options,
+                        global_settings,
+                        model_str.to_string(),
+                    )?
+                    .execute()
+                    .await?;
+                    Ok(reply)
+                }
+                None => Err(format!("Deepseek model not set for chat")),
+            },
         }
     }
 
@@ -306,6 +348,21 @@ impl LLMClient {
                 }
                 None => Err(format!("OpenRouter model not set for chat stream")),
             },
+            LLMClient::DeepseekClient(client, model) => match model.as_ref() {
+                Some(model_str) => {
+                    let stream = ChatRequest::deepseek(
+                        client,
+                        messages,
+                        options,
+                        global_settings,
+                        model_str.to_string(),
+                    )?
+                    .execute_stream()
+                    .await?;
+                    Ok(stream)
+                }
+                None => Err(format!("Deepseek model not set for chat stream")),
+            },
         }
     }
 
@@ -329,6 +386,10 @@ impl LLMClient {
             }
             LLMClient::OpenrouterClient(client, _) => {
                 let result = ListModelsRequest::openrouter(client).execute().await?;
+                Ok(result)
+            }
+            LLMClient::DeepseekClient(client, _) => {
+                let result = ListModelsRequest::deepseek(client).execute().await?;
                 Ok(result)
             }
         }

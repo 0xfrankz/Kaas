@@ -4,14 +4,16 @@ export const PROVIDER_AZURE = 'Azure';
 export const PROVIDER_CLAUDE = 'Claude';
 export const PROVIDER_OLLAMA = 'Ollama';
 export const PROVIDER_OPENROUTER = 'Openrouter';
+export const PROVIDER_DEEPSEEK = 'Deepseek';
 export const PROVIDER_CUSTOM = 'CUSTOM';
 export const PROVIDER_UNKNOWN = 'Unknown';
 export const SUPPORTED_PROVIDERS = [
   PROVIDER_OPENAI,
-  PROVIDER_AZURE,
+  PROVIDER_DEEPSEEK,
   PROVIDER_CLAUDE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENROUTER,
+  PROVIDER_AZURE,
   PROVIDER_CUSTOM,
 ] as const;
 export const ALL_PROVIDERS = [
@@ -67,6 +69,16 @@ export const PROVIDER_STYLES = {
     color: {
       light: '#18181B',
       dark: '#FAFAFA',
+    },
+  },
+  [PROVIDER_DEEPSEEK]: {
+    icon: {
+      light: 'deepseek_logo.svg',
+      dark: 'deepseek_logo.svg',
+    },
+    color: {
+      light: '#4D6BFE',
+      dark: '#4D6BFE',
     },
   },
   [PROVIDER_CUSTOM]: {

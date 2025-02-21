@@ -286,7 +286,7 @@ pub struct OpenAIChatCompletionResponse {
     pub usage: Option<CompletionUsage>,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+#[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
 /// Represents a streamed chunk of a chat completion response returned by model, based on the provided input.
 pub struct OpenAIChatCompletionStreamResponse {
     /// A unique identifier for the chat completion. Each chunk has the same ID.

@@ -8,7 +8,7 @@ use async_openai::{
     Client,
 };
 use entity::entities::{
-    conversations::{AzureOptions, ClaudeOptions, GenericOptions, OllamaOptions, OpenAIOptions},
+    conversations::{AzureOptions, ClaudeOptions, DeepseekOptions, GenericOptions, OllamaOptions, OpenAIOptions},
     messages::MessageDTO,
 };
 use serde::Serialize;
@@ -23,7 +23,7 @@ use super::{
                 ClaudeResponseMessageContent,
             },
             config::ClaudeConfig,
-        }, ollama::{
+        }, deepseek::{chat::{DeepseekChat, DeepseekChatCompletionRequest, DeepseekChatCompletionResponseStream}, config::DeepseekConfig}, ollama::{
             chat::{
                 OllamaChat, OllamaChatCompletionRequest, OllamaChatCompletionResponseStream,
                 OllamaMessage,
@@ -67,6 +67,7 @@ pub enum ChatRequest<'c> {
     ClaudeChatRequest(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
     OllamaChatRequest(&'c Client<OllamaConfig>, OllamaChatCompletionRequest),
     OpenrouterChatRequest(&'c Client<OpenAIConfig>, OpenrouterChatCompletionRequest),
+    DeepseekChatRequest(&'c Client<DeepseekConfig>, DeepseekChatCompletionRequest),
 }
 
 impl<'c> ChatRequest<'c> {
@@ -231,6 +232,45 @@ impl<'c> ChatRequest<'c> {
             ..Default::default()
         };
         Ok(ChatRequest::OpenrouterChatRequest(client, request))
+    }
+
+    pub fn deepseek(
+        client: &'c Client<DeepseekConfig>,
+        messages: Vec<MessageDTO>,
+        options: GenericOptions,
+        global_settings: GlobalSettings,
+        model: String,
+    ) -> Result<ChatRequest, String> {
+        let request: DeepseekChatCompletionRequest;
+        // set messages
+        let req_messages = messages
+            .into_iter()
+            .map(message_to_openai_request_message)
+            .collect();
+        // set options
+        let options: DeepseekOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        request = DeepseekChatCompletionRequest {
+            messages: req_messages,
+            model: model.to_string(),
+            frequency_penalty: options.frequency_penalty,
+            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+            presence_penalty: options.presence_penalty,
+            stream: options.stream,
+            stream_options: if options.stream.unwrap_or(false) {
+                // default to return usage when streaming
+                Some(OpenAIChatCompletionStreamOptions {
+                    include_usage: true
+                })
+            } else {
+                None
+            },
+            temperature: options.temperature,
+            top_p: options.top_p,
+            ..Default::default()
+        };
+        Ok(ChatRequest::DeepseekChatRequest(client, request))
     }
 
     async fn execute_openai_compatible_request<C: Config>(
@@ -435,6 +475,48 @@ impl<'c> ChatRequest<'c> {
 
                 Ok(reply)
             }
+            ChatRequest::DeepseekChatRequest(client, request) => {
+                let response = DeepseekChat::new(client)
+                    .create(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                // extract data & build reply
+                let choice = response
+                    .choices
+                    .first()
+                    .ok_or("Api returned empty choices".to_string())?;
+                let message = choice
+                    .message
+                    .content
+                    .as_ref()
+                    .ok_or("Api returned empty message".to_string())?
+                    .to_string();
+                let reasoning = choice
+                    .message
+                    .reasoning_content
+                    .clone();
+                let usage = response.usage;
+                let reply = BotReply {
+                    message,
+                    reasoning,
+                    prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                    completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                    reasoning_token: usage
+                        .as_ref()
+                        .map(|usage| {
+                            usage
+                                .completion_tokens_details
+                                .as_ref()
+                                .map(|details| {
+                                    details.reasoning_tokens.unwrap_or(0)
+                                })
+                                .unwrap_or(0)
+                        }),
+                    total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                };
+
+                Ok(reply)
+            }
         }
     }
 
@@ -566,6 +648,48 @@ impl<'c> ChatRequest<'c> {
                             });
                         first_choice
                     })
+                });
+                Ok(Box::pin(result))
+            }
+            ChatRequest::DeepseekChatRequest(client, request) => {
+                let stream: DeepseekChatCompletionResponseStream = DeepseekChat::new(client)
+                    .create_stream(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                let result = stream.map(|item| {
+                    let reply = item.map(|resp| {
+                        let choice = resp.choices.first().unwrap();
+                        let message = choice
+                            .delta
+                            .content
+                            .clone()
+                            .unwrap_or(String::default());
+                        let reasoning = choice
+                            .delta
+                            .reasoning_content
+                            .clone();
+                        let usage = resp.usage;
+                        BotReply {
+                            message,
+                            reasoning,
+                            prompt_token: usage.as_ref().map(|usage| usage.prompt_tokens),
+                            completion_token: usage.as_ref().map(|usage| usage.completion_tokens),
+                            reasoning_token: usage
+                                .as_ref()
+                                .map(|usage| {
+                                    usage
+                                        .completion_tokens_details
+                                        .as_ref()
+                                        .map(|details| {
+                                            details.reasoning_tokens.unwrap_or(0)
+                                        })
+                                        .unwrap_or(0)
+                                }),
+                            total_token: usage.as_ref().map(|usage| usage.total_tokens),
+                            ..Default::default()
+                        }
+                    });
+                    reply
                 });
                 Ok(Box::pin(result))
             }

@@ -49,6 +49,7 @@
         "Claude": "Anthropic Claude",
         "Ollama": "Ollama",
         "Openrouter": "OpenRouter",
+        "Deepseek": "DeepSeek",
         "CUSTOM": "Custom",
         "unknown": "Unknown"
     },
