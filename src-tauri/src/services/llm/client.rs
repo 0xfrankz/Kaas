@@ -1,5 +1,5 @@
 use async_openai::{
-    config::{AzureConfig, OpenAIConfig},
+    config::{AzureConfig, Config, OpenAIConfig},
     Client,
 };
 use entity::entities::{
@@ -24,7 +24,7 @@ use super::{
 #[derive(Debug, Clone)]
 pub enum LLMClient {
     OpenAIClient(Client<OpenAIConfig>, Option<String>),
-    AzureClient(Client<AzureConfig>),
+    AzureClient(Client<AzureConfig>, Option<String>),
     ClaudeClient(Client<ClaudeConfig>, Option<String>),
     OllamaClient(Client<OllamaConfig>, Option<String>),
     OpenrouterClient(Client<OpenAIConfig>, Option<String>),
@@ -40,7 +40,7 @@ impl LLMClient {
                 let raw_config: RawAzureConfig = serde_json::from_str(&config.config)
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
-                Ok(LLMClient::AzureClient(client))
+                Ok(LLMClient::AzureClient(client, Some(String::default()))) // Azure doesn't require model, so use a blank string here
             }
             Providers::OpenAI | Providers::CUSTOM => {
                 let raw_config: RawOpenAIConfig = serde_json::from_str(&config.config)
@@ -86,6 +86,52 @@ impl LLMClient {
         }
     }
 
+    async fn execute_chat_request<'c, F, C>(
+        client: &'c Client<C>, // Replace ClientType with the actual type
+        messages: Vec<MessageDTO>,
+        options: GenericOptions,
+        global_settings: GlobalSettings,
+        model: &'c Option<String>,
+        executor: F,
+    ) -> Result<BotReply, String>
+    where
+        F: FnOnce(&'c Client<C>, Vec<MessageDTO>, GenericOptions, GlobalSettings, String) -> Result<ChatRequestExecutor<'c>, String>,
+        C: Config,
+    {
+        match model {
+            Some(model_str) => {
+                let reply = executor(client, messages, options, global_settings, model_str.to_string())?
+                    .execute()
+                    .await?;
+                Ok(reply)
+            }
+            None => Err(format!("Model not set for chat")),
+        }
+    }
+
+    async fn execute_chat_request_stream<'c, F, C>(
+        client: &'c Client<C>, // Replace ClientType with the actual type
+        messages: Vec<MessageDTO>,
+        options: GenericOptions,
+        global_settings: GlobalSettings,
+        model: &'c Option<String>,
+        executor: F,
+    ) -> Result<BotReplyStream, String>
+    where
+        F: FnOnce(&'c Client<C>, Vec<MessageDTO>, GenericOptions, GlobalSettings, String) -> Result<ChatRequestExecutor<'c>, String>,
+        C: Config,
+    {
+        match model {
+            Some(model_str) => {
+                let stream = executor(client, messages, options, global_settings, model_str.to_string())?
+                    .execute_stream()
+                    .await?;
+                Ok(stream)
+            }
+            None => Err(format!("Model not set for chat")),
+        }
+    }
+
     pub async fn chat(
         &self,
         messages: Vec<MessageDTO>,
@@ -93,86 +139,23 @@ impl LLMClient {
         global_settings: GlobalSettings,
     ) -> Result<BotReply, String> {
         match self {
-            LLMClient::OpenAIClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let reply = ChatRequestExecutor::openai(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute()
-                    .await?;
-                    Ok(reply)
-                }
-                None => Err(format!("OpenAI model not set")),
+            LLMClient::OpenAIClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::openai).await
             },
-            LLMClient::AzureClient(client) => {
-                let reply = ChatRequestExecutor::azure(client, messages, options, global_settings)?
-                    .execute()
-                    .await?;
-                return Ok(reply);
+            LLMClient::AzureClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::azure).await
             }
-            LLMClient::ClaudeClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let reply = ChatRequestExecutor::claude(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute()
-                    .await?;
-                    Ok(reply)
-                }
-                None => Err(format!("Claude model not set for chat")),
+            LLMClient::ClaudeClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::claude).await
             },
-            LLMClient::OllamaClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let reply = ChatRequestExecutor::ollama(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute()
-                    .await?;
-                    Ok(reply)
-                }
-                None => Err(format!("Ollama model not set for chat")),
+            LLMClient::OllamaClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::ollama).await
             },
-            LLMClient::OpenrouterClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let reply = ChatRequestExecutor::openrouter(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute()
-                    .await?;
-                    Ok(reply)
-                }
-                None => Err(format!("OpenRouter model not set for chat")),
+            LLMClient::OpenrouterClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::openrouter).await
             },
-            LLMClient::DeepseekClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let reply = ChatRequestExecutor::deepseek(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute()
-                    .await?;
-                    Ok(reply)
-                }
-                None => Err(format!("Deepseek model not set for chat")),
+            LLMClient::DeepseekClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::deepseek).await
             },
         }
     }
@@ -184,86 +167,23 @@ impl LLMClient {
         global_settings: GlobalSettings,
     ) -> Result<BotReplyStream, String> {
         match self {
-            LLMClient::OpenAIClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let stream = ChatRequestExecutor::openai(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute_stream()
-                    .await?;
-                    Ok(stream)
-                }
-                None => Err(format!("OpenAI model not set for chat stream")),
+            LLMClient::OpenAIClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::openai).await
             },
-            LLMClient::AzureClient(client) => {
-                let stream = ChatRequestExecutor::azure(client, messages, options, global_settings)?
-                    .execute_stream()
-                    .await?;
-                return Ok(stream);
+            LLMClient::AzureClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::azure).await
             }
-            LLMClient::ClaudeClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let stream = ChatRequestExecutor::claude(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute_stream()
-                    .await?;
-                    return Ok(stream);
-                }
-                None => Err(format!("Claude model not set for chat stream")),
+            LLMClient::ClaudeClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::claude).await
             },
-            LLMClient::OllamaClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let stream = ChatRequestExecutor::ollama(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute_stream()
-                    .await?;
-                    Ok(stream)
-                }
-                None => Err(format!("Ollama model not set for chat stream")),
+            LLMClient::OllamaClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::ollama).await
             },
-            LLMClient::OpenrouterClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let stream = ChatRequestExecutor::openrouter(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute_stream()
-                    .await?;
-                    Ok(stream)
-                }
-                None => Err(format!("OpenRouter model not set for chat stream")),
+            LLMClient::OpenrouterClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::openrouter).await
             },
-            LLMClient::DeepseekClient(client, model) => match model.as_ref() {
-                Some(model_str) => {
-                    let stream = ChatRequestExecutor::deepseek(
-                        client,
-                        messages,
-                        options,
-                        global_settings,
-                        model_str.to_string(),
-                    )?
-                    .execute_stream()
-                    .await?;
-                    Ok(stream)
-                }
-                None => Err(format!("Deepseek model not set for chat stream")),
+            LLMClient::DeepseekClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::deepseek).await
             },
         }
     }
@@ -274,7 +194,7 @@ impl LLMClient {
                 let result = ListModelsRequestExecutor::openai(client).execute().await?;
                 Ok(result)
             }
-            LLMClient::AzureClient(_) => {
+            LLMClient::AzureClient(_, _) => {
                 // Azure doesn't support model list
                 Err("List models API is not supported by Azure".to_string())
             }

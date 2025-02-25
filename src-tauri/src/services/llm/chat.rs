@@ -118,6 +118,7 @@ impl<'c> ChatRequestExecutor<'c> {
         messages: Vec<MessageDTO>,
         options: GenericOptions,
         global_settings: GlobalSettings,
+        _model: String,
     ) -> Result<ChatRequestExecutor, String> {
         let request: OpenAIChatCompletionRequest;
         // set messages
