@@ -29,7 +29,7 @@ use super::{
                 OllamaMessage,
             },
             config::OllamaConfig,
-        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream, OpenAIChatCompletionStreamOptions}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}
+        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream, OpenAIChatCompletionStreamOptions}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}, types::ChatCompletionRequestCommon
     },
     utils::{message_to_openai_request_message, sum_option},
 };
@@ -221,15 +221,17 @@ impl<'c> ChatRequestExecutor<'c> {
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
         let request = OpenrouterChatCompletionRequest {
-            model: model.to_string(),
+            common: ChatCompletionRequestCommon {
+                model: model.to_string(),
+                stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+            },
             messages: req_messages,
-            frequency_penalty: options.frequency_penalty,
-            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            presence_penalty: options.presence_penalty,
-            stream: options.stream,
-            temperature: options.temperature,
-            top_p: options.top_p,
             include_reasoning: Some(true),
+            frequency_penalty: options.frequency_penalty,
+            presence_penalty: options.presence_penalty,
             ..Default::default()
         };
         Ok(ChatRequestExecutor::OpenrouterChatRequestExecutor(client, request))
