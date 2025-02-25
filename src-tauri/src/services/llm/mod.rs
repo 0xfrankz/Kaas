@@ -1,5 +1,6 @@
 pub mod chat;
 pub mod models;
 mod providers;
-pub mod utils;
-pub mod webservices;
+mod utils;
+pub mod client;
+pub mod types;

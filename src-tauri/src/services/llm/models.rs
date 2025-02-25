@@ -10,33 +10,33 @@ pub struct RemoteModel {
     id: String,
 }
 
-pub enum ListModelsRequest<'c> {
-    OpenAIListModelsRequest(&'c Client<OpenAIConfig>),
-    OllamaListModelsRequest(&'c Client<OllamaConfig>),
-    OpenrouterListModelsRequest(&'c Client<OpenAIConfig>),
-    DeepseekListModelsRequest(&'c Client<DeepseekConfig>),
+pub enum ListModelsRequestExecutor<'c> {
+    OpenAIListModelsRequestExecutor(&'c Client<OpenAIConfig>),
+    OllamaListModelsRequestExecutor(&'c Client<OllamaConfig>),
+    OpenrouterListModelsRequestExecutor(&'c Client<OpenAIConfig>),
+    DeepseekListModelsRequestExecutor(&'c Client<DeepseekConfig>),
 }
 
-impl<'c> ListModelsRequest<'c> {
+impl<'c> ListModelsRequestExecutor<'c> {
     pub fn openai(client: &'c Client<OpenAIConfig>) -> Self {
-        return ListModelsRequest::OpenAIListModelsRequest(client);
+        return ListModelsRequestExecutor::OpenAIListModelsRequestExecutor(client);
     }
 
     pub fn ollama(client: &'c Client<OllamaConfig>) -> Self {
-        return ListModelsRequest::OllamaListModelsRequest(client);
+        return ListModelsRequestExecutor::OllamaListModelsRequestExecutor(client);
     }
 
     pub fn openrouter(client: &'c Client<OpenAIConfig>) -> Self {
-        return ListModelsRequest::OpenrouterListModelsRequest(client);
+        return ListModelsRequestExecutor::OpenrouterListModelsRequestExecutor(client);
     }
 
     pub fn deepseek(client: &'c Client<DeepseekConfig>) -> Self {
-        return ListModelsRequest::DeepseekListModelsRequest(client);
+        return ListModelsRequestExecutor::DeepseekListModelsRequestExecutor(client);
     }
 
     pub async fn execute(&self) -> Result<Vec<RemoteModel>, String> {
         match self {
-            ListModelsRequest::OpenAIListModelsRequest(client) => {
+            ListModelsRequestExecutor::OpenAIListModelsRequestExecutor(client) => {
                 let result = client
                     .models()
                     .list()
@@ -51,7 +51,7 @@ impl<'c> ListModelsRequest<'c> {
                     .collect();
                 Ok(result)
             }
-            ListModelsRequest::OllamaListModelsRequest(client) => {
+            ListModelsRequestExecutor::OllamaListModelsRequestExecutor(client) => {
                 let response = OllamaModels::new(client).list().await.map_err(|err| {
                     log::error!("ListModelsRequest::OllamaListModelsRequest: {}", err);
                     String::from("Failed to list models")
@@ -63,7 +63,7 @@ impl<'c> ListModelsRequest<'c> {
                     .collect();
                 Ok(result)
             }
-            ListModelsRequest::OpenrouterListModelsRequest(client) => {
+            ListModelsRequestExecutor::OpenrouterListModelsRequestExecutor(client) => {
                 let response = OpenrouterModels::new(client).list().await.map_err(|err| {
                     log::error!("ListModelsRequest::OpenrouterListModelsRequest: {}", err);
                     String::from("Failed to list models")
@@ -75,7 +75,7 @@ impl<'c> ListModelsRequest<'c> {
                     .collect();
                 Ok(result)
             }
-            ListModelsRequest::DeepseekListModelsRequest(client) => {
+            ListModelsRequestExecutor::DeepseekListModelsRequestExecutor(client) => {
                 let response = DeepseekModels::new(client).list().await.map_err(|err| {
                     log::error!("ListModelsRequest::DeepseekListModelsRequest: {}", err);
                     String::from("Failed to list models")

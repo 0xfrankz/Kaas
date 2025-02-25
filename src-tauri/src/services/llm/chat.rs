@@ -61,23 +61,23 @@ pub struct GlobalSettings {
     pub max_tokens: u32,
 }
 
-pub enum ChatRequest<'c> {
-    OpenAIChatRequest(&'c Client<OpenAIConfig>, OpenAIChatCompletionRequest),
-    AzureChatRequest(&'c Client<AzureConfig>, OpenAIChatCompletionRequest),
-    ClaudeChatRequest(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
-    OllamaChatRequest(&'c Client<OllamaConfig>, OllamaChatCompletionRequest),
-    OpenrouterChatRequest(&'c Client<OpenAIConfig>, OpenrouterChatCompletionRequest),
-    DeepseekChatRequest(&'c Client<DeepseekConfig>, DeepseekChatCompletionRequest),
+pub enum ChatRequestExecutor<'c> {
+    OpenAIChatRequestExecutor(&'c Client<OpenAIConfig>, OpenAIChatCompletionRequest),
+    AzureChatRequestExecutor(&'c Client<AzureConfig>, OpenAIChatCompletionRequest),
+    ClaudeChatRequestExecutor(&'c Client<ClaudeConfig>, ClaudeChatCompletionRequest),
+    OllamaChatRequestExecutor(&'c Client<OllamaConfig>, OllamaChatCompletionRequest),
+    OpenrouterChatRequestExecutor(&'c Client<OpenAIConfig>, OpenrouterChatCompletionRequest),
+    DeepseekChatRequestExecutor(&'c Client<DeepseekConfig>, DeepseekChatCompletionRequest),
 }
 
-impl<'c> ChatRequest<'c> {
+impl<'c> ChatRequestExecutor<'c> {
     pub fn openai(
         client: &'c Client<OpenAIConfig>,
         messages: Vec<MessageDTO>,
         options: GenericOptions,
         global_settings: GlobalSettings,
         model: String,
-    ) -> Result<ChatRequest, String> {
+    ) -> Result<ChatRequestExecutor, String> {
         let request: OpenAIChatCompletionRequest;
         // set messages
         let req_messages = messages
@@ -110,7 +110,7 @@ impl<'c> ChatRequest<'c> {
             user: options.user,
             ..Default::default()
         };
-        Ok(ChatRequest::OpenAIChatRequest(client, request))
+        Ok(ChatRequestExecutor::OpenAIChatRequestExecutor(client, request))
     }
 
     pub fn azure(
@@ -118,7 +118,7 @@ impl<'c> ChatRequest<'c> {
         messages: Vec<MessageDTO>,
         options: GenericOptions,
         global_settings: GlobalSettings,
-    ) -> Result<ChatRequest, String> {
+    ) -> Result<ChatRequestExecutor, String> {
         let request: OpenAIChatCompletionRequest;
         // set messages
         let req_messages = messages
@@ -141,7 +141,7 @@ impl<'c> ChatRequest<'c> {
             user: options.user,
             ..Default::default()
         };
-        Ok(ChatRequest::AzureChatRequest(client, request))
+        Ok(ChatRequestExecutor::AzureChatRequestExecutor(client, request))
     }
 
     pub fn claude(
@@ -150,7 +150,7 @@ impl<'c> ChatRequest<'c> {
         options: GenericOptions,
         global_settings: GlobalSettings,
         model: String,
-    ) -> Result<ChatRequest, String> {
+    ) -> Result<ChatRequestExecutor, String> {
         let request: ClaudeChatCompletionRequest;
         // set messages
         let req_messages: Vec<ClaudeMessage> = messages
@@ -171,7 +171,7 @@ impl<'c> ChatRequest<'c> {
             metadata: options.user.map(|user| ClaudeMetadata { user_id: user }),
             ..Default::default()
         };
-        Ok(ChatRequest::ClaudeChatRequest(client, request))
+        Ok(ChatRequestExecutor::ClaudeChatRequestExecutor(client, request))
     }
 
     pub fn ollama(
@@ -180,7 +180,7 @@ impl<'c> ChatRequest<'c> {
         options: GenericOptions,
         _global_settings: GlobalSettings,
         model: String,
-    ) -> Result<ChatRequest, String> {
+    ) -> Result<ChatRequestExecutor, String> {
         let request: OllamaChatCompletionRequest;
         // set messages
         let req_messages: Vec<OllamaMessage> = messages
@@ -200,7 +200,7 @@ impl<'c> ChatRequest<'c> {
             stream: Some(stream),
             ..Default::default()
         };
-        Ok(ChatRequest::OllamaChatRequest(client, request))
+        Ok(ChatRequestExecutor::OllamaChatRequestExecutor(client, request))
     }
 
     pub fn openrouter(
@@ -209,7 +209,7 @@ impl<'c> ChatRequest<'c> {
         options: GenericOptions,
         global_settings: GlobalSettings,
         model: String,
-    ) -> Result<ChatRequest, String> {
+    ) -> Result<ChatRequestExecutor, String> {
         // set messages
         let req_messages: Vec<ChatCompletionRequestMessage> = messages
             .into_iter()
@@ -231,7 +231,7 @@ impl<'c> ChatRequest<'c> {
             include_reasoning: Some(true),
             ..Default::default()
         };
-        Ok(ChatRequest::OpenrouterChatRequest(client, request))
+        Ok(ChatRequestExecutor::OpenrouterChatRequestExecutor(client, request))
     }
 
     pub fn deepseek(
@@ -240,7 +240,7 @@ impl<'c> ChatRequest<'c> {
         options: GenericOptions,
         global_settings: GlobalSettings,
         model: String,
-    ) -> Result<ChatRequest, String> {
+    ) -> Result<ChatRequestExecutor, String> {
         let request: DeepseekChatCompletionRequest;
         // set messages
         let req_messages = messages
@@ -270,7 +270,7 @@ impl<'c> ChatRequest<'c> {
             top_p: options.top_p,
             ..Default::default()
         };
-        Ok(ChatRequest::DeepseekChatRequest(client, request))
+        Ok(ChatRequestExecutor::DeepseekChatRequestExecutor(client, request))
     }
 
     async fn execute_openai_compatible_request<C: Config>(
@@ -370,17 +370,17 @@ impl<'c> ChatRequest<'c> {
     pub async fn execute(&self) -> Result<BotReply, String> {
         let log_tag = "ChatRequest::execute";
         match self {
-            ChatRequest::OpenAIChatRequest(client, request) => {
+            ChatRequestExecutor::OpenAIChatRequestExecutor(client, request) => {
                 return self
                     .execute_openai_compatible_request(client, request.clone())
                     .await;
             }
-            ChatRequest::AzureChatRequest(client, request) => {
+            ChatRequestExecutor::AzureChatRequestExecutor(client, request) => {
                 return self
                     .execute_openai_compatible_request(client, request.clone())
                     .await;
             }
-            ChatRequest::ClaudeChatRequest(client, request) => {
+            ChatRequestExecutor::ClaudeChatRequestExecutor(client, request) => {
                 let response = ClaudeChat::new(client)
                     .create(request.clone())
                     .await
@@ -410,7 +410,7 @@ impl<'c> ChatRequest<'c> {
                     total_token: sum_option(usage.input_tokens, usage.output_tokens),
                 })
             }
-            ChatRequest::OllamaChatRequest(client, request) => {
+            ChatRequestExecutor::OllamaChatRequestExecutor(client, request) => {
                 let response = OllamaChat::new(client)
                     .create(request.clone())
                     .await
@@ -444,7 +444,7 @@ impl<'c> ChatRequest<'c> {
                     total_token: sum_option(response.prompt_eval_count, response.eval_count),
                 })
             }
-            ChatRequest::OpenrouterChatRequest(client, request) => {
+            ChatRequestExecutor::OpenrouterChatRequestExecutor(client, request) => {
                 let response = OpenrouterChat::new(client)
                     .create(request.clone())
                     .await
@@ -475,7 +475,7 @@ impl<'c> ChatRequest<'c> {
 
                 Ok(reply)
             }
-            ChatRequest::DeepseekChatRequest(client, request) => {
+            ChatRequestExecutor::DeepseekChatRequestExecutor(client, request) => {
                 let response = DeepseekChat::new(client)
                     .create(request.clone())
                     .await
@@ -523,17 +523,17 @@ impl<'c> ChatRequest<'c> {
     pub async fn execute_stream(&self) -> Result<BotReplyStream, String> {
         let log_tag = "ChatRequest::execute_stream";
         match self {
-            ChatRequest::OpenAIChatRequest(client, request) => {
+            ChatRequestExecutor::OpenAIChatRequestExecutor(client, request) => {
                 return self
                     .execute_openai_compatible_stream_request(client, request.clone())
                     .await;
             }
-            ChatRequest::AzureChatRequest(client, request) => {
+            ChatRequestExecutor::AzureChatRequestExecutor(client, request) => {
                 return self
                     .execute_openai_compatible_stream_request(client, request.clone())
                     .await;
             }
-            ChatRequest::ClaudeChatRequest(client, request) => {
+            ChatRequestExecutor::ClaudeChatRequestExecutor(client, request) => {
                 let stream: ClaudeChatCompletionResponseStream = ClaudeChat::new(client)
                     .create_stream(request.clone())
                     .await
@@ -564,7 +564,7 @@ impl<'c> ChatRequest<'c> {
                 });
                 Ok(Box::pin(result))
             }
-            ChatRequest::OllamaChatRequest(client, request) => {
+            ChatRequestExecutor::OllamaChatRequestExecutor(client, request) => {
                 let stream: OllamaChatCompletionResponseStream = OllamaChat::new(client)
                     .create_stream(request.clone())
                     .await
@@ -618,7 +618,7 @@ impl<'c> ChatRequest<'c> {
                 });
                 Ok(Box::pin(result))
             }
-            ChatRequest::OpenrouterChatRequest(client, request) => {
+            ChatRequestExecutor::OpenrouterChatRequestExecutor(client, request) => {
                 let stream: OpenrouterChatCompletionResponseStream = OpenrouterChat::new(&client)
                     .create_stream(request.clone())
                     .await
@@ -651,7 +651,7 @@ impl<'c> ChatRequest<'c> {
                 });
                 Ok(Box::pin(result))
             }
-            ChatRequest::DeepseekChatRequest(client, request) => {
+            ChatRequestExecutor::DeepseekChatRequestExecutor(client, request) => {
                 let stream: DeepseekChatCompletionResponseStream = DeepseekChat::new(client)
                     .create_stream(request.clone())
                     .await

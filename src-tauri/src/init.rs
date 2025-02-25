@@ -3,7 +3,7 @@ use std::fs;
 use crate::core::handle::Handle;
 use crate::services::db::Builder as RepoBuilder;
 use crate::services::db::Repository;
-use crate::services::llm::utils::convert_locale_region_to_script;
+use crate::utils::convert_locale_region_to_script;
 use entity::entities::settings::Model as Setting;
 use entity::entities::settings::SETTING_DISPLAY_LANGUAGE;
 use tauri::{App, Manager};

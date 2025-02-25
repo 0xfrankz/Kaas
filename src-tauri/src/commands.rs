@@ -24,13 +24,13 @@ use tokio_stream::StreamExt;
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
     log_utils::{error, info, trace},
+    utils::is_stream_enabled,
     services::{
         db::Repository,
         llm::{
             chat::{BotReply, GlobalSettings},
             models::RemoteModel,
-            utils,
-            webservices::LLMClient,
+            client::LLMClient,
         },
     },
 };
@@ -450,7 +450,7 @@ pub async fn call_bot(
     }
     log::info!("bot calling context: {:?}", context);
     // delegate to one-off or stream function to send request
-    let is_stream_enabled = utils::is_stream_enabled(&options);
+    let is_stream_enabled = is_stream_enabled(&options);
     if is_stream_enabled {
         // stream response
         call_bot_stream(

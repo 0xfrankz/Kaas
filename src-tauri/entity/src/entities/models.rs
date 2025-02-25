@@ -2,6 +2,7 @@
 use sea_orm::{entity::prelude::*, FromQueryResult};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug)]
 pub enum Providers {
     Azure,
     OpenAI,

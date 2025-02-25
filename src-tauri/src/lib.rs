@@ -5,6 +5,7 @@ mod commands;
 mod core;
 mod errors;
 mod init;
+mod utils;
 mod log_utils;
 mod services;
 

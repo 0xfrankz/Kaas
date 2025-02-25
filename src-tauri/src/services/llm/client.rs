@@ -9,114 +9,16 @@ use entity::entities::{
     settings::ProxySetting,
 };
 use reqwest;
-use serde::Deserialize;
 
 use super::{
-    chat::{BotReply, BotReplyStream, ChatRequest, GlobalSettings},
-    models::{ListModelsRequest, RemoteModel},
+    types::{RawAzureConfig, RawOpenAIConfig, RawClaudeConfig, RawOllamaConfig, RawDeepseekConfig},
+    chat::{BotReply, BotReplyStream, ChatRequestExecutor, GlobalSettings},
+    models::{ListModelsRequestExecutor, RemoteModel},
     providers::{
         claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE
     },
     utils::build_http_client,
 };
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RawAzureConfig {
-    api_key: String,
-    endpoint: String,
-    api_version: String,
-    deployment_id: String,
-}
-
-impl Into<AzureConfig> for RawAzureConfig {
-    fn into(self) -> AzureConfig {
-        AzureConfig::new()
-            .with_api_base(self.endpoint)
-            .with_api_version(self.api_version)
-            .with_deployment_id(self.deployment_id)
-            .with_api_key(self.api_key)
-    }
-}
-
-/// OpenAI config
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RawOpenAIConfig {
-    api_key: String,
-    model: Option<String>,
-    endpoint: Option<String>,
-    org_id: Option<String>,
-}
-
-impl Into<OpenAIConfig> for RawOpenAIConfig {
-    fn into(self) -> OpenAIConfig {
-        let mut config = OpenAIConfig::new().with_api_key(self.api_key);
-        if let Some(endpoint) = self.endpoint {
-            config = config.with_api_base(endpoint);
-        }
-        if let Some(org_id) = self.org_id {
-            config = config.with_org_id(org_id);
-        }
-
-        config
-    }
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RawClaudeConfig {
-    api_key: String,
-    model: String,
-    api_version: String,
-    endpoint: Option<String>,
-}
-
-impl Into<ClaudeConfig> for RawClaudeConfig {
-    fn into(self) -> ClaudeConfig {
-        let mut config = ClaudeConfig::new()
-            .with_api_key(self.api_key)
-            .with_api_version(self.api_version);
-        if let Some(endpoint) = self.endpoint {
-            config = config.with_api_base(endpoint);
-        }
-
-        config
-    }
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RawOllamaConfig {
-    endpoint: String,
-    model: Option<String>,
-}
-
-impl Into<OllamaConfig> for RawOllamaConfig {
-    fn into(self) -> OllamaConfig {
-        OllamaConfig::new().with_api_base(self.endpoint)
-    }
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RawDeepseekConfig {
-    api_key: String,
-    model: Option<String>,
-    endpoint: Option<String>,
-}
-
-impl Into<DeepseekConfig> for RawDeepseekConfig {
-    fn into(self) -> DeepseekConfig {
-        let mut config = DeepseekConfig::new()
-            .with_api_key(self.api_key);
-        if let Some(endpoint) = self.endpoint {
-            config = config.with_api_base(endpoint);
-        }
-
-        config
-    }
-}
 
 /// Wrapper of async-openai's Client struct
 #[derive(Debug, Clone)]
@@ -193,7 +95,7 @@ impl LLMClient {
         match self {
             LLMClient::OpenAIClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let reply = ChatRequest::openai(
+                    let reply = ChatRequestExecutor::openai(
                         client,
                         messages,
                         options,
@@ -207,14 +109,14 @@ impl LLMClient {
                 None => Err(format!("OpenAI model not set")),
             },
             LLMClient::AzureClient(client) => {
-                let reply = ChatRequest::azure(client, messages, options, global_settings)?
+                let reply = ChatRequestExecutor::azure(client, messages, options, global_settings)?
                     .execute()
                     .await?;
                 return Ok(reply);
             }
             LLMClient::ClaudeClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let reply = ChatRequest::claude(
+                    let reply = ChatRequestExecutor::claude(
                         client,
                         messages,
                         options,
@@ -229,7 +131,7 @@ impl LLMClient {
             },
             LLMClient::OllamaClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let reply = ChatRequest::ollama(
+                    let reply = ChatRequestExecutor::ollama(
                         client,
                         messages,
                         options,
@@ -244,7 +146,7 @@ impl LLMClient {
             },
             LLMClient::OpenrouterClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let reply = ChatRequest::openrouter(
+                    let reply = ChatRequestExecutor::openrouter(
                         client,
                         messages,
                         options,
@@ -259,7 +161,7 @@ impl LLMClient {
             },
             LLMClient::DeepseekClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let reply = ChatRequest::deepseek(
+                    let reply = ChatRequestExecutor::deepseek(
                         client,
                         messages,
                         options,
@@ -284,7 +186,7 @@ impl LLMClient {
         match self {
             LLMClient::OpenAIClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let stream = ChatRequest::openai(
+                    let stream = ChatRequestExecutor::openai(
                         client,
                         messages,
                         options,
@@ -298,14 +200,14 @@ impl LLMClient {
                 None => Err(format!("OpenAI model not set for chat stream")),
             },
             LLMClient::AzureClient(client) => {
-                let stream = ChatRequest::azure(client, messages, options, global_settings)?
+                let stream = ChatRequestExecutor::azure(client, messages, options, global_settings)?
                     .execute_stream()
                     .await?;
                 return Ok(stream);
             }
             LLMClient::ClaudeClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let stream = ChatRequest::claude(
+                    let stream = ChatRequestExecutor::claude(
                         client,
                         messages,
                         options,
@@ -320,7 +222,7 @@ impl LLMClient {
             },
             LLMClient::OllamaClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let stream = ChatRequest::ollama(
+                    let stream = ChatRequestExecutor::ollama(
                         client,
                         messages,
                         options,
@@ -335,7 +237,7 @@ impl LLMClient {
             },
             LLMClient::OpenrouterClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let stream = ChatRequest::openrouter(
+                    let stream = ChatRequestExecutor::openrouter(
                         client,
                         messages,
                         options,
@@ -350,7 +252,7 @@ impl LLMClient {
             },
             LLMClient::DeepseekClient(client, model) => match model.as_ref() {
                 Some(model_str) => {
-                    let stream = ChatRequest::deepseek(
+                    let stream = ChatRequestExecutor::deepseek(
                         client,
                         messages,
                         options,
@@ -369,7 +271,7 @@ impl LLMClient {
     pub async fn models(&self) -> Result<Vec<RemoteModel>, String> {
         match self {
             LLMClient::OpenAIClient(client, _) => {
-                let result = ListModelsRequest::openai(client).execute().await?;
+                let result = ListModelsRequestExecutor::openai(client).execute().await?;
                 Ok(result)
             }
             LLMClient::AzureClient(_) => {
@@ -381,15 +283,15 @@ impl LLMClient {
                 Err("List models API is not supported by Azure".to_string())
             }
             LLMClient::OllamaClient(client, _) => {
-                let result = ListModelsRequest::ollama(client).execute().await?;
+                let result = ListModelsRequestExecutor::ollama(client).execute().await?;
                 Ok(result)
             }
             LLMClient::OpenrouterClient(client, _) => {
-                let result = ListModelsRequest::openrouter(client).execute().await?;
+                let result = ListModelsRequestExecutor::openrouter(client).execute().await?;
                 Ok(result)
             }
             LLMClient::DeepseekClient(client, _) => {
-                let result = ListModelsRequest::deepseek(client).execute().await?;
+                let result = ListModelsRequestExecutor::deepseek(client).execute().await?;
                 Ok(result)
             }
         }
