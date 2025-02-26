@@ -29,7 +29,7 @@ use super::{
                 OllamaMessage,
             },
             config::OllamaConfig,
-        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream, OpenAIChatCompletionStreamOptions}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}, types::ChatCompletionRequestCommon
+        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}, types::{ChatCompletionRequestCommon, ChatCompletionStreamOptions}
     },
     utils::{message_to_openai_request_message, sum_option},
 };
@@ -89,24 +89,26 @@ impl<'c> ChatRequestExecutor<'c> {
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
         request = OpenAIChatCompletionRequest {
-            model: model.to_string(),
+            common: ChatCompletionRequestCommon {
+                model: model.to_string(),
+                frequency_penalty: options.frequency_penalty,
+                max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+                presence_penalty: options.presence_penalty,
+                stream: options.stream,
+                stream_options: if options.stream.unwrap_or(false) {
+                    // default to return usage when streaming
+                    Some(ChatCompletionStreamOptions {
+                        include_usage: true
+                    })
+                } else {
+                    None
+                },
+                temperature: options.temperature,
+                top_p: options.top_p,
+                ..Default::default()
+            },
             reasoning_effort: options.reasoning_effort.map(|x| x.into()),
             messages: req_messages,
-            frequency_penalty: options.frequency_penalty,
-            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            // n: options.n,
-            presence_penalty: options.presence_penalty,
-            stream: options.stream,
-            stream_options: if options.stream.unwrap_or(false) {
-                // default to return usage when streaming
-                Some(OpenAIChatCompletionStreamOptions {
-                    include_usage: true
-                })
-            } else {
-                None
-            },
-            temperature: options.temperature,
-            top_p: options.top_p,
             user: options.user,
             ..Default::default()
         };
@@ -131,14 +133,16 @@ impl<'c> ChatRequestExecutor<'c> {
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
         request = OpenAIChatCompletionRequest {
+            common: ChatCompletionRequestCommon {
+                frequency_penalty: options.frequency_penalty,
+                max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+                presence_penalty: options.presence_penalty,
+                stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                ..Default::default()
+            },
             messages: req_messages,
-            frequency_penalty: options.frequency_penalty,
-            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            // n: options.n,
-            presence_penalty: options.presence_penalty,
-            stream: options.stream,
-            temperature: options.temperature,
-            top_p: options.top_p,
             user: options.user,
             ..Default::default()
         };
@@ -163,12 +167,15 @@ impl<'c> ChatRequestExecutor<'c> {
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
         request = ClaudeChatCompletionRequest {
-            model: model.to_string(),
+            common: ChatCompletionRequestCommon {
+                model: model.to_string(),
+                max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)), // Claude requires max_tokens
+                stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                ..Default::default()
+            },
             messages: req_messages,
-            max_tokens: options.max_tokens.unwrap_or(global_settings.max_tokens),
-            stream: options.stream,
-            temperature: options.temperature,
-            top_p: options.top_p,
             metadata: options.user.map(|user| ClaudeMetadata { user_id: user }),
             ..Default::default()
         };
@@ -195,10 +202,13 @@ impl<'c> ChatRequestExecutor<'c> {
         // Stream must be set to false explictly for Ollama, or it will treat the request as a Stream request
         let stream = options.stream.clone().unwrap_or(false);
         request = OllamaChatCompletionRequest {
-            model: model.to_string(),
+            common: ChatCompletionRequestCommon {
+                model: model.to_string(),
+                stream: Some(stream),
+                ..Default::default()
+            },
             messages: req_messages,
             options: Some(options.into()),
-            stream: Some(stream),
             ..Default::default()
         };
         Ok(ChatRequestExecutor::OllamaChatRequestExecutor(client, request))
@@ -227,11 +237,12 @@ impl<'c> ChatRequestExecutor<'c> {
                 temperature: options.temperature,
                 top_p: options.top_p,
                 max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+                frequency_penalty: options.frequency_penalty,
+                presence_penalty: options.presence_penalty,
+                ..Default::default()
             },
             messages: req_messages,
             include_reasoning: Some(true),
-            frequency_penalty: options.frequency_penalty,
-            presence_penalty: options.presence_penalty,
             ..Default::default()
         };
         Ok(ChatRequestExecutor::OpenrouterChatRequestExecutor(client, request))
@@ -255,23 +266,25 @@ impl<'c> ChatRequestExecutor<'c> {
             .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
         // build request
         request = DeepseekChatCompletionRequest {
-            messages: req_messages,
-            model: model.to_string(),
-            frequency_penalty: options.frequency_penalty,
-            max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
-            presence_penalty: options.presence_penalty,
-            stream: options.stream,
-            stream_options: if options.stream.unwrap_or(false) {
-                // default to return usage when streaming
-                Some(OpenAIChatCompletionStreamOptions {
-                    include_usage: true
-                })
-            } else {
-                None
+            common: ChatCompletionRequestCommon {
+                model: model.to_string(),
+                stream: options.stream,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                max_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
+                frequency_penalty: options.frequency_penalty,
+                presence_penalty: options.presence_penalty,
+                stream_options: if options.stream.unwrap_or(false) {
+                    // default to return usage when streaming
+                    Some(ChatCompletionStreamOptions {
+                        include_usage: true
+                    })
+                } else {
+                    None
+                },
+                ..Default::default()
             },
-            temperature: options.temperature,
-            top_p: options.top_p,
-            ..Default::default()
+            messages: req_messages,
         };
         Ok(ChatRequestExecutor::DeepseekChatRequestExecutor(client, request))
     }
@@ -299,7 +312,7 @@ impl<'c> ChatRequestExecutor<'c> {
             .as_ref()
             .ok_or("Api returned empty message".to_string())?
             .to_string();
-        let usage = response.usage;
+        let usage = response.common.usage;
         let reply = BotReply {
             message,
             reasoning: None, // OpenAI doesn't return reasoning text yet
@@ -343,7 +356,7 @@ impl<'c> ChatRequestExecutor<'c> {
                             .unwrap_or(String::default())
                     })
                     .unwrap_or(String::default());
-                let usage = resp.usage;
+                let usage = resp.common.usage;
                 BotReply {
                     message,
                     reasoning: None, // OpenAI doesn't return reasoning text yet
@@ -466,7 +479,7 @@ impl<'c> ChatRequestExecutor<'c> {
                     .as_ref()
                     .ok_or("Api returned empty message".to_string())?
                     .to_string();
-                let usage = response.usage;
+                let usage = response.common.usage;
                 let reply = BotReply {
                     message,
                     reasoning: choice.message.reasoning.clone(),
@@ -496,9 +509,9 @@ impl<'c> ChatRequestExecutor<'c> {
                     .to_string();
                 let reasoning = choice
                     .message
-                    .reasoning_content
+                    .reasoning
                     .clone();
-                let usage = response.usage;
+                let usage = response.common.usage;
                 let reply = BotReply {
                     message,
                     reasoning,
@@ -631,7 +644,7 @@ impl<'c> ChatRequestExecutor<'c> {
                         let first_choice =
                             resp.choices.first()
                             .map_or(BotReply::default(), |choice| {
-                                let usage = resp.usage.clone();
+                                let usage = resp.common.usage.clone();
                                 let delta = choice.delta.clone();
                                 BotReply {
                                     message: delta.content
@@ -669,9 +682,9 @@ impl<'c> ChatRequestExecutor<'c> {
                             .unwrap_or(String::default());
                         let reasoning = choice
                             .delta
-                            .reasoning_content
+                            .reasoning
                             .clone();
-                        let usage = resp.usage;
+                        let usage = resp.common.usage;
                         BotReply {
                             message,
                             reasoning,

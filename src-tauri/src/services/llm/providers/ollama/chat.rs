@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tokio_stream::{Stream, StreamExt};
 
 use super::config::OllamaConfig;
-use crate::services::cache;
+use crate::services::{cache, llm::providers::types::{ChatCompletionRequestCommon, ChatCompletionResponseCommon}};
 
 const OLLAMA_CHAT_PATH: &str = "/api/chat";
 
@@ -61,9 +61,9 @@ impl Into<OllamaChatCompletionRequestOptions> for OllamaOptions {
 
 #[derive(Clone, Serialize, Default, Debug, Deserialize, PartialEq)]
 pub struct OllamaChatCompletionRequest {
-    /// ID of the model to use.
-    /// Required.
-    pub model: String,
+    /// Common fields shared across different LLM providers
+    #[serde(flatten)]
+    pub common: ChatCompletionRequestCommon,
 
     /// A list of messages comprising the conversation so far.
     /// Required.
@@ -74,10 +74,6 @@ pub struct OllamaChatCompletionRequest {
     /// Visit [Modelfile](https://github.com/ollama/ollama/blob/main/docs/modelfile.md#parameter) page for details
     pub options: Option<OllamaChatCompletionRequestOptions>,
 
-    /// If false the response will be returned as a single response object, rather than a stream of objects
-    /// Defaults to true
-    pub stream: Option<bool>,
-
     ///  Controls how long the model will stay loaded into memory following the request (default: 5m)
     /// Optional
     pub keep_alive: Option<String>,
@@ -85,8 +81,8 @@ pub struct OllamaChatCompletionRequest {
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
 pub struct OllamaChatCompletionResponse {
-    pub model: String,
-    pub created_at: String,
+    #[serde(flatten)]
+    pub common: ChatCompletionResponseCommon,
     pub message: Option<OllamaMessage>,
     pub done: bool,
     // fields below will only appear when stream is false
@@ -117,7 +113,7 @@ impl<'c> OllamaChat<'c> {
         &self,
         request: OllamaChatCompletionRequest,
     ) -> Result<OllamaChatCompletionResponse, OpenAIError> {
-        if request.stream.is_some() && request.stream.unwrap() {
+        if request.common.stream.is_some() && request.common.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(
                 "When stream is true, use OllamaChat::create_stream".into(),
             ));
@@ -129,13 +125,13 @@ impl<'c> OllamaChat<'c> {
         &self,
         mut request: OllamaChatCompletionRequest,
     ) -> Result<OllamaChatCompletionResponseStream, OpenAIError> {
-        if request.stream.is_some() && !request.stream.unwrap() {
+        if request.common.stream.is_some() && !request.common.stream.unwrap() {
             return Err(OpenAIError::InvalidArgument(
                 "When stream is false, use Chat::create".into(),
             ));
         }
 
-        request.stream = Some(true);
+        request.common.stream = Some(true);
 
         log::info!("Creating stream: request = {:?}", request);
 
