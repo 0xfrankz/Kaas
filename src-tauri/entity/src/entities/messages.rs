@@ -211,7 +211,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Invalid role")]
     fn test_invalid_role_conversion() {
-        Roles::from(99);
+        let _ = Roles::from(99);
     }
 
     #[test]

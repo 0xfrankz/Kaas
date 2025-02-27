@@ -5,16 +5,14 @@ use derive_builder::Builder;
 use async_openai::{
     config::OpenAIConfig,
     error::OpenAIError,
-    types::{
-        ChatChoiceLogprobs, ChatCompletionRequestMessage
-    },
+    types::ChatCompletionRequestMessage,
     Client,
 };
 use serde::{Deserialize, Serialize};
 use tokio_stream::Stream;
 
 use crate::services::llm::providers::types::{
-    ChatCompletionRequestCommon, ChatCompletionResponseCommon, Role, FinishReason, ChatChoice, ChatChoiceStream
+    ChatCompletionRequestCommon, ChatCompletionResponseCommon, ChatChoice, ChatChoiceStream
 };
 
 const OPENROUTER_CHAT_PATH: &str = "/chat/completions";

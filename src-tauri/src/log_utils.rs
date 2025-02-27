@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub fn trace<S: Into<String>>(tag: &str, message: S) {
     log::trace!("[{}]: {}", tag, message.into());
 }

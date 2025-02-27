@@ -11,9 +11,7 @@ use async_openai::{
 };
 use entity::entities::{
     contents::ContentType,
-    conversations::{AzureOptions, GenericOptions, OpenAIOptions},
     messages::{MessageDTO, Roles},
-    models::Providers,
     settings::ProxySetting,
 };
 

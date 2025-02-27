@@ -1,10 +1,10 @@
 use std::pin::Pin;
 
-use async_openai::{error::OpenAIError, types::{ChatChoiceLogprobs, ChatCompletionRequestMessage}, Client};
+use async_openai::{error::OpenAIError, types::ChatCompletionRequestMessage, Client};
 use serde::{Deserialize, Serialize};
 use tokio_stream::Stream;
 
-use crate::services::llm::providers::types::{ChatCompletionRequestCommon, ChatCompletionResponseCommon, FinishReason, ChatChoice, ChatChoiceStream};
+use crate::services::llm::providers::types::{ChatCompletionRequestCommon, ChatCompletionResponseCommon, ChatChoice, ChatChoiceStream};
 
 use super::config::DeepseekConfig;
 

@@ -5,7 +5,7 @@ use entity::entities::conversations::{
     UpdateConversationDTO,
 };
 use entity::entities::messages::{
-    self, ActiveModel as ActiveMessage, MessageDTO, MessageToModel, Model as Message,
+    self, ActiveModel as ActiveMessage, MessageDTO, Model as Message,
 };
 use entity::entities::models::{self, GenericConfig, Model, NewModel, Providers};
 use entity::entities::prompts::{self, Model as Prompt, NewPrompt};
@@ -853,23 +853,6 @@ impl Repository {
                 "Failed to delete message".to_string()
             })?;
         Ok(message)
-    }
-
-    pub async fn get_model_of_message(&self, message: &Message) -> Result<Model, String> {
-        let result = message
-            .find_linked(MessageToModel)
-            .one(&self.connection)
-            .await
-            .map_err(|err| {
-                error!("{}", err);
-                format!("Failed get model of message with id = {}", message.id)
-            })?
-            .ok_or(format!(
-                "Failed to get model of message with id = {}",
-                message.id
-            ))?;
-
-        Ok(result)
     }
 
     /**
