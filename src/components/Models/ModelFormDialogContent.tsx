@@ -7,6 +7,7 @@ import {
   PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENROUTER,
+  PROVIDER_XAI,
 } from '@/lib/constants';
 import type { AllProviders, Model, NewModel } from '@/lib/types';
 
@@ -62,6 +63,9 @@ function NewModelFormDialogContent({
       break;
     case PROVIDER_DEEPSEEK:
       form = <ModelForm.Deepseek.New id="modelForm" onSubmit={onFormSubmit} />;
+      break;
+    case PROVIDER_XAI:
+      form = <ModelForm.Xai.New id="modelForm" onSubmit={onFormSubmit} />;
       break;
     default:
       form = <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
@@ -148,6 +152,15 @@ function EditModelFormDialogContent({
     case PROVIDER_CUSTOM:
       form = (
         <ModelForm.CUSTOM.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_XAI:
+      form = (
+        <ModelForm.Xai.Edit
           id="modelForm"
           model={model}
           onSubmit={onFormSubmit}

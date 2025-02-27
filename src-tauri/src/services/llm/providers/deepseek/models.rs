@@ -1,6 +1,6 @@
 use async_openai::{error::OpenAIError, Client};
 use serde::{Deserialize, Serialize};
-use crate::services::llm::providers::deepseek::config::DeepseekConfig;
+use super::config::DeepseekConfig;
 
 const DEEPSEEK_LIST_MODELS_PATH: &str = "/models";
 

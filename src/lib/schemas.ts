@@ -8,6 +8,7 @@ import {
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
+  PROVIDER_XAI,
 } from '@/lib/constants';
 
 export const newOpenAIModelFormSchema = z.object({
@@ -16,6 +17,7 @@ export const newOpenAIModelFormSchema = z.object({
     PROVIDER_OPENAI,
     PROVIDER_OPENROUTER,
     PROVIDER_DEEPSEEK,
+    PROVIDER_XAI,
     PROVIDER_CUSTOM,
   ] as const),
   apiKey: z.string().min(1, 'API Key is required'),
@@ -153,6 +155,7 @@ export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
     PROVIDER_OPENAI,
     PROVIDER_OPENROUTER,
     PROVIDER_DEEPSEEK,
+    PROVIDER_XAI,
     PROVIDER_CUSTOM,
   ] as const),
 });

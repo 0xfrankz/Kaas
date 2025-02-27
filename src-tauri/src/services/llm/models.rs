@@ -1,5 +1,5 @@
 use super::providers::{
-    deepseek::{config::DeepseekConfig, models::DeepseekModels}, ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels
+    deepseek::{config::DeepseekConfig, models::DeepseekModels}, ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels, xai::{config::XaiConfig, models::XaiModels}
 };
 use async_openai::{config::OpenAIConfig, Client};
 use serde::Serialize;
@@ -15,6 +15,7 @@ pub enum ListModelsRequestExecutor<'c> {
     OllamaListModelsRequestExecutor(&'c Client<OllamaConfig>),
     OpenrouterListModelsRequestExecutor(&'c Client<OpenAIConfig>),
     DeepseekListModelsRequestExecutor(&'c Client<DeepseekConfig>),
+    XaiListModelsRequestExecutor(&'c Client<XaiConfig>),
 }
 
 impl<'c> ListModelsRequestExecutor<'c> {
@@ -32,6 +33,10 @@ impl<'c> ListModelsRequestExecutor<'c> {
 
     pub fn deepseek(client: &'c Client<DeepseekConfig>) -> Self {
         return ListModelsRequestExecutor::DeepseekListModelsRequestExecutor(client);
+    }
+
+    pub fn xai(client: &'c Client<XaiConfig>) -> Self {
+        return ListModelsRequestExecutor::XaiListModelsRequestExecutor(client);
     }
 
     pub async fn execute(&self) -> Result<Vec<RemoteModel>, String> {
@@ -78,6 +83,18 @@ impl<'c> ListModelsRequestExecutor<'c> {
             ListModelsRequestExecutor::DeepseekListModelsRequestExecutor(client) => {
                 let response = DeepseekModels::new(client).list().await.map_err(|err| {
                     log::error!("ListModelsRequest::DeepseekListModelsRequest: {}", err);
+                    String::from("Failed to list models")
+                })?;
+                let result = response
+                    .data
+                    .iter()
+                    .map(|m| RemoteModel { id: m.id.clone() })
+                    .collect();
+                Ok(result)
+            }
+            ListModelsRequestExecutor::XaiListModelsRequestExecutor(client) => {
+                let response = XaiModels::new(client).list().await.map_err(|err| {
+                    log::error!("ListModelsRequest::XaiListModelsRequest: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response

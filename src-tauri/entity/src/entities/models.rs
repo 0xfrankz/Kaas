@@ -10,6 +10,7 @@ pub enum Providers {
     Ollama,
     Openrouter,
     Deepseek,
+    Xai,
     CUSTOM,
     Unknown,
 }
@@ -23,6 +24,7 @@ impl From<&str> for Providers {
             "Ollama" => Providers::Ollama,
             "Openrouter" => Providers::Openrouter,
             "Deepseek" => Providers::Deepseek,
+            "Xai" => Providers::Xai,
             "CUSTOM" => Providers::CUSTOM,
             _ => Providers::Unknown,
         }
@@ -50,6 +52,7 @@ impl Into<String> for Providers {
             Providers::Ollama => "Ollama".to_owned(),
             Providers::Openrouter => "Openrouter".to_owned(),
             Providers::Deepseek => "Deepseek".to_owned(),
+            Providers::Xai => "Xai".to_owned(),
             Providers::CUSTOM => "CUSTOM".to_owned(),
             _ => "Unknown".to_owned(),
         }

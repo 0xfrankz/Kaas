@@ -8,6 +8,7 @@ import type {
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
+  PROVIDER_XAI,
   SUPPORTED_PROVIDERS,
 } from './constants';
 import type {
@@ -72,7 +73,8 @@ export type RawOpenAIConfig = {
     | typeof PROVIDER_OPENAI
     | typeof PROVIDER_OPENROUTER
     | typeof PROVIDER_CUSTOM
-    | typeof PROVIDER_DEEPSEEK;
+    | typeof PROVIDER_DEEPSEEK
+    | typeof PROVIDER_XAI;
   apiKey: string;
   model?: string;
   endpoint?: string;

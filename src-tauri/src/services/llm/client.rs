@@ -11,13 +11,9 @@ use entity::entities::{
 use reqwest;
 
 use super::{
-    types::{RawAzureConfig, RawOpenAIConfig, RawClaudeConfig, RawOllamaConfig, RawDeepseekConfig},
-    chat::{BotReply, BotReplyStream, ChatRequestExecutor, GlobalSettings},
-    models::{ListModelsRequestExecutor, RemoteModel},
-    providers::{
-        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE
-    },
-    utils::build_http_client,
+    chat::{BotReply, BotReplyStream, ChatRequestExecutor, GlobalSettings}, models::{ListModelsRequestExecutor, RemoteModel}, providers::{
+        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE, xai::config::XaiConfig
+    }, types::{RawAzureConfig, RawClaudeConfig, RawDeepseekConfig, RawOllamaConfig, RawOpenAIConfig, RawXaiConfig}, utils::build_http_client
 };
 
 /// Wrapper of async-openai's Client struct
@@ -29,6 +25,7 @@ pub enum LLMClient {
     OllamaClient(Client<OllamaConfig>, Option<String>),
     OpenrouterClient(Client<OpenAIConfig>, Option<String>),
     DeepseekClient(Client<DeepseekConfig>, Option<String>),
+    XaiClient(Client<XaiConfig>, Option<String>),
 }
 
 impl LLMClient {
@@ -78,6 +75,13 @@ impl LLMClient {
                 let model = raw_config.model.clone();
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
                 Ok(LLMClient::DeepseekClient(client, model))
+            }
+            Providers::Xai => {
+                let raw_config: RawXaiConfig = serde_json::from_str(&config.config)
+                    .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+                let model = raw_config.model.clone();
+                let client = Client::with_config(raw_config.into()).with_http_client(http_client);
+                Ok(LLMClient::XaiClient(client, model))
             }
             _ => Err(format!(
                 "Complete chat with {} not supported yet",
@@ -157,6 +161,9 @@ impl LLMClient {
             LLMClient::DeepseekClient(client, model) => {
                 Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::deepseek).await
             },
+            LLMClient::XaiClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::xai).await
+            },
         }
     }
 
@@ -185,6 +192,9 @@ impl LLMClient {
             LLMClient::DeepseekClient(client, model) => {
                 Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::deepseek).await
             },
+            LLMClient::XaiClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::xai).await
+            },
         }
     }
 
@@ -212,6 +222,10 @@ impl LLMClient {
             }
             LLMClient::DeepseekClient(client, _) => {
                 let result = ListModelsRequestExecutor::deepseek(client).execute().await?;
+                Ok(result)
+            }
+            LLMClient::XaiClient(client, _) => {
+                let result = ListModelsRequestExecutor::xai(client).execute().await?;
                 Ok(result)
             }
         }

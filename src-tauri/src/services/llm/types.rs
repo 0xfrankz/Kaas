@@ -2,7 +2,7 @@ use async_openai::config::{AzureConfig, OpenAIConfig};
 use serde::Deserialize;
 
 use super::providers::{
-        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig
+        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig, xai::config::XaiConfig
     };
 
 #[derive(Debug, Deserialize)]
@@ -94,6 +94,26 @@ pub struct RawDeepseekConfig {
 impl Into<DeepseekConfig> for RawDeepseekConfig {
     fn into(self) -> DeepseekConfig {
         let mut config = DeepseekConfig::new()
+            .with_api_key(self.api_key);
+        if let Some(endpoint) = self.endpoint {
+            config = config.with_api_base(endpoint);
+        }
+
+        config
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RawXaiConfig {
+    pub api_key: String,
+    pub model: Option<String>,
+    pub endpoint: Option<String>,
+}
+
+impl Into<XaiConfig> for RawXaiConfig {
+    fn into(self) -> XaiConfig {
+        let mut config = XaiConfig::new()
             .with_api_key(self.api_key);
         if let Some(endpoint) = self.endpoint {
             config = config.with_api_base(endpoint);

@@ -8,6 +8,7 @@ import {
   PROVIDER_CLAUDE,
   PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
+  PROVIDER_XAI,
 } from '@/lib/constants';
 import { AppError, ERROR_TYPE_APP_STATE } from '@/lib/error';
 import { useGetOptionsQuery, useUpdateOptionsMutation } from '@/lib/hooks';
@@ -131,6 +132,15 @@ export const ConversationOptionsDialog = forwardRef<DialogHandler<void>, Props>(
         case PROVIDER_DEEPSEEK:
           return (
             <OptionsForm.Deepseek
+              id="optionsForm"
+              ref={formRef}
+              onSubmit={onFormSubmit}
+              defaultValues={options as OpenAIOptions}
+            />
+          );
+        case PROVIDER_XAI:
+          return (
+            <OptionsForm.Xai
               id="optionsForm"
               ref={formRef}
               onSubmit={onFormSubmit}

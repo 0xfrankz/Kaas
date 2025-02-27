@@ -50,6 +50,7 @@
         "Ollama": "Ollama",
         "Openrouter": "OpenRouter",
         "Deepseek": "DeepSeek",
+        "Xai": "xAi",
         "CUSTOM": "Custom",
         "unknown": "Unknown"
     },

@@ -3,29 +3,29 @@ use reqwest::header::{HeaderMap, AUTHORIZATION};
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 
-pub const DEFAULT_DEEPSEEK_API_BASE: &str = "https://api.deepseek.com";
+pub const DEFAULT_XAI_API_BASE: &str = "https://api.x.ai";
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(default)]
-pub struct DeepseekConfig {
-    api_base: String,
-    api_key: Secret<String>,
+pub struct XaiConfig {
+    pub api_base: String,
+    pub api_key: Secret<String>,
 }
 
-impl Default for DeepseekConfig {
+impl Default for XaiConfig {
     fn default() -> Self {
         Self {
-            api_base: DEFAULT_DEEPSEEK_API_BASE.to_string(),
-            api_key: "".to_string().into()
+            api_base: DEFAULT_XAI_API_BASE.to_string(),
+            api_key: "".to_string().into(),
         }
     }
 }
 
-impl DeepseekConfig {
+impl XaiConfig {
     pub fn new() -> Self {
         Default::default()
     }
-
+    
     pub fn with_api_base<S: Into<String>>(mut self, api_base: S) -> Self {
         self.api_base = api_base.into();
         self
@@ -37,7 +37,7 @@ impl DeepseekConfig {
     }
 }
 
-impl Config for DeepseekConfig {
+impl Config for XaiConfig {
     fn headers(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(

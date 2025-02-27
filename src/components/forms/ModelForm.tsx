@@ -13,6 +13,7 @@ import {
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
+  PROVIDER_XAI,
 } from '@/lib/constants';
 import {
   editAzureModelFormSchema,
@@ -711,6 +712,35 @@ const NewDeepseekModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   }
 );
 
+const NewXaiModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewOpenAIModel>({
+      resolver: zodResolver(newOpenAIModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_XAI,
+        alias: '',
+        apiKey: '',
+        model: '',
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericOpenAIModelForm
+        form={form as UseFormReturn<NewOpenAIModel, any, undefined>}
+        onSubmit={onSubmit}
+        allowModelSelection
+        {...props}
+      />
+    );
+  }
+);
+
 const NewCustomModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   ({ onSubmit, ...props }, ref) => {
     const form = useForm<NewOpenAIModel>({
@@ -790,6 +820,10 @@ export default {
   },
   Deepseek: {
     New: NewDeepseekModelForm,
+    Edit: EditOpenAIModelForm, // use EditOpenAIModelForm for editing
+  },
+  Xai: {
+    New: NewXaiModelForm,
     Edit: EditOpenAIModelForm, // use EditOpenAIModelForm for editing
   },
   CUSTOM: {
