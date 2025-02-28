@@ -466,11 +466,17 @@ const ContentReceiver = ({
   const queryClient = useQueryClient();
 
   const renderContent = () => {
-    if (reply && (reply.reasoning?.length ?? 0) > 0 && showReasoning) {
-      return <ReasoningContent reasoning={(reply.reasoning ?? '').trim()} />;
-    }
-    if (reply && reply.message.length > 0) {
-      return <MarkdownContent content={buildTextContent(reply.message)} />;
+    if (reply && (reply.reasoning?.length ?? 0) + reply.message.length > 0) {
+      return (
+        <>
+          {(reply.reasoning?.length ?? 0) > 0 && showReasoning ? (
+            <ReasoningContent reasoning={(reply.reasoning ?? '').trim()} />
+          ) : null}
+          {reply.message.length > 0 ? (
+            <MarkdownContent content={buildTextContent(reply.message)} />
+          ) : null}
+        </>
+      );
     }
     // Show loading icon if the reply is not received and reasoning is not shown
     return <LoadingIcon className="mt-2 h-6 self-start" />;
