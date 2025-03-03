@@ -14,6 +14,7 @@ import {
 import {
   azureOptionsFormSchema,
   claudeOptionsFormSchema,
+  deepseekOptionsFormSchema,
   ollamaOptionsFormSchema,
   openAIOptionsFormSchema,
 } from '@/lib/schemas';
@@ -21,6 +22,7 @@ import { useAppStateStore } from '@/lib/store';
 import type {
   AzureOptions,
   ClaudeOptions,
+  DeepseekOptions,
   FormHandler,
   OllamaOptions,
   OpenAIOptions,
@@ -453,13 +455,13 @@ const OllamaOptionsForm = forwardRef<FormHandler, FormProps<OllamaOptions>>(
   }
 );
 
-const DeepseekOptionsForm = forwardRef<FormHandler, FormProps<OpenAIOptions>>(
+const DeepseekOptionsForm = forwardRef<FormHandler, FormProps<DeepseekOptions>>(
   (
-    { onSubmit, defaultValues, ...props }: FormProps<OpenAIOptions>,
+    { onSubmit, defaultValues, ...props }: FormProps<DeepseekOptions>,
     ref: ForwardedRef<FormHandler>
   ) => {
-    const form = useForm<OpenAIOptions>({
-      resolver: zodResolver(openAIOptionsFormSchema),
+    const form = useForm<DeepseekOptions>({
+      resolver: zodResolver(deepseekOptionsFormSchema),
       defaultValues: {
         ...defaultValues,
       },

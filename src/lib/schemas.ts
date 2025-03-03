@@ -154,10 +154,14 @@ export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
   provider: z.enum([
     PROVIDER_OPENAI,
     PROVIDER_OPENROUTER,
-    PROVIDER_DEEPSEEK,
     PROVIDER_XAI,
     PROVIDER_CUSTOM,
   ] as const),
+});
+
+export const deepseekOptionsFormSchema = commonOptionsFormSchema.extend({
+  provider: z.enum([PROVIDER_DEEPSEEK] as const),
+  maxTokens: z.coerce.number().int().min(1).max(8192).optional(),
 });
 
 export const claudeOptionsFormSchema = commonOptionsFormSchema

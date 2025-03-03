@@ -15,6 +15,7 @@ import type {
   azureOptionsFormSchema,
   claudeOptionsFormSchema,
   conversationFormSchema,
+  deepseekOptionsFormSchema,
   editAzureModelFormSchema,
   editClaudeModelFormSchema,
   editOllamaModelFormSchema,
@@ -175,11 +176,13 @@ export type AzureOptions = z.infer<typeof azureOptionsFormSchema>;
 export type OpenAIOptions = z.infer<typeof openAIOptionsFormSchema>;
 export type ClaudeOptions = z.infer<typeof claudeOptionsFormSchema>;
 export type OllamaOptions = z.infer<typeof ollamaOptionsFormSchema>;
+export type DeepseekOptions = z.infer<typeof deepseekOptionsFormSchema>;
 export type Options =
   | AzureOptions
   | OpenAIOptions
   | ClaudeOptions
-  | OllamaOptions;
+  | OllamaOptions
+  | DeepseekOptions;
 export type GenericOptions = {
   provider: AllProviders;
   options: string;
