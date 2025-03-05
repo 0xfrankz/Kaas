@@ -3,6 +3,7 @@ import type { z } from 'zod';
 import type {
   ALL_PROVIDERS,
   CONTENT_ITEM_TYPES,
+  PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
@@ -88,7 +89,14 @@ export type RawOllamaConfig = {
   model?: string;
 };
 
-export type RawConfig = RawOpenAIConfig | RawOllamaConfig;
+export type RawClaudeConfig = {
+  provider: typeof PROVIDER_CLAUDE;
+  apiKey: string;
+  apiVersion: string;
+  endpoint?: string;
+};
+
+export type RawConfig = RawOpenAIConfig | RawOllamaConfig | RawClaudeConfig;
 
 export type GenericConfig = {
   provider: AllProviders;

@@ -37,6 +37,7 @@ import type {
   NewOpenAIModel,
   OllamaModel,
   OpenAIModel,
+  RawClaudeConfig,
   RawConfig,
   RawOllamaConfig,
   RawOpenAIConfig,
@@ -325,10 +326,18 @@ const GenericOpenAIModelForm = ({
 const GenericClaudeModelForm = ({
   form,
   onSubmit,
+  loadModelsOnInit,
   ...props
 }: GenericFormProps<NewModel | Model>) => {
   const { t } = useTranslation(['page-models']);
   const isEdit = !!form.getValues('id');
+  const apiKey = useWatch({ name: 'apiKey', control: form.control });
+  const apiVersion = useWatch({ name: 'apiVersion', control: form.control });
+  const config: RawClaudeConfig = {
+    provider: PROVIDER_CLAUDE,
+    apiVersion: apiVersion ?? '',
+    apiKey: apiKey ?? '',
+  };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
@@ -345,11 +354,13 @@ const GenericClaudeModelForm = ({
             label={t('page-models:label:api-key')}
             tips={t('page-models:message:api-key-tips')}
           />
-          <InputField
+          <ModelField
             control={form.control}
             name="model"
             label={t('page-models:label:model')}
             tips={t('page-models:message:model-tips')}
+            config={config}
+            loadOnInit={!!loadModelsOnInit}
           />
           <InputField
             control={form.control}
@@ -556,6 +567,7 @@ const NewClaudeModelForm = forwardRef<ModelFormHandler, NewFormProps>(
       resolver: zodResolver(newClaudeModelFormSchema),
       defaultValues: {
         provider: PROVIDER_CLAUDE,
+        endpoint: undefined,
         alias: '',
         apiKey: '',
         model: '',

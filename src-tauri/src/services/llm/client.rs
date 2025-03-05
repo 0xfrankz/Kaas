@@ -51,7 +51,7 @@ impl LLMClient {
                     .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
                 let model = raw_config.model.clone();
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
-                Ok(LLMClient::ClaudeClient(client, Some(model)))
+                Ok(LLMClient::ClaudeClient(client, model))
             }
             Providers::Ollama => {
                 let raw_config: RawOllamaConfig = serde_json::from_str(&config.config)
@@ -208,9 +208,9 @@ impl LLMClient {
                 // Azure doesn't support model list
                 Err("List models API is not supported by Azure".to_string())
             }
-            LLMClient::ClaudeClient(_, _) => {
-                // Claude doesn't support model list
-                Err("List models API is not supported by Azure".to_string())
+            LLMClient::ClaudeClient(client, _) => {
+                let result = ListModelsRequestExecutor::claude(client).execute().await?;
+                Ok(result)
             }
             LLMClient::OllamaClient(client, _) => {
                 let result = ListModelsRequestExecutor::ollama(client).execute().await?;

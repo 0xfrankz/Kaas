@@ -16,7 +16,7 @@ use crate::services::{
 
 use super::config::ClaudeConfig;
 
-const CLAUDE_CHAT_PATH: &str = "/messages";
+const CLAUDE_CHAT_PATH: &str = "/v1/messages";
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ClaudeMessageContentPartText {
@@ -191,9 +191,33 @@ pub struct ClaudeChatCompletionResponse {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
-pub struct ContentBlockDelta {
-    pub r#type: String,
+pub struct ContentBlockDeltaText {
     pub text: String,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ContentBlockDeltaInput {
+    partial_json: String,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ContentBlockDeltaThinking {
+    pub thinking: String,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+pub struct ContentBlockDeltaSignature {
+    pub signature: String,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
+pub enum ContentBlockDelta {
+    TextDelta(ContentBlockDeltaText),
+    InputDelta(ContentBlockDeltaInput),
+    ThinkingDelta(ContentBlockDeltaThinking),
+    SignatureDelta(ContentBlockDeltaSignature),
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]

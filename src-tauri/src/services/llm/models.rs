@@ -1,5 +1,5 @@
 use super::providers::{
-    deepseek::{config::DeepseekConfig, models::DeepseekModels}, ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels, xai::{config::XaiConfig, models::XaiModels}
+    claude::{config::ClaudeConfig, models::ClaudeModels}, deepseek::{config::DeepseekConfig, models::DeepseekModels}, ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels, xai::{config::XaiConfig, models::XaiModels}
 };
 use async_openai::{config::OpenAIConfig, Client};
 use serde::Serialize;
@@ -16,6 +16,7 @@ pub enum ListModelsRequestExecutor<'c> {
     OpenrouterListModelsRequestExecutor(&'c Client<OpenAIConfig>),
     DeepseekListModelsRequestExecutor(&'c Client<DeepseekConfig>),
     XaiListModelsRequestExecutor(&'c Client<XaiConfig>),
+    ClaudeListModelsRequestExecutor(&'c Client<ClaudeConfig>),
 }
 
 impl<'c> ListModelsRequestExecutor<'c> {
@@ -37,6 +38,10 @@ impl<'c> ListModelsRequestExecutor<'c> {
 
     pub fn xai(client: &'c Client<XaiConfig>) -> Self {
         return ListModelsRequestExecutor::XaiListModelsRequestExecutor(client);
+    }
+
+    pub fn claude(client: &'c Client<ClaudeConfig>) -> Self {
+        return ListModelsRequestExecutor::ClaudeListModelsRequestExecutor(client);
     }
 
     pub async fn execute(&self) -> Result<Vec<RemoteModel>, String> {
@@ -101,6 +106,18 @@ impl<'c> ListModelsRequestExecutor<'c> {
                     .data
                     .iter()
                     .map(|m| RemoteModel { id: m.id.clone() })
+                    .collect();
+                Ok(result)
+            }
+            ListModelsRequestExecutor::ClaudeListModelsRequestExecutor(client) => {
+                let response = ClaudeModels::new(client).list().await.map_err(|err| {
+                    log::error!("ListModelsRequest::ClaudeListModelsRequest: {}", err);
+                    String::from("Failed to list models")
+                })?;
+                let result = response
+                    .data
+                    .iter()
+                    .map(|m| RemoteModel { id: m.display_name.clone() })
                     .collect();
                 Ok(result)
             }

@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import {
+  PROVIDER_CLAUDE,
   PROVIDER_DEEPSEEK,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
@@ -47,6 +48,7 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
   const onClick = useCallback(() => {
     if (
       config.provider === PROVIDER_OPENAI ||
+      config.provider === PROVIDER_CLAUDE ||
       config.provider === PROVIDER_OPENROUTER ||
       config.provider === PROVIDER_DEEPSEEK ||
       config.provider === PROVIDER_XAI

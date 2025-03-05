@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 /// Default values for Claude
 pub const CLAUDE_ENV_KEY: &str = "CLAUDE_API_KEY";
-pub const DEFAULT_CLAUDE_API_BASE: &str = "https://api.anthropic.com/v1";
+pub const DEFAULT_CLAUDE_API_BASE: &str = "https://api.anthropic.com";
 pub const DEFAULT_CLAUDE_API_VERSION: &str = "2023-06-01";
 pub const CLAUDE_API_KEY_HEADER: &str = "x-api-key";
 pub const CLAUDE_API_VERSION_HEADER: &str = "anthropic-version";

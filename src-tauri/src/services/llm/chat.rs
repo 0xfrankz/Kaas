@@ -20,7 +20,7 @@ use super::{
             chat::{
                 ClaudeChat, ClaudeChatCompletionRequest, ClaudeChatCompletionResponseStream,
                 ClaudeChatCompletionStreamResponse, ClaudeMessage, ClaudeMetadata,
-                ClaudeResponseMessageContent,
+                ClaudeResponseMessageContent, ContentBlockDelta,
             },
             config::ClaudeConfig,
         }, 
@@ -648,9 +648,18 @@ impl<'c> ChatRequestExecutor<'c> {
                         match resp {
                             ClaudeChatCompletionStreamResponse::ContentBlockDelta(
                                 content_delta,
-                            ) => BotReply {
-                                message: content_delta.delta.text.clone(),
-                                ..Default::default()
+                            ) => {
+                                match content_delta.delta {
+                                    ContentBlockDelta::TextDelta(text_delta) => BotReply {
+                                        message: text_delta.text.clone(),
+                                        ..Default::default()
+                                    },
+                                    ContentBlockDelta::ThinkingDelta(thinking_delta) => BotReply {
+                                        reasoning: Some(thinking_delta.thinking.clone()),
+                                        ..Default::default()
+                                    },
+                                    _ => BotReply::default(),
+                                }
                             },
                             ClaudeChatCompletionStreamResponse::MessageDelta(message_delta) => {
                                 // return empty string as message

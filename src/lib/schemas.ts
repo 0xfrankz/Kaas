@@ -37,6 +37,7 @@ export const newAzureModelFormSchema = z.object({
 export const newClaudeModelFormSchema = z.object({
   alias: z.string(),
   provider: z.literal(PROVIDER_CLAUDE),
+  endpoint: z.string().optional(),
   apiKey: z.string().min(1, 'API Key is required'),
   model: z.string().min(1, 'Model is required'),
   apiVersion: z.string().min(1, 'API version is required'),

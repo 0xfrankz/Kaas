@@ -52,7 +52,7 @@ impl Into<OpenAIConfig> for RawOpenAIConfig {
 #[serde(rename_all = "camelCase")]
 pub struct RawClaudeConfig {
     pub api_key: String,
-    pub model: String,
+    pub model: Option<String>,
     pub api_version: String,
     pub endpoint: Option<String>,
 }

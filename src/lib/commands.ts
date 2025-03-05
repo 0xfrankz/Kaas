@@ -57,6 +57,7 @@ export async function invokeDeleteModel(modelId: number): Promise<Model> {
 export async function invokeListRemoteModels(
   config: GenericConfig
 ): Promise<RemoteModel[]> {
+  console.log('invokeListRemoteModels', config);
   const result = await invoke<RemoteModel[]>('list_remote_models', {
     config,
   });
