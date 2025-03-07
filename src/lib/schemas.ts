@@ -5,6 +5,7 @@ import {
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_DEEPSEEK,
+  PROVIDER_GOOGLE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -50,6 +51,13 @@ export const newOllamaModelFormSchema = z.object({
   model: z.string().min(1, 'Model is required'),
 });
 
+export const newGoogleModelFormSchema = z.object({
+  alias: z.string(),
+  provider: z.literal(PROVIDER_GOOGLE),
+  apiKey: z.string().min(1, 'API Key is required'),
+  model: z.string().min(1, 'Model is required'),
+});
+
 export const editAzureModelFormSchema = newAzureModelFormSchema.extend({
   id: z.number(),
 });
@@ -63,6 +71,10 @@ export const editClaudeModelFormSchema = newClaudeModelFormSchema.extend({
 });
 
 export const editOllamaModelFormSchema = newOllamaModelFormSchema.extend({
+  id: z.number(),
+});
+
+export const editGoogleModelFormSchema = newGoogleModelFormSchema.extend({
   id: z.number(),
 });
 

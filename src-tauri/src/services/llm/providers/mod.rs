@@ -5,3 +5,4 @@ pub mod openrouter;
 pub mod openai;
 pub mod deepseek;
 pub mod xai;
+pub mod google;

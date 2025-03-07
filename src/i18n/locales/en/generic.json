@@ -51,6 +51,7 @@
         "Openrouter": "OpenRouter",
         "Deepseek": "DeepSeek",
         "Xai": "xAi",
+        "Google": "Google Gemini",
         "CUSTOM": "Custom",
         "unknown": "Unknown"
     },

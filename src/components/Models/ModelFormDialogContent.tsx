@@ -5,6 +5,7 @@ import {
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_DEEPSEEK,
+  PROVIDER_GOOGLE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENROUTER,
   PROVIDER_XAI,
@@ -66,6 +67,9 @@ function NewModelFormDialogContent({
       break;
     case PROVIDER_XAI:
       form = <ModelForm.Xai.New id="modelForm" onSubmit={onFormSubmit} />;
+      break;
+    case PROVIDER_GOOGLE:
+      form = <ModelForm.Google.New id="modelForm" onSubmit={onFormSubmit} />;
       break;
     default:
       form = <ModelForm.OpenAI.New id="modelForm" onSubmit={onFormSubmit} />;
@@ -161,6 +165,15 @@ function EditModelFormDialogContent({
     case PROVIDER_XAI:
       form = (
         <ModelForm.Xai.Edit
+          id="modelForm"
+          model={model}
+          onSubmit={onFormSubmit}
+        />
+      );
+      break;
+    case PROVIDER_GOOGLE:
+      form = (
+        <ModelForm.Google.Edit
           id="modelForm"
           model={model}
           onSubmit={onFormSubmit}

@@ -357,3 +357,38 @@ impl Default for XaiOptions {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GoogleOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context_length: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frequency_penalty: Option<f32>, // min: -2.0, max: 2.0, default: 0
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub presence_penalty: Option<f32>, // min: -2.0, max: 2.0, default 0
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>, // min: 0, max: 2, default: 1,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_p: Option<f32>, // min: 0, max: 1, default: 1
+}
+
+impl Options for GoogleOptions {}
+
+impl Default for GoogleOptions {
+    fn default() -> Self {
+        GoogleOptions {
+            context_length: None,
+            frequency_penalty: Some(0.0),
+            max_tokens: None,
+            presence_penalty: Some(0.0),
+            stream: Some(false),
+            temperature: Some(1.0),
+            top_p: Some(1.0),
+        }
+    }
+}

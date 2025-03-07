@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PROVIDER_CLAUDE,
   PROVIDER_DEEPSEEK,
+  PROVIDER_GOOGLE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -51,7 +52,8 @@ export function RemoteModelsSelector({ config, enabledByDefault }: Props) {
       config.provider === PROVIDER_CLAUDE ||
       config.provider === PROVIDER_OPENROUTER ||
       config.provider === PROVIDER_DEEPSEEK ||
-      config.provider === PROVIDER_XAI
+      config.provider === PROVIDER_XAI ||
+      config.provider === PROVIDER_GOOGLE
     ) {
       // check api key when user is using OpenAI or OpenRouter
       const apiKey = form.getValues('apiKey');

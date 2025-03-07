@@ -8,7 +8,7 @@ use async_openai::{
     Client,
 };
 use entity::entities::{
-    conversations::{AzureOptions, ClaudeOptions, DeepseekOptions, GenericOptions, OllamaOptions, OpenAIOptions, XaiOptions},
+    conversations::{AzureOptions, ClaudeOptions, DeepseekOptions, GenericOptions, GoogleOptions, OllamaOptions, OpenAIOptions, XaiOptions},
     messages::MessageDTO,
 };
 use serde::Serialize;
@@ -23,20 +23,15 @@ use super::{
                 ClaudeResponseMessageContent, ContentBlockDelta,
             },
             config::ClaudeConfig,
-        }, 
-        deepseek::{chat::{DeepseekChat, DeepseekChatCompletionRequest, DeepseekChatCompletionResponseStream}, config::DeepseekConfig}, 
-        ollama::{
+        }, deepseek::{chat::{DeepseekChat, DeepseekChatCompletionRequest, DeepseekChatCompletionResponseStream}, config::DeepseekConfig}, google::{chat::{GoogleChat, GoogleChatCompletionContentPart, GoogleChatCompletionRequest, GoogleChatCompletionRequestGenerationConfig}, config::GoogleConfig}, ollama::{
             chat::{
                 OllamaChat, OllamaChatCompletionRequest, OllamaChatCompletionResponseStream,
                 OllamaMessage,
             },
             config::OllamaConfig,
-        }, 
-        openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream}, 
-        openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}, types::{ChatCompletionRequestCommon, ChatCompletionStreamOptions}, 
-        xai::{chat::{XaiChat, XaiChatCompletionRequest, XaiChatCompletionResponseStream}, config::XaiConfig}
+        }, openai::chat::{OpenAIChat, OpenAIChatCompletionRequest, OpenAIChatCompletionResponseStream}, openrouter::chat::{OpenrouterChat, OpenrouterChatCompletionRequest, OpenrouterChatCompletionResponseStream}, types::{ChatCompletionRequestCommon, ChatCompletionStreamOptions}, xai::{chat::{XaiChat, XaiChatCompletionRequest, XaiChatCompletionResponseStream}, config::XaiConfig}
     },
-    utils::{message_to_openai_request_message, sum_option},
+    utils::{message_to_google_request_message, message_to_openai_request_message, sum_option},
 };
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize)]
@@ -74,6 +69,7 @@ pub enum ChatRequestExecutor<'c> {
     OpenrouterChatRequestExecutor(&'c Client<OpenAIConfig>, OpenrouterChatCompletionRequest),
     DeepseekChatRequestExecutor(&'c Client<DeepseekConfig>, DeepseekChatCompletionRequest),
     XaiChatRequestExecutor(&'c Client<XaiConfig>, XaiChatCompletionRequest),
+    GoogleChatRequestExecutor(&'c Client<GoogleConfig>, GoogleChatCompletionRequest),
 }
 
 impl<'c> ChatRequestExecutor<'c> {
@@ -334,6 +330,38 @@ impl<'c> ChatRequestExecutor<'c> {
             messages: req_messages,
         };
         Ok(ChatRequestExecutor::XaiChatRequestExecutor(client, request))
+    }
+
+    pub fn google(
+        client: &'c Client<GoogleConfig>,
+        messages: Vec<MessageDTO>,
+        options: GenericOptions,
+        global_settings: GlobalSettings,
+        model: String,
+    ) -> Result<ChatRequestExecutor, String> {
+        let request: GoogleChatCompletionRequest;
+        // set messages
+        let req_messages = messages
+            .into_iter()
+            .map(message_to_google_request_message)
+            .collect();
+        // set options
+        let options: GoogleOptions = serde_json::from_str(&options.options)
+            .map_err(|_| format!("Failed to parse conversation options: {}", &options.options))?;
+        // build request
+        request = GoogleChatCompletionRequest {
+            contents: req_messages,
+            system_instruction: None,
+            generation_config: Some(GoogleChatCompletionRequestGenerationConfig {
+                max_output_tokens: options.max_tokens,
+                temperature: options.temperature,
+                top_p: options.top_p,
+                presence_penalty: options.presence_penalty,
+                frequency_penalty: options.frequency_penalty,
+                ..Default::default()
+            }),
+        };
+        Ok(ChatRequestExecutor::GoogleChatRequestExecutor(client, request))
     }
 
     async fn execute_openai_compatible_request<C: Config>(
@@ -622,6 +650,37 @@ impl<'c> ChatRequestExecutor<'c> {
 
                 Ok(reply)
             }
+            ChatRequestExecutor::GoogleChatRequestExecutor(client, request) => {
+                let response = GoogleChat::new(client)
+                    .create(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                // extract data & build reply
+                let candidate = response
+                    .candidates
+                    .first()
+                    .ok_or("Api returned empty candidates".to_string())?;
+                let message = candidate
+                    .content
+                    .parts
+                    .iter()
+                    .map(|part| match part {
+                        GoogleChatCompletionContentPart::Text(text) => text.clone(),
+                        GoogleChatCompletionContentPart::FileData(_) => String::default(),
+                    })
+                    .collect::<Vec<String>>()
+                    .join(""); // concat all parts
+                let usage = response.usage_metadata;
+
+                Ok(BotReply {
+                    message,
+                    reasoning: None,
+                    prompt_token: Some(usage.prompt_token_count),
+                    completion_token: Some(usage.candidates_token_count),
+                    reasoning_token: None,
+                    total_token: Some(usage.total_token_count),
+                })
+            }
         }
     }
 
@@ -846,6 +905,34 @@ impl<'c> ChatRequestExecutor<'c> {
                         }
                     });
                     reply
+                });
+                Ok(Box::pin(result))
+            }
+            ChatRequestExecutor::GoogleChatRequestExecutor(client, request) => {
+                let stream = GoogleChat::new(client)
+                    .create_stream(request.clone())
+                    .await
+                    .map_err(|err| format!("Error creating stream: {}", err.to_string()))?;
+                let result = stream.map(move |item| {
+                    item.map(|resp| {
+                        let message = resp.candidates.first().map(|candidate| {
+                            candidate.content.parts.iter()
+                                .map(|part| match part {
+                                    GoogleChatCompletionContentPart::Text(text) => text.clone(),
+                                    GoogleChatCompletionContentPart::FileData(_) => String::default(),
+                                })
+                                .collect::<Vec<String>>()
+                                .join("")
+                        }).unwrap_or(String::default());
+                        BotReply {
+                            message,
+                            reasoning: None,
+                            prompt_token: Some(resp.usage_metadata.prompt_token_count),
+                            completion_token: Some(resp.usage_metadata.candidates_token_count),
+                            reasoning_token: None,
+                            total_token: Some(resp.usage_metadata.total_token_count),
+                        }
+                    })
                 });
                 Ok(Box::pin(result))
             }

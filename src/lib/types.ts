@@ -6,6 +6,7 @@ import type {
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_DEEPSEEK,
+  PROVIDER_GOOGLE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -19,10 +20,12 @@ import type {
   deepseekOptionsFormSchema,
   editAzureModelFormSchema,
   editClaudeModelFormSchema,
+  editGoogleModelFormSchema,
   editOllamaModelFormSchema,
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newClaudeModelFormSchema,
+  newGoogleModelFormSchema,
   newOllamaModelFormSchema,
   newOpenAIModelFormSchema,
   newPromptFormSchema,
@@ -40,12 +43,14 @@ export type NewClaudeModel = z.infer<typeof newClaudeModelFormSchema>;
 export type ClaudeModel = z.infer<typeof editClaudeModelFormSchema>;
 export type NewOllamaModel = z.infer<typeof newOllamaModelFormSchema>;
 export type OllamaModel = z.infer<typeof editOllamaModelFormSchema>;
-
+export type NewGoogleModel = z.infer<typeof newGoogleModelFormSchema>;
+export type GoogleModel = z.infer<typeof editGoogleModelFormSchema>;
 export type NewModel =
   | NewAzureModel
   | NewOpenAIModel
   | NewClaudeModel
-  | NewOllamaModel;
+  | NewOllamaModel
+  | NewGoogleModel;
 
 export type RemoteModel = {
   id: string;
@@ -96,7 +101,16 @@ export type RawClaudeConfig = {
   endpoint?: string;
 };
 
-export type RawConfig = RawOpenAIConfig | RawOllamaConfig | RawClaudeConfig;
+export type RawGoogleConfig = {
+  provider: typeof PROVIDER_GOOGLE;
+  apiKey: string;
+};
+
+export type RawConfig =
+  | RawOpenAIConfig
+  | RawOllamaConfig
+  | RawClaudeConfig
+  | RawGoogleConfig;
 
 export type GenericConfig = {
   provider: AllProviders;

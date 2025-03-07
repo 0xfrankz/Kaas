@@ -17,6 +17,8 @@ use entity::entities::{
 
 use crate::{log_utils::warn, services::cache};
 
+use super::providers::google::chat::{GoogleChatCompletionContent, GoogleChatCompletionContentPart, GoogleChatCompletionContentPartFileData, GoogleRole};
+
 pub fn sum_option(a: Option<u32>, b: Option<u32>) -> Option<u32> {
     match (a, b) {
         (Some(x), Some(y)) => Some(x + y),
@@ -105,6 +107,43 @@ pub fn message_to_openai_request_message(message: MessageDTO) -> ChatCompletionR
                     .build()
                     .unwrap_or(ChatCompletionRequestAssistantMessage::default()),
             );
+        }
+    }
+}
+
+pub fn message_to_google_request_message(message: MessageDTO) -> GoogleChatCompletionContent {
+    let content_parts = message
+        .clone()
+        .content
+        .into_iter()
+        .map(|item| {
+            let part: GoogleChatCompletionContentPart = match item.r#type {
+                ContentType::Image => {
+                    let mime_type = item.mimetype.unwrap_or(String::default());
+                    GoogleChatCompletionContentPart::FileData(GoogleChatCompletionContentPartFileData {
+                        mime_type: mime_type.clone(),
+                        file_uri: cache::read_as_data_url(item.data.as_str(), Some(&mime_type)).unwrap_or(String::default()),
+                    })
+                },
+                ContentType::Text => {
+                    GoogleChatCompletionContentPart::Text(item.data)
+                }
+            };
+            Ok(part)
+        }).collect::<Result<Vec<GoogleChatCompletionContentPart>, OpenAIError>>()
+        .expect("Failed to build user message content");
+    match message.role.into() {
+        Roles::User => {
+            GoogleChatCompletionContent {
+                parts: content_parts,
+                role: GoogleRole::User,
+            }
+        },
+        _ => {
+            GoogleChatCompletionContent {
+                parts: content_parts,
+                role: GoogleRole::Model,
+            }
         }
     }
 }

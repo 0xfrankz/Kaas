@@ -10,6 +10,7 @@ import {
   PROVIDER_CLAUDE,
   PROVIDER_CUSTOM,
   PROVIDER_DEEPSEEK,
+  PROVIDER_GOOGLE,
   PROVIDER_OLLAMA,
   PROVIDER_OPENAI,
   PROVIDER_OPENROUTER,
@@ -18,20 +19,24 @@ import {
 import {
   editAzureModelFormSchema,
   editClaudeModelFormSchema,
+  editGoogleModelFormSchema,
   editOllamaModelFormSchema,
   editOpenAIModelFormSchema,
   newAzureModelFormSchema,
   newClaudeModelFormSchema,
+  newGoogleModelFormSchema,
   newOllamaModelFormSchema,
   newOpenAIModelFormSchema,
 } from '@/lib/schemas';
 import type {
   AzureModel,
   ClaudeModel,
+  GoogleModel,
   Model,
   ModelFormHandler,
   NewAzureModel,
   NewClaudeModel,
+  NewGoogleModel,
   NewModel,
   NewOllamaModel,
   NewOpenAIModel,
@@ -39,6 +44,7 @@ import type {
   OpenAIModel,
   RawClaudeConfig,
   RawConfig,
+  RawGoogleConfig,
   RawOllamaConfig,
   RawOpenAIConfig,
 } from '@/lib/types';
@@ -451,6 +457,79 @@ const GenericOllamaModelForm = ({
   );
 };
 
+const GenericGoogleModelForm = ({
+  form,
+  onSubmit,
+  loadModelsOnInit,
+  ...props
+}: GenericFormProps<NewModel | Model>) => {
+  const { t } = useTranslation(['page-models']);
+  const isEdit = !!form.getValues('id');
+  const apiKey = useWatch({ name: 'apiKey', control: form.control });
+  const config: RawGoogleConfig = {
+    provider: PROVIDER_GOOGLE,
+    apiKey: apiKey ?? '',
+  };
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} {...props}>
+        <div className="grid gap-4 py-8">
+          <InputField
+            control={form.control}
+            name="alias"
+            label={t('page-models:label:alias')}
+            tips={t('page-models:message:alias-tips')}
+          />
+          <InputField
+            control={form.control}
+            name="apiKey"
+            label={t('page-models:label:api-key')}
+            tips={t('page-models:message:api-key-tips')}
+          />
+          <ModelField
+            control={form.control}
+            name="model"
+            label={t('page-models:label:model')}
+            tips={t('page-models:message:model-tips')}
+            config={config}
+            loadOnInit={!!loadModelsOnInit}
+          />
+          <FormField
+            control={form.control}
+            name="provider"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="hidden" {...field} />
+                </FormControl>
+                <div className="col-span-3 col-start-2">
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+          {isEdit ? (
+            <FormField
+              control={form.control}
+              name="id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="hidden" {...field} />
+                  </FormControl>
+                  <div className="col-span-3 col-start-2">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          ) : null}
+        </div>
+      </form>
+    </Form>
+  );
+};
+
 const NewAzureModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   ({ onSubmit, ...props }, ref) => {
     const form: UseFormReturn<NewAzureModel, unknown, undefined> =
@@ -753,6 +832,57 @@ const NewXaiModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   }
 );
 
+const NewGoogleModelForm = forwardRef<ModelFormHandler, NewFormProps>(
+  ({ onSubmit, ...props }, ref) => {
+    const form = useForm<NewGoogleModel>({
+      resolver: zodResolver(newGoogleModelFormSchema),
+      defaultValues: {
+        provider: PROVIDER_GOOGLE,
+        alias: '',
+        apiKey: '',
+        model: '',
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericGoogleModelForm
+        form={form as UseFormReturn<NewModel, any, undefined>}
+        onSubmit={onSubmit}
+        {...props}
+      />
+    );
+  }
+);
+
+const EditGoogleModelForm = forwardRef<ModelFormHandler, EditFormProps>(
+  ({ model, onSubmit, ...props }, ref) => {
+    const form = useForm<GoogleModel>({
+      resolver: zodResolver(editGoogleModelFormSchema),
+      defaultValues: model as GoogleModel,
+    });
+
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        form.reset();
+      },
+    }));
+
+    return (
+      <GenericGoogleModelForm
+        form={form as UseFormReturn<NewModel | Model, any, undefined>}
+        onSubmit={onSubmit as (model: NewModel | Model) => void}
+        {...props}
+      />
+    );
+  }
+);
+
 const NewCustomModelForm = forwardRef<ModelFormHandler, NewFormProps>(
   ({ onSubmit, ...props }, ref) => {
     const form = useForm<NewOpenAIModel>({
@@ -837,6 +967,10 @@ export default {
   Xai: {
     New: NewXaiModelForm,
     Edit: EditOpenAIModelForm, // use EditOpenAIModelForm for editing
+  },
+  Google: {
+    New: NewGoogleModelForm,
+    Edit: EditGoogleModelForm,
   },
   CUSTOM: {
     New: NewCustomModelForm,

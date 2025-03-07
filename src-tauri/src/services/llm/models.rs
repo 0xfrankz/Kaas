@@ -1,5 +1,10 @@
 use super::providers::{
-    claude::{config::ClaudeConfig, models::ClaudeModels}, deepseek::{config::DeepseekConfig, models::DeepseekModels}, ollama::{config::OllamaConfig, models::OllamaModels}, openrouter::models::OpenrouterModels, xai::{config::XaiConfig, models::XaiModels}
+    claude::{config::ClaudeConfig, models::ClaudeModels}, 
+    deepseek::{config::DeepseekConfig, models::DeepseekModels}, 
+    ollama::{config::OllamaConfig, models::OllamaModels}, 
+    openrouter::models::OpenrouterModels, 
+    xai::{config::XaiConfig, models::XaiModels},
+    google::{config::GoogleConfig, models::GoogleModels},
 };
 use async_openai::{config::OpenAIConfig, Client};
 use serde::Serialize;
@@ -17,6 +22,7 @@ pub enum ListModelsRequestExecutor<'c> {
     DeepseekListModelsRequestExecutor(&'c Client<DeepseekConfig>),
     XaiListModelsRequestExecutor(&'c Client<XaiConfig>),
     ClaudeListModelsRequestExecutor(&'c Client<ClaudeConfig>),
+    GoogleListModelsRequestExecutor(&'c Client<GoogleConfig>),
 }
 
 impl<'c> ListModelsRequestExecutor<'c> {
@@ -44,6 +50,10 @@ impl<'c> ListModelsRequestExecutor<'c> {
         return ListModelsRequestExecutor::ClaudeListModelsRequestExecutor(client);
     }
 
+    pub fn google(client: &'c Client<GoogleConfig>) -> Self {
+        return ListModelsRequestExecutor::GoogleListModelsRequestExecutor(client);
+    }
+
     pub async fn execute(&self) -> Result<Vec<RemoteModel>, String> {
         match self {
             ListModelsRequestExecutor::OpenAIListModelsRequestExecutor(client) => {
@@ -52,7 +62,7 @@ impl<'c> ListModelsRequestExecutor<'c> {
                     .list()
                     .await
                     .map_err(|err| {
-                        log::error!("ListModelsRequest::OpenAIListModelsRequest: {}", err);
+                        log::error!("OpenAIListModelsRequestExecutor: {}", err);
                         String::from("Failed to list models")
                     })?
                     .data
@@ -63,7 +73,7 @@ impl<'c> ListModelsRequestExecutor<'c> {
             }
             ListModelsRequestExecutor::OllamaListModelsRequestExecutor(client) => {
                 let response = OllamaModels::new(client).list().await.map_err(|err| {
-                    log::error!("ListModelsRequest::OllamaListModelsRequest: {}", err);
+                    log::error!("OllamaListModelsRequestExecutor: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response
@@ -75,7 +85,7 @@ impl<'c> ListModelsRequestExecutor<'c> {
             }
             ListModelsRequestExecutor::OpenrouterListModelsRequestExecutor(client) => {
                 let response = OpenrouterModels::new(client).list().await.map_err(|err| {
-                    log::error!("ListModelsRequest::OpenrouterListModelsRequest: {}", err);
+                    log::error!("OpenrouterListModelsRequestExecutor: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response
@@ -87,7 +97,7 @@ impl<'c> ListModelsRequestExecutor<'c> {
             }
             ListModelsRequestExecutor::DeepseekListModelsRequestExecutor(client) => {
                 let response = DeepseekModels::new(client).list().await.map_err(|err| {
-                    log::error!("ListModelsRequest::DeepseekListModelsRequest: {}", err);
+                    log::error!("DeepseekListModelsRequestExecutor: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response
@@ -99,7 +109,7 @@ impl<'c> ListModelsRequestExecutor<'c> {
             }
             ListModelsRequestExecutor::XaiListModelsRequestExecutor(client) => {
                 let response = XaiModels::new(client).list().await.map_err(|err| {
-                    log::error!("ListModelsRequest::XaiListModelsRequest: {}", err);
+                    log::error!("XaiListModelsRequestExecutor: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response
@@ -111,13 +121,25 @@ impl<'c> ListModelsRequestExecutor<'c> {
             }
             ListModelsRequestExecutor::ClaudeListModelsRequestExecutor(client) => {
                 let response = ClaudeModels::new(client).list().await.map_err(|err| {
-                    log::error!("ListModelsRequest::ClaudeListModelsRequest: {}", err);
+                    log::error!("ClaudeListModelsRequestExecutor: {}", err);
                     String::from("Failed to list models")
                 })?;
                 let result = response
                     .data
                     .iter()
                     .map(|m| RemoteModel { id: m.display_name.clone() })
+                    .collect();
+                Ok(result)
+            }
+            ListModelsRequestExecutor::GoogleListModelsRequestExecutor(client) => {
+                let response = GoogleModels::new(client).list().await.map_err(|err| {
+                    log::error!("GoogleListModelsRequestExecutor: {}", err);
+                    String::from("Failed to list models")
+                })?;
+                let result = response
+                    .models
+                    .iter()
+                    .map(|m| RemoteModel { id: m.name.clone() })
                     .collect();
                 Ok(result)
             }

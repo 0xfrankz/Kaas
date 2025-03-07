@@ -12,8 +12,8 @@ use reqwest;
 
 use super::{
     chat::{BotReply, BotReplyStream, ChatRequestExecutor, GlobalSettings}, models::{ListModelsRequestExecutor, RemoteModel}, providers::{
-        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE, xai::config::XaiConfig
-    }, types::{RawAzureConfig, RawClaudeConfig, RawDeepseekConfig, RawOllamaConfig, RawOpenAIConfig, RawXaiConfig}, utils::build_http_client
+        claude::config::ClaudeConfig, deepseek::config::DeepseekConfig, google::config::GoogleConfig, ollama::config::OllamaConfig, openrouter::config::DEFAULT_OPENROUTER_API_BASE, xai::config::XaiConfig
+    }, types::{RawAzureConfig, RawClaudeConfig, RawDeepseekConfig, RawGoogleConfig, RawOllamaConfig, RawOpenAIConfig, RawXaiConfig}, utils::build_http_client
 };
 
 /// Wrapper of async-openai's Client struct
@@ -26,6 +26,7 @@ pub enum LLMClient {
     OpenrouterClient(Client<OpenAIConfig>, Option<String>),
     DeepseekClient(Client<DeepseekConfig>, Option<String>),
     XaiClient(Client<XaiConfig>, Option<String>),
+    GoogleClient(Client<GoogleConfig>, Option<String>),
 }
 
 impl LLMClient {
@@ -83,8 +84,15 @@ impl LLMClient {
                 let client = Client::with_config(raw_config.into()).with_http_client(http_client);
                 Ok(LLMClient::XaiClient(client, model))
             }
+            Providers::Google => {
+                let raw_config: RawGoogleConfig = serde_json::from_str(&config.config)
+                    .map_err(|_| format!("Failed to parse model config: {}", &config.config))?;
+                let model = raw_config.model.clone();
+                let client = Client::with_config(raw_config.into()).with_http_client(http_client);
+                Ok(LLMClient::GoogleClient(client, model))
+            }
             _ => Err(format!(
-                "Complete chat with {} not supported yet",
+                "{} is not supported yet",
                 config.provider.as_str()
             )),
         }
@@ -164,6 +172,9 @@ impl LLMClient {
             LLMClient::XaiClient(client, model) => {
                 Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::xai).await
             },
+            LLMClient::GoogleClient(client, model) => {
+                Self::execute_chat_request(client, messages, options, global_settings, model, ChatRequestExecutor::google).await
+            },
         }
     }
 
@@ -194,6 +205,9 @@ impl LLMClient {
             },
             LLMClient::XaiClient(client, model) => {
                 Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::xai).await
+            },
+            LLMClient::GoogleClient(client, model) => {
+                Self::execute_chat_request_stream(client, messages, options, global_settings, model, ChatRequestExecutor::google).await
             },
         }
     }
@@ -226,6 +240,10 @@ impl LLMClient {
             }
             LLMClient::XaiClient(client, _) => {
                 let result = ListModelsRequestExecutor::xai(client).execute().await?;
+                Ok(result)
+            }
+            LLMClient::GoogleClient(client, _) => {
+                let result = ListModelsRequestExecutor::google(client).execute().await?;
                 Ok(result)
             }
         }
