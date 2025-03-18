@@ -1,15 +1,8 @@
 use std::pin::Pin;
 
-use async_openai::{error::OpenAIError, types::ChatCompletionRequestMessage, Client};
+use async_openai::{config::Config, error::OpenAIError, Client};
 use serde::{Deserialize, Serialize};
 use tokio_stream::Stream;
-
-use crate::services::llm::providers::types::{
-    ChatCompletionRequestCommon,
-    ChatCompletionResponseCommon,
-    ChatChoice,
-    ChatChoiceStream,
-};
 
 use super::config::GoogleConfig;
 
@@ -17,6 +10,7 @@ const GOOGLE_CHAT_OPERATION: &str = "generateContent";
 const GOOGLE_CHAT_STREAM_OPERATION: &str = "streamGenerateContent";
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
 pub enum GoogleRole {
     User,
     Model,
@@ -39,7 +33,7 @@ pub enum GoogleChatCompletionContentPart {
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct GoogleChatCompletionContent {
-    pub parts: Vec<GoogleChatCompletionContentPart>,
+    pub parts: Option<Vec<GoogleChatCompletionContentPart>>,
     pub role: GoogleRole,
 }
 
@@ -78,18 +72,18 @@ pub struct GoogleChatCompletionResponseCandidate {
     pub content: GoogleChatCompletionContent,
     pub finish_reason: Option<GoogleChatCompletionFinishReason>,
     pub token_count: Option<u32>,
-    pub index: u32,
+    pub index: Option<u32>,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct GoogleChatCompletionUsageMetadata {
-    pub prompt_token_count: u32,
-    pub cached_content_token_count: u32,
-    pub candidates_token_count: u32,
-    pub tool_use_prompt_token_count: u32,
-    pub thoughts_token_count: u32,
-    pub total_token_count: u32,
+    pub prompt_token_count: Option<u32>,
+    pub cached_content_token_count: Option<u32>,
+    pub candidates_token_count: Option<u32>,
+    pub tool_use_prompt_token_count: Option<u32>,
+    pub thoughts_token_count: Option<u32>,
+    pub total_token_count: Option<u32>,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize, PartialEq)]
@@ -126,13 +120,17 @@ impl<'c> GoogleChat<'c> {
         let model = self.client.config().model.clone().ok_or(OpenAIError::InvalidArgument("Model is required".into()))?;
 
         let path = format!("/models/{}:{}", model, GOOGLE_CHAT_OPERATION);
-        self.client.post(&path, request).await
+        let result = self.client.post(&path, request).await;
+        result
     }
 
     pub async fn create_stream(&self, request: GoogleChatCompletionRequest) -> Result<GoogleChatCompletionResponseStream, OpenAIError> {
         let model = self.client.config().model.clone().ok_or(OpenAIError::InvalidArgument("Model is required".into()))?;
 
         let path = format!("/models/{}:{}", model, GOOGLE_CHAT_STREAM_OPERATION);
-        Ok(self.client.post_stream(&path, request).await)
+
+        let stream_client = Client::with_config(self.client.config().clone().with_alt("sse"))
+            .with_http_client(self.client.http_client().clone());
+        Ok(stream_client.post_stream(&path, request).await)
     }
 }

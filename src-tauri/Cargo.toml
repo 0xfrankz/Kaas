@@ -19,7 +19,7 @@ tauri-build = { version = "2", features = [] }
 # local crates
 entity = { path = "entity" }
 migration = { path = "migration" }
-async-openai = { git = "https://github.com/0xfrankz/async-openai.git", branch = "multi-providers-support"}
+async-openai = { git = "https://github.com/0xfrankz/async-openai.git", branch = "google-compatibility"}
 chrono = "0.4.34"
 log = "0.4.20"
 once_cell = "1.19.0"

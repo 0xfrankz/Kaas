@@ -139,7 +139,13 @@ impl<'c> ListModelsRequestExecutor<'c> {
                 let result = response
                     .models
                     .iter()
-                    .map(|m| RemoteModel { id: m.name.clone() })
+                    .map(|m| RemoteModel { 
+                        id: if m.name.starts_with("models/") {
+                            m.name[7..].to_string()
+                        } else {
+                            m.name.clone()
+                        }
+                    })
                     .collect();
                 Ok(result)
             }

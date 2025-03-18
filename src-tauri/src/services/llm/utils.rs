@@ -135,13 +135,13 @@ pub fn message_to_google_request_message(message: MessageDTO) -> GoogleChatCompl
     match message.role.into() {
         Roles::User => {
             GoogleChatCompletionContent {
-                parts: content_parts,
+                parts: Some(content_parts),
                 role: GoogleRole::User,
             }
         },
         _ => {
             GoogleChatCompletionContent {
-                parts: content_parts,
+                parts: Some(content_parts),
                 role: GoogleRole::Model,
             }
         }

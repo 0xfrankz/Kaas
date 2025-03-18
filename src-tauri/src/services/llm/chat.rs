@@ -337,7 +337,7 @@ impl<'c> ChatRequestExecutor<'c> {
         messages: Vec<MessageDTO>,
         options: GenericOptions,
         global_settings: GlobalSettings,
-        model: String,
+        _model: String,
     ) -> Result<ChatRequestExecutor, String> {
         let request: GoogleChatCompletionRequest;
         // set messages
@@ -353,7 +353,7 @@ impl<'c> ChatRequestExecutor<'c> {
             contents: req_messages,
             system_instruction: None,
             generation_config: Some(GoogleChatCompletionRequestGenerationConfig {
-                max_output_tokens: options.max_tokens,
+                max_output_tokens: options.max_tokens.or(Some(global_settings.max_tokens)),
                 temperature: options.temperature,
                 top_p: options.top_p,
                 presence_penalty: options.presence_penalty,
@@ -663,22 +663,29 @@ impl<'c> ChatRequestExecutor<'c> {
                 let message = candidate
                     .content
                     .parts
-                    .iter()
-                    .map(|part| match part {
-                        GoogleChatCompletionContentPart::Text(text) => text.clone(),
-                        GoogleChatCompletionContentPart::FileData(_) => String::default(),
+                    .as_ref()
+                    .map(|part_vec| {
+                        part_vec
+                            .iter()
+                            .map(|part| {
+                                match part {
+                                    GoogleChatCompletionContentPart::Text(text) => text.clone(),
+                                    GoogleChatCompletionContentPart::FileData(_) => String::default(),
+                                }
+                            })
+                            .collect::<Vec<String>>()
+                            .join("")
                     })
-                    .collect::<Vec<String>>()
-                    .join(""); // concat all parts
+                    .unwrap_or(String::default());
                 let usage = response.usage_metadata;
 
                 Ok(BotReply {
                     message,
                     reasoning: None,
-                    prompt_token: Some(usage.prompt_token_count),
-                    completion_token: Some(usage.candidates_token_count),
-                    reasoning_token: None,
-                    total_token: Some(usage.total_token_count),
+                    prompt_token: usage.prompt_token_count,
+                    completion_token: usage.candidates_token_count,
+                    reasoning_token: usage.thoughts_token_count,
+                    total_token: usage.total_token_count,
                 })
             }
         }
@@ -916,21 +923,31 @@ impl<'c> ChatRequestExecutor<'c> {
                 let result = stream.map(move |item| {
                     item.map(|resp| {
                         let message = resp.candidates.first().map(|candidate| {
-                            candidate.content.parts.iter()
-                                .map(|part| match part {
-                                    GoogleChatCompletionContentPart::Text(text) => text.clone(),
-                                    GoogleChatCompletionContentPart::FileData(_) => String::default(),
+                            let m = candidate
+                                .content
+                                .parts
+                                .as_ref()
+                                .map(|part_vec| {
+                                    part_vec
+                                        .iter()
+                                        .map(|part| {
+                                            match part {
+                                                GoogleChatCompletionContentPart::Text(text) => text.clone(),
+                                                GoogleChatCompletionContentPart::FileData(_) => String::default(),
+                                            }
+                                        }).collect::<Vec<String>>()
+                                        .join("")
                                 })
-                                .collect::<Vec<String>>()
-                                .join("")
+                                .unwrap_or(String::default());
+                            m
                         }).unwrap_or(String::default());
                         BotReply {
                             message,
                             reasoning: None,
-                            prompt_token: Some(resp.usage_metadata.prompt_token_count),
-                            completion_token: Some(resp.usage_metadata.candidates_token_count),
-                            reasoning_token: None,
-                            total_token: Some(resp.usage_metadata.total_token_count),
+                            prompt_token: resp.usage_metadata.prompt_token_count,
+                            completion_token: resp.usage_metadata.candidates_token_count,
+                            reasoning_token: resp.usage_metadata.thoughts_token_count,
+                            total_token: resp.usage_metadata.total_token_count,
                         }
                     })
                 });

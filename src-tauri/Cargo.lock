@@ -381,7 +381,7 @@ dependencies = [
 [[package]]
 name = "async-openai"
 version = "0.23.4"
-source = "git+https://github.com/0xfrankz/async-openai.git?branch=multi-providers-support#a91f249506f8c8e58c32e6d79fe31d37a4185a64"
+source = "git+https://github.com/0xfrankz/async-openai.git?branch=google-compatibility#030e27797d6649e416d13c12a34968f78436df50"
 dependencies = [
  "async-convert",
  "backoff",

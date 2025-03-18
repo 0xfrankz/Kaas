@@ -1,5 +1,5 @@
 use async_openai::config::Config;
-use reqwest::header::HeaderMap;
+use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 
@@ -61,7 +61,9 @@ impl GoogleConfig {
 
 impl Config for GoogleConfig {
     fn headers(&self) -> HeaderMap {
-        HeaderMap::default()
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
+        headers
     }
 
     fn url(&self, path: &str) -> String {

@@ -23,16 +23,14 @@ use tokio_stream::StreamExt;
 
 use crate::{
     errors::CommandError::{self, ApiError, DbError},
-    log_utils::{error, info, trace},
-    utils::is_stream_enabled,
+    log_utils::{debug, error, info, trace},
     services::{
         db::Repository,
         llm::{
-            chat::{BotReply, GlobalSettings},
-            models::RemoteModel,
-            client::LLMClient,
+            chat::{BotReply, GlobalSettings}, client::LLMClient, models::RemoteModel
         },
     },
+    utils::is_stream_enabled
 };
 
 type CommandResult<T = ()> = Result<T, CommandError>;
@@ -633,7 +631,7 @@ async fn call_bot_stream(
                         },
                     )
                     .await;
-                match stream_result {
+                                match stream_result {
                     Ok(mut stream) => {
                         // start receiving in frontend
                         emit_stream_start(&tag, &window);

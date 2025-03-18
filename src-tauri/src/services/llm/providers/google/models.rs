@@ -37,7 +37,6 @@ impl<'c> GoogleModels<'c> {
 
     pub async fn list(&self) -> Result<GoogleModelListResponse, OpenAIError> {
         let response = self.client.get(GOOGLE_LIST_MODELS_PATH).await?;
-        log::info!("GoogleModelListResponse: {:#?}", response);
         Ok(response)
     }
 }

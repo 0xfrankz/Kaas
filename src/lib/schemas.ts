@@ -168,6 +168,7 @@ export const openAIOptionsFormSchema = commonOptionsFormSchema.extend({
     PROVIDER_OPENAI,
     PROVIDER_OPENROUTER,
     PROVIDER_XAI,
+    PROVIDER_GOOGLE,
     PROVIDER_CUSTOM,
   ] as const),
 });
