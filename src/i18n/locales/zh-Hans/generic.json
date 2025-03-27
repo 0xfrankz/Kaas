@@ -41,7 +41,8 @@
     },
     "select": {
         "language-en": "英文",
-        "language-zh-Hans": "简体中文"
+        "language-zh-Hans": "简体中文",
+        "language-fr": "法语"
     },
     "model": {
         "Azure": "微软Azure",
