@@ -1,0 +1,41 @@
+{
+    "title": "Paramètres",
+    "label": {
+        "display": "Affichage",
+        "profile": "Profil",
+        "models": "Modèles",
+        "network": "Réseau",
+        "language": "Langue",
+        "theme": "Thème",
+        "name": "Nom",
+        "proxy": "Proxy",
+        "use-proxy": "Utiliser un proxy",
+        "proxy-server": "Serveur",
+        "traffic-type": "Type de trafic",
+        "traffic-http": "HTTP",
+        "traffic-https": "HTTPS",
+        "proxy-username": "Nom d'utilisateur (optionnel)",
+        "proxy-password": "Mot de passe (optionnel)",
+        "proxy-name-psw-tips": "Si votre proxy le nécessite",
+        "name-desc": "Sera affiché dans les conversations.",
+        "context-length": "Longueur de contexte par défaut",
+        "context-length-desc": "Nombre de messages précédents inclus dans chaque requête du modèle. Peut être remplacé par les options de conversation.",
+        "max-tokens": "Nombre maximum de tokens par défaut",
+        "max-tokens-desc": "Nombre de messages précédents inclus dans chaque requête du modèle. Peut être remplacé par les options de conversation.",
+        "proxy-server-desc": "L'adresse de votre serveur proxy.",
+        "traffic-type-desc": "Quel type de trafic doit passer par le proxy ?",
+        "aboutus": "À propos de Kaas",
+        "version": "Version",
+        "commit": "Commit"
+    },
+    "select": {
+        "dark-theme": "Mode sombre",
+        "light-theme": "Mode clair",
+        "system": "Suivre le système"
+    },
+    "message": {
+        "change-setting-success": "{{setting}} a été modifié",
+        "change-setting-failure": "Échec de la modification de {{setting}}",
+        "built-by": "Créé par <userLink>{{name}}</userLink> avec <icon/> et <depsLink>de nombreux logiciels open-source</depsLink>"
+    }
+}

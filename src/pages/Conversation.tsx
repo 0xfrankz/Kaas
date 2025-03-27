@@ -19,8 +19,8 @@ function ConversationPage() {
     // redirect to new conversation page?
     throw new AppError(
       ERROR_TYPE_APP_STATE,
-      `${conversationId} is not a valid number`,
-      `Oops, the conversation with id = ${conversationId} is missing`
+      `${conversationId} n'est pas un nombre valide`,
+      `Oups, la conversation avec l'id = ${conversationId} est manquante`
     );
   }
   const { get: getConversation } = useConversationsContext();

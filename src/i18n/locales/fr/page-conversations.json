@@ -1,0 +1,17 @@
+{
+    "title": "Conversations",
+    "label": {
+        "quick-start": "Démarrer rapidement une nouvelle conversation",
+        "num-of-conversations": "{{num}} conversations"
+    },
+    "message": {
+        "no-model": "Vous devez d'abord créer un modèle",
+        "no-conversation": "Aucune conversation pour le moment",
+        "delete-conversation-warning": "Une conversation supprimée ne peut pas être récupérée.\nVoulez-vous vraiment continuer ?",
+        "delete-conversation-success": "La conversation a été supprimée",
+        "delete-conversation-error": "Échec de la suppression de la conversation : {{errorMsg}}",
+        "create-conversation-error": "Échec de la création de la conversation : {{errorMsg}}",
+        "input-cant-be-empty": "Le message ne peut pas être vide. Écrivez quelque chose pour démarrer une nouvelle conversation.",
+        "ask-anything": "Posez n'importe quelle question..."
+    }
+}
