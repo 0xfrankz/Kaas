@@ -8,5 +8,9 @@
         "empty-api-key": "API密钥不能为空。",
         "empty-endpoint": "Endpoint不能为空。"
     },
-    "image-save-error": "图片保存失败"
+    "image-save-error": "图片保存失败",
+    "conversation": {
+        "invalid-id": "{{conversationId}} 不是有效的数字",
+        "missing": "糟糕，无法找到ID为 {{conversationId}} 的对话"
+    }
 }

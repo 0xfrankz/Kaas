@@ -8,5 +8,9 @@
         "empty-api-key": "API key cannot be empty.",
         "empty-endpoint": "Endpoint cannot be empty."
     },
-    "image-save-error": "Failed to save image"
+    "image-save-error": "Failed to save image",
+    "conversation": {
+        "invalid-id": "{{conversationId}} is not a valid number",
+        "missing": "Oops, the conversation with id = {{conversationId}} is missing"
+    }
 }

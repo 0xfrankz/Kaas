@@ -95,34 +95,40 @@ function SettingLanguage() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <Card className="mt-1 flex flex-col gap-2 px-4 py-6">
       <Label htmlFor="language">{languageLabel}</Label>
-      <div className="flex items-center gap-2">
-        <Select
-          defaultValue={languageSetting}
-          onValueChange={(value) => {
-            languageRef.current = value;
-          }}
-        >
-          <SelectTrigger className="w-64">
-            <SelectValue placeholder="Select language" />
+      <Select
+        defaultValue={languageSetting}
+        onValueChange={(v) => {
+          languageRef.current = v;
+        }}
+      >
+        <div className="flex justify-between">
+          <SelectTrigger className="w-52" id="language">
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="en">{t('generic:select:language-en')}</SelectItem>
-            <SelectItem value="zh-Hans">
-              {t('generic:select:language-zh-Hans')}
-            </SelectItem>
-            <SelectItem value="fr">
-              {t('generic:select:language-fr')}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <Button onClick={onSaveClick}>
-          {t('generic:action:save')}
-        </Button>
-      </div>
-    </div>
-  )
+          <Button
+            onClick={() => {
+              onSaveClick();
+            }}
+          >
+            {t('generic:action:save')}
+          </Button>
+        </div>
+        <SelectContent>
+          <SelectItem value="en">
+            {t('generic:select:language-en')}
+          </SelectItem>
+          <SelectItem value="zh-Hans">
+            {t('generic:select:language-zh-Hans')}
+          </SelectItem>
+          <SelectItem value="fr">  
+          {t('generic:select:language-fr')}  
+          </SelectItem>  
+        </SelectContent>
+      </Select>
+    </Card>
+  );
 }
 
 function SettingTheme() {

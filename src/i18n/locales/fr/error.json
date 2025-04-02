@@ -8,5 +8,9 @@
         "empty-api-key": "La clé API ne peut pas être vide.",
         "empty-endpoint": "Le point de terminaison ne peut pas être vide."
     },
-    "image-save-error": "Impossible d'enregistrer l'image"
+    "image-save-error": "Impossible d'enregistrer l'image",
+    "conversation": {
+        "invalid-id": "{{conversationId}} n'est pas un numéro valide",
+        "missing": "Oups, la conversation avec l'identifiant {{conversationId}} est introuvable"
+    }
 }

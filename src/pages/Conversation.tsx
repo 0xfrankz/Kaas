@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { SlideLeftTransition } from '@/components/animation/SlideLeftTransition';
 import { ChatSection } from '@/components/Conversation/ChatSection';
@@ -14,13 +15,14 @@ type Params = {
 
 function ConversationPage() {
   const { conversationId } = useParams<Params>();
+  const { t } = useTranslation(['error']);
   const cid = parseNumberOrNull(conversationId);
   if (cid === null) {
     // redirect to new conversation page?
     throw new AppError(
       ERROR_TYPE_APP_STATE,
-      `${conversationId} n'est pas un nombre valide`,
-      `Oups, la conversation avec l'id = ${conversationId} est manquante`
+      t('error:conversation.invalid-id', { conversationId }),
+      t('error:conversation.missing', { conversationId })
     );
   }
   const { get: getConversation } = useConversationsContext();
