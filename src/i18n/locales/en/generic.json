@@ -41,7 +41,8 @@
     },
     "select": {
         "language-en": "English",
-        "language-zh-Hans": "Simplified Chinese"
+        "language-zh-Hans": "Simplified Chinese",
+        "language-fr": "French"
     },
     "model": {
         "Azure": "Microsoft Azure",

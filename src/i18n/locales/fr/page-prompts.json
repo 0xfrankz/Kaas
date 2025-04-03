@@ -1,0 +1,26 @@
+{
+    "title": "Prompts",
+    "section": {
+        "your-prompts": "Vos prompts",
+        "create-prompt": "Créer un nouveau modèle de prompt",
+        "update-prompt": "Modifier le modèle de prompt",
+        "use-prompt": "Démarrer une conversation avec ce prompt",
+        "delete-prompt": "Supprimer {{promptAlias}} ?",
+        "template": "Modèle",
+        "preview": "Aperçu",
+        "variables": "Variables"
+    },
+    "message": {
+        "no-prompt": "Vous n'avez pas encore de prompts",
+        "no-model": "Vous n'avez pas encore de modèles",
+        "create-prompt-success": "Le prompt a été créé",
+        "create-prompt-tips": "Vous pouvez utiliser des variables dans votre prompt, encadrez-les avec des accolades, par ex. {variable_name}. \n_Utilisez maximum 20 caractères alphanumériques ou underscore pour le nom de variable._",
+        "update-prompt-success": "Le prompt a été mis à jour",
+        "delete-prompt-success": "Le prompt a été supprimé",
+        "use-prompt-tips": "Remplacez les variables de votre modèle de prompt par des valeurs réelles, puis choisissez un modèle pour démarrer une nouvelle conversation.",
+        "delete-prompt-warning": "Un prompt supprimé ne peut pas être récupéré.\nVoulez-vous vraiment continuer ?",
+        "fill-the-template": "Remplir le modèle",
+        "pick-a-model": "Choisir un modèle",
+        "start-conversation": "Démarrer la conversation"
+    }
+}

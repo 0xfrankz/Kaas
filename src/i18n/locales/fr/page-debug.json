@@ -1,0 +1,11 @@
+{
+    "title": "Déboguer",
+    "label": {
+        "be-invoker": "Invocateur Backend",
+        "provider": "Fournisseur",
+        "api-key": "Clé API",
+        "sys-info": "Informations Système",
+        "webview-info": "Informations Webview",
+        "os-info": "Informations Système d'Exploitation"
+    }
+}

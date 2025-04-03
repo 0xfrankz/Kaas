@@ -1,0 +1,36 @@
+{
+    "title": "Modèles",
+    "section": {
+        "your-models": "Vos modèles",
+        "supported-models": "Modèles pris en charge",
+        "create-model": "Créer un nouveau modèle $t(generic:model:{{provider}})",
+        "update-model": "Modifier les paramètres du modèle",
+        "pick-provider": "Choisir un fournisseur"
+    },
+    "label": {
+        "alias": "Alias",
+        "api-key": "Clé API",
+        "endpoint": "Point d'accès",
+        "api-version": "Version de l'API",
+        "deployment-id": "ID de déploiement",
+        "model": "Modèle"
+    },
+    "message": {
+        "no-model": "Vous n'avez pas encore de modèles",
+        "add-model": "En ajouter un maintenant",
+        "update-model-success": "Le modèle a été mis à jour",
+        "delete-model-success": "Le modèle a été supprimé",
+        "delete-model-error": "Échec de la suppression du modèle : {{errorMsg}}",
+        "create-model-tips": "Remplissez les informations API de votre $t(generic:model:{{provider}}).",
+        "update-model-tips": "Donnez un alias à votre modèle pour le reconnaître plus facilement.",
+        "delete-model-warning": "Un modèle supprimé ne peut pas être récupéré.\nVoulez-vous vraiment continuer ?",
+        "alias-tips": "L'alias vous aide à identifier votre modèle",
+        "api-key-tips": "La clé pour l'API de votre modèle",
+        "endpoint-tips": "Le point d'accès de l'API de votre modèle",
+        "endpoint-tips-azure": "Le point d'accès de l'API de votre modèle. Son format est généralement \"https://{votre-nom-ressource}.openai.azure.com\".",
+        "api-version-tips": "La version de l'API de votre modèle. Elle suit généralement le format AAAA-MM-JJ.",
+        "claude-api-version-tips": "La version de l'API de votre modèle. Elle suit généralement le format AAAA-MM-JJ. Actuellement, seules les versions 2023-06-01 et supérieures sont prises en charge.",
+        "deployment-id-tips": "Le nom de déploiement de l'API de votre modèle",
+        "model-tips": "Le modèle que vous souhaitez utiliser"
+    }
+}

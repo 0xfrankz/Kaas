@@ -1,0 +1,9 @@
+{
+    "title": "Dépendances",
+    "label": {
+        "name": "Nom",
+        "link": "Lien",
+        "license": "Licence",
+        "author": "Auteur"
+    }
+}

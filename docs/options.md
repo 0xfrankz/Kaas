@@ -2,6 +2,7 @@
 
 [![en-icon]](./options.md)
 [![zh-hans-icon]](./options_zh-Hans.md)
+[![fr-icon]](./options_fr.md)
 
 **Symbols:** ✅ - Supported, ❌ - Not supported, 📌 - Plan to support
 
@@ -134,3 +135,4 @@
 
 [en-icon]: https://img.shields.io/badge/English-teal?style=flat-square
 [zh-hans-icon]: https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-teal?style=flat-square
+[fr-icon]: https://img.shields.io/badge/Français-teal?style=flat-square

@@ -1,0 +1,16 @@
+{
+    "validation": {
+        "invalid-proxy-url": "URL de proxy non valide",
+        "empty-proxy-url": "L'URL du proxy ne peut pas être vide",
+        "empty-traffic-type": "Au moins un protocole doit être sélectionné",
+        "invalid-int-minmax": "{{value}} doit être un entier entre {{min}} et {{max}}",
+        "empty-prompt": "Votre prompt est vide. Un prompt vide est un gaspillage de votre quota de jetons.",
+        "empty-api-key": "La clé API ne peut pas être vide.",
+        "empty-endpoint": "Le point de terminaison ne peut pas être vide."
+    },
+    "image-save-error": "Impossible d'enregistrer l'image",
+    "conversation": {
+        "invalid-id": "{{conversationId}} n'est pas un numéro valide",
+        "missing": "Oups, la conversation avec l'identifiant {{conversationId}} est introuvable"
+    }
+}

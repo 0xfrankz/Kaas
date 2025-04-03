@@ -1,0 +1,42 @@
+{
+    "section": {
+        "choose-model": "Choisir un modèle pour {{subject}}",
+        "set-system-message": "Définir le message système pour {{subject}}",
+        "recent": "Récent",
+        "use-prompt": "Utiliser un modèle de prompt",
+        "change-options": "Modifier les options du modèle de cette conversation"
+    },
+    "label": {
+        "enter-to-send": "Appuyez sur Entrée pour envoyer",
+        "shift-enter-to-send": "Appuyez sur Shift+Entrée pour envoyer",
+        "quick-send": "Envoi rapide",
+        "context-length": "Longueur du contexte",
+        "num-ctx": "Nombre de tokens d'entrée",
+        "num-predict": "Nombre de tokens de sortie",
+        "stream": "Flux",
+        "temperature" : "Température",
+        "top-p": "Top P",
+        "frequency-penalty": "Pénalité de fréquence",
+        "presence-penalty": "Pénalité de présence",
+        "max-tokens": "Nombre maximal de tokens",
+        "user": "Utilisateur",
+        "show-reasoning": "Afficher le raisonnement"
+    },
+    "message": {
+        "no-model": "Vous devez d'abord choisir un modèle",
+        "set-system-message-tips": "Définir le comportement général du bot.\nLe message système sera envoyé avec chaque message de l'utilisateur.",
+        "set-system-message-success": "Message système défini",
+        "set-system-message-error": "Échec de la définition du message système : {{errorMsg}}",
+        "unset-system-message-success": "Message système supprimé",
+        "unset-system-message-error": "Échec de la suppression du message système : {{errorMsg}}",
+        "restart-conversation-success": "Conversation redémarrée",
+        "restart-conversation-error": "Échec du redémarrage de la conversation : {{errorMsg}}",
+        "restart-conversation-warning": "Tous les messages de cette conversation seront supprimés et ne pourront pas être restaurés.",
+        "input-placeholder": "Comment puis-je vous aider ?",
+        "use-prompt-tips": "Remplacez les variables de votre modèle de prompt par des valeurs réelles.",
+        "insert-into-prompt": "Insérer dans le prompt",
+        "token-usage": "Tokens utilisés pour ce message : {{usage}}",
+        "total-token-usage": "Tokens utilisés pour cette conversation : {{totalUsage}}",
+        "change-options-tips": "La modification des options peut entraîner des comportements imprévisibles, voire des erreurs. Modifiez avec prudence."
+    }
+}

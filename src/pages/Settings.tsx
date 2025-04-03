@@ -116,10 +116,15 @@ function SettingLanguage() {
           </Button>
         </div>
         <SelectContent>
-          <SelectItem value="en">{t('generic:select:language-en')}</SelectItem>
+          <SelectItem value="en">
+            {t('generic:select:language-en')}
+          </SelectItem>
           <SelectItem value="zh-Hans">
             {t('generic:select:language-zh-Hans')}
           </SelectItem>
+          <SelectItem value="fr">  
+          {t('generic:select:language-fr')}  
+          </SelectItem>  
         </SelectContent>
       </Select>
     </Card>
